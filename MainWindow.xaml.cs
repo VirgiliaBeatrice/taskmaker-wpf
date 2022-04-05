@@ -48,7 +48,14 @@ namespace taskmaker_wpf {
 
             _viewModel = new ViewModel.ComplexViewModel(this);
 
+            //TouchDown += MainWindow_TouchDown;
+
             _timer.Start();
+        }
+
+        private void MainWindow_TouchDown(object sender, TouchEventArgs e) {
+            //Console.WriteLine("touchdown");
+            //_timer.Start();
         }
 
         private void _timer_Tick(object sender, EventArgs e) {
@@ -80,8 +87,8 @@ namespace taskmaker_wpf {
             var keyUp = Observable.FromEventPattern<KeyEventArgs>(this, nameof(KeyUp)).Select(e => e.EventArgs);
 
             var touchDown = Observable.FromEventPattern<TouchEventArgs>(this, nameof(TouchDown)).Select(e => e.EventArgs);
-            var touchMove = Observable.FromEventPattern<TouchEventArgs>(this, nameof(TouchMove)).Select(e => e.EventArgs);
-            var touchUp = Observable.FromEventPattern<TouchEventArgs>(this, nameof(TouchUp)).Select(e => e.EventArgs);
+            var touchMove = Observable.FromEventPattern<TouchEventArgs>(skElement, nameof(TouchMove)).Select(e => e.EventArgs);
+            var touchUp = Observable.FromEventPattern<TouchEventArgs>(skElement, nameof(TouchUp)).Select(e => e.EventArgs);
 
             OMouseClick = mouseDown
                 .Take(1)
@@ -110,12 +117,14 @@ namespace taskmaker_wpf {
                         .TakeUntil(mouseUp));
 
             var OTouchDown = touchDown
-                .Do(e => Console.WriteLine(e.GetIntermediateTouchPoints(this)));
+                .Take(1)
+                .Do(e => Console.WriteLine("touch down"));
             var OTouchUp = touchUp
-                .Do(e => Console.WriteLine(e.GetIntermediateTouchPoints(this)));
+                .Do(e => Console.WriteLine("touch up"));
 
             OTouchDrag = touchDown
                 .Take(1)
+                .Do(e => Console.WriteLine("Drag Start"))
                 .SelectMany(e => touchMove.TakeUntil(touchUp));
 
 
