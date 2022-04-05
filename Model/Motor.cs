@@ -18,6 +18,12 @@ namespace taskmaker_wpf.Model.Data {
         private int _value;
         public int Value {
             get => _value;
+            set {
+                _value = value;
+
+                if (Entity != null)
+                    Entity.Value = value;
+            }
         }
         public int Dim => 1;
         public PCController.Motor Entity { get; set; }

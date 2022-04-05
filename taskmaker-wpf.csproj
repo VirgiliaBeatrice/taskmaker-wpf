@@ -160,6 +160,9 @@
     <Compile Include="View\DebugUtilities\DataMonitor.cs" />
     <Compile Include="View\Elements\Core.cs" />
     <Compile Include="View\Engine\Engine.cs" />
+    <Compile Include="View\Motors.xaml.cs">
+      <DependentUpon>Motors.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Pages\Page.cs" />
     <Compile Include="View\Pages\SimplexView.cs" />
     <Compile Include="View\Widget\Container\Complex.cs" />
@@ -184,6 +187,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="View\Motors.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

@@ -178,6 +178,12 @@ namespace taskmaker_wpf.ViewModel {
             Model.BindData(Model.Nodes[2]);
             Motors.SetValue(new object[] { 100, 100, 100 });
             Model.BindData(Model.Nodes[3]);
+
+            var w = new Window();
+            w.Width = 300;
+            w.Height = 600;
+            w.Content = new Motors(Motors.Motors.ToArray());
+            w.Show();
         }
 
         public void RegisterAddAndDeleteMode() {

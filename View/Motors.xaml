@@ -1,0 +1,17 @@
+﻿<Page x:Class="taskmaker_wpf.View.Motors"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:taskmaker_wpf.View"
+      xmlns:vm="clr-namespace:taskmaker_wpf.ViewModel"
+      mc:Ignorable="d" 
+      d:DesignHeight="325.737" d:DesignWidth="231.769"
+      x:Name="_this"
+      Title="Motors">
+    <Grid>
+        <StackPanel x:Name="stack0">
+            
+        </StackPanel>
+    </Grid>
+</Page>
