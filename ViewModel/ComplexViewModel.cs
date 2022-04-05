@@ -95,6 +95,9 @@ namespace taskmaker_wpf.ViewModel {
                         case Key.P:
                             RegisterManipulateMode();
                             break;
+                        case Key.T:
+                            RegisterTouchManipulateMode();
+                            break;
                         case Key.Escape:
                             Unregister();
                             break;
@@ -102,6 +105,14 @@ namespace taskmaker_wpf.ViewModel {
 
                     Console.WriteLine($"Mode-{x.Key}");
                 });
+        }
+
+        private void RegisterTouchManipulateMode() {
+            Unregister();
+
+            var touchDrag = (Parent as MainWindow).OTouchDrag
+                .Repeat()
+                .Subscribe(e => Console.WriteLine(e.GetTouchPoint(Parent).TouchDevice.Id));
         }
 
         private void SetBarys() {
