@@ -16,6 +16,9 @@ using taskmaker_wpf.View.Debug;
 using System.Windows;
 using System.Windows.Input;
 using SkiaSharp.Views.WPF;
+using System.ComponentModel;
+using Prism.Mvvm;
+using Prism.Commands;
 
 namespace taskmaker_wpf.ViewModel {
     public struct Node {
@@ -40,7 +43,7 @@ namespace taskmaker_wpf.ViewModel {
         }
     }
 
-    public class ComplexViewModel {
+    public class ComplexViewModel : BindableBase {
         public Window Parent { get; set; }
         public Model.Core.UI Model { get; set; }
         public View.Pages.SimplexView Page { get; set; }
@@ -48,6 +51,18 @@ namespace taskmaker_wpf.ViewModel {
 
         private List<IDisposable> _topics = new List<IDisposable> ();
         private LimitedQueue<float> _seq = new LimitedQueue<float>(100);
+
+        #region Bindable Properties
+        private string _motors = "motor";
+        public string MotorsProperty {
+            get { return _motors; }
+            set { SetProperty(ref _motors, value); }
+        }
+
+        #endregion
+
+        public DelegateCommand TestCommand { get; set; }
+
 
         public ComplexViewModel(Window parent) {
             Parent = parent;
@@ -67,6 +82,12 @@ namespace taskmaker_wpf.ViewModel {
             // Subscribe observable
             RegisterKeyPress();
             //RegisterAddAndDeleteMode();
+
+            TestCommand = new DelegateCommand(CommandTest);
+        }
+
+        public void CommandTest() {
+            Console.WriteLine("A test command has been invoked.");
         }
 
         public void RegisterKeyPress() {
