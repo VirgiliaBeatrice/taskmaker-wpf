@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using taskmaker_wpf.Utilities;
 using SkiaSharp;
-using taskmaker_wpf.View.Widgets;
+using taskmaker_wpf.Views.Widgets;
 
-namespace taskmaker_wpf.View {
+namespace taskmaker_wpf.Views {
 
     public class Engine {
         static private Stack<object> _ctx = new Stack<object>();

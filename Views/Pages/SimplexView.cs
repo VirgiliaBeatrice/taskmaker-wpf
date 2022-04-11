@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using taskmaker_wpf.View.Widgets;
-using taskmaker_wpf.View.Widgets.Container;
+using taskmaker_wpf.Views.Widgets;
+using taskmaker_wpf.Views.Widgets.Container;
 using SkiaSharp;
 
-namespace taskmaker_wpf.View.Pages {
+namespace taskmaker_wpf.Views.Pages {
     public class SimplexView {
         public Widget Root { get; set; }
 
         private ComplexWidget _complex;
-        private ViewModel.ComplexViewModel _viewModel;
+        private ViewModels.ComplexViewModel _viewModel;
 
-        public SimplexView(ViewModel.ComplexViewModel vm) {
+        public SimplexView(ViewModels.ComplexViewModel vm) {
             _viewModel = vm;
 
             InitializeWidgets();

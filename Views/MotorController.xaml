@@ -1,0 +1,43 @@
+﻿<UserControl x:Class="taskmaker_wpf.Views.MotorController"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:taskmaker_wpf.Views"
+             xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:MotorControllerViewModel}"
+             mc:Ignorable="d" 
+             x:Name="root"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <DockPanel Width="600" Height="40" Margin="10"
+               Background="White"
+               HorizontalAlignment="Stretch"
+               LastChildFill="True">
+        
+        <Label Content="Motor" 
+               Width="50"
+               Height="40"
+               VerticalContentAlignment="Center"
+               HorizontalContentAlignment="Center"
+               DockPanel.Dock="Left"/>
+        <Label Content="{Binding ElementName=slider, Path=Minimum}" 
+               Width="50"
+               Height="40"
+               VerticalContentAlignment="Center"
+               HorizontalContentAlignment="Center"
+               DockPanel.Dock="Left"/>
+        <Label Content="{Binding ElementName=slider, Path=Maximum}" 
+               Width="50"
+               Height="40"
+               VerticalContentAlignment="Center"
+               HorizontalContentAlignment="Center"
+               DockPanel.Dock="Right"/>
+        <Slider x:Name="slider"
+                VerticalContentAlignment="Center" 
+                HorizontalContentAlignment="Center"
+                Margin="10"
+                Maximum="{Binding ElementName=root, Path=Maximum}"
+                Minimum="{Binding ElementName=root, Path=Minimum}"
+                Value="{Binding ElementName=root, Path=Value}"/>
+            
+    </DockPanel>
+</UserControl>

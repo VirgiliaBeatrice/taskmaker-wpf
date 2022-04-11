@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using SkiaSharp;
 using taskmaker_wpf.Utilities;
-using taskmaker_wpf.View;
+using taskmaker_wpf.Views;
 
-namespace taskmaker_wpf.View.Widgets.Units {
+namespace taskmaker_wpf.Views.Widgets.Units {
     //public class TestWidget : RenderWidget {
     //    public TestWidgetState State { get; set; }
     //    protected TestWidgetInternalState _internalState;

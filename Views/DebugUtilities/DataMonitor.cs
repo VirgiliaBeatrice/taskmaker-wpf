@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using taskmaker_wpf.View.Widgets;
+using taskmaker_wpf.Views.Widgets;
 using SkiaSharp;
 
-namespace taskmaker_wpf.View.Debug {
+namespace taskmaker_wpf.Views.Debug {
     public struct DataMonitorState : IWidgetState {
         public SKRect Bound { get; set; }
         public float[] Seqs { get; set; } 

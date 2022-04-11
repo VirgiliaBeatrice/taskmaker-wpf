@@ -190,24 +190,33 @@
     <Compile Include="PCController\PoseData.cs" />
     <Compile Include="Qhull\QhullCSharp.cs" />
     <Compile Include="Utilities\TreeElement.cs" />
-    <Compile Include="ViewModel\MainPageViewModel.cs" />
-    <Compile Include="View\DebugUtilities\DataMonitor.cs" />
-    <Compile Include="View\Elements\Core.cs" />
-    <Compile Include="View\Engine\Engine.cs" />
-    <Compile Include="View\Motors.xaml.cs">
-      <DependentUpon>Motors.xaml</DependentUpon>
+    <Compile Include="ViewModels\MainPageViewModel.cs" />
+    <Compile Include="ViewModels\MotorControllerRegionViewModel.cs" />
+    <Compile Include="ViewModels\MotorControllerViewModel.cs" />
+    <Compile Include="ViewModels\TestWindowViewModel.cs" />
+    <Compile Include="Views\DebugUtilities\DataMonitor.cs" />
+    <Compile Include="Views\Elements\Core.cs" />
+    <Compile Include="Views\Engine\Engine.cs" />
+    <Compile Include="Views\MotorController.xaml.cs">
+      <DependentUpon>MotorController.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\Pages\Page.cs" />
-    <Compile Include="View\Pages\SimplexView.cs" />
-    <Compile Include="View\Widget\Container\Complex.cs" />
-    <Compile Include="View\Widget\Container\FreeContainer.cs" />
-    <Compile Include="View\Widget\Container\Grid.cs" />
-    <Compile Include="View\Widget\Container\NodeCollection.cs" />
-    <Compile Include="View\Widget\Container\Simplex.cs" />
-    <Compile Include="View\Widget\Container\Voronoi.cs" />
-    <Compile Include="View\Widget\Core.cs" />
-    <Compile Include="View\Widget\Node\Node.cs" />
-    <Compile Include="View\Widget\Unit\UnitWidget.cs" />
+    <Compile Include="Views\RegionA.xaml.cs">
+      <DependentUpon>RegionA.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Pages\Page.cs" />
+    <Compile Include="Views\Pages\SimplexView.cs" />
+    <Compile Include="Views\TestWindow.xaml.cs">
+      <DependentUpon>TestWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Widget\Container\Complex.cs" />
+    <Compile Include="Views\Widget\Container\FreeContainer.cs" />
+    <Compile Include="Views\Widget\Container\Grid.cs" />
+    <Compile Include="Views\Widget\Container\NodeCollection.cs" />
+    <Compile Include="Views\Widget\Container\Simplex.cs" />
+    <Compile Include="Views\Widget\Container\Voronoi.cs" />
+    <Compile Include="Views\Widget\Core.cs" />
+    <Compile Include="Views\Widget\Node\Node.cs" />
+    <Compile Include="Views\Widget\Unit\UnitWidget.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -216,12 +225,20 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ViewModel\ComplexViewModel.cs" />
+    <Compile Include="ViewModels\ComplexViewModel.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="View\Motors.xaml">
+    <Page Include="Views\MotorController.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RegionA.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TestWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

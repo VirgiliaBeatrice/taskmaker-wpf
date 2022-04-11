@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Prism.Ioc;
 using Prism.Unity;
+using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf {
     /// <summary>
@@ -14,13 +15,15 @@ namespace taskmaker_wpf {
     /// </summary>
     public partial class App : PrismApplication {
         protected override Window CreateShell() {
-            var w = Container.Resolve<MainWindow>();
+            var w = Container.Resolve<TestWindow>();
 
             return w;
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
-            //containerRegistry.Register
+            containerRegistry.RegisterForNavigation<RegionA>();
+            // Register services
+            //containerRegistry.Register<>
             //throw new NotImplementedException();
         }
     }

@@ -5,6 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using SkiaSharp;
 
-namespace taskmaker_wpf.View.Widgets.Container {
+namespace taskmaker_wpf.Views.Widgets.Container {
 
 }

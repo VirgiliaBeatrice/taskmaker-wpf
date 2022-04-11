@@ -6,13 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace taskmaker_wpf.View.Widgets.Container {
+namespace taskmaker_wpf.Views.Widgets.Container {
     public struct ComplexWidgetState :
         IWidgetState, ICloneable {
         public float width;
         public float height;
         public SKPoint location;
-        public ViewModel.Node[] nodes;
+        public ViewModels.Node[] nodes;
         public (int, SKPoint[])[] simplices;
         public (int, SKPoint[])[] voronois;
 
@@ -24,7 +24,7 @@ namespace taskmaker_wpf.View.Widgets.Container {
                 width = width,
                 height = height,
                 location = location,
-                nodes = (ViewModel.Node[])nodes.Clone(),
+                nodes = (ViewModels.Node[])nodes.Clone(),
                 simplices = simplices,
                 voronois = voronois,
                 Hash = Hash,

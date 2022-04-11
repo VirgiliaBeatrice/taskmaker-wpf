@@ -1,4 +1,4 @@
-﻿namespace taskmaker_wpf.View.Elements {
+﻿namespace taskmaker_wpf.Views.Elements {
     public class Element {
 
     }

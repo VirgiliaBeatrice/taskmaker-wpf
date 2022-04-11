@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using taskmaker_wpf.View.Elements;
+using taskmaker_wpf.Views.Elements;
 using taskmaker_wpf.Model.Core;
 
 namespace taskmaker_wpf.Model {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using SkiaSharp;
 using taskmaker_wpf.Utilities;
 
-namespace taskmaker_wpf.View.Widgets {
+namespace taskmaker_wpf.Views.Widgets {
     public class RenderObject : RenderObject<IWidgetState> {
         public RenderObject(IWidgetState initState) : base(initState) { }
     }

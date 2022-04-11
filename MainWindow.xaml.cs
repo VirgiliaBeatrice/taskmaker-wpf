@@ -18,7 +18,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
-using taskmaker_wpf.View;
+using taskmaker_wpf.Views;
 using System.Windows.Threading;
 
 namespace taskmaker_wpf {
@@ -34,7 +34,7 @@ namespace taskmaker_wpf {
         public IObservable<TouchEventArgs> OTouchDrag;
 
         private DispatcherTimer _timer;
-        private ViewModel.ComplexViewModel _viewModel;
+        private ViewModels.ComplexViewModel _viewModel;
 
         public MainWindow() {
             InitializeComponent();
@@ -46,7 +46,7 @@ namespace taskmaker_wpf {
             Console.WriteLine(np.pi);
             PrepareObservableEvents();
 
-            _viewModel = new ViewModel.ComplexViewModel(this);
+            _viewModel = new ViewModels.ComplexViewModel(this);
 
             //TouchDown += MainWindow_TouchDown;
 

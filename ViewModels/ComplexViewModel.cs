@@ -8,19 +8,18 @@ using System.Reactive.Linq;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 using taskmaker_wpf.Model;
-using taskmaker_wpf.View;
-using taskmaker_wpf.View.Widgets;
+using taskmaker_wpf.Views;
+using taskmaker_wpf.Views.Widgets;
 using Numpy;
-using taskmaker_wpf.View.Widgets.Container;
-using taskmaker_wpf.View.Debug;
+using taskmaker_wpf.Views.Widgets.Container;
+using taskmaker_wpf.Views.Debug;
 using System.Windows;
 using System.Windows.Input;
 using SkiaSharp.Views.WPF;
-using System.ComponentModel;
 using Prism.Mvvm;
 using Prism.Commands;
 
-namespace taskmaker_wpf.ViewModel {
+namespace taskmaker_wpf.ViewModels {
     public struct Node {
         public SKPoint location;
     }
@@ -43,10 +42,12 @@ namespace taskmaker_wpf.ViewModel {
         }
     }
 
+
+
     public class ComplexViewModel : BindableBase {
         public Window Parent { get; set; }
         public Model.Core.UI Model { get; set; }
-        public View.Pages.SimplexView Page { get; set; }
+        public Views.Pages.SimplexView Page { get; set; }
         public Model.Data.MotorCollection Motors { get; set; }
 
         private List<IDisposable> _topics = new List<IDisposable> ();
@@ -68,7 +69,7 @@ namespace taskmaker_wpf.ViewModel {
             Parent = parent;
             Model = new Model.Core.UI();
             Motors = new Model.Data.MotorCollection();
-            Page = new View.Pages.SimplexView(this);
+            Page = new Views.Pages.SimplexView(this);
 
             Motors.Motors.Add(new Model.Data.Motor());
             Motors.Motors.Add(new Model.Data.Motor());
@@ -211,11 +212,11 @@ namespace taskmaker_wpf.ViewModel {
             Motors.SetValue(new object[] { 100, 100, 100 });
             Model.BindData(Model.Nodes[3]);
 
-            var w = new Window();
-            w.Width = 300;
-            w.Height = 600;
-            w.Content = new Motors(Motors.Motors.ToArray());
-            w.Show();
+            //var w = new Window();
+            //w.Width = 300;
+            //w.Height = 600;
+            //w.Content = new Motors(Motors.Motors.ToArray());
+            //w.Show();
         }
 
         public void RegisterAddAndDeleteMode() {

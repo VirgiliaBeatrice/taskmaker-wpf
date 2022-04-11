@@ -1,7 +1,7 @@
 ﻿using SkiaSharp;
 using System;
 
-namespace taskmaker_wpf.View.Widgets {
+namespace taskmaker_wpf.Views.Widgets {
     public interface IWidgetState {
         SKRect Bound { get; set; }
     }

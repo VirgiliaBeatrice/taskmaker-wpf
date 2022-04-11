@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SkiaSharp;
 
-namespace taskmaker_wpf.View.Widgets {
+namespace taskmaker_wpf.Views.Widgets {
     public struct GridWidgetState {
         public int row;
         public int column;

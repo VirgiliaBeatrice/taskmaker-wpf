@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using taskmaker_wpf.View;
-using taskmaker_wpf.View.Widgets;
+using taskmaker_wpf.Views;
+using taskmaker_wpf.Views.Widgets;
 
 namespace taskmaker_wpf.Utilities {
     public class TreeElement {
