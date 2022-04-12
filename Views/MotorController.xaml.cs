@@ -18,6 +18,11 @@ namespace taskmaker_wpf.Views {
     /// Interaction logic for MotorControllerRegion.xaml
     /// </summary>
     public partial class MotorController : UserControl {
+        public static readonly DependencyProperty LabelNameProperty = DependencyProperty.Register(
+            "Name",
+            typeof(string),
+            typeof(MotorController),
+            new PropertyMetadata("Null"));
         public static readonly DependencyProperty MinimumProperty =
             DependencyProperty.Register(
                 "Minimum",
@@ -37,6 +42,10 @@ namespace taskmaker_wpf.Views {
                 typeof(MotorController),
                 new PropertyMetadata(5));
 
+        public string LabelName {
+            get { return (string)GetValue(LabelNameProperty); }
+            set { SetValue(LabelNameProperty, value); }
+        }
 
         public int Minimum {
             get { return (int)GetValue(MinimumProperty); }
