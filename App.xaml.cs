@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Prism.Ioc;
 using Prism.Unity;
+using taskmaker_wpf.Services;
 using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf {
@@ -21,10 +22,11 @@ namespace taskmaker_wpf {
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
+            // Register regions for navigation
             containerRegistry.RegisterForNavigation<RegionA>();
+
             // Register services
-            //containerRegistry.Register<>
-            //throw new NotImplementedException();
+            containerRegistry.RegisterSingleton<MotorService>();
         }
     }
 }

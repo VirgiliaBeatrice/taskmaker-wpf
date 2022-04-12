@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using taskmaker_wpf.ViewModels;
 
 namespace taskmaker_wpf.Views {
     /// <summary>
@@ -19,6 +20,18 @@ namespace taskmaker_wpf.Views {
     public partial class TestWindow : Window {
         public TestWindow() {
             InitializeComponent();
+            UpdateComponents();
+        }
+
+        private void UpdateComponents() {
+            var controller = new MotorItem();
+
+            var context = ((TestWindowViewModel)DataContext).Motor;
+
+            controller.DataContext = (TestWindowViewModel)DataContext;
+            controller.SetBinding(MotorItem.ValueProperty, "Values[0]");
+
+            stack.Children.Add(controller);
         }
     }
 }

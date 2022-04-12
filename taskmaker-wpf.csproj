@@ -189,6 +189,7 @@
     <Compile Include="PCController\Pose.cs" />
     <Compile Include="PCController\PoseData.cs" />
     <Compile Include="Qhull\QhullCSharp.cs" />
+    <Compile Include="Services\SerialManagerService.cs" />
     <Compile Include="Utilities\TreeElement.cs" />
     <Compile Include="ViewModels\MainPageViewModel.cs" />
     <Compile Include="ViewModels\MotorControllerRegionViewModel.cs" />

@@ -30,8 +30,10 @@
                 Width="Auto"
                 Maximum="{Binding ElementName=root, Path=Maximum}"
                 Minimum="{Binding ElementName=root, Path=Minimum}"
-                Value="{Binding ElementName=root, Path=Value}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                Value="{Binding ElementName=root, Path=Value}" 
+                HorizontalAlignment="Stretch" VerticalAlignment="Center" ValueChanged="slider_ValueChanged" />
         <Label Grid.Column="1"
-               Content="{Binding ElementName=slider, Path=Value}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+               Content="{Binding ElementName=slider, Path=Value}"
+               HorizontalAlignment="Center" VerticalAlignment="Center" />
     </Grid>
 </UserControl>

@@ -17,29 +17,29 @@ namespace taskmaker_wpf.Views {
     /// <summary>
     /// Interaction logic for MotorControllerRegion.xaml
     /// </summary>
-    public partial class MotorController : UserControl {
+    public partial class MotorItem : UserControl {
         public static readonly DependencyProperty LabelNameProperty = DependencyProperty.Register(
-            "Name",
+            "LabelName",
             typeof(string),
-            typeof(MotorController),
+            typeof(MotorItem),
             new PropertyMetadata("Null"));
         public static readonly DependencyProperty MinimumProperty =
             DependencyProperty.Register(
                 "Minimum",
                 typeof(int),
-                typeof(MotorController),
+                typeof(MotorItem),
                 new PropertyMetadata(0));
         public static readonly DependencyProperty MaximumProperty =
             DependencyProperty.Register(
                 "Maximum",
                 typeof(int),
-                typeof(MotorController),
+                typeof(MotorItem),
                 new PropertyMetadata(10));
         public static readonly DependencyProperty ValueProperty =
             DependencyProperty.Register(
                 "Value",
                 typeof(int),
-                typeof(MotorController),
+                typeof(MotorItem),
                 new PropertyMetadata(5));
 
         public string LabelName {
@@ -59,11 +59,19 @@ namespace taskmaker_wpf.Views {
 
         public int Value {
             get { return (int)GetValue(ValueProperty); }
-            set { SetValue(ValueProperty, value); }
+            set { 
+                SetValue(ValueProperty, value);
+            }
         }
 
-    public MotorController() {
+        public event EventHandler<RoutedPropertyChangedEventArgs<double>> ValueChanged;
+
+        public MotorItem() {
             InitializeComponent();
+        }
+
+        private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            ValueChanged?.Invoke(this, e);
         }
     }
 }
