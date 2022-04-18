@@ -24,14 +24,6 @@ namespace taskmaker_wpf.Views {
         }
 
         private void UpdateComponents() {
-            var controller = new MotorItem();
-
-            var context = ((TestWindowViewModel)DataContext).Motor;
-
-            controller.DataContext = (TestWindowViewModel)DataContext;
-            controller.SetBinding(MotorItem.ValueProperty, "Values[0]");
-
-            stack.Children.Add(controller);
         }
     }
 }

@@ -17,8 +17,8 @@ namespace taskmaker_wpf.Views {
     /// <summary>
     /// Interaction logic for MainWindowNew.xaml
     /// </summary>
-    public partial class RegionA : UserControl {
-        public RegionA() {
+    public partial class RegionMotor : UserControl {
+        public RegionMotor() {
             InitializeComponent();
         }
     }

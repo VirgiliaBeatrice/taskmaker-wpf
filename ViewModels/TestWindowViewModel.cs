@@ -12,31 +12,6 @@ using System.Collections.ObjectModel;
 
 namespace taskmaker_wpf.ViewModels {
     public class TestWindowViewModel : BindableBase {
-        private string _motorValue;
-        public string MotorValue {
-            get => _motorValue;
-            set {
-                SetProperty(ref _motorValue, value);
-            }
-        }
-
-        private Model.Data.Motor _motor;
-        public Model.Data.Motor Motor {
-            get => _motor;
-            set {
-                SetProperty(ref _motor, value);
-            }
-        }
-
-        private ObservableCollection<double> _values;
-        public ObservableCollection<double> Values {
-            get => _values;
-            set {
-                SetProperty(ref _values, value);
-            }
-
-        }
-
         private ICommand testCommand;
         public ICommand TestCommand => testCommand ?? (testCommand = new DelegateCommand(TestCommandExecute));
 
@@ -51,15 +26,10 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private readonly IRegionManager _regionManager;
-        private readonly MotorService _motorService;
 
-        public TestWindowViewModel(IRegionManager regionManager, MotorService motorService) {
+        public TestWindowViewModel(IRegionManager regionManager) {
             _regionManager = regionManager;
-            _motorService = motorService;
-
-            var motor = _motorService.Motors[0];
-            _values = new ObservableCollection<double>();
-            _values.Add(motor.Value);
+            _regionManager.RegisterViewWithRegion("ContentRegion", typeof(Views.RegionMotor));
         }
 
         public void TestCommandExecute() {

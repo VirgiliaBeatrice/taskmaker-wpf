@@ -190,19 +190,23 @@
     <Compile Include="PCController\PoseData.cs" />
     <Compile Include="Qhull\QhullCSharp.cs" />
     <Compile Include="Services\SerialManagerService.cs" />
+    <Compile Include="Services\SimplexService.cs" />
     <Compile Include="Utilities\TreeElement.cs" />
     <Compile Include="ViewModels\MainPageViewModel.cs" />
-    <Compile Include="ViewModels\MotorControllerRegionViewModel.cs" />
-    <Compile Include="ViewModels\MotorControllerViewModel.cs" />
+    <Compile Include="ViewModels\RegionControlUIViewModel.cs" />
+    <Compile Include="ViewModels\RegionMotorViewModel.cs" />
     <Compile Include="ViewModels\TestWindowViewModel.cs" />
     <Compile Include="Views\DebugUtilities\DataMonitor.cs" />
     <Compile Include="Views\Elements\Core.cs" />
     <Compile Include="Views\Engine\Engine.cs" />
-    <Compile Include="Views\MotorController.xaml.cs">
-      <DependentUpon>MotorController.xaml</DependentUpon>
+    <Compile Include="Views\MotorItem.xaml.cs">
+      <DependentUpon>MotorItem.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\RegionA.xaml.cs">
-      <DependentUpon>RegionA.xaml</DependentUpon>
+    <Compile Include="Views\RegionControlUI.xaml.cs">
+      <DependentUpon>RegionControlUI.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RegionMotor.xaml.cs">
+      <DependentUpon>RegionMotor.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Pages\Page.cs" />
     <Compile Include="Views\Pages\SimplexView.cs" />
@@ -231,11 +235,15 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Views\MotorController.xaml">
+    <Page Include="Views\MotorItem.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\RegionA.xaml">
+    <Page Include="Views\RegionControlUI.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RegionMotor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

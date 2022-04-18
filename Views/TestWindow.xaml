@@ -16,16 +16,16 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <StackPanel 
-            x:Name="stack"
-            Grid.Column="1">
-        </StackPanel>
-        
-        <d:Button Content="Navigate" Command="{Binding Path=NavigateCommand}"
-                CommandParameter="RegionA"
-                Width="100"
-                Height="20"
-                />
-        <d:ContentControl Grid.Column="3" prism:RegionManager.RegionName="ContentRegion" />
+        <Button
+            Grid.Column="0"
+            Command="{Binding NavigateCommand}"
+            CommandParameter="RegionMotor}">
+            Enter
+        </Button>
+        <ContentControl
+            BorderBrush="Blue"
+            BorderThickness="4"
+            Grid.Column="1"
+            prism:RegionManager.RegionName="ContentRegion" />
     </Grid>
 </Window>

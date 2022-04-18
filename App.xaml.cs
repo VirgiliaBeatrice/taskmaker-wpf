@@ -23,7 +23,7 @@ namespace taskmaker_wpf {
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
             // Register regions for navigation
-            containerRegistry.RegisterForNavigation<RegionA>();
+            containerRegistry.RegisterForNavigation<RegionMotor>();
 
             // Register services
             containerRegistry.RegisterSingleton<MotorService>();

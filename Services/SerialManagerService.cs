@@ -3,21 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using taskmaker_wpf.Model.Data;
 
 namespace taskmaker_wpf.Services {
     public class MotorService {
-        public List<Model.Data.Motor> Motors { get; set; } = new List<Model.Data.Motor> { };
+        public List<Motor> Motors { get; set; } = new List<Motor> { };
 
         public MotorService() {
             TestPurpose();
         }
 
         private void TestPurpose() {
-            var motor = new Model.Data.Motor();
+            Enumerable.Range(0, 5)
+                .ToList()
+                .ForEach(
+                e => {
+                    var motor = new Motor();
 
-            motor.SetValue(new[] { (object)5 });
+                    motor.SetValue(new[] { (object)e });
 
-            Motors.Add(motor);
+                    Motors.Add(motor);
+                });
         }
     }
 }
