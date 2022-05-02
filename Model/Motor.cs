@@ -35,6 +35,7 @@ namespace taskmaker_wpf.Model.Data {
         public bool HasSession => _entity != null;
 
         private MotorSession _entity;
+        private string _sessionPath;
         
         public int Max { get => _max; set => _max = value; }
         public int Min { get => _min; set => _min = value; }
@@ -52,8 +53,9 @@ namespace taskmaker_wpf.Model.Data {
             return true;
         }
 
-        public void BindEntity(MotorSession entity) {
+        public void BindEntity(MotorSession entity, string path) {
             _entity = entity;
+            _sessionPath = path;
         }
 
         public NDarray ToNDarray() {

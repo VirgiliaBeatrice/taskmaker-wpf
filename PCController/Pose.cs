@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,7 +29,7 @@ namespace PCController
             }
         }
 
-        //  ŠÔ‚Æƒgƒ‰ƒbƒNƒo[‚ÌÀ•W•ÏŠ·
+        //  æ™‚é–“ã¨ãƒˆãƒ©ãƒƒã‚¯ãƒãƒ¼ã®åº§æ¨™å¤‰æ›
         public double TrackScale()
         {
             if (button.Parent == null) return 1;
@@ -37,7 +37,7 @@ namespace PCController
             TrackBar track = (TrackBar)f.Controls.Find("track", true)[0];
             return (double)(track.Width - 27) / (double)track.Maximum;
         }
-        //  ŠÔ‚Æƒgƒ‰ƒbƒNƒo[‚ÌÀ•W•ÏŠ·
+        //  æ™‚é–“ã¨ãƒˆãƒ©ãƒƒã‚¯ãƒãƒ¼ã®åº§æ¨™å¤‰æ›
         public double TrackOffset()
         {
             if (button.Parent == null) return 13;
