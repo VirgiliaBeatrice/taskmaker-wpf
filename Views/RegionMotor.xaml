@@ -30,7 +30,11 @@
         <ItemsControl.ItemTemplate>
             <DataTemplate>
                 <local:MotorItem
-                        Value="{Binding Value}"/>
+                    Value="{Binding Value}"
+                    Maximum="{Binding Max}"
+                    Minimum="{Binding Min}"
+                    LabelName="{Binding Alias}"
+                    />
             </DataTemplate>
         </ItemsControl.ItemTemplate>
     </ItemsControl>

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MotorSession = PCController.Motor;
 using PCController;
 using System.IO.Ports;
 
@@ -21,15 +22,28 @@ namespace taskmaker_wpf.Model.Data {
             set {
                 _value = value;
 
-                if (Entity != null)
-                    Entity.Value = value;
+                if (_entity != null)
+                    _entity.Value = value;
             }
         }
+
+        private int _max;
+        private int _min;
+        private string _alias;
+
         public int Dim => 1;
-        public PCController.Motor Entity { get; set; }
+        public bool HasSession => _entity != null;
+
+        private MotorSession _entity;
+        
+        public int Max { get => _max; set => _max = value; }
+        public int Min { get => _min; set => _min = value; }
+        public string Alias { get => _alias; set => _alias = value; }
 
         public Motor() {
             _value = 0;
+            _max = 100;
+            _min = -100;
         }
 
         public bool SetValue(object[] value) {
@@ -38,8 +52,8 @@ namespace taskmaker_wpf.Model.Data {
             return true;
         }
 
-        public void BindEntity(PCController.Motor entity) {
-            Entity = entity;
+        public void BindEntity(MotorSession entity) {
+            _entity = entity;
         }
 
         public NDarray ToNDarray() {
