@@ -195,6 +195,7 @@
     <Compile Include="ViewModels\MainPageViewModel.cs" />
     <Compile Include="ViewModels\RegionControlUIViewModel.cs" />
     <Compile Include="ViewModels\RegionMotorViewModel.cs" />
+    <Compile Include="ViewModels\RegionSettingsViewModel.cs" />
     <Compile Include="ViewModels\TestWindowViewModel.cs" />
     <Compile Include="Views\DebugUtilities\DataMonitor.cs" />
     <Compile Include="Views\Elements\Core.cs" />
@@ -210,6 +211,9 @@
     </Compile>
     <Compile Include="Views\Pages\Page.cs" />
     <Compile Include="Views\Pages\SimplexView.cs" />
+    <Compile Include="Views\RegionSettings.xaml.cs">
+      <DependentUpon>RegionSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\TestWindow.xaml.cs">
       <DependentUpon>TestWindow.xaml</DependentUpon>
     </Compile>
@@ -244,6 +248,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\RegionMotor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RegionSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -30,6 +30,8 @@ namespace taskmaker_wpf.Model.Data {
         private int _max;
         private int _min;
         private string _alias;
+        private string _label;
+        private string _id;
 
         public int Dim => 1;
         public bool HasSession => _entity != null;
@@ -40,6 +42,8 @@ namespace taskmaker_wpf.Model.Data {
         public int Max { get => _max; set => _max = value; }
         public int Min { get => _min; set => _min = value; }
         public string Alias { get => _alias; set => _alias = value; }
+        public string Label { get => _label; set => _label = value; }
+        public string Id { get => _id; set => _id = value; }
 
         public Motor() {
             _value = 0;

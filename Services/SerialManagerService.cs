@@ -21,10 +21,16 @@ namespace taskmaker_wpf.Services {
                     var motor = new Motor();
 
                     motor.SetValue(new[] { (object)e });
+                    motor.Label = $"Motor{e}";
                     motor.Alias = $"Motor{e}";
 
                     Motors.Add(motor);
                 });
         }
     }
+
+    public class SerialService {
+        public SerialService() { 
+            
+        }
 }
