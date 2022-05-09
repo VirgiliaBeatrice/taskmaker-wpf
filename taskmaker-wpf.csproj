@@ -73,7 +73,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Xaml.Behaviors, Version=1.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Xaml.Behaviors.Wpf.1.1.31\lib\net45\Microsoft.Xaml.Behaviors.dll</HintPath>
+      <HintPath>packages\Microsoft.Xaml.Behaviors.Wpf.1.1.39\lib\net45\Microsoft.Xaml.Behaviors.dll</HintPath>
     </Reference>
     <Reference Include="Numpy, Version=3.7.1.28, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Numpy.3.7.1.28\lib\netstandard2.0\Numpy.dll</HintPath>
@@ -193,6 +193,7 @@
     <Compile Include="Services\SimplexService.cs" />
     <Compile Include="Utilities\TreeElement.cs" />
     <Compile Include="ViewModels\MainPageViewModel.cs" />
+    <Compile Include="ViewModels\MessageBoxViewModel.cs" />
     <Compile Include="ViewModels\RegionControlUIViewModel.cs" />
     <Compile Include="ViewModels\RegionMotorViewModel.cs" />
     <Compile Include="ViewModels\RegionSettingsViewModel.cs" />
@@ -200,6 +201,9 @@
     <Compile Include="Views\DebugUtilities\DataMonitor.cs" />
     <Compile Include="Views\Elements\Core.cs" />
     <Compile Include="Views\Engine\Engine.cs" />
+    <Compile Include="Views\MessageBox.xaml.cs">
+      <DependentUpon>MessageBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MotorItem.xaml.cs">
       <DependentUpon>MotorItem.xaml</DependentUpon>
     </Compile>
@@ -239,6 +243,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Views\MessageBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MotorItem.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -291,6 +299,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="icons\home.png" />
+    <Resource Include="icons\settings.png" />
     <Content Include="libs\libSkiaSharp.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

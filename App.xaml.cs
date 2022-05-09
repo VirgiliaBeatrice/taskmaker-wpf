@@ -8,7 +8,9 @@ using System.Windows;
 using Prism.Ioc;
 using Prism.Unity;
 using taskmaker_wpf.Services;
+using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Views;
+using CMessageBox = taskmaker_wpf.Views.MessageBox;  
 
 namespace taskmaker_wpf {
     /// <summary>
@@ -24,9 +26,14 @@ namespace taskmaker_wpf {
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
             // Register regions for navigation
             containerRegistry.RegisterForNavigation<RegionMotor>();
+            containerRegistry.RegisterForNavigation<RegionSettings>();
 
             // Register services
             containerRegistry.RegisterSingleton<MotorService>();
+            containerRegistry.RegisterSingleton<SerialService>();
+
+            // Register messagebox
+            containerRegistry.RegisterDialog<CMessageBox, MessageBoxViewModel>("standard");
         }
     }
 }

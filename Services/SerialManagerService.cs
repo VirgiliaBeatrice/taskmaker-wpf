@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,7 +31,21 @@ namespace taskmaker_wpf.Services {
     }
 
     public class SerialService {
-        public SerialService() { 
-            
+        public List<string> Ports { get; set; } = new List<string> { };
+
+        private SerialPort _serial;
+
+        public SerialService() {
         }
+
+        public string[] ListAllPorts() {
+            Ports = new List<string>(SerialPort.GetPortNames());
+
+            return Ports.ToArray();
+        }
+
+        public void Connect(string name) {
+            _serial = new SerialPort(name);
+        }
+    }
 }
