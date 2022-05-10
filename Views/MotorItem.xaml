@@ -8,32 +8,65 @@
              mc:Ignorable="d" 
              x:Name="root"
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid Background="White" MaxHeight="40"
-          ShowGridLines="True">
+    <Grid 
+        Background="White" MaxHeight="40" 
+        ShowGridLines="True">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="100"/>
-            <ColumnDefinition Width="100" />
-            <ColumnDefinition Width="50" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="50"/>
+            <ColumnDefinition Width="auto" SharedSizeGroup="Col0" />
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="auto" SharedSizeGroup="Col1" />
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="auto" SharedSizeGroup="Col2" />
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="auto" SharedSizeGroup="Col3"/>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="auto" SharedSizeGroup="Col4"/>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="auto" SharedSizeGroup="Col5"/>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="auto" SharedSizeGroup="Col6"/>
         </Grid.ColumnDefinitions>
     
         <Label Grid.Column="0"
-               Content="{Binding ElementName=root, Path=LabelName}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <Label Grid.Column="2" 
-               Content="{Binding ElementName=slider, Path=Minimum}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+               Content="{Binding ElementName=root, Path=LabelName}" 
+               HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" />
+
+        <Label Grid.Column="2"
+               Content="{Binding ElementName=slider, Path=Value}"
+               HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <GridSplitter Grid.Column="3" HorizontalAlignment="Stretch" />
+        
         <Label Grid.Column="4"
+               Margin="1 0 1 0"
                Content="{Binding ElementName=slider, Path=Maximum}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <GridSplitter Grid.Column="5" HorizontalAlignment="Stretch" />
+        
         <Slider x:Name="slider"
-                Grid.Column="3"
-                Margin="10"
+               Margin="5"
+                Grid.Column="6"
                 Width="Auto"
                 Maximum="{Binding ElementName=root, Path=Maximum}"
                 Minimum="{Binding ElementName=root, Path=Minimum}"
                 Value="{Binding ElementName=root, Path=Value}" 
                 HorizontalAlignment="Stretch" VerticalAlignment="Center" ValueChanged="slider_ValueChanged" />
-        <Label Grid.Column="1"
-               Content="{Binding ElementName=slider, Path=Value}"
-               HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <GridSplitter Grid.Column="7" HorizontalAlignment="Stretch" />
+        
+        <Label Grid.Column="8" 
+               Content="{Binding ElementName=slider, Path=Minimum}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <GridSplitter Grid.Column="9" HorizontalAlignment="Stretch" />
+        
+        <TextBlock
+            Grid.Column="10"
+            Text="{Binding ElementName=root, Path=BoardId}"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center" />
+        <GridSplitter Grid.Column="11" HorizontalAlignment="Stretch" />
+        
+        <TextBlock
+            Grid.Column="12"
+            Text="{Binding ElementName=root, Path=MotorId}"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center" />
     </Grid>
 </UserControl>

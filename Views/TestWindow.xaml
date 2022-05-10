@@ -16,16 +16,17 @@
             <BitmapImage x:Key="settings" UriSource="../icons/settings.png"/>
         </ResourceDictionary>
     </Window.Resources>
-    <Grid>
+    <Grid Margin="5">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="100"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <StackPanel 
             HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Grid.Row="1" Orientation="Horizontal">
+            VerticalAlignment="Top"
+            Grid.Row="0" Orientation="Horizontal">
             <Button
+                Margin="4"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Width="30"
@@ -36,6 +37,7 @@
                 <Image Source="{StaticResource home}" />
             </Button>
             <Button
+                Margin="4"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Width="30"

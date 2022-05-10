@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MotorSession = PCController.Motor;
+using cMotor = PCController.Motor;
 using PCController;
 using System.IO.Ports;
 
@@ -22,8 +22,8 @@ namespace taskmaker_wpf.Model.Data {
             set {
                 _value = value;
 
-                if (_entity != null)
-                    _entity.Value = value;
+                if (_instance != null)
+                    _instance.Value = value;
             }
         }
 
@@ -34,16 +34,19 @@ namespace taskmaker_wpf.Model.Data {
         private string _id;
 
         public int Dim => 1;
-        public bool HasSession => _entity != null;
+        public bool HasSession => _instance != null;
 
-        private MotorSession _entity;
-        private string _sessionPath;
+        private cMotor _instance;
+        private int _boardId;
+        private int _motorId;
         
         public int Max { get => _max; set => _max = value; }
         public int Min { get => _min; set => _min = value; }
         public string Alias { get => _alias; set => _alias = value; }
         public string Label { get => _label; set => _label = value; }
         public string Id { get => _id; set => _id = value; }
+        public int BoardId { get => _boardId; set => _boardId = value; }
+        public int MotorId { get => _motorId; set => _motorId = value; }
 
         public Motor() {
             _value = 0;
@@ -57,9 +60,10 @@ namespace taskmaker_wpf.Model.Data {
             return true;
         }
 
-        public void BindEntity(MotorSession entity, string path) {
-            _entity = entity;
-            _sessionPath = path;
+        public void Link(cMotor instance, int boardId, int motorId) {
+            _instance = instance;
+            BoardId = boardId;
+            MotorId = motorId;
         }
 
         public NDarray ToNDarray() {

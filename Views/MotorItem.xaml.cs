@@ -41,6 +41,18 @@ namespace taskmaker_wpf.Views {
                 typeof(int),
                 typeof(MotorItem),
                 new PropertyMetadata(5));
+        public static readonly DependencyProperty BoardIdProperty =
+            DependencyProperty.Register(
+                "BoardId",
+                typeof(int),
+                typeof(MotorItem),
+                new PropertyMetadata(-1));
+        public static readonly DependencyProperty MotorIdProperty =
+                    DependencyProperty.Register(
+                        "MotorId",
+                        typeof(int),
+                        typeof(MotorItem),
+                        new PropertyMetadata(-1));
 
         public string LabelName {
             get { return (string)GetValue(LabelNameProperty); }
@@ -62,6 +74,16 @@ namespace taskmaker_wpf.Views {
             set { 
                 SetValue(ValueProperty, value);
             }
+        }
+
+        public int BoardId {
+            get { return (int)GetValue(BoardIdProperty); }
+            set { SetValue(BoardIdProperty, value); }
+        }
+
+        public int MotorId {
+            get { return (int)GetValue(MotorIdProperty); }
+            set { SetValue(MotorIdProperty, value); }
         }
 
         public event EventHandler<RoutedPropertyChangedEventArgs<double>> ValueChanged;

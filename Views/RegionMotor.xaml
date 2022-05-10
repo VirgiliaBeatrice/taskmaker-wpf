@@ -11,31 +11,115 @@
              prism:ViewModelLocator.AutoWireViewModel="True"
              d:DesignHeight="600" d:DesignWidth="800">
 
-    <ItemsControl
-        ItemsSource="{Binding Path=Motors}">
-        <ItemsControl.Template>
-            <ControlTemplate TargetType="ItemsControl">
-                <Border>
-                    <ItemsPresenter/>
-                </Border>
-            </ControlTemplate>
-        </ItemsControl.Template>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <Style x:Key="labelMarginStyle" TargetType="TextBlock">
+                <Setter Property="Margin" Value="5" />
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-                <StackPanel/>
-            </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
+        <Grid x:Name="grid0" HorizontalAlignment="Stretch" Background="AliceBlue">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" x:Name="col0" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="s0"/>
+                <ColumnDefinition Width="*" Name="titleCol1" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="s1"/>
+                <ColumnDefinition Width="*" Name="titleCol2"/>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="s2"/>
+                <ColumnDefinition Width="3*" Name="titleCol3"/>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="s3"/>
+                <ColumnDefinition Width="*" Name="titleCol4"/>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="s4"/>
+                <ColumnDefinition Width="*" Name="titleCol5"/>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="s5"/>
+                <ColumnDefinition Width="*" Name="titleCol6"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Name" Style="{StaticResource labelMarginStyle}"/>
+            <GridSplitter 
+                ResizeBehavior="PreviousAndNext"
+                Grid.Column="1" Width="2" HorizontalAlignment="Center" />
+            <TextBlock Grid.Column="2" Text="Value" Style="{StaticResource labelMarginStyle}"/>
+            <GridSplitter Grid.Column="3" Width="2" HorizontalAlignment="Center" />
+            <TextBlock Grid.Column="4" Text="Min" Style="{StaticResource labelMarginStyle}"/>
+            <GridSplitter Grid.Column="5" Width="2" HorizontalAlignment="Center" />
+            <TextBlock Grid.Column="6" Text="Control" Style="{StaticResource labelMarginStyle}"/>
+            <GridSplitter Grid.Column="7" Width="2" HorizontalAlignment="Center" />
+            <TextBlock Grid.Column="8" Text="Max" Style="{StaticResource labelMarginStyle}"/>
+            <GridSplitter Grid.Column="9" Width="2" HorizontalAlignment="Center" />
+            <TextBlock Grid.Column="10" Text="BoardId" Style="{StaticResource labelMarginStyle}"/>
+            <GridSplitter Grid.Column="11" Width="2" HorizontalAlignment="Center" />
+            <TextBlock 
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Grid.Column="12" Text="MotorId" />
+        </Grid>
 
-        <ItemsControl.ItemTemplate>
-            <DataTemplate>
-                <local:MotorItem
-                    Value="{Binding Value}"
-                    Maximum="{Binding Max}"
-                    Minimum="{Binding Min}"
-                    LabelName="{Binding Alias}"
-                    />
-            </DataTemplate>
-        </ItemsControl.ItemTemplate>
-    </ItemsControl>
+        <ItemsControl
+            Grid.Row="1"
+            ItemsSource="{Binding Path=Motors}">
+            <ItemsControl.Template>
+                <ControlTemplate TargetType="ItemsControl">
+                    <Border>
+                        <ItemsPresenter/>
+                    </Border>
+                </ControlTemplate>
+            </ItemsControl.Template>
+
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid Grid.Row="1" Margin="0 10 0 10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="auto" SharedSizeGroup="s0"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="s1"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="s2"/>
+                            <ColumnDefinition Width="3*"/>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="s3"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="s4"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="s5"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Grid.Column="0" Text="{Binding Alias}" />
+                        <GridSplitter Grid.Column="1" Width="2" />
+                        <TextBox  Grid.Column="2" Text="{Binding ElementName=slider, Path=Value}" />
+                        <GridSplitter Grid.Column="3" Width="2"/>
+                        <TextBox  Grid.Column="4" Text="{Binding Min}" />
+                        <GridSplitter Grid.Column="5" Width="2"/>
+                        <Slider 
+                            x:Name="slider"
+                            Grid.Column="6"
+                            Value="{Binding Value}"
+                            Minimum="{Binding Min}" Maximum="{Binding Max}" />
+                        <GridSplitter Grid.Column="7" Width="2"/>
+                        <TextBox Grid.Column="8" Text="{Binding Max}" />
+                        <GridSplitter Grid.Column="9" Width="2"/>
+                        <TextBox Grid.Column="10" Text="{Binding BoardId}" />
+                        <GridSplitter Grid.Column="11" Width="2"/>
+                        <TextBox Grid.Column="12" Text="{Binding MotorId}"/>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+
+
 </UserControl>

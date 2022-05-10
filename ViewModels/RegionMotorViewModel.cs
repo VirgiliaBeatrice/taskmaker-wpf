@@ -36,5 +36,9 @@ namespace taskmaker_wpf.ViewModels {
         public void OnNavigatedFrom(NavigationContext navigationContext) {
             //throw new NotImplementedException();
         }
+
+        private double width;
+
+        public double Width { get => width; set => SetProperty(ref width, value); }
     }
 }

@@ -15,8 +15,8 @@ namespace taskmaker_wpf.ViewModels {
         private string _selectedPort = "";
         public ObservableCollection<string> Coms { get; private set; }
         
-        private SerialService _serialSvr;
-        private IDialogService _dialogService;
+        private readonly SerialService _serialSvr;
+        private readonly IDialogService _dialogService;
 
         private ICommand connectCmd;
         private ICommand listCmd;
@@ -52,10 +52,10 @@ namespace taskmaker_wpf.ViewModels {
             if (SelectedPort != "")
                 _serialSvr.Connect(SelectedPort);
             else {
-                var parameters = new DialogParameters();
-
-                parameters.Add("title", "Error");
-                parameters.Add("message", "Could not find any selected port!");
+                var parameters = new DialogParameters {
+                    { "title", "Error" },
+                    { "message", "Could not find any selected port!" }
+                };
 
                 _dialogService.ShowDialog(
                     "standard",
