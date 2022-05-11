@@ -20,6 +20,7 @@
                 <Setter Property="HorizontalAlignment" Value="Center"/>
                 <Setter Property="VerticalAlignment" Value="Center"/>
             </Style>
+            <local:MotorInfoConverter x:Key="MotorInfoConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
@@ -45,6 +46,7 @@
                 <ColumnDefinition Width="Auto" SharedSizeGroup="s5"/>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <TextBlock Text="Name" Style="{StaticResource labelMarginStyle}"/>
             <GridSplitter 
@@ -67,6 +69,7 @@
         </Grid>
 
         <ItemsControl
+            x:Name="itemControl"
             Grid.Row="1"
             ItemsSource="{Binding Path=Motors}">
             <ItemsControl.Template>
@@ -101,9 +104,10 @@
                             <ColumnDefinition Width="Auto" SharedSizeGroup="s5"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <TextBox Grid.Column="0" Text="{Binding Alias}" />
+                        <TextBox Grid.Column="0" Text="{Binding Name}" />
                         <GridSplitter Grid.Column="1" Width="2" />
                         <TextBox  Grid.Column="2" Text="{Binding ElementName=slider, Path=Value}" />
                         <GridSplitter Grid.Column="3" Width="2"/>
@@ -146,6 +150,13 @@
                             Content="Delete"
                             Command="{Binding ElementName=root, Path=DataContext.RemoveMotorCmd}" 
                             CommandParameter="{Binding .}"/>
+                        <Button
+                            Grid.Column="14"
+                            HorizontalAlignment="Center"
+                            Content="Connect"
+                            Command="{Binding ElementName=root, Path=DataContext.ConnectMotorCmd}"
+                            CommandParameter="{Binding .}">
+                        </Button>
                     </Grid>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
