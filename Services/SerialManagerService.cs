@@ -41,7 +41,10 @@ namespace taskmaker_wpf.Services {
         public Motors Motors { get; set; }
         public Boards Boards { get; set; }
 
+
+        public bool IsConnected => _serial != null;
         private SerialPort _serial;
+
 
         private int _nBoard;
         private int _nMotor;

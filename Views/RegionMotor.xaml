@@ -117,7 +117,7 @@
                             x:Name="slider"
                             Grid.Column="6"
                             Value="{Binding Value}"
-                            Minimum="{Binding Min}" Maximum="{Binding Max}" />
+                            Minimum="{Binding Min}" Maximum="{Binding Max}" LargeChange="100" />
                         <GridSplitter Grid.Column="7" Width="2"/>
                         <TextBox Grid.Column="8" Text="{Binding Max}" />
                         <GridSplitter Grid.Column="9" Width="2"/>
@@ -133,17 +133,17 @@
                             </b:Interaction.Triggers>
                         </TextBox>
                             <GridSplitter Grid.Column="11" Width="2"/>
-                        <TextBox
-                            Name="tbMotorId"
-                            Grid.Column="12" Text="{Binding MotorId}">
+                        <ComboBox
+                            only
+                            Grid.Column="12"
+                            ItemsSource="{Binding ElementName=root, Path=DataContext.MotorIds}"
+                            SelectedItem="{Binding MotorId}">
                             <b:Interaction.Triggers>
-                                <b:KeyTrigger Key="Enter" ActiveOnFocus="True">
-                                    <prism:InvokeCommandAction
-                                        Command="{Binding Source={x:Reference Name=root}, Path=DataContext.SetCmd}"
-                                        CommandParameter="{Binding ElementName=tbMotorId, Path=Text}"/>
-                                </b:KeyTrigger>
+                                <b:EventTrigger EventName="DropDownOpened">
+                                    <b:InvokeCommandAction Command="{Binding ElementName=root, Path=DataContext.ListMotorsCmd}" />
+                                </b:EventTrigger>
                             </b:Interaction.Triggers>
-                        </TextBox>
+                        </ComboBox>
                         <Button
                             Grid.Column="13"
                             HorizontalAlignment="Center"
