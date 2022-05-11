@@ -12,9 +12,9 @@ namespace taskmaker_wpf.Views.Pages {
         public Widget Root { get; set; }
 
         private ComplexWidget _complex;
-        private ViewModels.ComplexViewModel _viewModel;
+        private ViewModels.RegionControlUIViewModel _viewModel;
 
-        public SimplexView(ViewModels.ComplexViewModel vm) {
+        public SimplexView(ViewModels.RegionControlUIViewModel vm) {
             _viewModel = vm;
 
             InitializeWidgets();

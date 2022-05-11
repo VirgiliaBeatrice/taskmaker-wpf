@@ -134,7 +134,6 @@
                         </TextBox>
                             <GridSplitter Grid.Column="11" Width="2"/>
                         <ComboBox
-                            only
                             Grid.Column="12"
                             ItemsSource="{Binding ElementName=root, Path=DataContext.MotorIds}"
                             SelectedItem="{Binding MotorId}">

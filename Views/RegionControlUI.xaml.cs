@@ -23,9 +23,9 @@ namespace taskmaker_wpf.Views {
     /// </summary>
     public partial class RegionControlUI : UserControl {
         private DispatcherTimer _timer;
-        private ComplexViewModel _viewModel;
+        private RegionControlUIViewModel _viewModel;
 
-        public RegionControlUI(ComplexViewModel viewModel) {
+        public RegionControlUI(RegionControlUIViewModel viewModel) {
             InitializeComponent();
 
             _timer = new DispatcherTimer();

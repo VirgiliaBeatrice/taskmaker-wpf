@@ -34,7 +34,7 @@ namespace taskmaker_wpf {
         public IObservable<TouchEventArgs> OTouchDrag;
 
         private DispatcherTimer _timer;
-        private ViewModels.ComplexViewModel _viewModel;
+        private ViewModels.RegionControlUIViewModel _viewModel;
 
         public MainWindow() {
             InitializeComponent();
@@ -46,7 +46,7 @@ namespace taskmaker_wpf {
             Console.WriteLine(np.pi);
             PrepareObservableEvents();
 
-            _viewModel = new ViewModels.ComplexViewModel(this);
+            _viewModel = new ViewModels.RegionControlUIViewModel(this);
 
             //TouchDown += MainWindow_TouchDown;
 
