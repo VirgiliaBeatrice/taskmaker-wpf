@@ -4,10 +4,27 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:taskmaker_wpf.Views"
-             xmlns:skia="clr-namespace:SkiaSharp.Views.WPF;assembly=SkiaSharp.Views.WPF"
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:skia="clr-namespace:SkiaSharp.Views.WPF;assembly=SkiaSharp.Views.WPF" xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:RegionControlUIViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <skia:SKElement
         x:Name="skElement"
-        PaintSurface="SKElement_PaintSurface"/>
+        PaintSurface="SKElement_PaintSurface">
+        <b:Interaction.Triggers>
+            <b:EventTrigger EventName="MouseDown">
+                <prism:InvokeCommandAction
+                    Command="{Binding MouseDownCmd}"/>
+            </b:EventTrigger>
+            <b:EventTrigger EventName="MouseUp">
+                <prism:InvokeCommandAction
+                    Command="{Binding MouseUpCmd}"/>
+            </b:EventTrigger>
+            <b:EventTrigger EventName="MouseMove">
+                <prism:InvokeCommandAction
+                    Command="{Binding MouseMoveCmd}"/>
+            </b:EventTrigger>
+        </b:Interaction.Triggers>
+    </skia:SKElement>
 </UserControl>

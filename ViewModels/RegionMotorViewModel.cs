@@ -89,6 +89,13 @@ namespace taskmaker_wpf.ViewModels {
 
 
     public class RegionMotorViewModel : BindableBase, INavigationAware {
+        private ICommand listBoardsCmd;
+        public ICommand ListBoardsCmd => listBoardsCmd ?? (listBoardsCmd = new DelegateCommand(ListBoardsCmdExecute));
+
+        private void ListBoardsCmdExecute() {
+            ListBoards();
+        }
+
         private ICommand listMotorsCmd;
         public ICommand ListMotorsCmd => listMotorsCmd ?? (listMotorsCmd = new DelegateCommand(ListMotorsCmdExecute));
 
@@ -161,25 +168,21 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private void ListBoards() {
-            if (_serialSrv.IsConnected) {
-                var boards = Enumerable
-                    .Range(0, _serialSrv.Boards.Count)
-                    .Select(e => $"Board{e}");
+            var boards = Enumerable
+                .Range(0, 7)
+                .Select(e => $"Board{e}");
 
-                BoardIds.Clear();
-                BoardIds.AddRange(boards);
-            }
+            BoardIds.Clear();
+            BoardIds.AddRange(boards);
         }
 
         private void ListMotors() {
-            if (_serialSrv.IsConnected) {
-                var motors = Enumerable
-                    .Range(0, _serialSrv.Boards[0].nMotor)
-                    .Select(e => $"Motor{e}");
+            var motors = Enumerable
+                .Range(0, 4)
+                .Select(e => $"Motor{e}");
 
-                MotorIds.Clear();
-                MotorIds.AddRange(motors);
-            }
+            MotorIds.Clear();
+            MotorIds.AddRange(motors);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext) {

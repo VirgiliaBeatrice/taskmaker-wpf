@@ -121,6 +121,7 @@
                         <GridSplitter Grid.Column="7" Width="2"/>
                         <TextBox Grid.Column="8" Text="{Binding Max}" />
                         <GridSplitter Grid.Column="9" Width="2"/>
+                        <!--
                         <TextBox 
                             Name="boardIdTB"
                             Grid.Column="10" Text="{Binding BoardId}">
@@ -132,6 +133,18 @@
                                 </b:KeyTrigger>
                             </b:Interaction.Triggers>
                         </TextBox>
+                        -->
+                        <ComboBox
+                            Grid.Column="10"
+                            ItemsSource="{Binding ElementName=root, Path=DataContext.BoardIds}"
+                            SelectedItem="{Binding BoardId}">
+                            <b:Interaction.Triggers>
+                                <b:EventTrigger EventName="DropDownOpened">
+                                    <b:InvokeCommandAction Command="{Binding ElementName=root, Path=DataContext.ListBoardsCmd}" />
+                                </b:EventTrigger>
+                            </b:Interaction.Triggers>
+                            
+                        </ComboBox>
                             <GridSplitter Grid.Column="11" Width="2"/>
                         <ComboBox
                             Grid.Column="12"

@@ -18,6 +18,8 @@ using System.Windows.Input;
 using SkiaSharp.Views.WPF;
 using Prism.Mvvm;
 using Prism.Commands;
+using taskmaker_wpf.Services;
+using System.Reactive.Subjects;
 
 namespace taskmaker_wpf.ViewModels {
     public struct Node {
@@ -64,8 +66,34 @@ namespace taskmaker_wpf.ViewModels {
 
         public DelegateCommand TestCommand { get; set; }
 
+        private Subject<MouseEventArgs> mouseDown;
+        private ICommand _mouseDownCmd;
+        public ICommand MouseDownCmd => _mouseDownCmd ?? (_mouseDownCmd = new DelegateCommand<MouseEventArgs>(MouseDownExecute));
 
-        public RegionControlUIViewModel(Window parent) {
+        private Subject<MouseEventArgs> mouseUp;
+
+        private ICommand _mouseUpCmd;
+        public ICommand MouseUpCmd => _mouseUpCmd ?? (_mouseUpCmd = new DelegateCommand<MouseEventArgs>(MouseUpExecute));
+
+        private Subject<MouseEventArgs> mouseMove;
+        private ICommand _mouseMoveCmd;
+        public ICommand MouseMoveCmd => _mouseMoveCmd ?? (_mouseMoveCmd = new DelegateCommand<MouseEventArgs>(MouseMoveExecute));
+
+        private void MouseMoveExecute(MouseEventArgs obj) {
+            mouseMove.OnNext(obj);
+        }
+
+        private void MouseUpExecute(MouseEventArgs obj) {
+            mouseUp.OnNext(obj);
+        }
+
+        private void MouseDownExecute(MouseEventArgs obj) {
+            mouseDown.OnNext(obj);
+        }
+
+        public RegionControlUIViewModel(
+            MotorService motorService,
+            Window parent) {
             Parent = parent;
             Model = new Model.Core.UI();
             Motors = new Model.Data.MotorCollection();
@@ -83,8 +111,19 @@ namespace taskmaker_wpf.ViewModels {
             // Subscribe observable
             //RegisterKeyPress();
             //RegisterAddAndDeleteMode();
+            mouseDown = new Subject<MouseEventArgs>();
+            mouseMove = new Subject<MouseEventArgs>();
+            mouseUp = new Subject<MouseEventArgs>();
 
-            TestCommand = new DelegateCommand(CommandTest);
+            //var disposable0 = mouseDown.Subscribe(
+            //    (e) => { },
+            //    (e) => { Console.WriteLine(e); },
+            //    () => { });
+
+            mouseDown.Take(1)
+                .SelectMany(mouseUp.Take(1))
+                .Repeat()
+                .Subscribe(e => { Console.WriteLine(e.GetPosition((UIElement)e.Source)); });
         }
 
         public void CommandTest() {

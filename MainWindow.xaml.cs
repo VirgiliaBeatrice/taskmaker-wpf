@@ -46,7 +46,7 @@ namespace taskmaker_wpf {
             Console.WriteLine(np.pi);
             PrepareObservableEvents();
 
-            _viewModel = new ViewModels.RegionControlUIViewModel(this);
+            //_viewModel = new ViewModels.RegionControlUIViewModel(this);
 
             //TouchDown += MainWindow_TouchDown;
 

@@ -28,7 +28,7 @@ namespace taskmaker_wpf.Services {
                     motor.Label = $"Motor{e}";
                     motor.Alias = $"Motor{e}";
 
-                    motor.Link(null, 0, e);
+                    motor.Link(null, 0, new Random().Next(0, 3));
                     Motors.Add(motor);
                 }
             );
