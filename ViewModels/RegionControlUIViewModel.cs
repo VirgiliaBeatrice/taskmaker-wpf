@@ -44,7 +44,10 @@ namespace taskmaker_wpf.ViewModels {
         }
     }
 
-
+    public enum RegionControlUIMode {
+        Default = 0,
+        ModeAdd = 1
+    }
 
     public class RegionControlUIViewModel : BindableBase {
         public Window Parent { get; set; }
@@ -66,28 +69,46 @@ namespace taskmaker_wpf.ViewModels {
 
         public DelegateCommand TestCommand { get; set; }
 
-        private Subject<MouseEventArgs> mouseDown;
+        private Subject<MouseButtonEventArgs> mouseDown;
         private ICommand _mouseDownCmd;
-        public ICommand MouseDownCmd => _mouseDownCmd ?? (_mouseDownCmd = new DelegateCommand<MouseEventArgs>(MouseDownExecute));
+        public ICommand MouseDownCmd => _mouseDownCmd ?? (_mouseDownCmd = new DelegateCommand<MouseButtonEventArgs>(MouseDownExecute));
 
-        private Subject<MouseEventArgs> mouseUp;
+        private Subject<MouseButtonEventArgs> mouseUp;
 
         private ICommand _mouseUpCmd;
-        public ICommand MouseUpCmd => _mouseUpCmd ?? (_mouseUpCmd = new DelegateCommand<MouseEventArgs>(MouseUpExecute));
+        public ICommand MouseUpCmd => _mouseUpCmd ?? (_mouseUpCmd = new DelegateCommand<MouseButtonEventArgs>(MouseUpExecute));
 
         private Subject<MouseEventArgs> mouseMove;
         private ICommand _mouseMoveCmd;
         public ICommand MouseMoveCmd => _mouseMoveCmd ?? (_mouseMoveCmd = new DelegateCommand<MouseEventArgs>(MouseMoveExecute));
 
+        private IObservable<MouseButtonEventArgs> _mouseLeftClick;
+
+        private ICommand _changeModeCmd;
+        public ICommand ChangeModeCmd => _changeModeCmd ?? (_changeModeCmd = new DelegateCommand<string>(ExecuteChangeModeCmd));
+
+        private void ExecuteChangeModeCmd(string obj) {
+            var castObj = Enum.Parse(typeof(RegionControlUIMode), obj);
+
+            Console.WriteLine(castObj);
+            switch(castObj) {
+                case RegionControlUIMode.Default:
+                    break;
+                case RegionControlUIMode.ModeAdd:
+                    ModeAdd();
+                    break;
+            }
+        }
+
         private void MouseMoveExecute(MouseEventArgs obj) {
             mouseMove.OnNext(obj);
         }
 
-        private void MouseUpExecute(MouseEventArgs obj) {
+        private void MouseUpExecute(MouseButtonEventArgs obj) {
             mouseUp.OnNext(obj);
         }
 
-        private void MouseDownExecute(MouseEventArgs obj) {
+        private void MouseDownExecute(MouseButtonEventArgs obj) {
             mouseDown.OnNext(obj);
         }
 
@@ -111,70 +132,90 @@ namespace taskmaker_wpf.ViewModels {
             // Subscribe observable
             //RegisterKeyPress();
             //RegisterAddAndDeleteMode();
-            mouseDown = new Subject<MouseEventArgs>();
+            mouseDown = new Subject<MouseButtonEventArgs>();
             mouseMove = new Subject<MouseEventArgs>();
-            mouseUp = new Subject<MouseEventArgs>();
+            mouseUp = new Subject<MouseButtonEventArgs>();
+            _mouseLeftClick = new Subject<MouseButtonEventArgs>();
 
             //var disposable0 = mouseDown.Subscribe(
             //    (e) => { },
             //    (e) => { Console.WriteLine(e); },
             //    () => { });
 
-            mouseDown.Take(1)
-                .SelectMany(mouseUp.Take(1))
-                .Repeat()
-                .Subscribe(e => { Console.WriteLine(e.GetPosition((UIElement)e.Source)); });
+            //mouseDown.Take(1)
+            //    .SelectMany(mouseUp.Take(1))
+            //    .Repeat()
+            //    .Subscribe(e => { Console.WriteLine(e.GetPosition((UIElement)e.Source)); });
+
+            _mouseLeftClick = mouseDown
+                .SelectMany(mouseUp)
+                .Where(e => e.ChangedButton == MouseButton.Left)
+                .Take(2)
+                .Repeat();
+
+            _mouseLeftClick.Subscribe(e => { Console.WriteLine(e.GetPosition((UIElement)e.Source)); });
         }
 
         public void CommandTest() {
             Console.WriteLine("A test command has been invoked.");
         }
 
-        public void RegisterKeyPress() {
-            var keyPress = (Parent as MainWindow).OKeyPress
-                .Repeat()
-                .Subscribe(x => {
-                    switch (x.Key) {
-                        case Key.A:
-                            RegisterAddAndDeleteMode();
-                            break;
-                        case Key.S:
-                            RegisterTriangulateMode();
-                            break;
-                        case Key.D:
-                            DeleteAll();
-                            break;
-                        //case 'v':
-                        //    CreateExterior();
-                        //    break;
-                        case Key.M:
-                            TestMotor();
-                            break;
-                        case Key.N:
-                            SetBarys();
-                            break;
-                        case Key.P:
-                            RegisterManipulateMode();
-                            break;
-                        case Key.T:
-                            RegisterTouchManipulateMode();
-                            break;
-                        case Key.Escape:
-                            Unregister();
-                            break;
-                    }
+        public void ModeAdd() {
+            //Unregister();
 
-                    Console.WriteLine($"Mode-{x.Key}");
+            var topic = _mouseLeftClick
+                .Subscribe(e => {
+                    AddNode(e.GetPosition((UIElement)e.Source).ToSKPoint());
                 });
+
+            _topics.Add(topic);
         }
 
-        private void RegisterTouchManipulateMode() {
-            Unregister();
+        //public void RegisterKeyPress() {
+        //    var keyPress = (Parent as Window).OKeyPress
+        //        .Repeat()
+        //        .Subscribe(x => {
+        //            switch (x.Key) {
+        //                case Key.A:
+        //                    RegisterAddAndDeleteMode();
+        //                    break;
+        //                case Key.S:
+        //                    RegisterTriangulateMode();
+        //                    break;
+        //                case Key.D:
+        //                    DeleteAll();
+        //                    break;
+        //                //case 'v':
+        //                //    CreateExterior();
+        //                //    break;
+        //                case Key.M:
+        //                    TestMotor();
+        //                    break;
+        //                case Key.N:
+        //                    SetBarys();
+        //                    break;
+        //                case Key.P:
+        //                    RegisterManipulateMode();
+        //                    break;
+        //                case Key.T:
+        //                    RegisterTouchManipulateMode();
+        //                    break;
+        //                case Key.Escape:
+        //                    Unregister();
+        //                    break;
+        //            }
 
-            var touchDrag = (Parent as MainWindow).OTouchDrag
-                .Repeat()
-                .Subscribe(e => Console.WriteLine(e.GetTouchPoint(Parent).TouchDevice.Id));
-        }
+        //            Console.WriteLine($"Mode-{x.Key}");
+        //        });
+        //}
+
+        //private void RegisterTouchManipulateMode() {
+        //    Unregister();
+
+        //    var touchDrag = (Parent as MainWindow).OTouchDrag
+        //        .Repeat()
+        //        .Subscribe(e => Console.WriteLine(e.GetTouchPoint(Parent).TouchDevice.Id));
+        //}
 
         private void SetBarys() {
             Unregister();
@@ -184,60 +225,60 @@ namespace taskmaker_wpf.ViewModels {
             Model.CreateMap();
         }
 
-        private void RegisterManipulateMode() {
-            Unregister();
+        //private void RegisterManipulateMode() {
+        //    Unregister();
 
-            var leftMove = (Parent as MainWindow).OMouseDrag
-                .Subscribe(Function);
+        //    var leftMove = (Parent as MainWindow).OMouseDrag
+        //        .Subscribe(Function);
 
-            void Function(MouseEventArgs x) {
-                var position = x.GetPosition(Parent).ToSKPoint();
-                var result = _Find_Target(Page.Root, position);
+        //    void Function(MouseEventArgs x) {
+        //        var position = x.GetPosition(Parent).ToSKPoint();
+        //        var result = _Find_Target(Page.Root, position);
 
-                if (result != null) {
-                    // TODO
-                    var target = Model.FindRegionById(result.ModelHash);
+        //        if (result != null) {
+        //            // TODO
+        //            var target = Model.FindRegionById(result.ModelHash);
 
-                    if (target != null) {
-                        var lambdas = np.atleast_2d(Model.Complex.GetLambdas(target, np.array(position.X, position.Y)));
+        //            if (target != null) {
+        //                var lambdas = np.atleast_2d(Model.Complex.GetLambdas(target, np.array(position.X, position.Y)));
 
-                        var targetValue = Model.Map.MapTo(lambdas);
+        //                var targetValue = Model.Map.MapTo(lambdas);
 
-                        Console.WriteLine(targetValue);
+        //                Console.WriteLine(targetValue);
 
-                        //_seq.Enqueue(lambdas.astype(np.float32).GetData<float>()[0]);
+        //                //_seq.Enqueue(lambdas.astype(np.float32).GetData<float>()[0]);
 
-                        //var widget = Page.Root.FindByName<DataMonitorWidget>("Debug");
-                        //var state = new DataMonitorState {
-                        //    Bound = new SKRect(0, 0, 200, 40),
-                        //    Seqs = _seq.ToArray()
-                        //};
+        //                //var widget = Page.Root.FindByName<DataMonitorWidget>("Debug");
+        //                //var state = new DataMonitorState {
+        //                //    Bound = new SKRect(0, 0, 200, 40),
+        //                //    Seqs = _seq.ToArray()
+        //                //};
 
-                        //Engine.SetState(widget, state);
-                        //Console.WriteLine(lambdas);
-                    }
+        //                //Engine.SetState(widget, state);
+        //                //Console.WriteLine(lambdas);
+        //            }
 
-                }
-            }
+        //        }
+        //    }
 
-            IWidget _Find_Target(IWidget widget, SKPoint location) {
-                var ret = widget.Contains(location);
+        //    IWidget _Find_Target(IWidget widget, SKPoint location) {
+        //        var ret = widget.Contains(location);
 
-                if (ret)
-                    return widget;
-                else
-                    foreach (var item in widget.GetAllChild()) {
-                        var childRet = _Find_Target(item, location);
+        //        if (ret)
+        //            return widget;
+        //        else
+        //            foreach (var item in widget.GetAllChild()) {
+        //                var childRet = _Find_Target(item, location);
 
-                        if (childRet != null)
-                            return childRet;
-                    }
+        //                if (childRet != null)
+        //                    return childRet;
+        //            }
 
-                return null;
-            }
+        //        return null;
+        //    }
 
-            _topics.Add(leftMove);
-        }
+        //    _topics.Add(leftMove);
+        //}
 
         private void TestMotor() {
             Unregister();
@@ -258,27 +299,27 @@ namespace taskmaker_wpf.ViewModels {
             //w.Show();
         }
 
-        public void RegisterAddAndDeleteMode() {
-            Unregister();
+        //public void RegisterAddAndDeleteMode() {
+        //    Unregister();
 
-            var leftClick = (Parent as MainWindow).OMouseClick
-                //.Where(x => Mouse.LeftButton == Mouse)
-                .Repeat()
-                .Subscribe(e => {
-                    AddNode(e.GetPosition(Parent).ToSKPoint());
-                });
-            //var rightClick = (Parent as MainWindow).OMouseClick
-            //    //.Where(x => x.Button == MouseButtons.Right)
-            //    .Repeat()
-            //    .Subscribe(e => {
-            //        var target = Page.DeleteNode(e.GetPosition(Parent).ToSKPoint());
+        //    var leftClick = (Parent as MainWindow).OMouseClick
+        //        //.Where(x => Mouse.LeftButton == Mouse)
+        //        .Repeat()
+        //        .Subscribe(e => {
+        //            AddNode(e.GetPosition(Parent).ToSKPoint());
+        //        });
+        //    //var rightClick = (Parent as MainWindow).OMouseClick
+        //    //    //.Where(x => x.Button == MouseButtons.Right)
+        //    //    .Repeat()
+        //    //    .Subscribe(e => {
+        //    //        var target = Page.DeleteNode(e.GetPosition(Parent).ToSKPoint());
 
-            //        Console.WriteLine(Page.Root.PrintAllChild());
-            //    });
+        //    //        Console.WriteLine(Page.Root.PrintAllChild());
+        //    //    });
 
-            _topics.Add(leftClick);
-            //_topics.Add(rightClick);
-        }
+        //    _topics.Add(leftClick);
+        //    //_topics.Add(rightClick);
+        //}
 
         public void RegisterTriangulateMode() {
             Unregister();

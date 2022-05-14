@@ -8,22 +8,38 @@
              xmlns:prism="http://prismlibrary.com/"
              xmlns:skia="clr-namespace:SkiaSharp.Views.WPF;assembly=SkiaSharp.Views.WPF" xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:RegionControlUIViewModel}"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="800"
+             Loaded="UserControl_Loaded">
     <skia:SKElement
+        Focusable="True"
         x:Name="skElement"
-        PaintSurface="SKElement_PaintSurface">
+        PaintSurface="SKElement_PaintSurface"
+        PreviewMouseDown="skElement_PreviewMouseDown"
+        PreviewMouseUp="skElement_PreviewMouseUp"
+        MouseDown="skElement_MouseDown"
+        MouseUp="skElement_MouseUp">
+        <skia:SKElement.InputBindings>
+            <KeyBinding
+                Key="F1"
+                Command="{Binding ChangeModeCmd}"
+                CommandParameter="ModeAdd"/>
+        </skia:SKElement.InputBindings>
+
         <b:Interaction.Triggers>
             <b:EventTrigger EventName="MouseDown">
-                <prism:InvokeCommandAction
-                    Command="{Binding MouseDownCmd}"/>
+                <b:InvokeCommandAction
+                    Command="{Binding MouseDownCmd}"
+                    PassEventArgsToCommand="True"/>
             </b:EventTrigger>
             <b:EventTrigger EventName="MouseUp">
-                <prism:InvokeCommandAction
-                    Command="{Binding MouseUpCmd}"/>
+                <b:InvokeCommandAction
+                    Command="{Binding MouseUpCmd}"
+                    PassEventArgsToCommand="True"/>
             </b:EventTrigger>
             <b:EventTrigger EventName="MouseMove">
-                <prism:InvokeCommandAction
-                    Command="{Binding MouseMoveCmd}"/>
+                <b:InvokeCommandAction
+                    Command="{Binding MouseMoveCmd}"
+                    PassEventArgsToCommand="True"/>
             </b:EventTrigger>
         </b:Interaction.Triggers>
     </skia:SKElement>

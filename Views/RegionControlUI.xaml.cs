@@ -23,21 +23,22 @@ namespace taskmaker_wpf.Views {
     /// </summary>
     public partial class RegionControlUI : UserControl {
         private DispatcherTimer _timer;
-        private RegionControlUIViewModel _viewModel;
+        private RegionControlUIViewModel _viewModel => DataContext as RegionControlUIViewModel;
 
-        public RegionControlUI(RegionControlUIViewModel viewModel) {
+        public RegionControlUI() {
             InitializeComponent();
 
             _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromMilliseconds(16);
             _timer.Tick += _timer_Tick;
 
-            _viewModel = viewModel;
+            //_viewModel = DataContext as RegionControlUIViewModel;
 
             Console.WriteLine(np.pi);
 
             _timer.Start();
         }
+
 
         private void _timer_Tick(object sender, EventArgs e) {
             skElement.InvalidateVisual();
@@ -57,6 +58,31 @@ namespace taskmaker_wpf.Views {
             }
 
             Engine.Paint(_viewModel.Page.Root, canvas);
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e) {
+            Console.WriteLine(skElement.Focusable);
+            Keyboard.Focus(skElement);
+            Console.WriteLine(Keyboard.FocusedElement);
+        }
+
+        private void skElement_PreviewMouseDown(object sender, MouseButtonEventArgs e) {
+            //Console.WriteLine("PDown: " + e.ChangedButton.ToString()) ;
+        }
+
+        private void skElement_PreviewMouseUp(object sender, MouseButtonEventArgs e) {
+            //Console.WriteLine("PUp: " + e.ChangedButton.ToString());
+
+        }
+
+        private void skElement_MouseDown(object sender, MouseButtonEventArgs e) {
+            //Console.WriteLine("Down: " + e.ChangedButton.ToString());
+
+        }
+
+        private void skElement_MouseUp(object sender, MouseButtonEventArgs e) {
+            //Console.WriteLine("Up: " + e.ChangedButton.ToString());
+
         }
     }
 }

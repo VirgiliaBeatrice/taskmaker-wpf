@@ -245,19 +245,11 @@
     <Compile Include="Views\Widget\Core.cs" />
     <Compile Include="Views\Widget\Node\Node.cs" />
     <Compile Include="Views\Widget\Unit\UnitWidget.cs" />
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ViewModels\RegionControlUIViewModel.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
     <Page Include="Views\RegionHome.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -318,6 +310,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Scripts\CommandSnippet.snippet" />
     <Resource Include="icons\home.png" />
     <Resource Include="icons\settings.png" />
     <Resource Include="icons\triangle.png" />
