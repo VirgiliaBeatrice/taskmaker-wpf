@@ -223,7 +223,7 @@ namespace taskmaker_wpf.ViewModels {
            _topics.Add(add);
         }
 
-        private IWidget selectedWidget;
+        //private IWidget selectedWidget;
         public void ModeEdit() {
             //Unregister();
 

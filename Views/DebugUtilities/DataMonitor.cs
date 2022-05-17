@@ -7,28 +7,19 @@ using taskmaker_wpf.Views.Widgets;
 using SkiaSharp;
 
 namespace taskmaker_wpf.Views.Debug {
-    public struct DataMonitorState : IWidgetState {
+    public class DataMonitorWidgetProps : IProps {
         public SKRect Bound { get; set; }
-        public float[] Seqs { get; set; } 
+
     }
 
-    public class DataMonitorWidget : RenderWidget<DataMonitorState> {
-        public DataMonitorWidget(string name, DataMonitorState initState) : base(name, initState) {
-        }
-
-        public override void SetState(IWidgetState state) {
-            State = (DataMonitorState)state;
-        }
-
-        public override void Build() {
-            RenderObject = new DataMonitorRenderObject(State);
-
-            base.Build();
-        }
+    public class DataMonitorWidget : RenderWidget {
+        public DataMonitorWidget(string name) { Name = name; }
     }
 
-    public class DataMonitorRenderObject : RenderObject<DataMonitorState> {
-        public DataMonitorRenderObject(DataMonitorState initState) : base(initState) {
+    public class DataMonitorRenderObject
+        : RenderObject_Wpf<DataMonitorWidgetProps> {
+        public DataMonitorRenderObject(DataMonitorWidgetProps props)
+            : base(props) {
         }
 
         protected override void OnRender(SKCanvas canvas, DataMonitorState state) {

@@ -214,7 +214,6 @@
     <Compile Include="ViewModels\RegionSettingsViewModel.cs" />
     <Compile Include="ViewModels\TestWindowViewModel.cs" />
     <Compile Include="Views\DebugUtilities\DataMonitor.cs" />
-    <Compile Include="Views\Elements\Core.cs" />
     <Compile Include="Views\Engine\Engine.cs" />
     <Compile Include="Views\MessageBox.xaml.cs">
       <DependentUpon>MessageBox.xaml</DependentUpon>
@@ -228,7 +227,6 @@
     <Compile Include="Views\RegionMotor.xaml.cs">
       <DependentUpon>RegionMotor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Pages\Page.cs" />
     <Compile Include="Views\Pages\SimplexView.cs" />
     <Compile Include="Views\RegionSettings.xaml.cs">
       <DependentUpon>RegionSettings.xaml</DependentUpon>
@@ -237,12 +235,12 @@
       <DependentUpon>TestWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Widget\Container\Complex.cs" />
-    <Compile Include="Views\Widget\Container\FreeContainer.cs" />
     <Compile Include="Views\Widget\Container\Grid.cs" />
     <Compile Include="Views\Widget\Container\NodeCollection.cs" />
     <Compile Include="Views\Widget\Container\Simplex.cs" />
     <Compile Include="Views\Widget\Container\Voronoi.cs" />
     <Compile Include="Views\Widget\Core.cs" />
+    <Compile Include="Views\DebugUtilities\DebugInfoWidget.cs" />
     <Compile Include="Views\Widget\Node\Node.cs" />
     <Compile Include="Views\Widget\Unit\UnitWidget.cs" />
     <Compile Include="App.xaml.cs">
@@ -333,6 +331,9 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Views\Elements\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\SkiaSharp.2.80.3\build\net462\SkiaSharp.targets" Condition="Exists('packages\SkiaSharp.2.80.3\build\net462\SkiaSharp.targets')" />

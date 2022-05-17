@@ -37,62 +37,12 @@ namespace taskmaker_wpf.Views {
             }
         }
 
-        static public void Build(IWidget element, bool forceAll = false) {
-            if (element.IsDirty | forceAll)
-                element.Build();
-            else
-                return;
-
-            foreach (var child in element.GetAllChild()) {
-                Build(child, forceAll);
-            }
-        }
-
-        static public void _Layout(IWidget widget) {
-
-            if (widget is ContainerWidget) {
-                (widget as ContainerWidget).Layout();
-            }
-
-            foreach (var child in widget.GetAllChild()) {
-                _Layout(child);
-            }
-        }
-
-        static public void Layout(Widget root) {
-            _Layout(root);
-        }
-
-        static public void _Paint(IWidget widget, SKCanvas canvas) {
-            if (widget is ContainerWidget container0)
-                container0.OnPainting(canvas);
-
-            widget.Paint(canvas);
-
-            foreach (var child in widget.GetAllChild()) {
-                _Paint(child, canvas);
-            }
-
-            if (widget is ContainerWidget container1)
-                container1.OnPainted(canvas);
-        }
-
-        static public void Paint(Widget root, SKCanvas canvas) {
-            _Paint(root, canvas);
-        }
-
         static public void Paint(IWidget_Wpf widget, SKCanvas canvas) {
             widget.Paint(canvas);
 
             foreach (var child in widget.GetAllChildren()) {
                 Paint(child as IWidget_Wpf, canvas);
             }
-        }
-
-        static public Queue<(IStatefulWidget, IWidgetState)> RenderQueue { get; set; } = new Queue<(IStatefulWidget, IWidgetState)>();
-
-        static public void SetState(IStatefulWidget widget, IWidgetState state) {
-            RenderQueue.Enqueue((widget, state));
         }
     }
 }
