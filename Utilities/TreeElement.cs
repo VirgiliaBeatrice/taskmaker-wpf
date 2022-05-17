@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 using System.IO;
 using taskmaker_wpf.Views;
 using taskmaker_wpf.Views.Widgets;
+using System.Windows;
 
 namespace taskmaker_wpf.Utilities {
-    public class TreeElement {
+    public class TreeElement : DependencyObject {
         public string Name { get; set; } = "";
         public TreeElement Parent { get; set; } = null;
         protected virtual List<TreeElement> Children { get; set; } = new List<TreeElement>();

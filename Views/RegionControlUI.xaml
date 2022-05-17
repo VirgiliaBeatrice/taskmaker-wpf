@@ -10,37 +10,74 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Loaded="UserControl_Loaded">
-    <skia:SKElement
-        Focusable="True"
-        x:Name="skElement"
-        PaintSurface="SKElement_PaintSurface"
-        PreviewMouseDown="skElement_PreviewMouseDown"
-        PreviewMouseUp="skElement_PreviewMouseUp"
-        MouseDown="skElement_MouseDown"
-        MouseUp="skElement_MouseUp">
-        <skia:SKElement.InputBindings>
-            <KeyBinding
-                Key="F1"
-                Command="{Binding ChangeModeCmd}"
-                CommandParameter="ModeAdd"/>
-        </skia:SKElement.InputBindings>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="20"/>
+        </Grid.RowDefinitions>
 
-        <b:Interaction.Triggers>
-            <b:EventTrigger EventName="MouseDown">
-                <b:InvokeCommandAction
-                    Command="{Binding MouseDownCmd}"
-                    PassEventArgsToCommand="True"/>
-            </b:EventTrigger>
-            <b:EventTrigger EventName="MouseUp">
-                <b:InvokeCommandAction
-                    Command="{Binding MouseUpCmd}"
-                    PassEventArgsToCommand="True"/>
-            </b:EventTrigger>
-            <b:EventTrigger EventName="MouseMove">
-                <b:InvokeCommandAction
-                    Command="{Binding MouseMoveCmd}"
-                    PassEventArgsToCommand="True"/>
-            </b:EventTrigger>
-        </b:Interaction.Triggers>
-    </skia:SKElement>
+        <StackPanel
+            Grid.Row="0">
+            
+        </StackPanel>
+        <skia:SKElement
+            Grid.Row="1"
+            Focusable="True"
+            x:Name="skElement"
+            PaintSurface="SKElement_PaintSurface"
+            PreviewMouseDown="skElement_PreviewMouseDown"
+            PreviewMouseUp="skElement_PreviewMouseUp"
+            MouseDown="skElement_MouseDown"
+            MouseUp="skElement_MouseUp">
+            <skia:SKElement.InputBindings>
+                <KeyBinding
+                    Gesture="Ctrl+1"
+                    Command="{Binding ChangeModeCmd}"
+                    CommandParameter="ModeAdd"/>
+                <KeyBinding
+                    Gesture="Ctrl+2"
+                    Command="{Binding ChangeModeCmd}"
+                    CommandParameter="ModeEdit"/>
+            </skia:SKElement.InputBindings>
+
+            <b:Interaction.Triggers>
+                <b:EventTrigger EventName="MouseDown">
+                    <b:InvokeCommandAction
+                        Command="{Binding MouseDownCmd}"
+                        PassEventArgsToCommand="True"/>
+                </b:EventTrigger>
+                <b:EventTrigger EventName="MouseUp">
+                    <b:InvokeCommandAction
+                        Command="{Binding MouseUpCmd}"
+                        PassEventArgsToCommand="True"/>
+                </b:EventTrigger>
+                <b:EventTrigger EventName="MouseMove">
+                    <b:InvokeCommandAction
+                        Command="{Binding MouseMoveCmd}"
+                        PassEventArgsToCommand="True"/>
+                </b:EventTrigger>
+            </b:Interaction.Triggers>
+        </skia:SKElement>
+        <StackPanel
+            x:Name="statusBar"
+            Orientation="Horizontal"
+            HorizontalAlignment="Left"
+            Background="DimGray"
+            Grid.Row="2">
+            <TextBlock 
+                x:Name="keymapInfo"
+                Margin="4 0 4 0"
+                Text="{Binding Path=KeymapInfo}"/>
+            <TextBlock 
+                x:Name="statusMsg"
+                Margin="4 0 4 0"
+                Text="{Binding Path=StatusMsg}"/>
+            <TextBlock 
+                x:Name="systemInfo"
+                Margin="4 0 4 0"
+                Text="{Binding Path=SystemInfo}"/>
+        </StackPanel>
+    </Grid>
+    
 </UserControl>

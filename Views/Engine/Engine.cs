@@ -29,6 +29,14 @@ namespace taskmaker_wpf.Views {
             //_ctx.Pop();
         }
 
+        static public void Build(IWidget_Wpf element) {
+            element.RenderAsync();
+
+            foreach(var child in element.GetAllChildren()) {
+                Build(child as IWidget_Wpf);
+            }
+        }
+
         static public void Build(IWidget element, bool forceAll = false) {
             if (element.IsDirty | forceAll)
                 element.Build();
@@ -71,6 +79,14 @@ namespace taskmaker_wpf.Views {
 
         static public void Paint(Widget root, SKCanvas canvas) {
             _Paint(root, canvas);
+        }
+
+        static public void Paint(IWidget_Wpf widget, SKCanvas canvas) {
+            widget.Paint(canvas);
+
+            foreach (var child in widget.GetAllChildren()) {
+                Paint(child as IWidget_Wpf, canvas);
+            }
         }
 
         static public Queue<(IStatefulWidget, IWidgetState)> RenderQueue { get; set; } = new Queue<(IStatefulWidget, IWidgetState)>();

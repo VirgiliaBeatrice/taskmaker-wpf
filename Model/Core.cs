@@ -44,6 +44,14 @@ namespace taskmaker_wpf.Model.Core {
             Nodes.Add(node);
         }
 
+        public void Add(NDarray<float> location) {
+            var newNode = new NodeM(Nodes.Count + 1) {
+                Location = location
+            };
+
+            Nodes.Add(newNode);
+        }
+
         public void Remove(NodeM node) {
             Nodes.Remove(node);
         }

@@ -48,14 +48,14 @@ namespace taskmaker_wpf.Views {
             var canvas = e.Surface.Canvas;
             canvas.Clear(SKColors.AntiqueWhite);
 
-            if (Engine.RenderQueue.Count != 0) {
-                do {
-                    var (widget, state) = Engine.RenderQueue.Dequeue();
+            //if (Engine.RenderQueue.Count != 0) {
+            //    do {
+            //        var (widget, state) = Engine.RenderQueue.Dequeue();
 
-                    widget.SetState(state);
-                    widget.Build();
-                } while(Engine.RenderQueue.Count != 0);
-            }
+            //        widget.SetState(state);
+            //        widget.Build();
+            //    } while(Engine.RenderQueue.Count != 0);
+            //}
 
             Engine.Paint(_viewModel.Page.Root, canvas);
         }

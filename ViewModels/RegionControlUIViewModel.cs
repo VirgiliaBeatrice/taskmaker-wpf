@@ -42,11 +42,39 @@ namespace taskmaker_wpf.ViewModels {
         static public NDarray<float> ToNDarray(this SKPoint self) {
             return np.array(self.X, self.Y);
         }
+
+        static public IObservable<TSource> Debug<TSource>(this IObservable<TSource> observable) {
+            observable.Subscribe(
+                (e) => {
+                    Console.WriteLine($"[{DateTime.Now}] OnNext({e})");
+                },
+                (e) => {
+                    Console.WriteLine($"[{DateTime.Now}] OnError({e})");
+                },
+                () => {
+                    Console.WriteLine($"[{DateTime.Now}] OnCompleted()");
+                });
+
+            return observable;
+        }
+
+        public static void Dump<T>(this IObservable<T> source, string name) {
+            source.Subscribe(
+               i => Console.WriteLine("{0}-->{1}", name, i),
+               ex => Console.WriteLine("{0} failed-->{1}", name, ex.Message),
+               () => Console.WriteLine("{0} completed", name));
+        }
     }
 
-    public enum RegionControlUIMode {
+    public enum OperationMode {
         Default = 0,
-        ModeAdd = 1
+        ModeAdd = 1,
+        ModeEdit = 2,
+        ModeDelete = 3,
+    }
+
+    public struct AddArgs {
+        public SKPoint Location { get; set; }
     }
 
     public class RegionControlUIViewModel : BindableBase {
@@ -59,13 +87,19 @@ namespace taskmaker_wpf.ViewModels {
         private LimitedQueue<float> _seq = new LimitedQueue<float>(100);
 
         #region Bindable Properties
-        private string _motors = "motor";
-        public string MotorsProperty {
-            get { return _motors; }
-            set { SetProperty(ref _motors, value); }
+        private int _count;
+
+        public int Count {
+            get { return _count; }
+            set { SetProperty(ref _count, value); }
         }
 
+
         #endregion
+        private string _keymapInfo;
+        private string _systemInfo;
+        private string _statusMsg;
+
 
         public DelegateCommand TestCommand { get; set; }
 
@@ -88,14 +122,18 @@ namespace taskmaker_wpf.ViewModels {
         public ICommand ChangeModeCmd => _changeModeCmd ?? (_changeModeCmd = new DelegateCommand<string>(ExecuteChangeModeCmd));
 
         private void ExecuteChangeModeCmd(string obj) {
-            var castObj = Enum.Parse(typeof(RegionControlUIMode), obj);
+            var castObj = Enum.Parse(typeof(OperationMode), obj);
 
-            Console.WriteLine(castObj);
+            OperationMode = (OperationMode)castObj;
+
             switch(castObj) {
-                case RegionControlUIMode.Default:
+                case OperationMode.Default:
                     break;
-                case RegionControlUIMode.ModeAdd:
+                case OperationMode.ModeAdd:
                     ModeAdd();
+                    break;
+                case OperationMode.ModeEdit:
+                    ModeEdit();
                     break;
             }
         }
@@ -127,7 +165,7 @@ namespace taskmaker_wpf.ViewModels {
             Model.BindTarget(Motors);
 
             // 1st build
-            Engine.Build(Page.Root, true);
+            Engine.Build(Page.Root);
 
             // Subscribe observable
             //RegisterKeyPress();
@@ -142,33 +180,93 @@ namespace taskmaker_wpf.ViewModels {
             //    (e) => { Console.WriteLine(e); },
             //    () => { });
 
-            //mouseDown.Take(1)
-            //    .SelectMany(mouseUp.Take(1))
-            //    .Repeat()
-            //    .Subscribe(e => { Console.WriteLine(e.GetPosition((UIElement)e.Source)); });
+            mouseDown.Take(1)
+                .SelectMany(mouseUp.Take(1))
+                .Repeat()
+                .Subscribe((e) => { Count += 1; });
 
-            _mouseLeftClick = mouseDown
-                .SelectMany(mouseUp)
-                .Where(e => e.ChangedButton == MouseButton.Left)
-                .Take(2)
-                .Repeat();
+            //_mouseLeftClick = mouseDown
+            //    .SelectMany(mouseUp)
+            //    .Where(e => e.ChangedButton == MouseButton.Left)
+            //    .Take(2)
+            //    .Repeat();
 
-            _mouseLeftClick.Subscribe(e => { Console.WriteLine(e.GetPosition((UIElement)e.Source)); });
+            //_mouseLeftClick.Subscribe(e => { Console.WriteLine(e.GetPosition((UIElement)e.Source)); });
+            SystemInfo = $"{operationMode}";
         }
 
         public void CommandTest() {
             Console.WriteLine("A test command has been invoked.");
         }
 
+        public Dictionary<string, object> RegisteredSubjects = new Dictionary<string, object>();
+
+
         public void ModeAdd() {
+            Unregister();
+
+            RegisteredSubjects.Clear();
+
+            var add = mouseDown
+                .Where(e => e.ChangedButton == MouseButton.Left)
+                .Take(1)
+                .SelectMany(
+                    mouseUp
+                        .Where(e => e.ChangedButton == MouseButton.Left)
+                        .Take(1))
+                .Repeat()
+                .Subscribe(AddNode);
+
+            SystemInfo = $"{operationMode}";
+            KeymapInfo = $"(1) Single click to add.";
+
+           _topics.Add(add);
+        }
+
+        private IWidget selectedWidget;
+        public void ModeEdit() {
             //Unregister();
 
-            var topic = _mouseLeftClick
-                .Subscribe(e => {
-                    AddNode(e.GetPosition((UIElement)e.Source).ToSKPoint());
-                });
+            //void MoveTo(MouseEventArgs args) {
+            //    var hash = (selectedWidget as NodeWidget).ModelHash;
+            //    var target = Model.Nodes.Find(e => e.Id == hash);
 
-            _topics.Add(topic);
+            //    target.Location = args.GetPosition((UIElement)args.Source).ToSKPoint().ToNDarray();
+
+            //    // fetch latest info from model
+            //    var nodes = FetchNodes();
+            //    var widget = Page.FindByName<ComplexWidget>("Complex");
+            //    var state = (ComplexWidgetState)widget.State.Clone();
+
+            //    state.nodes = nodes;
+
+            //    Engine.SetState(widget, state);
+            //}
+
+            //var move = mouseDown
+            //    .Take(1)
+            //    .Do(SelectTargetNode)
+            //    .SelectMany(mouseMove)
+            //    .TakeUntil(mouseUp)
+            //    .Repeat()
+            //    .Subscribe(MoveTo);
+
+            ////var topic = mouseDown
+            ////    .SelectMany(mouseMove)
+            ////    .TakeUntil(mouseUp)
+            ////    .Repeat()
+            ////    .Subscribe((e) => { Console.WriteLine("aaaa"); });
+
+            //SystemInfo = $"{operationMode}";
+            //KeymapInfo = $"(1) Click&Hold to drag.";
+
+            //_topics.Add(move);
+        }
+
+        private void SelectTargetNode(MouseButtonEventArgs args) {
+            //var location = args.GetPosition((UIElement)args.Source).ToSKPoint();
+
+            //selectedWidget = Page.FindTargetWidget(location);
         }
 
         //public void RegisterKeyPress() {
@@ -355,6 +453,27 @@ namespace taskmaker_wpf.ViewModels {
                 .ToArray();
         }
 
+        private void AddNode(MouseButtonEventArgs args) {
+            //// Add node to model
+            //var location = args
+            //    .GetPosition((UIElement)args.Source)
+            //    .ToSKPoint()
+            //    .ToNDarray();
+
+            //Model.Add(location);
+
+            //// fetch latest info from model
+            //var nodes = FetchNodes();
+            //var widget = Page.FindByName<ComplexWidget>("Complex");
+            //var state = (ComplexWidgetState)widget.State.Clone();
+
+            //state.nodes = nodes;
+
+            //Engine.SetState(widget, state);
+        }
+
+
+        [Obsolete]
         public void AddNode(SKPoint location) {
             var count = Model.Nodes.Count;
             var node = new Model.Data.NodeM(count + 1) {
@@ -437,6 +556,13 @@ namespace taskmaker_wpf.ViewModels {
 
             Engine.SetState(widget, state);
         }
+
+        private OperationMode operationMode;
+
+        public OperationMode OperationMode { get => operationMode; set => SetProperty(ref operationMode, value); }
+        public string KeymapInfo { get => _keymapInfo; set => SetProperty(ref _keymapInfo, value); }
+        public string SystemInfo { get => _systemInfo; set => SetProperty(ref _systemInfo, value); }
+        public string StatusMsg { get => _statusMsg; set => SetProperty(ref _statusMsg, value); }
     }
 
     public class LimitedQueue<T> : Queue<T> {
