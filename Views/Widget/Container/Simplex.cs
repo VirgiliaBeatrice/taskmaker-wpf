@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using SkiaSharp;
 
 namespace taskmaker_wpf.Views.Widgets.Container {
@@ -44,6 +45,34 @@ namespace taskmaker_wpf.Views.Widgets.Container {
             stroke.Dispose();
             fill.Dispose();
             path.Dispose();
+        }
+    }
+
+    public class SimplexWidget : RenderWidget {
+
+
+        public SKPoint[] Points {
+            get { return (SKPoint[])GetValue(PointsProperty); }
+            set { SetValue(PointsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Points.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty PointsProperty =
+            DependencyProperty.Register(
+                "Points",
+                typeof(SKPoint[]),
+                typeof(SimplexWidget),
+                new PropertyMetadata(null, OnPropertyChanged));
+
+
+
+        public SimplexWidget(string name) : base(name) {
+        }
+
+        protected override IProps GetProps() {
+            return new SimplexWidgetProps {
+                Points = Points
+            };
         }
     }
 

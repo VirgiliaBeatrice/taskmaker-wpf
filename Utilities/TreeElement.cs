@@ -32,6 +32,18 @@ namespace taskmaker_wpf.Utilities {
             return Children.Remove(child);
         }
 
+        public bool Remove(string name) {
+            var target = Children.Where(e => e.Name == name).First();
+
+            return Children.Remove(target);
+        }
+
+        public void RemoveType<T>() where T: TreeElement {
+            Children.OfType<T>()
+                .ToList()
+                .ForEach(e => Children.Remove(e));
+        }
+
         public void RemoveAll() {
             // Free unmanaged resources
             foreach (var e in Children) {

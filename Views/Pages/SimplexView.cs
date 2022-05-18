@@ -11,7 +11,7 @@ using System.Windows.Data;
 
 namespace taskmaker_wpf.Views.Pages {
     public class SimplexView {
-        public RootWidget_Wpf Root { get; set; }
+        public RootWidget Root { get; set; }
 
         private ComplexWidget _complex;
         private ViewModels.RegionControlUIViewModel _viewModel;
@@ -26,26 +26,42 @@ namespace taskmaker_wpf.Views.Pages {
             HandleDataBinding();
         }
 
-        private void HandleDataBinding() {
-            var bind = new Binding() {
-                Source = _viewModel
+        private Binding CreateBinding(string path) {
+            return new Binding {
+                Source = _viewModel,
+                Path = new PropertyPath(path)
             };
+        }
 
-            bind.Path = new PropertyPath("Count");
+        private void HandleDataBinding() {
             BindingOperations.SetBinding(
                 Elements["Debug"] as DependencyObject,
                 DebugInfoWidget.MessageProperty,
-                bind);
+                CreateBinding("Count"));
+            BindingOperations.SetBinding(
+                Elements["Complex"] as DependencyObject,
+                ComplexWidget.NodeSourceProperty,
+                CreateBinding("Nodes_v1"));
         }
 
         public void InitializeWidgets() {
-            Root = new RootWidget_Wpf("Root");
+            Root = new RootWidget("Root");
 
-            var debug = new DebugInfoWidget("Debug");
+            var debug = new DebugInfoWidget("Debug") {
+                DataContext = _viewModel
+            };
 
             Root.AddChild(debug);
 
             Elements.Add("Debug", debug);
+
+            var complex = new ComplexWidget("Complex") {
+                DataContext = _viewModel
+            };
+
+            Root.AddChild(complex);
+
+            Elements.Add("Complex", complex);
             //var nodes = _viewModel.FetchNodes();
 
             //_complex = new ComplexWidget(

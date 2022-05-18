@@ -37,7 +37,7 @@ namespace taskmaker_wpf.Views.Widgets {
         }
     }
 
-    public class NodeWidget_v1 : RenderWidget {
+    public class NodeWidget : RenderWidget {
 
 
         public SKPoint Location {
@@ -50,10 +50,10 @@ namespace taskmaker_wpf.Views.Widgets {
             DependencyProperty.Register(
                 "Location",
                 typeof(SKPoint),
-                typeof(NodeWidget_v1),
+                typeof(NodeWidget),
                 new PropertyMetadata(SKPoint.Empty, OnPropertyChanged));
 
-        public NodeWidget_v1(string name) : base(name) { }
+        public NodeWidget(string name) : base(name) { }
 
         protected override IProps GetProps() {
             return new NodeWidgetProps {
@@ -61,6 +61,10 @@ namespace taskmaker_wpf.Views.Widgets {
                 Radius = 5,
                 IsSelected = false,
             };
+        }
+
+        public override bool HitTest(SKPoint point) {
+            return (point - Location).LengthSquared <= 25.0f;
         }
 
         //public async override void RenderAsync() {

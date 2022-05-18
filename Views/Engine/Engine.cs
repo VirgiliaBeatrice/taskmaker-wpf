@@ -29,19 +29,19 @@ namespace taskmaker_wpf.Views {
             //_ctx.Pop();
         }
 
-        static public void Build(IWidget_Wpf element) {
+        static public void Build(IWidget element) {
             element.RenderAsync();
 
-            foreach(var child in element.GetAllChildren()) {
-                Build(child as IWidget_Wpf);
+            foreach(var child in element.GetAll<IWidget>()) {
+                Build(child);
             }
         }
 
-        static public void Paint(IWidget_Wpf widget, SKCanvas canvas) {
+        static public void Paint(IWidget widget, SKCanvas canvas) {
             widget.Paint(canvas);
 
-            foreach (var child in widget.GetAllChildren()) {
-                Paint(child as IWidget_Wpf, canvas);
+            foreach (var child in widget.GetAll<IWidget>()) {
+                Paint(child, canvas);
             }
         }
     }

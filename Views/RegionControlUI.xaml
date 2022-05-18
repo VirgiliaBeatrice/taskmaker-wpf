@@ -32,13 +32,21 @@
             MouseUp="skElement_MouseUp">
             <skia:SKElement.InputBindings>
                 <KeyBinding
-                    Gesture="Ctrl+1"
+                    Key="ESC"
+                    Command="{Binding ChangeModeCmd}"
+                    CommandParameter="ModeDefault"/>
+                <KeyBinding
+                    Key="D1"
                     Command="{Binding ChangeModeCmd}"
                     CommandParameter="ModeAdd"/>
                 <KeyBinding
-                    Gesture="Ctrl+2"
+                    Key="D2"
                     Command="{Binding ChangeModeCmd}"
                     CommandParameter="ModeEdit"/>
+                <KeyBinding
+                    Key="D3"
+                    Command="{Binding ChangeModeCmd}"
+                    CommandParameter="ModeRemove"/>
             </skia:SKElement.InputBindings>
 
             <b:Interaction.Triggers>

@@ -100,34 +100,34 @@ namespace taskmaker_wpf.Views.Widgets {
         }
     }
 
-    public class RootWidget_Wpf : TreeElement, IWidget_Wpf {
-        public RootWidget_Wpf(string name) {
-            Name = name;
+    public class RootWidget : RenderWidget {
+        public RootWidget(string name) : base(name) { }
+
+        public override bool HitTest(SKPoint point) {
+            return true;
         }
 
-        public IRenderObject RenderObject { get; set; }
-
-        public List<TreeElement> GetAllChildren() => GetAllChild();
-
-        public void Paint(SKCanvas canvas) { }
-
-        public void RenderAsync() { }
+        public override void RenderAsync() {
+        }
     }
 
-    public interface IWidget_Wpf {
+    public interface IWidget {
         IRenderObject RenderObject { get; set; }
 
+        bool HitTest(SKPoint point);
         void Paint(SKCanvas canvas);
         void RenderAsync();
 
-        List<TreeElement> GetAllChildren();
+        List<T> GetAll<T>();
     }
 
     public interface IRenderObject {
         SKPicture Picture { get; set; }
     }
 
-    public class RenderWidget : TreeElement, IWidget_Wpf {
+    public class RenderWidget : TreeElement, IWidget {
+        public object DataContext { get; set; }
+
         protected Type _TRenderObj = null;
         protected Type _TProps = null;
         public IRenderObject RenderObject { get => _renderObject; set => _renderObject = value; }
@@ -173,5 +173,9 @@ namespace taskmaker_wpf.Views.Widgets {
         public List<TreeElement> GetAllChildren() => GetAllChild();
 
         public List<T> GetAll<T>() => GetAllChild().Cast<T>().ToList();
+
+        public virtual bool HitTest(SKPoint point) {
+            return false;
+        }
     }
 }

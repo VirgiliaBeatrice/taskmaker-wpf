@@ -20,11 +20,17 @@ using Prism.Mvvm;
 using Prism.Commands;
 using taskmaker_wpf.Services;
 using System.Reactive.Subjects;
+using System.Collections.ObjectModel;
 
 namespace taskmaker_wpf.ViewModels {
-    public struct Node {
-        public SKPoint location;
+    public class Node : BindableBase {
+        private SKPoint _location;
+        public SKPoint Location { 
+            get => _location; 
+            set => SetProperty(ref _location, value); 
+        }
     }
+
 
     public static class Helper {
         static public SKPoint ToSKPoint(this NDarray self) {
@@ -67,14 +73,10 @@ namespace taskmaker_wpf.ViewModels {
     }
 
     public enum OperationMode {
-        Default = 0,
+        ModeDefault = 0,
         ModeAdd = 1,
         ModeEdit = 2,
-        ModeDelete = 3,
-    }
-
-    public struct AddArgs {
-        public SKPoint Location { get; set; }
+        ModeRemove = 3,
     }
 
     public class RegionControlUIViewModel : BindableBase {
@@ -100,6 +102,9 @@ namespace taskmaker_wpf.ViewModels {
         private string _systemInfo;
         private string _statusMsg;
 
+        private SKPoint[] _nodes;
+
+        public ObservableCollection<Node> Nodes_v1 { get; set; } = new ObservableCollection<Node>();
 
         public DelegateCommand TestCommand { get; set; }
 
@@ -127,13 +132,17 @@ namespace taskmaker_wpf.ViewModels {
             OperationMode = (OperationMode)castObj;
 
             switch(castObj) {
-                case OperationMode.Default:
+                case OperationMode.ModeDefault:
+                    Unregister();
                     break;
                 case OperationMode.ModeAdd:
                     ModeAdd();
                     break;
                 case OperationMode.ModeEdit:
                     ModeEdit();
+                    break;
+                case OperationMode.ModeRemove:
+                    ModeRemove();
                     break;
             }
         }
@@ -221,6 +230,46 @@ namespace taskmaker_wpf.ViewModels {
             KeymapInfo = $"(1) Single click to add.";
 
            _topics.Add(add);
+        }
+
+        private IWidget _selectedWidget;
+
+        public void ModeRemove() {
+            Unregister();
+
+            RegisteredSubjects.Clear();
+
+            var select = mouseDown
+                .Take(1)
+                .SelectMany(mouseUp.Take(1))
+                .LastAsync()
+                .Repeat()
+                .Subscribe(HitTarget);
+
+            void HitTarget(MouseButtonEventArgs e) {
+                var point = e.GetPosition((UIElement)e.Source).ToSKPoint();
+
+                var targets = _HitTest(Page.Root, point);
+                _selectedWidget = targets.Last();
+
+            }
+
+            List<IWidget> _HitTest(IWidget widget, SKPoint point) {
+                var targets = new List<IWidget>();
+                var result = widget.HitTest(point);
+
+                if (result) {
+                    targets.Add(widget);
+
+                    var children = widget.GetAll<IWidget>();
+
+                    var targetCollection = children.Select(e => _HitTest(e, point)).ToList();
+
+                    targetCollection.ForEach(e => targets.AddRange(e));
+                }
+
+                return targets;
+            }
         }
 
         //private IWidget selectedWidget;
@@ -447,39 +496,41 @@ namespace taskmaker_wpf.ViewModels {
             _topics.Clear();
         }
 
-        public Node[] FetchNodes() {
-            return Model.Nodes
-                .Select(e => new Node { location = e.Location.ToSKPoint() })
-                .ToArray();
+        //public Node[] FetchNodes() {
+        //    return Model.Nodes
+        //        .Select(e => new Node { location = e.Location.ToSKPoint() })
+        //        .ToArray();
+        //}
+
+        public SKPoint[] FetchNodes() {
+            return Model.Nodes.Select(e => e.Location.ToSKPoint())
+                              .ToArray();
         }
 
         private void AddNode(MouseButtonEventArgs args) {
             //// Add node to model
-            //var location = args
-            //    .GetPosition((UIElement)args.Source)
-            //    .ToSKPoint()
-            //    .ToNDarray();
+            var skLocation = args
+                .GetPosition((UIElement)args.Source)
+                .ToSKPoint();
+            var ndLocation = skLocation
+                .ToNDarray();
 
-            //Model.Add(location);
+            Model.Add(ndLocation);
+            Nodes_v1.Add(new Node { Location = skLocation });
+        }
 
-            //// fetch latest info from model
-            //var nodes = FetchNodes();
-            //var widget = Page.FindByName<ComplexWidget>("Complex");
-            //var state = (ComplexWidgetState)widget.State.Clone();
-
-            //state.nodes = nodes;
-
-            //Engine.SetState(widget, state);
+        private void RemoveNode(MouseButtonEventArgs args) {
+        
         }
 
 
-        [Obsolete]
+        //[Obsolete]
         //public void AddNode(SKPoint location) {
         //    var count = Model.Nodes.Count;
         //    var node = new Model.Data.NodeM(count + 1) {
         //        Location = location.ToNDarray()
         //    };
-            
+
         //    Model.Add(node);
 
         //    var nodes = FetchNodes();
@@ -563,6 +614,7 @@ namespace taskmaker_wpf.ViewModels {
         public string KeymapInfo { get => _keymapInfo; set => SetProperty(ref _keymapInfo, value); }
         public string SystemInfo { get => _systemInfo; set => SetProperty(ref _systemInfo, value); }
         public string StatusMsg { get => _statusMsg; set => SetProperty(ref _statusMsg, value); }
+        public SKPoint[] Nodes { get => _nodes; set => SetProperty(ref _nodes, value); }
     }
 
     public class LimitedQueue<T> : Queue<T> {

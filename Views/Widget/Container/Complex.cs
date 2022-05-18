@@ -2,7 +2,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using System.Windows;
+using System.Windows.Data;
 
 namespace taskmaker_wpf.Views.Widgets.Container {
     public class ComplexWidgetProps : IProps {
@@ -43,7 +46,11 @@ namespace taskmaker_wpf.Views.Widgets.Container {
 
         // Using a DependencyProperty as the backing store for SimplexSource.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SimplexSourceProperty =
-            DependencyProperty.Register("SimplexSource", typeof(IEnumerable), typeof(ComplexWidget), new PropertyMetadata(null, OnPropertyChanged));
+            DependencyProperty.Register(
+                "SimplexSource",
+                typeof(IEnumerable),
+                typeof(ComplexWidget),
+                new PropertyMetadata(null, OnPropertyChanged));
 
 
 
@@ -53,7 +60,56 @@ namespace taskmaker_wpf.Views.Widgets.Container {
                 "NodeSource",
                 typeof(IEnumerable),
                 typeof(ComplexWidget),
-                new PropertyMetadata(null, OnPropertyChanged));
+                new PropertyMetadata(
+                    null, OnPropertyChanged_ComplexWidget));
+
+        private static void OnPropertyChanged_ComplexWidget(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            if (d is ComplexWidget cw) {
+                if (e.OldValue is INotifyCollectionChanged oldCollection) {
+                    oldCollection.CollectionChanged -= cw.CollectionChanged;
+                }
+
+                if (e.NewValue is INotifyCollectionChanged newCollection) {
+                    newCollection.CollectionChanged += cw.CollectionChanged;
+                }
+            }
+        }
+
+        private void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
+            if (e.Action == NotifyCollectionChangedAction.Add) {
+                foreach(var item in e.NewItems) {
+                    var idx = e.NewStartingIndex;
+                    var newNode = new NodeWidget("Node" + idx) {
+                        DataContext = DataContext
+                    };
+
+                    AddChild(newNode);
+
+                    var bind = new Binding {
+                        Source = DataContext,
+                        Path = new PropertyPath($"Nodes_v1[{idx}].Location")
+                    };
+
+                    BindingOperations.SetBinding(
+                        newNode,
+                        NodeWidget.LocationProperty,
+                        bind);
+                }
+            }
+            else if (e.Action == NotifyCollectionChangedAction.Remove) {
+                foreach(var item in e.OldItems) {
+                    var idx = e.OldStartingIndex;
+
+                    Remove("Node" + idx);
+                }
+            }
+        }
+
+        ~ComplexWidget() {
+            if (NodeSource is INotifyCollectionChanged collection) {
+                collection.CollectionChanged -= CollectionChanged;
+            }
+        }
 
         public ComplexWidget(string name) : base(name) {
         }
@@ -64,6 +120,10 @@ namespace taskmaker_wpf.Views.Widgets.Container {
                 Simplices = SimplexSource,
                 Voronois = VoronoiSource,
             };
+        }
+
+        public override bool HitTest(SKPoint point) {
+            return true;
         }
     }
 
