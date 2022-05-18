@@ -29,6 +29,12 @@ namespace taskmaker_wpf.ViewModels {
             get => _location; 
             set => SetProperty(ref _location, value); 
         }
+
+        private bool _willRemove;
+        public bool WillRemove {
+            get => _willRemove;
+            set => SetProperty(ref _willRemove, value);
+        }
     }
 
 
@@ -125,6 +131,13 @@ namespace taskmaker_wpf.ViewModels {
 
         private ICommand _changeModeCmd;
         public ICommand ChangeModeCmd => _changeModeCmd ?? (_changeModeCmd = new DelegateCommand<string>(ExecuteChangeModeCmd));
+
+        private ICommand itemRemoveCmd;
+        public ICommand ItemRemoveCmd => itemRemoveCmd ?? (itemRemoveCmd = new DelegateCommand<object>(ExecuteItemRemoveCmd));
+
+        private void ExecuteItemRemoveCmd(object obj) {
+            Nodes_v1.RemoveAt((int)obj);
+        }
 
         private void ExecuteChangeModeCmd(string obj) {
             var castObj = Enum.Parse(typeof(OperationMode), obj);
@@ -252,6 +265,8 @@ namespace taskmaker_wpf.ViewModels {
                 var targets = _HitTest(Page.Root, point);
                 _selectedWidget = targets.Last();
 
+                // Test
+                Nodes_v1[0].WillRemove = true;
             }
 
             List<IWidget> _HitTest(IWidget widget, SKPoint point) {
@@ -270,6 +285,9 @@ namespace taskmaker_wpf.ViewModels {
 
                 return targets;
             }
+
+            SystemInfo = $"{operationMode}";
+            KeymapInfo = $"(1) Click to remove.";
         }
 
         //private IWidget selectedWidget;

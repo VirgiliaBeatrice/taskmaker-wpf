@@ -37,7 +37,28 @@ namespace taskmaker_wpf.Views.Widgets {
         }
     }
 
+    public class RemoveEventArgs : EventArgs {
+        public object Target { get; set; }
+    }
+
     public class NodeWidget : RenderWidget {
+
+        public event EventHandler<RemoveEventArgs> ItemRemove;
+
+        public bool WillRemove {
+            get { return (bool)GetValue(WillRemoveProperty); }
+            set { SetValue(WillRemoveProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for WillRemove.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty WillRemoveProperty =
+            DependencyProperty.Register("WillRemove", typeof(bool), typeof(NodeWidget), new PropertyMetadata(false, OnWillRemove));
+
+        private static void OnWillRemove(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            if ((bool)e.NewValue == true) {
+                (d as NodeWidget).ItemRemove.Invoke(d, new RemoveEventArgs { Target = d });
+            }
+        }
 
 
         public SKPoint Location {
@@ -53,7 +74,9 @@ namespace taskmaker_wpf.Views.Widgets {
                 typeof(NodeWidget),
                 new PropertyMetadata(SKPoint.Empty, OnPropertyChanged));
 
-        public NodeWidget(string name) : base(name) { }
+        public NodeWidget(string name) : base(name) {
+        }
+
 
         protected override IProps GetProps() {
             return new NodeWidgetProps {

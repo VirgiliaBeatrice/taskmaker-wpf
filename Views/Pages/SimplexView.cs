@@ -42,6 +42,10 @@ namespace taskmaker_wpf.Views.Pages {
                 Elements["Complex"] as DependencyObject,
                 ComplexWidget.NodeSourceProperty,
                 CreateBinding("Nodes_v1"));
+            BindingOperations.SetBinding(
+                Elements["Complex"] as DependencyObject,
+                ComplexWidget.CommandProperty,
+                CreateBinding("ItemRemoveCmd"));
         }
 
         public void InitializeWidgets() {

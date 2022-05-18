@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using Prism.Commands;
+using SkiaSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Input;
 
 namespace taskmaker_wpf.Views.Widgets.Container {
     public class ComplexWidgetProps : IProps {
@@ -37,6 +39,18 @@ namespace taskmaker_wpf.Views.Widgets.Container {
             get { return (IEnumerable)GetValue(VoronoiSourceProperty); }
             set { SetValue(VoronoiSourceProperty, value); }
         }
+
+
+
+        public ICommand Command {
+            get { return (ICommand)GetValue(CommandProperty); }
+            set { SetValue(CommandProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Command.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CommandProperty =
+            DependencyProperty.Register("Command", typeof(ICommand), typeof(ComplexWidget), new PropertyMetadata());
+
 
         // Using a DependencyProperty as the backing store for VoronoiSource.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty VoronoiSourceProperty =
@@ -82,18 +96,25 @@ namespace taskmaker_wpf.Views.Widgets.Container {
                     var newNode = new NodeWidget("Node" + idx) {
                         DataContext = DataContext
                     };
+                    newNode.ItemRemove += ItemRemove;
 
                     AddChild(newNode);
 
                     var bind = new Binding {
                         Source = DataContext,
-                        Path = new PropertyPath($"Nodes_v1[{idx}].Location")
+                        Path = new PropertyPath($"Nodes_v1[{idx}].Location"),
                     };
 
                     BindingOperations.SetBinding(
                         newNode,
                         NodeWidget.LocationProperty,
                         bind);
+                    BindingOperations.SetBinding(
+                        newNode,
+                        NodeWidget.WillRemoveProperty,
+                        new Binding {
+                            Source = DataContext,
+                            Path = new PropertyPath($"Nodes_v1[{idx}].WillRemove")});
                 }
             }
             else if (e.Action == NotifyCollectionChangedAction.Remove) {
@@ -103,6 +124,11 @@ namespace taskmaker_wpf.Views.Widgets.Container {
                     Remove("Node" + idx);
                 }
             }
+        }
+
+        private void ItemRemove(object sender, RemoveEventArgs e) {
+            // index
+            Command.Execute(1);
         }
 
         ~ComplexWidget() {
