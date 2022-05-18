@@ -11,7 +11,7 @@ namespace taskmaker_wpf.Views.Widgets {
         public bool IsSelected { get; set; }
     }
 
-    public class NodeWidgetRenderObject : RenderObject_Wpf<NodeWidgetProps> {
+    public class NodeWidgetRenderObject : RenderObject<NodeWidgetProps> {
         public NodeWidgetRenderObject(NodeWidgetProps props) : base(props) { }
 
         protected override void OnRender(SKCanvas canvas) {

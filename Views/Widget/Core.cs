@@ -13,14 +13,14 @@ namespace taskmaker_wpf.Views.Widgets {
         SKRect Bound { get; set; }
     }
 
-    public class RenderObject_Wpf<T> : IRenderObject, IDisposable where T: IProps {
+    public class RenderObject<T> : IRenderObject, IDisposable where T: IProps {
         protected SKPicture _picture;
         protected T _props;
         protected bool disposedValue;
 
         public SKPicture Picture { get => _picture; set => _picture = value; }
 
-        public RenderObject_Wpf(T props) {
+        public RenderObject(T props) {
             _props = props;
 
             Render();
@@ -56,7 +56,7 @@ namespace taskmaker_wpf.Views.Widgets {
         }
 
         // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        ~RenderObject_Wpf() {
+        ~RenderObject() {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: false);
         }
@@ -128,13 +128,17 @@ namespace taskmaker_wpf.Views.Widgets {
     }
 
     public class RenderWidget : TreeElement, IWidget_Wpf {
-        private Type _TRenderObj;
-        private Type _TProps;
+        protected Type _TRenderObj = null;
+        protected Type _TProps = null;
         public IRenderObject RenderObject { get => _renderObject; set => _renderObject = value; }
 
         private IRenderObject _renderObject;
 
-        public RenderWidget(string name) { Name = name; }
+        public RenderWidget(string name) {
+            Name = name;
+            _TProps = Type.GetType(GetType().FullName + "Props");
+            _TRenderObj = Type.GetType(GetType().FullName + "RenderObject");
+        }
 
         public virtual void Paint(SKCanvas canvas) {
             if (_renderObject != null)
@@ -153,7 +157,7 @@ namespace taskmaker_wpf.Views.Widgets {
                 var instanceType = GetType();
 
                 var ctor = _TRenderObj.GetConstructor(new[] { _TProps });
-                dynamic obj = Convert.ChangeType(ctor.Invoke(new[] { props }), _TProps);
+                dynamic obj = ctor.Invoke(new[] { props });
 
                 // Invoke to UI thread
                 Dispatcher.BeginInvoke((Action)(() => {
@@ -167,5 +171,7 @@ namespace taskmaker_wpf.Views.Widgets {
         }
 
         public List<TreeElement> GetAllChildren() => GetAllChild();
+
+        public List<T> GetAll<T>() => GetAllChild().Cast<T>().ToList();
     }
 }

@@ -11,8 +11,8 @@ namespace taskmaker_wpf.Views.Widgets {
         public string Message { get; set; }
     }
 
-    public class DebugInfoRenderObject : RenderObject_Wpf<DebugInfoWidgetProps> {
-        public DebugInfoRenderObject(DebugInfoWidgetProps props)
+    public class DebugInfoWidgetRenderObject : RenderObject<DebugInfoWidgetProps> {
+        public DebugInfoWidgetRenderObject(DebugInfoWidgetProps props)
             : base(props) {
         }
 
@@ -48,29 +48,15 @@ namespace taskmaker_wpf.Views.Widgets {
                 typeof(DebugInfoWidget),
                 new PropertyMetadata("Debug", OnPropertyChanged));
 
-        private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            (d as DebugInfoWidget).RenderAsync();
+        public DebugInfoWidget(string name) : base(name) {
+            //_TProps = Type.GetType(GetType().FullName + "Props");
+            //_TRenderObj = Type.GetType(GetType().FullName + "RenderObject");
+            //_TProps = typeof(DebugInfoWidgetProps);
+            //_TRenderObj = typeof(DebugInfoRenderObject);
         }
 
-        private DebugInfoWidgetProps GetProps() {
+        protected override IProps GetProps() {
             return new DebugInfoWidgetProps { Message = Message };
         }
-
-        public async override void RenderAsync() {
-            var props = GetProps();
-
-            await Task.Run(() => {
-                // Renderer worker
-                var obj = new DebugInfoRenderObject(props);
-
-                // Invoke to UI thread
-                Dispatcher.BeginInvoke((Action)(() => {
-                    RenderObject = obj;
-                }));
-            });
-        }
-
-        public DebugInfoWidget(string name) { }
-
     }
 }

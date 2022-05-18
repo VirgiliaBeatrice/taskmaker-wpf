@@ -74,55 +74,44 @@ namespace taskmaker_wpf.Views.Widgets.Units {
     //        canvas.Dispose();
     //    }
     //}
-    public struct UnitWidgetState : IWidgetState {
-        public SKRect Bound { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-    }
 
-    public class UnitWidget : RenderWidget<UnitWidgetState> {
-        public UnitWidget(string name) : base(name) { }
+    //public class UnitRenderObject : RenderObject {
+    //    public SKRect Bound { get; set; }
 
-        //public override void CreateRenderObject() {
-        //    RenderObject = new UnitRenderObject(null);
-        //}
-    }
+    //    public UnitRenderObject(UnitWidgetState initState) : base(initState) {
+    //        Bound = new SKRect {
+    //            Size = new SKSize {
+    //                Width = 100,
+    //                Height = 24
+    //            }
+    //        };
 
-    public class UnitRenderObject : RenderObject {
-        public SKRect Bound { get; set; }
+    //        // Initialize _cachedPicure
+    //        Render();
+    //    }
 
-        public UnitRenderObject(UnitWidgetState initState) : base(initState) {
-            Bound = new SKRect {
-                Size = new SKSize {
-                    Width = 100,
-                    Height = 24
-                }
-            };
+    //    public void Render() {
+    //        var recorder = new SKPictureRecorder();
+    //        var canvas = recorder.BeginRecording(Bound);
+    //        var roundSize = new SKSize(5, 5);
+    //        var stroke = new SKPaint {
+    //            IsAntialias = true,
+    //            StrokeWidth = 2,
+    //            Color = SKColors.Black
+    //        };
+    //        var fill = new SKPaint {
+    //            IsAntialias = true,
+    //            Color = SKColors.Aquamarine
+    //        };
 
-            // Initialize _cachedPicure
-            Render();
-        }
+    //        canvas.DrawRoundRect(Bound, roundSize, stroke);
+    //        canvas.DrawRoundRect(Bound, roundSize, fill);
 
-        public void Render() {
-            var recorder = new SKPictureRecorder();
-            var canvas = recorder.BeginRecording(Bound);
-            var roundSize = new SKSize(5, 5);
-            var stroke = new SKPaint {
-                IsAntialias = true,
-                StrokeWidth = 2,
-                Color = SKColors.Black
-            };
-            var fill = new SKPaint {
-                IsAntialias = true,
-                Color = SKColors.Aquamarine
-            };
+    //        _cachedPicture = recorder.EndRecording();
 
-            canvas.DrawRoundRect(Bound, roundSize, stroke);
-            canvas.DrawRoundRect(Bound, roundSize, fill);
-
-            _cachedPicture = recorder.EndRecording();
-
-            stroke.Dispose();
-            fill.Dispose();
-            canvas.Dispose();
-        }
-    }
+    //        stroke.Dispose();
+    //        fill.Dispose();
+    //        canvas.Dispose();
+    //    }
+    //}
 }

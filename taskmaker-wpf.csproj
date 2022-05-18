@@ -236,7 +236,6 @@
     </Compile>
     <Compile Include="Views\Widget\Container\Complex.cs" />
     <Compile Include="Views\Widget\Container\Grid.cs" />
-    <Compile Include="Views\Widget\Container\NodeCollection.cs" />
     <Compile Include="Views\Widget\Container\Simplex.cs" />
     <Compile Include="Views\Widget\Container\Voronoi.cs" />
     <Compile Include="Views\Widget\Core.cs" />

@@ -422,24 +422,24 @@ namespace taskmaker_wpf.ViewModels {
         public void RegisterTriangulateMode() {
             Unregister();
 
-            CreateRegions();
+            //CreateRegions();
         }
 
-        public void DeleteAll() {
-            Unregister();
+        //public void DeleteAll() {
+        //    Unregister();
 
-            Model.RemoveAll();
+        //    Model.RemoveAll();
 
-            var nodes = FetchNodes();
-            var widget = Page.Root.FindByName("Complex") as ComplexWidget;
-            var state = (ComplexWidgetState)widget.State.Clone();
+        //    var nodes = FetchNodes();
+        //    var widget = Page.Root.FindByName("Complex") as ComplexWidget;
+        //    var state = (ComplexWidgetState)widget.State.Clone();
 
-            state.nodes = nodes;
+        //    state.nodes = nodes;
 
-            Engine.SetState(
-                Page.Root.FindByName<ComplexWidget>("Complex"),
-                state);
-        }
+        //    Engine.SetState(
+        //        Page.Root.FindByName<ComplexWidget>("Complex"),
+        //        state);
+        //}
 
 
         public void Unregister() {
@@ -474,88 +474,88 @@ namespace taskmaker_wpf.ViewModels {
 
 
         [Obsolete]
-        public void AddNode(SKPoint location) {
-            var count = Model.Nodes.Count;
-            var node = new Model.Data.NodeM(count + 1) {
-                Location = location.ToNDarray()
-            };
+        //public void AddNode(SKPoint location) {
+        //    var count = Model.Nodes.Count;
+        //    var node = new Model.Data.NodeM(count + 1) {
+        //        Location = location.ToNDarray()
+        //    };
             
-            Model.Add(node);
+        //    Model.Add(node);
 
-            var nodes = FetchNodes();
-            var widget = Page.Root.FindByName<
-                ComplexWidget>("Complex");
-            var state = (ComplexWidgetState)widget.State.Clone();
+        //    var nodes = FetchNodes();
+        //    var widget = Page.Root.FindByName<
+        //        ComplexWidget>("Complex");
+        //    var state = (ComplexWidgetState)widget.State.Clone();
 
-            state.nodes = nodes;
-            state.Hash = node.Id;
+        //    state.nodes = nodes;
+        //    state.Hash = node.Id;
 
-            Engine.SetState(widget, state);
-        }
+        //    Engine.SetState(widget, state);
+        //}
 
-        public void CreateRegions() {
-            Model.CreateRegions();
+        //public void CreateRegions() {
+        //    Model.CreateRegions();
 
-            var info = Model.GetSimplexInfos();
+        //    var info = Model.GetSimplexInfos();
 
-            var results = info
-                .Select(e => (e.Item1,
-                    e.Item2
-                        .Select(e1 => e1.ToSKPoint()).ToArray()))
-                .ToArray();
+        //    var results = info
+        //        .Select(e => (e.Item1,
+        //            e.Item2
+        //                .Select(e1 => e1.ToSKPoint()).ToArray()))
+        //        .ToArray();
 
-            var widget = Page.Root.FindByName<ComplexWidget>("Complex");
-            var state = (ComplexWidgetState)widget.State.Clone();
+        //    var widget = Page.Root.FindByName<ComplexWidget>("Complex");
+        //    var state = (ComplexWidgetState)widget.State.Clone();
 
-            state.simplices = results;
+        //    state.simplices = results;
 
-            var regions = Model.GetVoronoiInfos();
+        //    var regions = Model.GetVoronoiInfos();
 
-            results = regions
-                .Select(e => (e.Item1,
-                    e.Item2
-                        .Select(e1 => e1.ToSKPoint()).ToArray()))
-                .ToArray();
+        //    results = regions
+        //        .Select(e => (e.Item1,
+        //            e.Item2
+        //                .Select(e1 => e1.ToSKPoint()).ToArray()))
+        //        .ToArray();
 
-            state.voronois = results;
+        //    state.voronois = results;
 
-            Engine.SetState(widget, state);
-        }
+        //    Engine.SetState(widget, state);
+        //}
 
 
-        private void CreateInterior() {
-            var info = Model.GetSimplexInfos();
+        //private void CreateInterior() {
+        //    var info = Model.GetSimplexInfos();
 
-            var results = info
-                .Select(e => (e.Item1, 
-                    e.Item2
-                        .Select(e1 => e1.ToSKPoint()).ToArray()))
-                .ToArray();
+        //    var results = info
+        //        .Select(e => (e.Item1, 
+        //            e.Item2
+        //                .Select(e1 => e1.ToSKPoint()).ToArray()))
+        //        .ToArray();
 
-            var widget = Page.Root.FindByName<ComplexWidget>("Complex");
-            var state = (ComplexWidgetState)widget.State.Clone();
+        //    var widget = Page.Root.FindByName<ComplexWidget>("Complex");
+        //    var state = (ComplexWidgetState)widget.State.Clone();
 
-            state.simplices = results;
+        //    state.simplices = results;
 
-            Engine.SetState(widget, state);
-        }
+        //    Engine.SetState(widget, state);
+        //}
 
-        private void CreateExterior() {
-            var regions = Model.GetVoronoiInfos();
+        //private void CreateExterior() {
+        //    var regions = Model.GetVoronoiInfos();
 
-            var results = regions
-                .Select(e => (e.Item1,
-                    e.Item2
-                        .Select(e1 => e1.ToSKPoint()).ToArray()))
-                .ToArray();
+        //    var results = regions
+        //        .Select(e => (e.Item1,
+        //            e.Item2
+        //                .Select(e1 => e1.ToSKPoint()).ToArray()))
+        //        .ToArray();
 
-            var widget = Page.Root.FindByName<ComplexWidget>("Complex");
-            var state = (ComplexWidgetState)widget.State.Clone();
+        //    var widget = Page.Root.FindByName<ComplexWidget>("Complex");
+        //    var state = (ComplexWidgetState)widget.State.Clone();
 
-            state.voronois = results;
+        //    state.voronois = results;
 
-            Engine.SetState(widget, state);
-        }
+        //    Engine.SetState(widget, state);
+        //}
 
         private OperationMode operationMode;
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using taskmaker_wpf.Views.Elements;
+//using taskmaker_wpf.Views.Elements;
 using taskmaker_wpf.Model.Core;
 
 namespace taskmaker_wpf.Model {
@@ -15,7 +15,7 @@ namespace taskmaker_wpf.Model {
 
         // Cache endpoint data structure
         private object _cache;
-        private UnitElement _element;
+        //private UnitElement _element;
 
         public void Validate() {
             // Do unit function

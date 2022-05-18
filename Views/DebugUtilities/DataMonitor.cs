@@ -5,24 +5,44 @@ using System.Text;
 using System.Threading.Tasks;
 using taskmaker_wpf.Views.Widgets;
 using SkiaSharp;
+using System.Windows;
 
 namespace taskmaker_wpf.Views.Debug {
     public class DataMonitorWidgetProps : IProps {
         public SKRect Bound { get; set; }
-
+        public float[] Seqs { get; set; }
     }
 
     public class DataMonitorWidget : RenderWidget {
-        public DataMonitorWidget(string name) { Name = name; }
+        public float[] Sequence {
+            get { return (float[])GetValue(SequenceProperty); }
+            set { SetValue(SequenceProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Sequence.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SequenceProperty =
+            DependencyProperty.Register(
+                "Sequence",
+                typeof(float[]),
+                typeof(DataMonitorWidget),
+                new PropertyMetadata(new float[] {}, OnPropertyChanged));
+
+        public DataMonitorWidget(string name): base(name) { }
+
+        protected override IProps GetProps() {
+            return new DataMonitorWidgetProps {
+                Seqs = Sequence
+            };
+        }
     }
 
     public class DataMonitorRenderObject
-        : RenderObject_Wpf<DataMonitorWidgetProps> {
+        : RenderObject<DataMonitorWidgetProps> {
         public DataMonitorRenderObject(DataMonitorWidgetProps props)
             : base(props) {
         }
 
-        protected override void OnRender(SKCanvas canvas, DataMonitorState state) {
+        protected override void OnRender(SKCanvas canvas) {
             var stroke = new SKPaint {
                 IsAntialias = true,
                 StrokeWidth = 2,
@@ -32,7 +52,7 @@ namespace taskmaker_wpf.Views.Debug {
             
             var path = new SKPath();
 
-            var seq = state.Seqs;
+            var seq = _props.Seqs;
             var step = 2;
 
             if (seq.Length > 1) {
