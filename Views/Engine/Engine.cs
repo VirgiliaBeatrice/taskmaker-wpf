@@ -13,7 +13,7 @@ namespace taskmaker_wpf.Views {
     }
 
     public class SKEventManager {
-        static public Dictionary<string, List<SKEvent>> SKEventCollection = new Dictionary<string, List<SKEvent>>();
+        static public List<SKEvent> SKEventCollection = new List<SKEvent>();
 
         static public IWidget WidgetTree;
 
@@ -25,18 +25,13 @@ namespace taskmaker_wpf.Views {
                 OwnerType = ownerType
             };
 
-            if (!SKEventCollection.ContainsKey(name)) {
-                SKEventCollection.Add(name, new List<SKEvent>());
-
-            }
-            
-            SKEventCollection[name].Add(skEvent);
+            SKEventCollection.Add(skEvent);
 
             return skEvent;
         }
 
-        static private void RaiseSKEvent(string name, IEnumerable<IWidget> path) {
-            var events = SKEventCollection[name];
+        static public void RaiseSKEvent(string name, IEnumerable<IWidget> path) {
+            var events = SKEventCollection.Where(e => e.Name == name);
 
             var directEvts = events.Where(e => e.Strategy == SKEventRoutingStrategy.Direct);
             var tunnelEvts = events.Where(e => e.Strategy == SKEventRoutingStrategy.Tunnel);
@@ -44,13 +39,19 @@ namespace taskmaker_wpf.Views {
 
             var args = new SKEventHandlerArgs();
 
+            if (!events.Any()) return;
+
             // Raise direct event
             var directTarget = path.Last();
-            var isContain = directEvts.Where(e => e.OwnerType == directTarget.GetType()).Any();
-
+            var isContain = directEvts.Where(e => directTarget.GetType().IsAssignableFrom(e.OwnerType)).Any();
 
             if (isContain) {
+                var skEvt = directEvts.Where(e => directTarget.GetType().IsAssignableFrom(e.OwnerType)).First();
+                args.Event = skEvt;
+
                 directTarget.RaiseSKEvent(args);
+
+                if (args.Handled) return;
             }
 
 
@@ -58,10 +59,15 @@ namespace taskmaker_wpf.Views {
             var tunnelTargets = path;
 
             foreach (var target in tunnelTargets) {
-                isContain = tunnelEvts.Where(e => e.OwnerType == target.GetType()).Any();
+                isContain = tunnelEvts.Where(e => tunnelTargets.GetType().IsAssignableFrom(e.OwnerType)).Any();
 
                 if (isContain) {
+                    var skEvt = tunnelEvts.Where(e => directTarget.GetType().IsAssignableFrom(e.OwnerType)).First();
+                    args.Event = skEvt;
+
                     target.RaiseSKEvent(args);
+                    
+                    if (args.Handled) return;
                 }
             }
 
@@ -69,18 +75,28 @@ namespace taskmaker_wpf.Views {
             var bubbleTarget = path.Reverse();
 
             foreach (var target in bubbleTarget) {
-                isContain = tunnelEvts.Where(e => e.OwnerType == target.GetType()).Any();
+                isContain = bubbleEvts.Where(e => IsSubClassOrClassOf(target.GetType(), e.OwnerType)).Any();
 
                 if (isContain) {
+                    var skEvt = bubbleEvts.Where(e => IsSubClassOrClassOf(target.GetType(), e.OwnerType)).First();
+                    args.Event = skEvt;
+
                     target.RaiseSKEvent(args);
+                    
+                    if (args.Handled) return;
                 }
+            }
+
+            bool IsSubClassOrClassOf(Type derived, Type based) {
+                return derived.IsSubclassOf(based) || derived.Equals(based);
             }
         }
 
 
-        static private HitTestResult HitTest(IWidget widget, SKPoint pt) {
+        static public HitTestResult HitTest(IWidget widget, SKPoint pt) {
             var result = new HitTestResult();
-            var isHit = widget.RenderObject.HitTest(pt);
+
+            var isHit = widget.RenderObject is null ? true : widget.RenderObject.HitTest(pt);
 
             if (isHit) {
                 result.HitWidgets.Add(widget);
@@ -98,6 +114,21 @@ namespace taskmaker_wpf.Views {
         public SKEventRoutingStrategy Strategy { get; set; }
         public Type HandlerType { get; set; }
         public Type OwnerType { get; set; }
+
+        private List<Delegate> handlers = new List<Delegate>();
+
+        public void AddHandler(Delegate handler) { 
+            handlers.Add(handler);
+        }
+
+        public void RemoveHandler(Delegate handler) {
+            handlers.Remove(handler);
+        }
+        
+        public void Invoke(object sender, SKEventHandlerArgs args) {
+            handlers.ForEach(e => ((SKEventHandler)e)(sender, args));
+        }
+
     }
 
     public enum SKEventRoutingStrategy {

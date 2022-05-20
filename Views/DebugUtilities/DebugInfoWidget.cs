@@ -16,6 +16,10 @@ namespace taskmaker_wpf.Views.Widgets {
             : base(props) {
         }
 
+        public override bool HitTest(SKPoint pt) {
+            return false;
+        }
+
         protected override void OnRender(SKCanvas canvas) {
             var paint = new SKPaint {
                 IsAntialias = true,

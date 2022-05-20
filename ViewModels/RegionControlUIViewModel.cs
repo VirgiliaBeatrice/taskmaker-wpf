@@ -260,31 +260,29 @@ namespace taskmaker_wpf.ViewModels {
                 .Subscribe(HitTarget);
 
             void HitTarget(MouseButtonEventArgs e) {
-                var point = e.GetPosition((UIElement)e.Source).ToSKPoint();
+                var pt = e.GetPosition((UIElement)e.Source).ToSKPoint();
 
-                var targets = _HitTest(Page.Root, point);
-                _selectedWidget = targets.Last();
+                var path = SKEventManager.HitTest(Page.Root, pt);
+                SKEventManager.RaiseSKEvent("MouseClick", path.HitWidgets);
 
-                // Test
-                Nodes_v1[0].WillRemove = true;
             }
 
-            List<IWidget> _HitTest(IWidget widget, SKPoint point) {
-                var targets = new List<IWidget>();
-                var result = widget.HitTest(point);
+            //List<IWidget> _HitTest(IWidget widget, SKPoint point) {
+            //    var targets = new List<IWidget>();
+            //    var result = widget.HitTest(point);
 
-                if (result) {
-                    targets.Add(widget);
+            //    if (result) {
+            //        targets.Add(widget);
 
-                    var children = widget.GetAll<IWidget>();
+            //        var children = widget.GetAll<IWidget>();
 
-                    var targetCollection = children.Select(e => _HitTest(e, point)).ToList();
+            //        var targetCollection = children.Select(e => _HitTest(e, point)).ToList();
 
-                    targetCollection.ForEach(e => targets.AddRange(e));
-                }
+            //        targetCollection.ForEach(e => targets.AddRange(e));
+            //    }
 
-                return targets;
-            }
+            //    return targets;
+            //}
 
             SystemInfo = $"{operationMode}";
             KeymapInfo = $"(1) Click to remove.";

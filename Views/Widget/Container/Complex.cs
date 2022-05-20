@@ -22,6 +22,10 @@ namespace taskmaker_wpf.Views.Widgets.Container {
         }
 
         protected override void OnRender(SKCanvas canvas) { }
+
+        public override bool HitTest(SKPoint pt) {
+            return true;
+        }
     }
 
     public class ComplexWidget : RenderWidget {
@@ -96,7 +100,7 @@ namespace taskmaker_wpf.Views.Widgets.Container {
                     var newNode = new NodeWidget("Node" + idx) {
                         DataContext = DataContext
                     };
-                    newNode.ItemRemove += ItemRemove;
+                    //newNode.ItemRemove += ItemRemove;
 
                     AddChild(newNode);
 
@@ -109,12 +113,12 @@ namespace taskmaker_wpf.Views.Widgets.Container {
                         newNode,
                         NodeWidget.LocationProperty,
                         bind);
-                    BindingOperations.SetBinding(
-                        newNode,
-                        NodeWidget.WillRemoveProperty,
-                        new Binding {
-                            Source = DataContext,
-                            Path = new PropertyPath($"Nodes_v1[{idx}].WillRemove")});
+                    //BindingOperations.SetBinding(
+                    //    newNode,
+                    //    NodeWidget.WillRemoveProperty,
+                    //    new Binding {
+                    //        Source = DataContext,
+                    //        Path = new PropertyPath($"Nodes_v1[{idx}].WillRemove")});
                 }
             }
             else if (e.Action == NotifyCollectionChangedAction.Remove) {

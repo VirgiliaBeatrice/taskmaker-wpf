@@ -234,6 +234,7 @@
     <Compile Include="Views\TestWindow.xaml.cs">
       <DependentUpon>TestWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Widget\ComplexWidget.cs" />
     <Compile Include="Views\Widget\Container\Complex.cs" />
     <Compile Include="Views\Widget\Container\Grid.cs" />
     <Compile Include="Views\Widget\Container\Simplex.cs" />

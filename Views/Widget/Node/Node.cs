@@ -46,32 +46,16 @@ namespace taskmaker_wpf.Views.Widgets {
     }
 
     public class NodeWidget : RenderWidget {
-        public static SKEvent TapEvent = SKEventManager.RegisterEvent(
-            "Tap",
-            SKEventRoutingStrategy.Direct,
-            typeof(SKEventHandler),
-            typeof(NodeWidget));
 
-        public event SKEventHandler Tap {
-            add { AddHandler(TapEvent, value); }
-            remove { RemoveHandler(TapEvent, value); }
+
+        public bool IsSelected {
+            get { return (bool)GetValue(IsSelectedPropertyKey.DependencyProperty); }
+            private set { SetValue(IsSelectedPropertyKey, value); }
         }
 
-        public bool WillRemove {
-            get { return (bool)GetValue(WillRemoveProperty); }
-            set { SetValue(WillRemoveProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for WillRemove.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty WillRemoveProperty =
-            DependencyProperty.Register("WillRemove", typeof(bool), typeof(NodeWidget), new PropertyMetadata(false, OnWillRemove));
-
-        private static void OnWillRemove(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            if ((bool)e.NewValue == true) {
-                (d as NodeWidget).ItemRemove.Invoke(d, new RemoveEventArgs { Target = d });
-            }
-        }
-
+        // Using a DependencyProperty as the backing store for IsSelected.  This enables animation, styling, binding, etc...
+        public static readonly DependencyPropertyKey IsSelectedPropertyKey =
+            DependencyProperty.RegisterReadOnly("IsSelected", typeof(bool), typeof(NodeWidget), new PropertyMetadata(false, OnPropertyChanged));
 
         public SKPoint Location {
             get { return (SKPoint)GetValue(LocationProperty); }
@@ -89,12 +73,18 @@ namespace taskmaker_wpf.Views.Widgets {
         public NodeWidget(string name) : base(name) {
         }
 
+        protected override void OnMouseClick(object sender, SKEventHandlerArgs args) {
+            IsSelected = !IsSelected;
+
+            args.Handled = true;
+        }
+
 
         protected override IProps GetProps() {
             return new NodeWidgetProps {
                 Location = Location,
                 Radius = 5,
-                IsSelected = false,
+                IsSelected = IsSelected,
             };
         }
     }
