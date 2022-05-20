@@ -26,6 +26,10 @@ namespace taskmaker_wpf.Views.Widgets {
             Render();
         }
 
+        public virtual bool HitTest(SKPoint pt) {
+            throw new NotImplementedException();
+        }
+
         protected virtual void OnRender(SKCanvas canvas) => throw new NotImplementedException();
 
         public virtual void Render() {
@@ -115,6 +119,7 @@ namespace taskmaker_wpf.Views.Widgets {
         IRenderObject RenderObject { get; set; }
 
         bool HitTest(SKPoint point);
+        void RaiseSKEvent(SKEventHandlerArgs args);
         void Paint(SKCanvas canvas);
         void RenderAsync();
 
@@ -123,6 +128,8 @@ namespace taskmaker_wpf.Views.Widgets {
 
     public interface IRenderObject {
         SKPicture Picture { get; set; }
+
+        bool HitTest(SKPoint pt);
     }
 
     public class RenderWidget : TreeElement, IWidget {
@@ -175,7 +182,21 @@ namespace taskmaker_wpf.Views.Widgets {
         public List<T> GetAll<T>() => GetAllChild().Cast<T>().ToList();
 
         public virtual bool HitTest(SKPoint point) {
-            return false;
+            throw new NotImplementedException();
+        }
+
+        public void RaiseSKEvent(SKEventHandlerArgs args) {
+            var eventName = args.Event.Name;
+            var ownerType = args.Event.OwnerType;
+
+            ownerType.GetEvent(eventName).GetRaiseMethod().Invoke(this, new object[] { args });
+        }
+
+        public void AddHandler(SKEvent skEvt, Delegate handler) {
+            skEvt
+        }
+
+        public void RemoveHandler(SKEvent skEvt, Delegate handler) {
         }
     }
 }

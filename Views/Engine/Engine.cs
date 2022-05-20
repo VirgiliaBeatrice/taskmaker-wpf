@@ -6,6 +6,111 @@ using SkiaSharp;
 using taskmaker_wpf.Views.Widgets;
 
 namespace taskmaker_wpf.Views {
+    public delegate void SKEventHandler(object sender, SKEventHandlerArgs args);
+
+    public class HitTestResult {
+        public List<IWidget> HitWidgets = new List<IWidget>();
+    }
+
+    public class SKEventManager {
+        static public Dictionary<string, List<SKEvent>> SKEventCollection = new Dictionary<string, List<SKEvent>>();
+
+        static public IWidget WidgetTree;
+
+        static public SKEvent RegisterEvent(string name, SKEventRoutingStrategy strategy, Type handlerType, Type ownerType) {
+            var skEvent = new SKEvent() {
+                Name = name,
+                Strategy = strategy,
+                HandlerType = handlerType,
+                OwnerType = ownerType
+            };
+
+            if (!SKEventCollection.ContainsKey(name)) {
+                SKEventCollection.Add(name, new List<SKEvent>());
+
+            }
+            
+            SKEventCollection[name].Add(skEvent);
+
+            return skEvent;
+        }
+
+        static private void RaiseSKEvent(string name, IEnumerable<IWidget> path) {
+            var events = SKEventCollection[name];
+
+            var directEvts = events.Where(e => e.Strategy == SKEventRoutingStrategy.Direct);
+            var tunnelEvts = events.Where(e => e.Strategy == SKEventRoutingStrategy.Tunnel);
+            var bubbleEvts = events.Where(e => e.Strategy == SKEventRoutingStrategy.Bubble);
+
+            var args = new SKEventHandlerArgs();
+
+            // Raise direct event
+            var directTarget = path.Last();
+            var isContain = directEvts.Where(e => e.OwnerType == directTarget.GetType()).Any();
+
+
+            if (isContain) {
+                directTarget.RaiseSKEvent(args);
+            }
+
+
+            // Raise tunnel events
+            var tunnelTargets = path;
+
+            foreach (var target in tunnelTargets) {
+                isContain = tunnelEvts.Where(e => e.OwnerType == target.GetType()).Any();
+
+                if (isContain) {
+                    target.RaiseSKEvent(args);
+                }
+            }
+
+            // Raise bubble events
+            var bubbleTarget = path.Reverse();
+
+            foreach (var target in bubbleTarget) {
+                isContain = tunnelEvts.Where(e => e.OwnerType == target.GetType()).Any();
+
+                if (isContain) {
+                    target.RaiseSKEvent(args);
+                }
+            }
+        }
+
+
+        static private HitTestResult HitTest(IWidget widget, SKPoint pt) {
+            var result = new HitTestResult();
+            var isHit = widget.RenderObject.HitTest(pt);
+
+            if (isHit) {
+                result.HitWidgets.Add(widget);
+
+                foreach(var child in widget.GetAll<IWidget>()) {
+                    result.HitWidgets.AddRange(HitTest(child, pt).HitWidgets);
+                }
+            }
+            return result;
+        }
+    } 
+
+    public class SKEvent {
+        public string Name { get; set; }
+        public SKEventRoutingStrategy Strategy { get; set; }
+        public Type HandlerType { get; set; }
+        public Type OwnerType { get; set; }
+    }
+
+    public enum SKEventRoutingStrategy {
+        Bubble,
+        Tunnel,
+        Direct
+    }
+
+    public class SKEventHandlerArgs {
+        public bool Handled { get; set; }
+        public IWidget Source { get; set; }
+        public SKEvent Event { get; set; }
+    }
 
     public class Engine {
         static private Stack<object> _ctx = new Stack<object>();

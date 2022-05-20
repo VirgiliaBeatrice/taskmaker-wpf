@@ -9,6 +9,14 @@ using taskmaker_wpf.Views.Widgets;
 using System.Windows;
 
 namespace taskmaker_wpf.Utilities {
+    public interface ITreeElement {
+        string Name { get; set; }
+        ITreeElement Parent { get; set; }
+
+        void Add(ITreeElement elem);
+        void Remove(ITreeElement elem);
+    }
+
     public class TreeElement : DependencyObject {
         public string Name { get; set; } = "";
         public TreeElement Parent { get; set; } = null;
@@ -108,6 +116,16 @@ namespace taskmaker_wpf.Utilities {
             }
 
             return content.ToString();
+        }
+
+        public TreeElement GetRoot() {
+            var root = Parent;
+
+            while (root.Parent != null) {
+                root = root.Parent;
+            }
+
+            return root;
         }
 
         static public TreeElement Clone(TreeElement node) {

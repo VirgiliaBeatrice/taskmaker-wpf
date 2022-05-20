@@ -35,6 +35,10 @@ namespace taskmaker_wpf.Views.Widgets {
             stroke.Dispose();
             fill.Dispose();
         }
+
+        public override bool HitTest(SKPoint pt) {
+            return (pt - _props.Location).LengthSquared <= 25.0f;
+        }
     }
 
     public class RemoveEventArgs : EventArgs {
@@ -42,8 +46,16 @@ namespace taskmaker_wpf.Views.Widgets {
     }
 
     public class NodeWidget : RenderWidget {
+        public static SKEvent TapEvent = SKEventManager.RegisterEvent(
+            "Tap",
+            SKEventRoutingStrategy.Direct,
+            typeof(SKEventHandler),
+            typeof(NodeWidget));
 
-        public event EventHandler<RemoveEventArgs> ItemRemove;
+        public event SKEventHandler Tap {
+            add { AddHandler(TapEvent, value); }
+            remove { RemoveHandler(TapEvent, value); }
+        }
 
         public bool WillRemove {
             get { return (bool)GetValue(WillRemoveProperty); }
@@ -85,27 +97,5 @@ namespace taskmaker_wpf.Views.Widgets {
                 IsSelected = false,
             };
         }
-
-        public override bool HitTest(SKPoint point) {
-            return (point - Location).LengthSquared <= 25.0f;
-        }
-
-        //public async override void RenderAsync() {
-        //    var props = GetProps();
-
-        //    await Task.Run(() => {
-        //        // Renderer worker
-        //        var obj = new NodeWidgetRenderObject(props);
-
-        //        // Invoke to UI thread
-        //        Dispatcher.BeginInvoke((Action)(() => {
-        //            RenderObject = obj;
-        //        }));
-        //    });
-        //}
-
-        //private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-        //    (d as NodeWidget_v1).RenderAsync();
-        //}
     }
 }
