@@ -28,20 +28,20 @@ namespace taskmaker_wpf.Views {
         public RegionControlUI() {
             InitializeComponent();
 
-            _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromMilliseconds(16);
-            _timer.Tick += _timer_Tick;
+            //_timer = new DispatcherTimer();
+            //_timer.Interval = TimeSpan.FromMilliseconds(16);
+            //_timer.Tick += _timer_Tick;
 
             //_viewModel = DataContext as RegionControlUIViewModel;
 
             Console.WriteLine(np.pi);
 
-            _timer.Start();
+            //_timer.Start();
         }
 
 
         private void _timer_Tick(object sender, EventArgs e) {
-            skElement.InvalidateVisual();
+            //skElement.InvalidateVisual();
         }
 
         private void SKElement_PaintSurface(object sender, SkiaSharp.Views.Desktop.SKPaintSurfaceEventArgs e) {
@@ -61,9 +61,9 @@ namespace taskmaker_wpf.Views {
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e) {
-            Console.WriteLine(skElement.Focusable);
-            Keyboard.Focus(skElement);
-            Console.WriteLine(Keyboard.FocusedElement);
+            //Console.WriteLine(skElement.Focusable);
+            //Keyboard.Focus(skElement);
+            //Console.WriteLine(Keyboard.FocusedElement);
         }
 
         private void skElement_PreviewMouseDown(object sender, MouseButtonEventArgs e) {

@@ -108,6 +108,8 @@ namespace taskmaker_wpf.ViewModels {
         private string _systemInfo;
         private string _statusMsg;
 
+        private Point _testLocation = new Point(5, 5);
+
         private SKPoint[] _nodes;
 
         public ObservableCollection<Node> Nodes_v1 { get; set; } = new ObservableCollection<Node>();
@@ -631,6 +633,7 @@ namespace taskmaker_wpf.ViewModels {
         public string SystemInfo { get => _systemInfo; set => SetProperty(ref _systemInfo, value); }
         public string StatusMsg { get => _statusMsg; set => SetProperty(ref _statusMsg, value); }
         public SKPoint[] Nodes { get => _nodes; set => SetProperty(ref _nodes, value); }
+        public Point TestLocation { get => _testLocation; set => SetProperty(ref _testLocation, value); }
     }
 
     public class LimitedQueue<T> : Queue<T> {

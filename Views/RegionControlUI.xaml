@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:taskmaker_wpf.Views"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:prism="http://prismlibrary.com/"
-             xmlns:skia="clr-namespace:SkiaSharp.Views.WPF;assembly=SkiaSharp.Views.WPF" xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:RegionControlUIViewModel}"
+             xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:RegionControlUIViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Loaded="UserControl_Loaded">
@@ -21,6 +21,14 @@
             Grid.Row="0">
             
         </StackPanel>
+        <local:ComplexWidget_Wpf
+            Grid.Row="1">
+            <local:NodeWidget_Wpf>
+                
+            </local:NodeWidget_Wpf>
+        </local:ComplexWidget_Wpf>
+        
+        <!--
         <skia:SKElement
             Grid.Row="1"
             Focusable="True"
@@ -67,6 +75,7 @@
                 </b:EventTrigger>
             </b:Interaction.Triggers>
         </skia:SKElement>
+        -->
         <StackPanel
             x:Name="statusBar"
             Orientation="Horizontal"
