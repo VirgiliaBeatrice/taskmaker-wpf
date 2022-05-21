@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -31,7 +32,9 @@ namespace taskmaker_wpf.Model.Core {
     }
 
     public partial class UI {
-        public List<NodeM> Nodes { get; set; } = new List<NodeM>();
+        public Hashtable NodeCollection { get; set; } = new Hashtable();
+
+        //public List<NodeM> Nodes { get; set; } = new List<NodeM>();
         public ComplexM Complex { get; set; }
         public NLinearMap Map { get; set; }
 
@@ -40,24 +43,39 @@ namespace taskmaker_wpf.Model.Core {
         public UI() {
         }
 
-        public void Add(NodeM node) {
-            Nodes.Add(node);
-        }
+        //public void Add(NodeM node) {
+        //    Nodes.Add(node);
+        //}
 
-        public void Add(NDarray<float> location) {
-            var newNode = new NodeM(Nodes.Count + 1) {
-                Location = location
+        //public void Add(NDarray<float> location) {
+        //    var newNode = new NodeM(Nodes.Count + 1) {
+        //        Location = location
+        //    };
+
+        //    Nodes.Add(newNode);
+        //}
+
+        public Guid Add(NDarray<float> pt) {
+            var node = new NodeM() {
+                Location = pt
             };
 
-            Nodes.Add(newNode);
+            NodeCollection.Add(node.Uid, node);
+
+            return node.Uid;
         }
 
+
         public void Remove(NodeM node) {
-            Nodes.Remove(node);
+            NodeCollection.Remove(node.Uid);
+        }
+
+        public void RemoveAt(Guid uid) {
+            NodeCollection.Remove(uid);
         }
 
         public void RemoveAll() {
-            Nodes.Clear();
+            NodeCollection.Clear();
         }
 
         public IRegionUnit FindRegionById(int id) {
@@ -89,30 +107,30 @@ namespace taskmaker_wpf.Model.Core {
                 .Select(e => e.GetVoronoiInfo()).ToArray();
         }
 
-        public void CreateRegions() {
-            var nodes = np.array(
-                Nodes.Select(e => e.Location).ToArray());
-            var simplices = Qhull.QhullCSharp.RunDelaunay(nodes)
-                .Select(
-                    e => new SimplexM(
-                        Nodes[e[0]], Nodes[e[1]], Nodes[e[2]]))
-                .ToArray();
+        //public void CreateRegions() {
+        //    var nodes = np.array(
+        //        Nodes.Select(e => e.Location).ToArray());
+        //    var simplices = Qhull.QhullCSharp.RunDelaunay(nodes)
+        //        .Select(
+        //            e => new SimplexM(
+        //                Nodes[e[0]], Nodes[e[1]], Nodes[e[2]]))
+        //        .ToArray();
 
-            // Create simplicial complex
-            Complex = new ComplexM();
+        //    // Create simplicial complex
+        //    Complex = new ComplexM();
 
-            Complex.AddSimplices(simplices);
+        //    Complex.AddSimplices(simplices);
 
-            // reverse for ccw
-            var extremes = Qhull.QhullCSharp.RunConvex(nodes)
-                .Select(
-                    e => Nodes[e])
-                .Reverse()
-                .ToArray();
+        //    // reverse for ccw
+        //    var extremes = Qhull.QhullCSharp.RunConvex(nodes)
+        //        .Select(
+        //            e => Nodes[e])
+        //        .Reverse()
+        //        .ToArray();
 
-            // Create exterior
-            Complex.Regions = new List<VoronoiRegionM>(ExteriorM.Create(extremes, simplices));
-        }
+        //    // Create exterior
+        //    Complex.Regions = new List<VoronoiRegionM>(ExteriorM.Create(extremes, simplices));
+        //}
 
         public void CreateMap() {
             // Create map

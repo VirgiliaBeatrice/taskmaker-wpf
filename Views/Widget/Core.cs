@@ -118,8 +118,6 @@ namespace taskmaker_wpf.Views.Widgets {
     public interface IWidget {
         IRenderObject RenderObject { get; set; }
 
-        bool HitTest(SKPoint point);
-        void RaiseSKEvent(SKEventHandlerArgs args);
         void Paint(SKCanvas canvas);
         void RenderAsync();
 
@@ -133,40 +131,6 @@ namespace taskmaker_wpf.Views.Widgets {
     }
 
     public class RenderWidget : TreeElement, IWidget {
-        static private SKEvent MouseDownEvent = SKEventManager.RegisterEvent(
-            "MouseDown",
-            SKEventRoutingStrategy.Bubble,
-            typeof(SKEventHandler),
-            typeof(RenderWidget));
-        static private SKEvent MouseUpEvent = SKEventManager.RegisterEvent(
-            "MouseUp",
-            SKEventRoutingStrategy.Bubble,
-            typeof(SKEventHandler),
-            typeof(RenderWidget));
-        static private SKEvent MouseClickEvent = SKEventManager.RegisterEvent(
-            "MouseClick",
-            SKEventRoutingStrategy.Bubble,
-            typeof(SKEventHandler),
-            typeof(RenderWidget));
-
-
-        public event SKEventHandler MouseDown {
-            add { AddHandler(MouseDownEvent, value); }
-            remove { RemoveHandler(MouseDownEvent, value); }
-        }
-
-        public event SKEventHandler MouseUp { 
-            add { AddHandler(MouseUpEvent, value); }
-            remove { RemoveHandler(MouseUpEvent, value); }
-        }
-        public event SKEventHandler MouseClick {
-            add { AddHandler(MouseClickEvent, value); }
-            remove => RemoveHandler(MouseClickEvent, value);
-        }
-
-
-
-
         public object DataContext { get; set; }
 
         protected Type _TRenderObj = null;
@@ -211,44 +175,12 @@ namespace taskmaker_wpf.Views.Widgets {
             (d as RenderWidget).RenderAsync();
         }
 
-        protected virtual void OnMouseDown(object sender, SKEventHandlerArgs args) { }
-
-        protected virtual void OnMouseUp(object sender, SKEventHandlerArgs args) { }
-        protected virtual void OnMouseClick(object sender, SKEventHandlerArgs args) { }
-
-        protected void OnTap(object sender, SKEventHandlerArgs args) {
-
-        }
-
         public List<TreeElement> GetAllChildren() => GetAllChild();
 
         public List<T> GetAll<T>() => GetAllChild().Cast<T>().ToList();
 
         public virtual bool HitTest(SKPoint point) {
             throw new NotImplementedException();
-        }
-
-        public void RaiseSKEvent(SKEventHandlerArgs args) {
-            var eventName = args.Event.Name;
-            var ownerType = args.Event.OwnerType;
-            var handlerType = args.Event.HandlerType;
-
-            var instanceMethod = ownerType.GetMethod("On" + eventName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod);
-            var handler = (SKEventHandler)Delegate.CreateDelegate(handlerType, this, instanceMethod);
-
-            // invoke class handler first
-            handler(this, args);
-
-            // invoke custom handlers
-            args.Event.Invoke(this, args);
-        }
-
-        public void AddHandler(SKEvent skEvt, Delegate handler) {
-            skEvt.AddHandler(handler);
-        }
-
-        public void RemoveHandler(SKEvent skEvt, Delegate handler) {
-            skEvt.RemoveHandler(handler);
         }
     }
 }

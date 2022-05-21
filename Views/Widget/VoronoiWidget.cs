@@ -5,23 +5,31 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using SkiaSharp;
+using SkiaSharp.Views.WPF;
 
 namespace taskmaker_wpf.Views.Widgets.Container {
-    public class VoronoiWidgetProps : IProps {
-        public SKRect Bound { get; set; } = new SKRect {
-            Right = 100,
-            Bottom = 100
-        };
-        public IEnumerable Points { get; set; }
-    }
+    public class VoronoiWidget_wpf : FrameworkElement {
+        private SKPath _region;
+        private Point[] Points = new Point[] { };
 
-    public class VoronoiWidgetRenderObject : RenderObject<VoronoiWidgetProps> {
-        public VoronoiWidgetRenderObject(VoronoiWidgetProps props) : base(props) {
+        protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters) {
+            var pt = hitTestParameters.HitPoint;
+            var skPt = pt.ToSKPoint();
+
+            if (_region?.Contains(skPt.X, skPt.Y) == true)
+                return new PointHitTestResult(this, pt);
+            else
+                return null;
         }
 
-        protected override void OnRender(SKCanvas canvas) {
-            var points = _props.Points.Cast<SKPoint>().ToArray();
+        protected WriteableBitmap OnSKRender(SKImageInfo info) {
+            var bitmap = new SKBitmap(info);
+            var canvas = new SKCanvas(bitmap);
+
+            var points = Points.Cast<SKPoint>().ToArray();
             var stroke = new SKPaint {
                 IsAntialias = true,
                 StrokeWidth = 2,
@@ -54,10 +62,32 @@ namespace taskmaker_wpf.Views.Widgets.Container {
 
             canvas.DrawPath(path, stroke);
 
+            _region?.Dispose();
+            _region = path;
+
+            var ret = bitmap.ToWriteableBitmap();
+
             stroke.Dispose();
             fill.Dispose();
             path.Dispose();
+
+            return ret;
         }
+    }
+
+    public class VoronoiWidgetProps : IProps {
+        public SKRect Bound { get; set; } = new SKRect {
+            Right = 100,
+            Bottom = 100
+        };
+        public IEnumerable Points { get; set; }
+    }
+
+    public class VoronoiWidgetRenderObject : RenderObject<VoronoiWidgetProps> {
+        public VoronoiWidgetRenderObject(VoronoiWidgetProps props) : base(props) {
+        }
+
+
     }
 
     public class VoronoiWidget : RenderWidget {

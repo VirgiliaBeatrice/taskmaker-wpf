@@ -10,6 +10,8 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Loaded="UserControl_Loaded">
+    <UserControl.InputBindings>
+    </UserControl.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
@@ -19,67 +21,31 @@
 
         <StackPanel
             Grid.Row="0">
-            
+
         </StackPanel>
-        <local:ComplexWidget_Wpf
-            Grid.Row="1">
-            <local:NodeWidget_Wpf>
-                
-            </local:NodeWidget_Wpf>
-        </local:ComplexWidget_Wpf>
-        
-        <!--
-        <skia:SKElement
+
+        <local:ComplexWidget 
+            x:Name="complex"
             Grid.Row="1"
             Focusable="True"
-            x:Name="skElement"
-            PaintSurface="SKElement_PaintSurface"
-            PreviewMouseDown="skElement_PreviewMouseDown"
-            PreviewMouseUp="skElement_PreviewMouseUp"
-            MouseDown="skElement_MouseDown"
-            MouseUp="skElement_MouseUp">
-            <skia:SKElement.InputBindings>
-                <KeyBinding
-                    Key="ESC"
-                    Command="{Binding ChangeModeCmd}"
-                    CommandParameter="ModeDefault"/>
-                <KeyBinding
-                    Key="D1"
-                    Command="{Binding ChangeModeCmd}"
-                    CommandParameter="ModeAdd"/>
-                <KeyBinding
-                    Key="D2"
-                    Command="{Binding ChangeModeCmd}"
-                    CommandParameter="ModeEdit"/>
-                <KeyBinding
-                    Key="D3"
-                    Command="{Binding ChangeModeCmd}"
-                    CommandParameter="ModeRemove"/>
-            </skia:SKElement.InputBindings>
-
-            <b:Interaction.Triggers>
-                <b:EventTrigger EventName="MouseDown">
-                    <b:InvokeCommandAction
-                        Command="{Binding MouseDownCmd}"
-                        PassEventArgsToCommand="True"/>
-                </b:EventTrigger>
-                <b:EventTrigger EventName="MouseUp">
-                    <b:InvokeCommandAction
-                        Command="{Binding MouseUpCmd}"
-                        PassEventArgsToCommand="True"/>
-                </b:EventTrigger>
-                <b:EventTrigger EventName="MouseMove">
-                    <b:InvokeCommandAction
-                        Command="{Binding MouseMoveCmd}"
-                        PassEventArgsToCommand="True"/>
-                </b:EventTrigger>
-            </b:Interaction.Triggers>
-        </skia:SKElement>
-        -->
+                             Mode="{Binding Path=OperationMode}"
+                             NodeSource="{Binding Nodes_v1}"
+                             SimplexSource="{Binding Simplices}"
+                             AddItemCommand="{Binding AddItemCommand}"
+            RemoveItemCommand="{Binding RemoveItemCommand}"
+                             Background="Beige">
+            <local:ComplexWidget.ItemStyle>
+                <Style>
+                    <Setter Property="local:ComplexWidget.Left" Value="{Binding Path=Location.X}" />
+                    <Setter Property="local:ComplexWidget.Top" Value="{Binding Path=Location.Y}" />
+                </Style>
+            </local:ComplexWidget.ItemStyle>
+        </local:ComplexWidget>
+        
         <StackPanel
             x:Name="statusBar"
             Orientation="Horizontal"
-            HorizontalAlignment="Left"
+            HorizontalAlignment="Stretch"
             Background="DimGray"
             Grid.Row="2">
             <TextBlock 
@@ -93,7 +59,7 @@
             <TextBlock 
                 x:Name="systemInfo"
                 Margin="4 0 4 0"
-                Text="{Binding Path=SystemInfo}"/>
+                Text="{Binding ElementName=complex, Path=Mode}"/>
         </StackPanel>
     </Grid>
     

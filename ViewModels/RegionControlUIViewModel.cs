@@ -24,26 +24,42 @@ using System.Collections.ObjectModel;
 
 namespace taskmaker_wpf.ViewModels {
     public class Node : BindableBase {
-        private SKPoint _location;
-        public SKPoint Location { 
+        private Guid _uid;
+        public Guid Uid {
+            get { return _uid; }
+            set => SetProperty(ref _uid, value);
+        }
+
+        private Point _location;
+        public Point Location { 
             get => _location; 
             set => SetProperty(ref _location, value); 
         }
+    }
 
-        private bool _willRemove;
-        public bool WillRemove {
-            get => _willRemove;
-            set => SetProperty(ref _willRemove, value);
+    public class Simplex : BindableBase {
+        private Point[] _points;
+        public Point[] Points {
+            get => _points;
+            set => SetProperty(ref _points, value);
+        }
+    }
+
+    public class Voronoi : BindableBase {
+        private Point[] _points;
+        public Point[] Points {
+            get => _points;
+            set => SetProperty(ref _points, value);
         }
     }
 
 
     public static class Helper {
-        static public SKPoint ToSKPoint(this NDarray self) {
-            if (self.ndim > 1)
+        static public SKPoint ToSKPoint(this NDarray pt) {
+            if (pt.ndim > 1)
                 throw new Exception("Invalid ndarray");
 
-            var castValues = self.astype(np.float32);
+            var castValues = pt.astype(np.float32);
             var values = castValues.GetData<float>();
 
             castValues.Dispose();
@@ -51,8 +67,12 @@ namespace taskmaker_wpf.ViewModels {
             return new SKPoint(values[0], values[1]);
         }
 
-        static public NDarray<float> ToNDarray(this SKPoint self) {
-            return np.array(self.X, self.Y);
+        static public NDarray<float> ToNDarray(this Point pt) {
+            return np.array((float)pt.X, (float)pt.Y);
+        }
+
+        static public NDarray<float> ToNDarray(this SKPoint pt) {
+            return np.array(pt.X, pt.Y);
         }
 
         static public IObservable<TSource> Debug<TSource>(this IObservable<TSource> observable) {
@@ -78,13 +98,6 @@ namespace taskmaker_wpf.ViewModels {
         }
     }
 
-    public enum OperationMode {
-        ModeDefault = 0,
-        ModeAdd = 1,
-        ModeEdit = 2,
-        ModeRemove = 3,
-    }
-
     public class RegionControlUIViewModel : BindableBase {
         public Window Parent { get; set; }
         public Model.Core.UI Model { get; set; }
@@ -92,7 +105,6 @@ namespace taskmaker_wpf.ViewModels {
         public Model.Data.MotorCollection Motors { get; set; }
 
         private List<IDisposable> _topics = new List<IDisposable> ();
-        private LimitedQueue<float> _seq = new LimitedQueue<float>(100);
 
         #region Bindable Properties
         private int _count;
@@ -108,71 +120,12 @@ namespace taskmaker_wpf.ViewModels {
         private string _systemInfo;
         private string _statusMsg;
 
-        private Point _testLocation = new Point(5, 5);
-
-        private SKPoint[] _nodes;
-
         public ObservableCollection<Node> Nodes_v1 { get; set; } = new ObservableCollection<Node>();
+
+        public ObservableCollection<Simplex> Simplices { get; set; } = new ObservableCollection<Simplex> ();
 
         public DelegateCommand TestCommand { get; set; }
 
-        private Subject<MouseButtonEventArgs> mouseDown;
-        private ICommand _mouseDownCmd;
-        public ICommand MouseDownCmd => _mouseDownCmd ?? (_mouseDownCmd = new DelegateCommand<MouseButtonEventArgs>(MouseDownExecute));
-
-        private Subject<MouseButtonEventArgs> mouseUp;
-
-        private ICommand _mouseUpCmd;
-        public ICommand MouseUpCmd => _mouseUpCmd ?? (_mouseUpCmd = new DelegateCommand<MouseButtonEventArgs>(MouseUpExecute));
-
-        private Subject<MouseEventArgs> mouseMove;
-        private ICommand _mouseMoveCmd;
-        public ICommand MouseMoveCmd => _mouseMoveCmd ?? (_mouseMoveCmd = new DelegateCommand<MouseEventArgs>(MouseMoveExecute));
-
-        private IObservable<MouseButtonEventArgs> _mouseLeftClick;
-
-        private ICommand _changeModeCmd;
-        public ICommand ChangeModeCmd => _changeModeCmd ?? (_changeModeCmd = new DelegateCommand<string>(ExecuteChangeModeCmd));
-
-        private ICommand itemRemoveCmd;
-        public ICommand ItemRemoveCmd => itemRemoveCmd ?? (itemRemoveCmd = new DelegateCommand<object>(ExecuteItemRemoveCmd));
-
-        private void ExecuteItemRemoveCmd(object obj) {
-            Nodes_v1.RemoveAt((int)obj);
-        }
-
-        private void ExecuteChangeModeCmd(string obj) {
-            var castObj = Enum.Parse(typeof(OperationMode), obj);
-
-            OperationMode = (OperationMode)castObj;
-
-            switch(castObj) {
-                case OperationMode.ModeDefault:
-                    Unregister();
-                    break;
-                case OperationMode.ModeAdd:
-                    ModeAdd();
-                    break;
-                case OperationMode.ModeEdit:
-                    ModeEdit();
-                    break;
-                case OperationMode.ModeRemove:
-                    ModeRemove();
-                    break;
-            }
-        }
-
-        private void MouseMoveExecute(MouseEventArgs obj) {
-            mouseMove.OnNext(obj);
-        }
-
-        private void MouseUpExecute(MouseButtonEventArgs obj) {
-            mouseUp.OnNext(obj);
-        }
-
-        private void MouseDownExecute(MouseButtonEventArgs obj) {
-            mouseDown.OnNext(obj);
-        }
 
         public RegionControlUIViewModel(
             MotorService motorService,
@@ -193,21 +146,10 @@ namespace taskmaker_wpf.ViewModels {
 
             // Subscribe observable
             //RegisterKeyPress();
-            //RegisterAddAndDeleteMode();
-            mouseDown = new Subject<MouseButtonEventArgs>();
-            mouseMove = new Subject<MouseEventArgs>();
-            mouseUp = new Subject<MouseButtonEventArgs>();
-            _mouseLeftClick = new Subject<MouseButtonEventArgs>();
-
             //var disposable0 = mouseDown.Subscribe(
             //    (e) => { },
             //    (e) => { Console.WriteLine(e); },
             //    () => { });
-
-            mouseDown.Take(1)
-                .SelectMany(mouseUp.Take(1))
-                .Repeat()
-                .Subscribe((e) => { Count += 1; });
 
             //_mouseLeftClick = mouseDown
             //    .SelectMany(mouseUp)
@@ -226,115 +168,91 @@ namespace taskmaker_wpf.ViewModels {
         public Dictionary<string, object> RegisteredSubjects = new Dictionary<string, object>();
 
 
-        public void ModeAdd() {
-            Unregister();
+        //public void ModeAdd() {
+        //    Unregister();
 
-            RegisteredSubjects.Clear();
+        //    RegisteredSubjects.Clear();
 
-            var add = mouseDown
-                .Where(e => e.ChangedButton == MouseButton.Left)
-                .Take(1)
-                .SelectMany(
-                    mouseUp
-                        .Where(e => e.ChangedButton == MouseButton.Left)
-                        .Take(1))
-                .Repeat()
-                .Subscribe(AddNode);
 
-            SystemInfo = $"{operationMode}";
-            KeymapInfo = $"(1) Single click to add.";
+        //    SystemInfo = $"{operationMode}";
+        //    KeymapInfo = $"(1) Single click to add.";
 
-           _topics.Add(add);
-        }
+        //   //_topics.Add(add);
+        //}
 
-        private IWidget _selectedWidget;
+        //private IWidget _selectedWidget;
 
-        public void ModeRemove() {
-            Unregister();
+        //public void ModeRemove() {
+        //    Unregister();
 
-            RegisteredSubjects.Clear();
+        //    RegisteredSubjects.Clear();
 
-            var select = mouseDown
-                .Take(1)
-                .SelectMany(mouseUp.Take(1))
-                .LastAsync()
-                .Repeat()
-                .Subscribe(HitTarget);
+        //    //List<IWidget> _HitTest(IWidget widget, SKPoint point) {
+        //    //    var targets = new List<IWidget>();
+        //    //    var result = widget.HitTest(point);
 
-            void HitTarget(MouseButtonEventArgs e) {
-                var pt = e.GetPosition((UIElement)e.Source).ToSKPoint();
+        //    //    if (result) {
+        //    //        targets.Add(widget);
 
-                var path = SKEventManager.HitTest(Page.Root, pt);
-                SKEventManager.RaiseSKEvent("MouseClick", path.HitWidgets);
+        //    //        var children = widget.GetAll<IWidget>();
 
-            }
+        //    //        var targetCollection = children.Select(e => _HitTest(e, point)).ToList();
 
-            //List<IWidget> _HitTest(IWidget widget, SKPoint point) {
-            //    var targets = new List<IWidget>();
-            //    var result = widget.HitTest(point);
+        //    //        targetCollection.ForEach(e => targets.AddRange(e));
+        //    //    }
 
-            //    if (result) {
-            //        targets.Add(widget);
+        //    //    return targets;
+        //    //}
 
-            //        var children = widget.GetAll<IWidget>();
-
-            //        var targetCollection = children.Select(e => _HitTest(e, point)).ToList();
-
-            //        targetCollection.ForEach(e => targets.AddRange(e));
-            //    }
-
-            //    return targets;
-            //}
-
-            SystemInfo = $"{operationMode}";
-            KeymapInfo = $"(1) Click to remove.";
-        }
+        //    SystemInfo = $"{operationMode}";
+        //    KeymapInfo = $"(1) Click to remove.";
+        //}
 
         //private IWidget selectedWidget;
-        public void ModeEdit() {
-            //Unregister();
+        //public void ModeEdit() {
+        //    //Unregister();
 
-            //void MoveTo(MouseEventArgs args) {
-            //    var hash = (selectedWidget as NodeWidget).ModelHash;
-            //    var target = Model.Nodes.Find(e => e.Id == hash);
+        //    //void MoveTo(MouseEventArgs args) {
+        //    //    var hash = (selectedWidget as NodeWidget).ModelHash;
+        //    //    var target = Model.Nodes.Find(e => e.Id == hash);
 
-            //    target.Location = args.GetPosition((UIElement)args.Source).ToSKPoint().ToNDarray();
+        //    //    target.Location = args.GetPosition((UIElement)args.Source).ToSKPoint().ToNDarray();
 
-            //    // fetch latest info from model
-            //    var nodes = FetchNodes();
-            //    var widget = Page.FindByName<ComplexWidget>("Complex");
-            //    var state = (ComplexWidgetState)widget.State.Clone();
+        //    //    // fetch latest info from model
+        //    //    var nodes = FetchNodes();
+        //    //    var widget = Page.FindByName<ComplexWidget>("Complex");
+        //    //    var state = (ComplexWidgetState)widget.State.Clone();
 
-            //    state.nodes = nodes;
+        //    //    state.nodes = nodes;
 
-            //    Engine.SetState(widget, state);
-            //}
+        //    //    Engine.SetState(widget, state);
+        //    //}
 
-            //var move = mouseDown
-            //    .Take(1)
-            //    .Do(SelectTargetNode)
-            //    .SelectMany(mouseMove)
-            //    .TakeUntil(mouseUp)
-            //    .Repeat()
-            //    .Subscribe(MoveTo);
+        //    //var move = mouseDown
+        //    //    .Take(1)
+        //    //    .Do(SelectTargetNode)
+        //    //    .SelectMany(mouseMove)
+        //    //    .TakeUntil(mouseUp)
+        //    //    .Repeat()
+        //    //    .Subscribe(MoveTo);
 
-            ////var topic = mouseDown
-            ////    .SelectMany(mouseMove)
-            ////    .TakeUntil(mouseUp)
-            ////    .Repeat()
-            ////    .Subscribe((e) => { Console.WriteLine("aaaa"); });
+        //    ////var topic = mouseDown
+        //    ////    .SelectMany(mouseMove)
+        //    ////    .TakeUntil(mouseUp)
+        //    ////    .Repeat()
+        //    ////    .Subscribe((e) => { Console.WriteLine("aaaa"); });
 
-            //SystemInfo = $"{operationMode}";
-            //KeymapInfo = $"(1) Click&Hold to drag.";
+        //    //SystemInfo = $"{operationMode}";
+        //    //KeymapInfo = $"(1) Click&Hold to drag.";
 
-            //_topics.Add(move);
-        }
+        //    //_topics.Add(move);
+        //}
 
-        private void SelectTargetNode(MouseButtonEventArgs args) {
-            //var location = args.GetPosition((UIElement)args.Source).ToSKPoint();
+        //private void SelectTargetNode(MouseButtonEventArgs args) {
+        //    //var location = args.GetPosition((UIElement)args.Source).ToSKPoint();
 
-            //selectedWidget = Page.FindTargetWidget(location);
-        }
+        //    //selectedWidget = Page.FindTargetWidget(location);
+        //}
 
         //public void RegisterKeyPress() {
         //    var keyPress = (Parent as Window).OKeyPress
@@ -382,13 +300,13 @@ namespace taskmaker_wpf.ViewModels {
         //        .Subscribe(e => Console.WriteLine(e.GetTouchPoint(Parent).TouchDevice.Id));
         //}
 
-        private void SetBarys() {
-            Unregister();
+        //private void SetBarys() {
+        //    Unregister();
 
-            // Init all barys
-            Model.Complex.SetBary();
-            Model.CreateMap();
-        }
+        //    // Init all barys
+        //    Model.Complex.SetBary();
+        //    Model.CreateMap();
+        //}
 
         //private void RegisterManipulateMode() {
         //    Unregister();
@@ -445,24 +363,24 @@ namespace taskmaker_wpf.ViewModels {
         //    _topics.Add(leftMove);
         //}
 
-        private void TestMotor() {
-            Unregister();
+        //private void TestMotor() {
+        //    Unregister();
 
-            Motors.SetValue(new object[] { 0, 100, 0 });
-            Model.BindData(Model.Nodes[0]);
-            Motors.SetValue(new object[] { 100, 0, 0});
-            Model.BindData(Model.Nodes[1]);
-            Motors.SetValue(new object[] { 0, 0, 100 });
-            Model.BindData(Model.Nodes[2]);
-            Motors.SetValue(new object[] { 100, 100, 100 });
-            Model.BindData(Model.Nodes[3]);
+        //    //Motors.SetValue(new object[] { 0, 100, 0 });
+        //    //Model.BindData(Model.Nodes[0]);
+        //    //Motors.SetValue(new object[] { 100, 0, 0});
+        //    //Model.BindData(Model.Nodes[1]);
+        //    //Motors.SetValue(new object[] { 0, 0, 100 });
+        //    //Model.BindData(Model.Nodes[2]);
+        //    //Motors.SetValue(new object[] { 100, 100, 100 });
+        //    //Model.BindData(Model.Nodes[3]);
 
-            //var w = new Window();
-            //w.Width = 300;
-            //w.Height = 600;
-            //w.Content = new Motors(Motors.Motors.ToArray());
-            //w.Show();
-        }
+        //    //var w = new Window();
+        //    //w.Width = 300;
+        //    //w.Height = 600;
+        //    //w.Content = new Motors(Motors.Motors.ToArray());
+        //    //w.Show();
+        //}
 
         //public void RegisterAddAndDeleteMode() {
         //    Unregister();
@@ -486,11 +404,11 @@ namespace taskmaker_wpf.ViewModels {
         //    //_topics.Add(rightClick);
         //}
 
-        public void RegisterTriangulateMode() {
-            Unregister();
+        //public void RegisterTriangulateMode() {
+        //    Unregister();
 
-            //CreateRegions();
-        }
+        //    //CreateRegions();
+        //}
 
         //public void DeleteAll() {
         //    Unregister();
@@ -509,10 +427,10 @@ namespace taskmaker_wpf.ViewModels {
         //}
 
 
-        public void Unregister() {
-            _topics.ForEach(x => x.Dispose());
-            _topics.Clear();
-        }
+        //public void Unregister() {
+        //    _topics.ForEach(x => x.Dispose());
+        //    _topics.Clear();
+        //}
 
         //public Node[] FetchNodes() {
         //    return Model.Nodes
@@ -520,26 +438,26 @@ namespace taskmaker_wpf.ViewModels {
         //        .ToArray();
         //}
 
-        public SKPoint[] FetchNodes() {
-            return Model.Nodes.Select(e => e.Location.ToSKPoint())
-                              .ToArray();
-        }
+        //public SKPoint[] FetchNodes() {
+            //return Model.Nodes.Select(e => e.Location.ToSKPoint())
+                              //.ToArray();
+        //}
 
-        private void AddNode(MouseButtonEventArgs args) {
-            //// Add node to model
-            var skLocation = args
-                .GetPosition((UIElement)args.Source)
-                .ToSKPoint();
-            var ndLocation = skLocation
-                .ToNDarray();
+        //private void AddNode(MouseButtonEventArgs args) {
+        //    //// Add node to model
+        //    var skLocation = args
+        //        .GetPosition((UIElement)args.Source)
+        //        .ToSKPoint();
+        //    var ndLocation = skLocation
+        //        .ToNDarray();
 
-            Model.Add(ndLocation);
-            Nodes_v1.Add(new Node { Location = skLocation });
-        }
+        //    Model.Add(ndLocation);
+        //    //Nodes_v1.Add(new Node { Location = skLocation });
+        //}
 
-        private void RemoveNode(MouseButtonEventArgs args) {
+        //private void RemoveNode(MouseButtonEventArgs args) {
         
-        }
+        //}
 
 
         //[Obsolete]
@@ -632,22 +550,45 @@ namespace taskmaker_wpf.ViewModels {
         public string KeymapInfo { get => _keymapInfo; set => SetProperty(ref _keymapInfo, value); }
         public string SystemInfo { get => _systemInfo; set => SetProperty(ref _systemInfo, value); }
         public string StatusMsg { get => _statusMsg; set => SetProperty(ref _statusMsg, value); }
-        public SKPoint[] Nodes { get => _nodes; set => SetProperty(ref _nodes, value); }
-        public Point TestLocation { get => _testLocation; set => SetProperty(ref _testLocation, value); }
-    }
 
-    public class LimitedQueue<T> : Queue<T> {
-        public int Limit { get; set; }
+        // https://blog.csdn.net/jiuzaizuotian2014/article/details/104856673
+        private DelegateCommand<object> addItemCommand;
 
-        public LimitedQueue(int limit) : base(limit) {
-            Limit = limit;
+        public ICommand AddItemCommand {
+            get {
+                if (addItemCommand == null) {
+                    addItemCommand = new DelegateCommand<object>(AddItem);
+                }
+
+                return addItemCommand;
+            }
         }
 
-        public new void Enqueue(T item) {
-            while (Count >= Limit) {
-                Dequeue();
+        private void AddItem(object pt) {
+            var value = ((Point)pt).ToSKPoint().ToNDarray();
+            var uid = Model.Add(value);
+
+            Nodes_v1.Add(new Node { Location = (Point)pt, Uid = uid });
+        }
+
+        private DelegateCommand<object> removeItemCommand;
+
+        public ICommand RemoveItemCommand {
+            get {
+                if (removeItemCommand == null) {
+                    removeItemCommand = new DelegateCommand<object>(RemoveItem);
+                }
+
+                return removeItemCommand;
             }
-            base.Enqueue(item);
+        }
+
+        private void RemoveItem(object obj) {
+            var uid = (Guid)obj;
+
+            Model.RemoveAt(uid);
+            var idx = Nodes_v1.ToList().FindIndex(e => e.Uid == uid);
+            Nodes_v1.RemoveAt(idx);
         }
     }
 }

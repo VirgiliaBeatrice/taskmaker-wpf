@@ -13,7 +13,7 @@ namespace taskmaker_wpf.Views.Pages {
     public class SimplexView {
         public RootWidget Root { get; set; }
 
-        private ComplexWidget _complex;
+        //private ComplexWidget _complex;
         private ViewModels.RegionControlUIViewModel _viewModel;
 
         public Dictionary<string, object> Elements { get; set; } = new Dictionary<string, object>();
@@ -38,14 +38,14 @@ namespace taskmaker_wpf.Views.Pages {
                 Elements["Debug"] as DependencyObject,
                 DebugInfoWidget.MessageProperty,
                 CreateBinding("Count"));
-            BindingOperations.SetBinding(
-                Elements["Complex"] as DependencyObject,
-                ComplexWidget.NodeSourceProperty,
-                CreateBinding("Nodes_v1"));
-            BindingOperations.SetBinding(
-                Elements["Complex"] as DependencyObject,
-                ComplexWidget.CommandProperty,
-                CreateBinding("ItemRemoveCmd"));
+            //BindingOperations.SetBinding(
+            //    Elements["Complex"] as DependencyObject,
+            //    ComplexWidget.NodeSourceProperty,
+            //    CreateBinding("Nodes_v1"));
+            //BindingOperations.SetBinding(
+            //    Elements["Complex"] as DependencyObject,
+            //    ComplexWidget.CommandProperty,
+            //    CreateBinding("ItemRemoveCmd"));
         }
 
         public void InitializeWidgets() {
@@ -59,13 +59,13 @@ namespace taskmaker_wpf.Views.Pages {
 
             Elements.Add("Debug", debug);
 
-            var complex = new ComplexWidget("Complex") {
-                DataContext = _viewModel
-            };
+            //var complex = new ComplexWidget("Complex") {
+            //    DataContext = _viewModel
+            //};
 
-            Root.AddChild(complex);
+            //Root.AddChild(complex);
 
-            Elements.Add("Complex", complex);
+            //Elements.Add("Complex", complex);
             //var nodes = _viewModel.FetchNodes();
 
             //_complex = new ComplexWidget(

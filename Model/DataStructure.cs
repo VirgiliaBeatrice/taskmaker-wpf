@@ -10,6 +10,7 @@ namespace taskmaker_wpf.Model.Data {
     public class NodeM : IDisposable {
         private bool disposedValue;
 
+        public Guid Uid { get; set; }
         public int Id { get; set; }
         public NDarray<float> Location { get; set; }
         public NDarray<float> TargetValue { get; set; }
@@ -17,6 +18,11 @@ namespace taskmaker_wpf.Model.Data {
         public NodeM(int id) {
             Id = id;
         }
+
+        public NodeM() {
+            Uid = Guid.NewGuid();
+        }
+
 
         protected virtual void Dispose(bool disposing) {
             if (!disposedValue) {
