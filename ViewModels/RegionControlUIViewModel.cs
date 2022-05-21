@@ -37,7 +37,13 @@ namespace taskmaker_wpf.ViewModels {
         }
     }
 
-    public class Simplex : BindableBase {
+    public class SimplexData : BindableBase {
+        private Guid _uid;
+        public Guid Uid {
+            get { return _uid; }
+            set => SetProperty(ref _uid, value);
+        }
+
         private Point[] _points;
         public Point[] Points {
             get => _points;
@@ -55,6 +61,18 @@ namespace taskmaker_wpf.ViewModels {
 
 
     public static class Helper {
+        static public Point ToPoint(this NDarray pt) {
+            if (pt.ndim > 1)
+                throw new Exception("Invalid ndarray");
+
+            var castValues = pt.astype(np.float32);
+            var values = castValues.GetData<float>();
+
+            castValues.Dispose();
+
+            return new Point { X = values[0], Y = values[1] };
+        }
+
         static public SKPoint ToSKPoint(this NDarray pt) {
             if (pt.ndim > 1)
                 throw new Exception("Invalid ndarray");
@@ -120,9 +138,9 @@ namespace taskmaker_wpf.ViewModels {
         private string _systemInfo;
         private string _statusMsg;
 
-        public ObservableCollection<Node> Nodes_v1 { get; set; } = new ObservableCollection<Node>();
+        public ObservableCollection<Node> Nodes { get; set; } = new ObservableCollection<Node>();
 
-        public ObservableCollection<Simplex> Simplices { get; set; } = new ObservableCollection<Simplex> ();
+        public ObservableCollection<SimplexData> Simplices { get; set; } = new ObservableCollection<SimplexData> ();
 
         public DelegateCommand TestCommand { get; set; }
 
@@ -410,75 +428,7 @@ namespace taskmaker_wpf.ViewModels {
         //    //CreateRegions();
         //}
 
-        //public void DeleteAll() {
-        //    Unregister();
 
-        //    Model.RemoveAll();
-
-        //    var nodes = FetchNodes();
-        //    var widget = Page.Root.FindByName("Complex") as ComplexWidget;
-        //    var state = (ComplexWidgetState)widget.State.Clone();
-
-        //    state.nodes = nodes;
-
-        //    Engine.SetState(
-        //        Page.Root.FindByName<ComplexWidget>("Complex"),
-        //        state);
-        //}
-
-
-        //public void Unregister() {
-        //    _topics.ForEach(x => x.Dispose());
-        //    _topics.Clear();
-        //}
-
-        //public Node[] FetchNodes() {
-        //    return Model.Nodes
-        //        .Select(e => new Node { location = e.Location.ToSKPoint() })
-        //        .ToArray();
-        //}
-
-        //public SKPoint[] FetchNodes() {
-            //return Model.Nodes.Select(e => e.Location.ToSKPoint())
-                              //.ToArray();
-        //}
-
-        //private void AddNode(MouseButtonEventArgs args) {
-        //    //// Add node to model
-        //    var skLocation = args
-        //        .GetPosition((UIElement)args.Source)
-        //        .ToSKPoint();
-        //    var ndLocation = skLocation
-        //        .ToNDarray();
-
-        //    Model.Add(ndLocation);
-        //    //Nodes_v1.Add(new Node { Location = skLocation });
-        //}
-
-        //private void RemoveNode(MouseButtonEventArgs args) {
-        
-        //}
-
-
-        //[Obsolete]
-        //public void AddNode(SKPoint location) {
-        //    var count = Model.Nodes.Count;
-        //    var node = new Model.Data.NodeM(count + 1) {
-        //        Location = location.ToNDarray()
-        //    };
-
-        //    Model.Add(node);
-
-        //    var nodes = FetchNodes();
-        //    var widget = Page.Root.FindByName<
-        //        ComplexWidget>("Complex");
-        //    var state = (ComplexWidgetState)widget.State.Clone();
-
-        //    state.nodes = nodes;
-        //    state.Hash = node.Id;
-
-        //    Engine.SetState(widget, state);
-        //}
 
         //public void CreateRegions() {
         //    Model.CreateRegions();
@@ -510,22 +460,14 @@ namespace taskmaker_wpf.ViewModels {
         //}
 
 
-        //private void CreateInterior() {
-        //    var info = Model.GetSimplexInfos();
+        private void CreateInterior() {
+            Model.CreateRegions();
 
-        //    var results = info
-        //        .Select(e => (e.Item1, 
-        //            e.Item2
-        //                .Select(e1 => e1.ToSKPoint()).ToArray()))
-        //        .ToArray();
+            var data = Model.GetSimplexCollectionData();
 
-        //    var widget = Page.Root.FindByName<ComplexWidget>("Complex");
-        //    var state = (ComplexWidgetState)widget.State.Clone();
-
-        //    state.simplices = results;
-
-        //    Engine.SetState(widget, state);
-        //}
+            Simplices.Clear();
+            Simplices.AddRange(data);
+        }
 
         //private void CreateExterior() {
         //    var regions = Model.GetVoronoiInfos();
@@ -568,7 +510,7 @@ namespace taskmaker_wpf.ViewModels {
             var value = ((Point)pt).ToSKPoint().ToNDarray();
             var uid = Model.Add(value);
 
-            Nodes_v1.Add(new Node { Location = (Point)pt, Uid = uid });
+            Nodes.Add(new Node { Location = (Point)pt, Uid = uid });
         }
 
         private DelegateCommand<object> removeItemCommand;
@@ -587,8 +529,24 @@ namespace taskmaker_wpf.ViewModels {
             var uid = (Guid)obj;
 
             Model.RemoveAt(uid);
-            var idx = Nodes_v1.ToList().FindIndex(e => e.Uid == uid);
-            Nodes_v1.RemoveAt(idx);
+            var idx = Nodes.ToList().FindIndex(e => e.Uid == uid);
+            Nodes.RemoveAt(idx);
+        }
+
+        private DelegateCommand buildInteriorCommand;
+
+        public ICommand BuildInteriorCommand {
+            get {
+                if (buildInteriorCommand == null) {
+                    buildInteriorCommand = new DelegateCommand(BuildInterior);
+                }
+
+                return buildInteriorCommand;
+            }
+        }
+
+        private void BuildInterior() {
+            CreateInterior();
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using taskmaker_wpf.ViewModels;
@@ -32,16 +33,7 @@ namespace taskmaker_wpf.Views {
             DependencyProperty.Register("Mode", typeof(OperationMode), typeof(ComplexWidget), new PropertyMetadata(OperationMode.Default, OnModeChanged));
 
         private static void OnModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            if (e.NewValue != e.OldValue) {
-                //switch((OperationMode)e.NewValue) {
-                //    case OperationMode.Default:
-                //        break;
-                //    case OperationMode.Add:
-                //        (d as ComplexWidget).OnInitAddMode();
-                //        break;
-
-                //}
-            }
+            if (e.NewValue != e.OldValue) { }
         }
 
         private List<IDisposable> _topics = new List<IDisposable>();
@@ -56,18 +48,6 @@ namespace taskmaker_wpf.Views {
 
             Console.WriteLine(result);
             base.OnMouseEnter(e);
-        }
-
-        private void OnInitAddMode() {
-            Unsubscribe();
-
-            var add = MouseDownObs.Take(1)
-                .Concat(MouseUpObs.Take(1))
-                .TakeLast(1)
-                .Repeat()
-                .Subscribe(OnAddNode);
-
-            _topics.Add(add);
         }
 
         public NodeWidget SelectedNode {
@@ -140,11 +120,20 @@ namespace taskmaker_wpf.Views {
                         Children.Add(newNode);
 
                     }
-                    else if (item is Simplex simplex) {
+                    else if (item is SimplexData simplex) {
                         var newSimplex = new Widgets.SimplexWidget() {
                             DataContext = simplex,
+                            Id = simplex.Uid,
                         };
-                        newSimplex.Style = ItemStyle;
+                        //newSimplex.Style = ItemStyle;
+
+                        BindingOperations.SetBinding(
+                            newSimplex,
+                            Widgets.SimplexWidget.PointsProperty,
+                            new Binding {
+                                Source = item,
+                                Path = new PropertyPath("Points")
+                            });
 
                         Children.Add(newSimplex);
                     }
@@ -206,6 +195,29 @@ namespace taskmaker_wpf.Views {
                 }
             }
         }
+
+
+
+        public ICommand InteriorCommand {
+            get { return (ICommand)GetValue(InteriorCommandProperty); }
+            set { SetValue(InteriorCommandProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for InteriorCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty InteriorCommandProperty =
+            DependencyProperty.Register("InteriorCommand", typeof(ICommand), typeof(ComplexWidget), new PropertyMetadata(null));
+
+
+
+        public ICommand ExteriorCommand {
+            get { return (ICommand)GetValue(ExteriorCommandProperty); }
+            set { SetValue(ExteriorCommandProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ExteriorCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ExteriorCommandProperty =
+            DependencyProperty.Register("ExteriorCommand", typeof(ICommand), typeof(ComplexWidget), new PropertyMetadata(null));
+
 
 
 
@@ -286,6 +298,9 @@ namespace taskmaker_wpf.Views {
             switch (obj.EventArgs.Key) {
                 case Key.Delete:
                     OnRemoveNode(obj);
+                    break;
+                case Key.D3:
+                    InteriorCommand.Execute(null);
                     break;
             }
         }

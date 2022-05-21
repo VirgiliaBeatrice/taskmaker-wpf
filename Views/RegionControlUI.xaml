@@ -29,10 +29,11 @@
             Grid.Row="1"
             Focusable="True"
                              Mode="{Binding Path=OperationMode}"
-                             NodeSource="{Binding Nodes_v1}"
+                             NodeSource="{Binding Nodes}"
                              SimplexSource="{Binding Simplices}"
                              AddItemCommand="{Binding AddItemCommand}"
             RemoveItemCommand="{Binding RemoveItemCommand}"
+            InteriorCommand="{Binding BuildInteriorCommand}"
                              Background="Beige">
             <local:ComplexWidget.ItemStyle>
                 <Style>

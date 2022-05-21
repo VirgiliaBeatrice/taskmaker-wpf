@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Numpy;
 using SkiaSharp;
+using taskmaker_wpf.ViewModels;
 
 namespace taskmaker_wpf.Model.Data {
     public class NodeM : IDisposable {
@@ -58,15 +59,14 @@ namespace taskmaker_wpf.Model.Data {
 
     public class SimplexM : IDisposable, IRegionUnit {
         private bool disposedValue;
-
-        public int Hash { get; set; }
+        public Guid Uid { get; set; }
         public List<NodeM> Nodes { get; set; } = new List<NodeM>();
         public IBary Bary { get; set; } = null;
 
         public SimplexM(NodeM n0, NodeM n1, NodeM n2) : this(new NodeM[] { n0, n1, n2 }) { }
 
         public SimplexM() {
-            Hash = GetHashCode();
+            Uid = Guid.NewGuid();
         }
 
         public SimplexM(IEnumerable<NodeM> nodes) : this() {
@@ -77,8 +77,14 @@ namespace taskmaker_wpf.Model.Data {
             return Nodes.Contains(node);
         }
 
-        public (int, NDarray[]) GetSimplexInfo() {
-            return (Hash, Nodes.Select(e => e.Location).ToArray());
+        public SimplexData ToData() {
+            var data = new SimplexData {
+                Uid = Uid,
+                Points = Nodes.Select(e => e.Location.ToPoint())
+                              .ToArray()
+            };
+
+            return data;
         }
 
         public void SetBary() {
@@ -121,16 +127,13 @@ namespace taskmaker_wpf.Model.Data {
 
     public class ComplexM : IDisposable {
         private bool disposedValue;
-        public int Hash { get; set; }
         public List<SimplexM> Simplices { get; set; } = new List<SimplexM>();
         public List<VoronoiRegionM> Regions { get; set; } = new List<VoronoiRegionM>();
         //public ExteriorM Exterior { get; set; }
 
         public ComplexBaryD Bary { get; set; } = null;
 
-        public ComplexM() {
-            Hash = GetHashCode();
-        }
+        public ComplexM() { }
 
         public void AddSimplex(params NodeM[] nodes) {
             if (nodes.Length == 3) {

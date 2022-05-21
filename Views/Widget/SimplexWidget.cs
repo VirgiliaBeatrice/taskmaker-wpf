@@ -13,16 +13,46 @@ using SkiaSharp.Views.WPF;
 
 namespace taskmaker_wpf.Views.Widgets {
     public class SimplexWidget : FrameworkElement {
-        private Point[] Points = new Point[] { };
+        public Guid Id {
+            get { return (Guid)GetValue(IdProperty); }
+            set { SetValue(IdProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Id.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IdProperty =
+            DependencyProperty.Register("Id", typeof(Guid), typeof(SimplexWidget), new PropertyMetadata(Guid.Empty));
+
+
+
+        public Point[] Points {
+            get { return (Point[])GetValue(PointsProperty); }
+            set { SetValue(PointsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Points.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty PointsProperty =
+            DependencyProperty.Register("Points", typeof(Point[]), typeof(SimplexWidget), new PropertyMetadata(null));
+
 
         protected override void OnRender(DrawingContext drawingContext) {
-            var bitmap = OnSKRender(new SKImageInfo(20, 20));
+            var path = new SKPath();
+            var points = Points.Select(e => e.ToSKPoint()).ToArray();
+
+            path.MoveTo(points[0]);
+            path.LineTo(points[1]);
+            path.LineTo(points[2]);
+            path.Close();
+
+            _region?.Dispose();
+            _region = path;
+
+            var bitmap = OnSKRender(new SKImageInfo((int)(Parent as Canvas).ActualWidth, (int)(Parent as Canvas).ActualHeight));
 
             drawingContext.PushTransform(new TranslateTransform());
-            drawingContext.DrawImage(bitmap, new Rect(0, 0, 20, 20));
+            drawingContext.DrawImage(bitmap, new Rect(0, 0, (Parent as Canvas).ActualWidth, (int)(Parent as Canvas).ActualHeight));
             drawingContext.Pop();
 
-            base.OnRender(drawingContext);
+            //base.OnRender(drawingContext);
         }
 
         protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters) {
@@ -51,18 +81,18 @@ namespace taskmaker_wpf.Views.Widgets {
                 Color = SKColors.YellowGreen
             };
 
-            var path = new SKPath();
-            var points = Points.Select(e => e.ToSKPoint()).ToArray();
+            //var path = new SKPath();
+            //var points = Points.Select(e => e.ToSKPoint()).ToArray();
 
-            path.MoveTo(points[0]);
-            path.LineTo(points[1]);
-            path.LineTo(points[2]);
-            path.Close();
+            //path.MoveTo(points[0]);
+            //path.LineTo(points[1]);
+            //path.LineTo(points[2]);
+            //path.Close();
 
-            canvas.DrawPath(path, stroke);
+            canvas.DrawPath(_region, stroke);
 
-            _region?.Dispose();
-            _region = path;
+            //_region?.Dispose();
+            //_region = path;
 
             var ret = bitmap.ToWriteableBitmap();
 
