@@ -169,14 +169,6 @@ namespace taskmaker_wpf.ViewModels {
             Window parent) {
             Parent = parent;
             Model = new Model.Core.UI();
-            //Motors = new Model.Data.MotorCollection();
-            Page = new Views.Pages.SimplexView(this);
-
-            //Motors.Motors.Add(new Model.Data.Motor());
-            //Motors.Motors.Add(new Model.Data.Motor());
-            //Motors.Motors.Add(new Model.Data.Motor());
-
-            //Model.BindTarget(Motors);
 
             _motorSvr = motorService;
             _motorSvr.Motors.Add(new Motor {
@@ -199,20 +191,7 @@ namespace taskmaker_wpf.ViewModels {
             });
 
             Motors.AddRange(_motorSvr.Motors);
-            // Subscribe observable
-            //RegisterKeyPress();
-            //var disposable0 = mouseDown.Subscribe(
-            //    (e) => { },
-            //    (e) => { Console.WriteLine(e); },
-            //    () => { });
 
-            //_mouseLeftClick = mouseDown
-            //    .SelectMany(mouseUp)
-            //    .Where(e => e.ChangedButton == MouseButton.Left)
-            //    .Take(2)
-            //    .Repeat();
-
-            //_mouseLeftClick.Subscribe(e => { Console.WriteLine(e.GetPosition((UIElement)e.Source)); });
             SystemInfo = $"{operationMode}";
         }
 

@@ -32,13 +32,21 @@ namespace taskmaker_wpf.Model.Core {
         }
     }
 
+    public interface IBindableTarget {
+        int Dim { get; set; }
+
+        void SetValue<T>(T value);
+        T1 GetValue<T1>();
+
+    }
+
     public partial class UI {
         public SortedList NodeCollection { get; set; } = new SortedList();
         public ComplexM Complex { get; set; }
         public NLinearMap Map { get; set; }
 
+        private IBindableTarget _target;
 
-        private IBindable _target;
         public UI() {
         }
 
@@ -60,21 +68,22 @@ namespace taskmaker_wpf.Model.Core {
             NodeCollection.Clear();
         }
 
-        //public IRegionUnit FindRegionById(int id) {
-        //    var v = Complex.Regions.Where(e => e.Hash == id);
-        //    var s = Complex.Simplices.Where(e => e.Hash == id);
-            
-        //    return v.Concat<IRegionUnit>(s).FirstOrDefault();
-        //}
-
-        public void BindTarget(IBindable target) {
+        public void BindTarget(IBindableTarget target) {
             _target = target;
+        }
+
+        public void SetTargetValue(Guid uid) {
+            var node = NodeCollection[uid] as NodeM;
+            var value = _target?.GetValue<NDarray<float>>();
+
+            node.TargetValue = value;
+            //Map.SetValue()
         }
 
         public void BindData(NodeM node) {
             node.TargetValue?.Dispose();
 
-            node.TargetValue = (NDarray<float>)_target.ToNDarray();
+            //node.TargetValue = (NDarray<float>)_target.ToNDarray();
 
             Map.SetValue(new int[] { node.Id - 1 }, node.TargetValue);
         }
