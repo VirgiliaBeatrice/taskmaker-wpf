@@ -36,13 +36,22 @@
             RemoveItemCommand="{Binding RemoveItemCommand}"
             InteriorCommand="{Binding BuildInteriorCommand}"
             ExteriorCommand="{Binding BuildExteriorCommand}"
-                             Background="Beige">
+                             Background="LightGray">
             <local:ComplexWidget.ItemStyle>
                 <Style>
                     <Setter Property="local:ComplexWidget.Left" Value="{Binding Path=Location.X}" />
                     <Setter Property="local:ComplexWidget.Top" Value="{Binding Path=Location.Y}" />
                 </Style>
             </local:ComplexWidget.ItemStyle>
+            <ListView 
+                ItemsSource="{Binding Motors}"
+                Width="100" d:ItemsSource="{d:SampleData ItemCount=5}">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
         </local:ComplexWidget>
         
         <StackPanel

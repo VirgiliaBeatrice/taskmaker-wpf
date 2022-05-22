@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using taskmaker_wpf.ViewModels;
 
@@ -18,7 +19,8 @@ namespace taskmaker_wpf.Views {
     public enum OperationMode {
         Default = 0,
         Add,
-        Edit
+        Edit,
+        Panning
     }
 
     public class ComplexWidget : Canvas {
@@ -335,14 +337,54 @@ namespace taskmaker_wpf.Views {
                 .TakeLast(1)
                 .Repeat()
                 .Subscribe(OnAddNode);
-            
+
+            var pan = MouseDownObs
+                .Where(e => Mode == OperationMode.Panning)
+                .Take(1)
+                .Do((e) => {
+                    CaptureMouse();
+                    _last = e.EventArgs.GetPosition(this);
+                })
+                .SelectMany(MouseMoveObs.Throttle(TimeSpan.FromMilliseconds(50)))
+                .TakeUntil(MouseUpObs)
+                .Finally(() => { ReleaseMouseCapture(); })
+                //.Do((e) => 
+                //    ReleaseMouseCapture())
+                .Repeat()
+                .ObserveOn(Dispatcher)
+                .Subscribe(OnPanning);
+
             _topics.Add(add);
+            _topics.Add(pan);
+        }
+        private Point _last;
+
+        private void OnPanning(EventPattern<MouseEventArgs> obj) {
+            if (Mode != OperationMode.Panning)
+                return;
+
+            if (!IsMouseCaptured) return;
+
+            var v = _last - obj.EventArgs.GetPosition(this);
+            var t = ((MatrixTransform)RenderTransform).Matrix;
+
+            t.Translate(-v.X, -v.Y);
+
+            RenderTransform = new MatrixTransform(t);
+
+            _last = obj.EventArgs.GetPosition(this);
+            InvalidateVisual();
         }
 
         private void OnKeyPressed(EventPattern<KeyEventArgs> obj) {
             if (obj.EventArgs.Key == Key.D1) {
                 Mode = OperationMode.Add;
 
+                return;
+            }
+
+            if (obj.EventArgs.Key == Key.D2) {
+                Mode = OperationMode.Panning;
                 return;
             }
 

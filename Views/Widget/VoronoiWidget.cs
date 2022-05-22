@@ -59,13 +59,6 @@ namespace taskmaker_wpf.Views {
             }
             else if (points.Length == 3) {
                 var radius = (points[1] - points[0]).Length;
-
-                //_region.MoveTo(points[0]);
-                //_region.LineTo(points[1]);
-                //_region.LineTo(points[2]);
-                ////_region.AddArc(new SKRect(0,0, radius, radius), )
-                //_region.Close();
-
                 var o = points[1];
                 var p0 = points[0];
                 var p1 = points[2];
@@ -79,8 +72,8 @@ namespace taskmaker_wpf.Views {
 
                 var op0 = SKPoint.Normalize(o - p0);
                 var midP0 = SKMatrix.CreateRotation((float)(Math.PI * 90.0 / 180.0)).MapVector(op0);
-                midP0.X = midP0.X * midLen;
-                midP0.Y = midP0.Y * midLen;
+                midP0.X *= midLen;
+                midP0.Y *= midLen;
 
                 var mid = p0 + midP0;
 
@@ -145,40 +138,6 @@ namespace taskmaker_wpf.Views {
             drawingContext.PushTransform(new TranslateTransform());
             drawingContext.DrawImage(bitmap, new Rect(0, 0, (Parent as Canvas).ActualWidth, (int)(Parent as Canvas).ActualHeight));
             drawingContext.Pop();
-
-            //base.OnRender(drawingContext);
         }
     }
-
-
-    //public class VoronoiWidget : RenderWidget<VoronoiState> {
-    //    public VoronoiWidget(string name, VoronoiState initState) : base(name, initState) {
-    //        ModelHash = initState.Hash;
-    //    }
-
-    //    public override bool Contains(SKPoint p) {
-    //        using (var path = new SKPath()) {
-    //            if (State.Points.Length == 4) {
-    //                path.MoveTo(State.Points[0]);
-    //                path.LineTo(State.Points[1]);
-    //                path.LineTo(State.Points[2]);
-    //                path.LineTo(State.Points[3]);
-    //                path.Close();
-    //            }
-    //            else if (State.Points.Length == 3) {
-    //                var radius = (State.Points[1] - State.Points[0]).Length;
-
-    //                path.MoveTo(State.Points[0]);
-    //                path.LineTo(State.Points[1]);
-    //                path.LineTo(State.Points[2]);
-    //                //path.AddArc(new SKRect(0,0, radius, radius), )
-    //                path.Close();
-    //            }
-
-    //            var result = path.Contains(p.X, p.Y);
-
-    //            return result;
-    //        }
-    //    }
-    //}
 }

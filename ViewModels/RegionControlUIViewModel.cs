@@ -20,6 +20,7 @@ using Prism.Commands;
 using taskmaker_wpf.Services;
 using System.Reactive.Subjects;
 using System.Collections.ObjectModel;
+using taskmaker_wpf.Model.Data;
 
 namespace taskmaker_wpf.ViewModels {
     public class Node : BindableBase {
@@ -125,7 +126,9 @@ namespace taskmaker_wpf.ViewModels {
         public Window Parent { get; set; }
         public Model.Core.UI Model { get; set; }
         public Views.Pages.SimplexView Page { get; set; }
-        public Model.Data.MotorCollection Motors { get; set; }
+        //public Model.Data.MotorCollection Motors { get; set; }
+
+        private MotorService _motorSvr;
 
         #region Bindable Properties
         private int _count;
@@ -140,6 +143,8 @@ namespace taskmaker_wpf.ViewModels {
         private string _keymapInfo;
         private string _systemInfo;
         private string _statusMsg;
+
+        public ObservableCollection<Motor> Motors { get; set; } = new ObservableCollection<Motor>();
 
         public ObservableCollection<Node> Nodes { get; set; } = new ObservableCollection<Node>();
 
@@ -164,15 +169,36 @@ namespace taskmaker_wpf.ViewModels {
             Window parent) {
             Parent = parent;
             Model = new Model.Core.UI();
-            Motors = new Model.Data.MotorCollection();
+            //Motors = new Model.Data.MotorCollection();
             Page = new Views.Pages.SimplexView(this);
 
-            Motors.Motors.Add(new Model.Data.Motor());
-            Motors.Motors.Add(new Model.Data.Motor());
-            Motors.Motors.Add(new Model.Data.Motor());
+            //Motors.Motors.Add(new Model.Data.Motor());
+            //Motors.Motors.Add(new Model.Data.Motor());
+            //Motors.Motors.Add(new Model.Data.Motor());
 
-            Model.BindTarget(Motors);
+            //Model.BindTarget(Motors);
 
+            _motorSvr = motorService;
+            _motorSvr.Motors.Add(new Motor {
+                Alias = "S0",
+                Max = 10000,
+                Min = -10000,
+                Value = 0
+            });
+            _motorSvr.Motors.Add(new Motor {
+                Alias = "S1",
+                Max = 10000,
+                Min = -10000,
+                Value = 0
+            });
+            _motorSvr.Motors.Add(new Motor {
+                Alias = "S2",
+                Max = 10000,
+                Min = -10000,
+                Value = 0
+            });
+
+            Motors.AddRange(_motorSvr.Motors);
             // Subscribe observable
             //RegisterKeyPress();
             //var disposable0 = mouseDown.Subscribe(
@@ -202,13 +228,11 @@ namespace taskmaker_wpf.ViewModels {
         //        .Subscribe(e => Console.WriteLine(e.GetTouchPoint(Parent).TouchDevice.Id));
         //}
 
-        //private void SetBarys() {
-        //    Unregister();
-
-        //    // Init all barys
-        //    Model.Complex.SetBary();
-        //    Model.CreateMap();
-        //}
+        private void SetBarys() {
+            // Init all barys
+            Model.Complex.SetBary();
+            Model.CreateMap();
+        }
 
         //private void RegisterManipulateMode() {
         //    Unregister();
@@ -246,43 +270,18 @@ namespace taskmaker_wpf.ViewModels {
         //        }
         //    }
 
-
-        //private void TestMotor() {
-        //    Unregister();
-
-        //    //Motors.SetValue(new object[] { 0, 100, 0 });
-        //    //Model.BindData(Model.Nodes[0]);
-        //    //Motors.SetValue(new object[] { 100, 0, 0});
-        //    //Model.BindData(Model.Nodes[1]);
-        //    //Motors.SetValue(new object[] { 0, 0, 100 });
-        //    //Model.BindData(Model.Nodes[2]);
-        //    //Motors.SetValue(new object[] { 100, 100, 100 });
-        //    //Model.BindData(Model.Nodes[3]);
-
-        //    //var w = new Window();
-        //    //w.Width = 300;
-        //    //w.Height = 600;
-        //    //w.Content = new Motors(Motors.Motors.ToArray());
-        //    //w.Show();
-        //}
-
-
         private void CreateInterior() {
             Model.CreateRegions();
 
             var data = Model.GetSimplexCollectionData();
 
             Simplices = data;
-            //Simplices.Clear();
-            //Simplices.AddRange(data);
         }
 
         private void CreateExterior() {
             var data = Model.GetVoronoiCollectionData();
 
             Voronois = data;
-            //Voronois.Clear();
-            //Voronois.AddRange(data);
         }
 
         private OperationMode operationMode;

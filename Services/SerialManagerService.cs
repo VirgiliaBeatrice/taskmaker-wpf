@@ -14,7 +14,7 @@ namespace taskmaker_wpf.Services {
         public List<mMotor> Motors { get; set; } = new List<mMotor> { };
 
         public MotorService() {
-            TestPurpose();
+            //TestPurpose();
         }
 
         private void TestPurpose() {
