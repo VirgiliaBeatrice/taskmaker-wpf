@@ -11,7 +11,7 @@ using taskmaker_wpf.Model;
 using taskmaker_wpf.Views;
 using taskmaker_wpf.Views.Widgets;
 using Numpy;
-using taskmaker_wpf.Views.Widgets.Container;
+using taskmaker_wpf.Views.Widgets;
 using taskmaker_wpf.Views.Debug;
 using System.Windows;
 using System.Windows.Input;
@@ -51,7 +51,13 @@ namespace taskmaker_wpf.ViewModels {
         }
     }
 
-    public class Voronoi : BindableBase {
+    public class VoronoiData : BindableBase {
+        private Guid _uid;
+        public Guid Uid {
+            get { return _uid; }
+            set => SetProperty(ref _uid, value);
+        }
+
         private Point[] _points;
         public Point[] Points {
             get => _points;
@@ -140,7 +146,18 @@ namespace taskmaker_wpf.ViewModels {
 
         public ObservableCollection<Node> Nodes { get; set; } = new ObservableCollection<Node>();
 
-        public ObservableCollection<SimplexData> Simplices { get; set; } = new ObservableCollection<SimplexData> ();
+        //public ObservableCollection<SimplexData> Simplices { get; set; } = new ObservableCollection<SimplexData> ();
+        private SimplexData[] _simplices;
+        public SimplexData[] Simplices {
+            get { return _simplices; }
+            set { SetProperty(ref _simplices, value); }
+        }
+
+        private VoronoiData[] _voronois;
+        public VoronoiData[] Voronois {
+            get { return _voronois; }
+            set { SetProperty(ref _voronois, value); }
+        }
 
         public DelegateCommand TestCommand { get; set; }
 
@@ -185,130 +202,6 @@ namespace taskmaker_wpf.ViewModels {
 
         public Dictionary<string, object> RegisteredSubjects = new Dictionary<string, object>();
 
-
-        //public void ModeAdd() {
-        //    Unregister();
-
-        //    RegisteredSubjects.Clear();
-
-
-        //    SystemInfo = $"{operationMode}";
-        //    KeymapInfo = $"(1) Single click to add.";
-
-        //   //_topics.Add(add);
-        //}
-
-        //private IWidget _selectedWidget;
-
-        //public void ModeRemove() {
-        //    Unregister();
-
-        //    RegisteredSubjects.Clear();
-
-        //    //List<IWidget> _HitTest(IWidget widget, SKPoint point) {
-        //    //    var targets = new List<IWidget>();
-        //    //    var result = widget.HitTest(point);
-
-        //    //    if (result) {
-        //    //        targets.Add(widget);
-
-        //    //        var children = widget.GetAll<IWidget>();
-
-        //    //        var targetCollection = children.Select(e => _HitTest(e, point)).ToList();
-
-        //    //        targetCollection.ForEach(e => targets.AddRange(e));
-        //    //    }
-
-        //    //    return targets;
-        //    //}
-
-        //    SystemInfo = $"{operationMode}";
-        //    KeymapInfo = $"(1) Click to remove.";
-        //}
-
-        //private IWidget selectedWidget;
-        //public void ModeEdit() {
-        //    //Unregister();
-
-        //    //void MoveTo(MouseEventArgs args) {
-        //    //    var hash = (selectedWidget as NodeWidget).ModelHash;
-        //    //    var target = Model.Nodes.Find(e => e.Id == hash);
-
-        //    //    target.Location = args.GetPosition((UIElement)args.Source).ToSKPoint().ToNDarray();
-
-        //    //    // fetch latest info from model
-        //    //    var nodes = FetchNodes();
-        //    //    var widget = Page.FindByName<ComplexWidget>("Complex");
-        //    //    var state = (ComplexWidgetState)widget.State.Clone();
-
-        //    //    state.nodes = nodes;
-
-        //    //    Engine.SetState(widget, state);
-        //    //}
-
-        //    //var move = mouseDown
-        //    //    .Take(1)
-        //    //    .Do(SelectTargetNode)
-        //    //    .SelectMany(mouseMove)
-        //    //    .TakeUntil(mouseUp)
-        //    //    .Repeat()
-        //    //    .Subscribe(MoveTo);
-
-        //    ////var topic = mouseDown
-        //    ////    .SelectMany(mouseMove)
-        //    ////    .TakeUntil(mouseUp)
-        //    ////    .Repeat()
-        //    ////    .Subscribe((e) => { Console.WriteLine("aaaa"); });
-
-        //    //SystemInfo = $"{operationMode}";
-        //    //KeymapInfo = $"(1) Click&Hold to drag.";
-
-        //    //_topics.Add(move);
-        //}
-
-        //private void SelectTargetNode(MouseButtonEventArgs args) {
-        //    //var location = args.GetPosition((UIElement)args.Source).ToSKPoint();
-
-        //    //selectedWidget = Page.FindTargetWidget(location);
-        //}
-
-        //public void RegisterKeyPress() {
-        //    var keyPress = (Parent as Window).OKeyPress
-        //        .Repeat()
-        //        .Subscribe(x => {
-        //            switch (x.Key) {
-        //                case Key.A:
-        //                    RegisterAddAndDeleteMode();
-        //                    break;
-        //                case Key.S:
-        //                    RegisterTriangulateMode();
-        //                    break;
-        //                case Key.D:
-        //                    DeleteAll();
-        //                    break;
-        //                //case 'v':
-        //                //    CreateExterior();
-        //                //    break;
-        //                case Key.M:
-        //                    TestMotor();
-        //                    break;
-        //                case Key.N:
-        //                    SetBarys();
-        //                    break;
-        //                case Key.P:
-        //                    RegisterManipulateMode();
-        //                    break;
-        //                case Key.T:
-        //                    RegisterTouchManipulateMode();
-        //                    break;
-        //                case Key.Escape:
-        //                    Unregister();
-        //                    break;
-        //            }
-
-        //            Console.WriteLine($"Mode-{x.Key}");
-        //        });
-        //}
 
         //private void RegisterTouchManipulateMode() {
         //    Unregister();
@@ -362,24 +255,6 @@ namespace taskmaker_wpf.ViewModels {
         //        }
         //    }
 
-        //    IWidget _Find_Target(IWidget widget, SKPoint location) {
-        //        var ret = widget.Contains(location);
-
-        //        if (ret)
-        //            return widget;
-        //        else
-        //            foreach (var item in widget.GetAllChild()) {
-        //                var childRet = _Find_Target(item, location);
-
-        //                if (childRet != null)
-        //                    return childRet;
-        //            }
-
-        //        return null;
-        //    }
-
-        //    _topics.Add(leftMove);
-        //}
 
         //private void TestMotor() {
         //    Unregister();
@@ -400,91 +275,24 @@ namespace taskmaker_wpf.ViewModels {
         //    //w.Show();
         //}
 
-        //public void RegisterAddAndDeleteMode() {
-        //    Unregister();
-
-        //    var leftClick = (Parent as MainWindow).OMouseClick
-        //        //.Where(x => Mouse.LeftButton == Mouse)
-        //        .Repeat()
-        //        .Subscribe(e => {
-        //            AddNode(e.GetPosition(Parent).ToSKPoint());
-        //        });
-        //    //var rightClick = (Parent as MainWindow).OMouseClick
-        //    //    //.Where(x => x.Button == MouseButtons.Right)
-        //    //    .Repeat()
-        //    //    .Subscribe(e => {
-        //    //        var target = Page.DeleteNode(e.GetPosition(Parent).ToSKPoint());
-
-        //    //        Console.WriteLine(Page.Root.PrintAllChild());
-        //    //    });
-
-        //    _topics.Add(leftClick);
-        //    //_topics.Add(rightClick);
-        //}
-
-        //public void RegisterTriangulateMode() {
-        //    Unregister();
-
-        //    //CreateRegions();
-        //}
-
-
-
-        //public void CreateRegions() {
-        //    Model.CreateRegions();
-
-        //    var info = Model.GetSimplexInfos();
-
-        //    var results = info
-        //        .Select(e => (e.Item1,
-        //            e.Item2
-        //                .Select(e1 => e1.ToSKPoint()).ToArray()))
-        //        .ToArray();
-
-        //    var widget = Page.Root.FindByName<ComplexWidget>("Complex");
-        //    var state = (ComplexWidgetState)widget.State.Clone();
-
-        //    state.simplices = results;
-
-        //    var regions = Model.GetVoronoiInfos();
-
-        //    results = regions
-        //        .Select(e => (e.Item1,
-        //            e.Item2
-        //                .Select(e1 => e1.ToSKPoint()).ToArray()))
-        //        .ToArray();
-
-        //    state.voronois = results;
-
-        //    Engine.SetState(widget, state);
-        //}
-
 
         private void CreateInterior() {
             Model.CreateRegions();
 
             var data = Model.GetSimplexCollectionData();
 
-            Simplices.Clear();
-            Simplices.AddRange(data);
+            Simplices = data;
+            //Simplices.Clear();
+            //Simplices.AddRange(data);
         }
 
-        //private void CreateExterior() {
-        //    var regions = Model.GetVoronoiInfos();
+        private void CreateExterior() {
+            var data = Model.GetVoronoiCollectionData();
 
-        //    var results = regions
-        //        .Select(e => (e.Item1,
-        //            e.Item2
-        //                .Select(e1 => e1.ToSKPoint()).ToArray()))
-        //        .ToArray();
-
-        //    var widget = Page.Root.FindByName<ComplexWidget>("Complex");
-        //    var state = (ComplexWidgetState)widget.State.Clone();
-
-        //    state.voronois = results;
-
-        //    Engine.SetState(widget, state);
-        //}
+            Voronois = data;
+            //Voronois.Clear();
+            //Voronois.AddRange(data);
+        }
 
         private OperationMode operationMode;
 
@@ -547,6 +355,22 @@ namespace taskmaker_wpf.ViewModels {
 
         private void BuildInterior() {
             CreateInterior();
+        }
+
+        private DelegateCommand buildExteriorCommand;
+
+        public ICommand BuildExteriorCommand {
+            get {
+                if (buildExteriorCommand == null) {
+                    buildExteriorCommand = new DelegateCommand(BuildExterior);
+                }
+
+                return buildExteriorCommand;
+            }
+        }
+
+        private void BuildExterior() {
+            CreateExterior();
         }
     }
 }

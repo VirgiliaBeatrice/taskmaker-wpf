@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using taskmaker_wpf.Views.Widgets;
-using taskmaker_wpf.Views.Widgets.Container;
+using taskmaker_wpf.Views.Widgets;
 using SkiaSharp;
 using System.Windows;
 using System.Windows.Data;

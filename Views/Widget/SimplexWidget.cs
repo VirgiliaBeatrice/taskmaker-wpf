@@ -11,7 +11,7 @@ using System.Windows.Media.Imaging;
 using SkiaSharp;
 using SkiaSharp.Views.WPF;
 
-namespace taskmaker_wpf.Views.Widgets {
+namespace taskmaker_wpf.Views {
     public class SimplexWidget : FrameworkElement {
         public Guid Id {
             get { return (Guid)GetValue(IdProperty); }

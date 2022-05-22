@@ -308,13 +308,13 @@ namespace taskmaker_wpf.Model.Data {
 
     public abstract class VoronoiRegionM : IDisposable, IRegionUnit {
         //public abstract SimplexBary GetBary();
-        public int Hash { get; set; }
+        public Guid Uid { get; set; }
         public abstract IBary Bary { get; set; }
-        public abstract (int, NDarray[]) GetVoronoiInfo();
+        public abstract VoronoiData ToData();
         public abstract void SetBary();
 
         public VoronoiRegionM() {
-            Hash = GetHashCode();
+            Uid = Guid.NewGuid();
         }
 
         public void Dispose() {
@@ -427,9 +427,11 @@ namespace taskmaker_wpf.Model.Data {
             Dispose(disposing: false);
         }
 
-
-        public override (int, NDarray[]) GetVoronoiInfo() {
-            return (Hash, RectVertices);
+        public override VoronoiData ToData() {
+            return new VoronoiData {
+                Uid = Uid,
+                Points = RectVertices.Select(e => e.ToPoint()).ToArray()
+            };
         }
     }
 
@@ -511,10 +513,6 @@ namespace taskmaker_wpf.Model.Data {
 
         }
 
-        public override (int, NDarray[]) GetVoronoiInfo() {
-            return (Hash, Vertices);
-        }
-
         public override string ToString() {
             return $"SectoralVor. - Type {Governors.Distinct().Count()}";
         }
@@ -549,6 +547,13 @@ namespace taskmaker_wpf.Model.Data {
                 // TODO: set large fields to null
                 disposedValue = true;
             }
+        }
+
+        public override VoronoiData ToData() {
+            return new VoronoiData {
+                Uid = Uid,
+                Points = Vertices.Select(e => e.ToPoint()).ToArray()
+            };
         }
 
         // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources

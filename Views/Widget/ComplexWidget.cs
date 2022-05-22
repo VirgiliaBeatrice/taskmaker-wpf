@@ -69,9 +69,35 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for VoronoiSource.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty VoronoiSourceProperty =
-            DependencyProperty.Register("VoronoiSource", typeof(IEnumerable), typeof(ComplexWidget), new PropertyMetadata(null, OnCollectionPropertyChanged));
+            DependencyProperty.Register("VoronoiSource", typeof(IEnumerable), typeof(ComplexWidget), new PropertyMetadata(null, OnPropertyChanged_Voronoi));
 
+        private static void OnPropertyChanged_Voronoi(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            var complex = d as ComplexWidget;
 
+            // Clear
+            complex.Children.OfType<VoronoiWidget>()
+                .ToList()
+                .ForEach(x => complex.Children.Remove(x));
+
+            foreach (var item in (VoronoiData[])e.NewValue) {
+                var newVoronoi = new VoronoiWidget {
+                    DataContext = item,
+                    Id = item.Uid,
+                };
+
+                BindingOperations.SetBinding(
+                    newVoronoi,
+                    VoronoiWidget.PointsProperty,
+                    new Binding {
+                        Source = item,
+                        Path = new PropertyPath("Points")
+                    });
+
+                ComplexWidget.SetZIndex(newVoronoi, 1);
+
+                complex.Children.Add(newVoronoi);
+            }
+        }
 
         public IEnumerable SimplexSource {
             get { return (IEnumerable)GetValue(SimplexSourceProperty); }
@@ -80,10 +106,35 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for SimplexSource.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SimplexSourceProperty =
-            DependencyProperty.Register("SimplexSource", typeof(IEnumerable), typeof(ComplexWidget), new PropertyMetadata(null, OnCollectionPropertyChanged));
+            DependencyProperty.Register("SimplexSource", typeof(IEnumerable), typeof(ComplexWidget), new PropertyMetadata(null, OnPropertyChanged_Simplex));
 
+        private static void OnPropertyChanged_Simplex(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            var complex = d as ComplexWidget;
 
+            // Clear
+            complex.Children.OfType<SimplexWidget>()
+                .ToList()
+                .ForEach(x => complex.Children.Remove(x));
 
+            foreach (var item in (SimplexData[])e.NewValue) {
+                var newSimplex = new SimplexWidget() {
+                    DataContext = item,
+                    Id = item.Uid,
+                };
+
+                BindingOperations.SetBinding(
+                    newSimplex,
+                    SimplexWidget.PointsProperty,
+                    new Binding {
+                        Source = item,
+                        Path = new PropertyPath("Points")
+                    });
+
+                ComplexWidget.SetZIndex(newSimplex, 2);
+
+                complex.Children.Add(newSimplex);
+            }
+        }
 
         public IEnumerable NodeSource {
             get { return (IEnumerable)GetValue(NodeSourceProperty); }
@@ -117,26 +168,32 @@ namespace taskmaker_wpf.Views {
                         newNode.Style = ItemStyle;
                         newNode.Click += OnClick;
 
+                        ComplexWidget.SetZIndex(newNode, 5);
+
                         Children.Add(newNode);
 
                     }
-                    else if (item is SimplexData simplex) {
-                        var newSimplex = new Widgets.SimplexWidget() {
-                            DataContext = simplex,
-                            Id = simplex.Uid,
-                        };
-                        //newSimplex.Style = ItemStyle;
+                    
+                    else if (item is VoronoiData voronoi) {
+                        //var newVoronoi = new VoronoiWidget {
+                        //    DataContext = voronoi,
+                        //    Id = voronoi.Uid,
+                        //};
 
-                        BindingOperations.SetBinding(
-                            newSimplex,
-                            Widgets.SimplexWidget.PointsProperty,
-                            new Binding {
-                                Source = item,
-                                Path = new PropertyPath("Points")
-                            });
+                        //BindingOperations.SetBinding(
+                        //    newVoronoi,
+                        //    VoronoiWidget.PointsProperty,
+                        //    new Binding {
+                        //        Source = item,
+                        //        Path = new PropertyPath("Points")
+                        //    });
 
-                        Children.Add(newSimplex);
+                        //Children.OfType<VoronoiWidget>()
+                        //    .ToList()
+                        //    .ForEach(x => Children.Remove(x));
+                        //Children.Add(newVoronoi);
                     }
+
                 }
                 //foreach (var item in e.NewItems) {
                 //    var idx = e.NewStartingIndex;
@@ -301,6 +358,9 @@ namespace taskmaker_wpf.Views {
                     break;
                 case Key.D3:
                     InteriorCommand.Execute(null);
+                    break;
+                case Key.D4:
+                    ExteriorCommand.Execute(null);
                     break;
             }
         }

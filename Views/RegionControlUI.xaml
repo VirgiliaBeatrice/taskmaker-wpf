@@ -28,12 +28,14 @@
             x:Name="complex"
             Grid.Row="1"
             Focusable="True"
-                             Mode="{Binding Path=OperationMode}"
-                             NodeSource="{Binding Nodes}"
-                             SimplexSource="{Binding Simplices}"
-                             AddItemCommand="{Binding AddItemCommand}"
+            Mode="{Binding Path=OperationMode}"
+            NodeSource="{Binding Nodes}"
+            SimplexSource="{Binding Simplices}"
+            VoronoiSource="{Binding Voronois}"
+            AddItemCommand="{Binding AddItemCommand}"
             RemoveItemCommand="{Binding RemoveItemCommand}"
             InteriorCommand="{Binding BuildInteriorCommand}"
+            ExteriorCommand="{Binding BuildExteriorCommand}"
                              Background="Beige">
             <local:ComplexWidget.ItemStyle>
                 <Style>

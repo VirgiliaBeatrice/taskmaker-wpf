@@ -79,18 +79,12 @@ namespace taskmaker_wpf.Model.Core {
             Map.SetValue(new int[] { node.Id - 1 }, node.TargetValue);
         }
 
-        //public (int, NDarray[])[] GetSimplexInfos() {
-        //    return Complex.Simplices
-        //        .Select(e => e.GetSimplexInfo()).ToArray();
-        //}
-
         public SimplexData[] GetSimplexCollectionData() {
-            return Complex.Simplices.Select(e => e.ToData()).ToArray(); ;
+            return Complex.Simplices.Select(e => e.ToData()).ToArray();
         }
 
-        public (int, NDarray[])[] GetVoronoiInfos() {
-            return Complex.Regions
-                .Select(e => e.GetVoronoiInfo()).ToArray();
+        public VoronoiData[] GetVoronoiCollectionData() {
+            return Complex.Regions.Select(e => e.ToData()).ToArray();
         }
 
         public void CreateRegions() {
@@ -110,14 +104,14 @@ namespace taskmaker_wpf.Model.Core {
             Complex.AddSimplices(simplices);
 
             // reverse for ccw
-            //var extremes = Qhull.QhullCSharp.RunConvex(nodes)
-            //    .Select(
-            //        e => NodeCollection[e])
-            //    .Reverse()
-            //    .ToArray();
+            var extremes = Qhull.QhullCSharp.RunConvex(nodes)
+                .Select(
+                    e => orderedNodes.ElementAt(e))
+                .Reverse()
+                .ToArray();
 
-            //// Create exterior
-            //Complex.Regions = new List<VoronoiRegionM>(ExteriorM.Create(extremes, simplices));
+            // Create exterior
+            Complex.Regions = new List<VoronoiRegionM>(ExteriorM.Create(extremes, simplices));
         }
 
         public void CreateMap() {
