@@ -87,6 +87,7 @@ namespace taskmaker_wpf.Views {
                 _region.MoveTo(o);
                 _region.LineTo(p0);
                 _region.ArcTo(mid, p1, radius);
+                _region.LineTo(p1);
                 _region.Close();
             }
         }
@@ -97,16 +98,36 @@ namespace taskmaker_wpf.Views {
 
             var stroke = new SKPaint {
                 IsAntialias = true,
-                StrokeWidth = 2,
+                StrokeWidth = 1,
                 IsStroke = true,
                 Color = SKColors.Black,
             };
             var fill = new SKPaint {
                 IsAntialias = true,
-                Color = SKColors.YellowGreen
+                Color = SKColors.Bisque
             };
 
+            if (_region.PointCount == 6) {
+                var transparent = SKColors.Bisque.WithAlpha(0);
+                fill.Shader = SKShader.CreateRadialGradient(
+                    _region.Points[0],
+                    (_region.Points[1] - _region.Points[0]).Length,
+                    new SKColor[] { SKColors.Bisque, transparent },
+                    SKShaderTileMode.Clamp);
+            }
+            else {
+                var transparent = SKColors.Bisque.WithAlpha(0);
+
+                fill.Shader = SKShader.CreateLinearGradient(
+                    _region.Points[1],
+                    _region.Points[2],
+                    new SKColor[] { SKColors.Bisque, transparent },
+                    SKShaderTileMode.Clamp);
+            }
+
+
             canvas.DrawPath(_region, stroke);
+            canvas.DrawPath(_region, fill);
 
             var ret = bitmap.ToWriteableBitmap();
 

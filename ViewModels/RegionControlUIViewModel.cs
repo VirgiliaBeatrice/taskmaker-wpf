@@ -11,7 +11,6 @@ using taskmaker_wpf.Model;
 using taskmaker_wpf.Views;
 using taskmaker_wpf.Views.Widgets;
 using Numpy;
-using taskmaker_wpf.Views.Widgets;
 using taskmaker_wpf.Views.Debug;
 using System.Windows;
 using System.Windows.Input;
@@ -128,8 +127,6 @@ namespace taskmaker_wpf.ViewModels {
         public Views.Pages.SimplexView Page { get; set; }
         public Model.Data.MotorCollection Motors { get; set; }
 
-        private List<IDisposable> _topics = new List<IDisposable> ();
-
         #region Bindable Properties
         private int _count;
 
@@ -176,9 +173,6 @@ namespace taskmaker_wpf.ViewModels {
 
             Model.BindTarget(Motors);
 
-            // 1st build
-            Engine.Build(Page.Root);
-
             // Subscribe observable
             //RegisterKeyPress();
             //var disposable0 = mouseDown.Subscribe(
@@ -199,9 +193,6 @@ namespace taskmaker_wpf.ViewModels {
         public void CommandTest() {
             Console.WriteLine("A test command has been invoked.");
         }
-
-        public Dictionary<string, object> RegisteredSubjects = new Dictionary<string, object>();
-
 
         //private void RegisterTouchManipulateMode() {
         //    Unregister();
