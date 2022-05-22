@@ -78,7 +78,7 @@ namespace taskmaker_wpf.Views.Widgets {
             };
             var fill = new SKPaint {
                 IsAntialias = true,
-                Color = SKColors.YellowGreen
+                Color = SKColors.Bisque
             };
 
             //var path = new SKPath();
@@ -90,6 +90,7 @@ namespace taskmaker_wpf.Views.Widgets {
             //path.Close();
 
             canvas.DrawPath(_region, stroke);
+            canvas.DrawPath(_region, fill);
 
             //_region?.Dispose();
             //_region = path;
