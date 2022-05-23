@@ -8,32 +8,42 @@ using taskmaker_wpf.Model.Data;
 using PCController;
 using mMotor = taskmaker_wpf.Model.Data.Motor;
 using cMotor = PCController.Motor;
+using taskmaker_wpf.Model.Core;
 
 namespace taskmaker_wpf.Services {
+    public class TargetService {
+        public List<IValue> Targets { get; set; } = new List<IValue> { };
+
+        public TargetService() {
+            Enumerable.Range(0, 3)
+                .ToList()
+                .ForEach(
+                    e => {
+                        var motor = new mMotor() {
+                            Max = 10000,
+                            Min = -10000,
+                            Value = 0,
+                            Alias = "S0"
+                        };
+
+                        Targets.Add(motor);
+                    });
+        }
+    }
+
+    public class SystemService {
+        public List<UI> UIs { get; set; } = new List<UI>();
+
+        public SystemService() {
+            UIs.Add(new UI { Name = "Example1" });
+        }
+    }
+
     public class MotorService {
         public List<mMotor> Motors { get; set; } = new List<mMotor> { };
 
         public MotorService() {
-            //TestPurpose();
         }
-
-        private void TestPurpose() {
-            Enumerable.Range(0, 5)
-                .ToList()
-                .ForEach(
-                e => {
-                    var motor = new mMotor();
-
-                    motor.SetValue(new[] { (object)e });
-                    motor.Label = $"Motor{e}";
-                    motor.Alias = $"Motor{e}";
-
-                    motor.Link(null, 0, new Random().Next(0, 3));
-                    Motors.Add(motor);
-                }
-            );
-        }
-
     }
 
     public class SerialService {

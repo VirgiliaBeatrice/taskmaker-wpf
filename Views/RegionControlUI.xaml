@@ -43,15 +43,15 @@
                     <Setter Property="local:ComplexWidget.Top" Value="{Binding Path=Location.Y}" />
                 </Style>
             </local:ComplexWidget.ItemStyle>
-            <ListView 
-                ItemsSource="{Binding Motors}"
-                Width="100" d:ItemsSource="{d:SampleData ItemCount=5}">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn/>
-                    </GridView>
-                </ListView.View>
-            </ListView>
+            <ListBox
+                x:Name="lbTargets"
+                Visibility="Hidden"
+                ItemsSource="{Binding ValidTargets}"
+                SelectionChanged="lbTargets_SelectionChanged"
+                Width="100"
+                Height="100"
+                SelectionMode="Multiple">
+            </ListBox>
         </local:ComplexWidget>
         
         <StackPanel

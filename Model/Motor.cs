@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using cMotor = PCController.Motor;
 using PCController;
 using System.IO.Ports;
+using taskmaker_wpf.Model.Core;
 
 namespace taskmaker_wpf.Model.Data {
     public interface IBindable {
@@ -15,15 +16,15 @@ namespace taskmaker_wpf.Model.Data {
         NDarray ToNDarray();
     }
 
-    public class Motor : IBindable {
-        private int _value;
-        public int Value {
+    public class Motor : IValue {
+        private double _value;
+        public double Value {
             get => _value;
             set {
                 _value = value;
 
                 if (_instance != null)
-                    _instance.Value = value;
+                    _instance.Value = (int)value;
             }
         }
 
@@ -32,9 +33,6 @@ namespace taskmaker_wpf.Model.Data {
         private string _alias;
         private string _label;
         private string _id;
-
-        public int Dim => 1;
-        public bool HasSession => _instance != null;
 
         private cMotor _instance;
         private int _boardId;
@@ -54,11 +52,11 @@ namespace taskmaker_wpf.Model.Data {
             _min = -100;
         }
 
-        public bool SetValue(object[] value) {
-            _value = (int)value[0];
+        //public bool SetValue(object[] value) {
+        //    _value = (int)value[0];
 
-            return true;
-        }
+        //    return true;
+        //}
 
         public void Link(cMotor instance, int boardId, int motorId) {
             _instance = instance;
@@ -66,25 +64,47 @@ namespace taskmaker_wpf.Model.Data {
             MotorId = motorId;
         }
 
-        public NDarray ToNDarray() {
-            return np.array<float>(_value);
+        //public NDarray ToNDarray() {
+        //    return np.array<float>(_value);
+        //}
+
+        public override string ToString() {
+            return $"Motor[{Alias}]";
         }
     }
 
-    public class MotorCollection : IBindable {
-        public int Dim => Motors.Count;
-        public List<Motor> Motors { get; set; } = new List<Motor>();
+    public interface IValue {
+        double Value { get; set; }
+    }
+
+    public class BinableTargetCollection : List<IValue>, IBindableTarget {
+        public int Dim => Count;
+
+        public TValue GetValue<TValue>() {
+            throw new NotImplementedException();
+        }
 
         public bool SetValue(object[] values) {
             for (var i = 0; i < values.Length; i++) {
-                Motors[i].SetValue(new object[] { values[i] });
+                this[i].Value = (int)values[i];
             }
 
             return true;
         }
 
+        public void SetValue<TValue>(TValue values) {
+            if (values is int[] inputs) {
+                for (int i = 0; i < inputs.Length; i++) {
+                    this[i].Value = inputs[i];
+                }
+            }
+            else {
+                throw new NotSupportedException();
+            }
+        }
+
         public NDarray ToNDarray() {
-            return np.array(Motors.Select(m => (float)m.Value).ToArray());
+            return np.array(this.Select(m => (float)m.Value).ToArray());
         }
     }
 

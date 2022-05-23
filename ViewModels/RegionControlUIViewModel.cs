@@ -128,7 +128,9 @@ namespace taskmaker_wpf.ViewModels {
         public Views.Pages.SimplexView Page { get; set; }
         //public Model.Data.MotorCollection Motors { get; set; }
 
-        private MotorService _motorSvr;
+        //private MotorService _motorSvr;
+        private TargetService _targetSvr;
+        private SystemService _systemService;
 
         #region Bindable Properties
         private int _count;
@@ -144,7 +146,7 @@ namespace taskmaker_wpf.ViewModels {
         private string _systemInfo;
         private string _statusMsg;
 
-        public ObservableCollection<Motor> Motors { get; set; } = new ObservableCollection<Motor>();
+        public ObservableCollection<IValue> ValidTargets { get; set; } = new ObservableCollection<IValue>();
 
         public ObservableCollection<Node> Nodes { get; set; } = new ObservableCollection<Node>();
 
@@ -165,32 +167,21 @@ namespace taskmaker_wpf.ViewModels {
 
 
         public RegionControlUIViewModel(
-            MotorService motorService,
+            TargetService targetService,
+            SystemService systemService,
             Window parent) {
             Parent = parent;
-            Model = new Model.Core.UI();
+            //Model = new Model.Core.UI();
 
-            _motorSvr = motorService;
-            _motorSvr.Motors.Add(new Motor {
-                Alias = "S0",
-                Max = 10000,
-                Min = -10000,
-                Value = 0
-            });
-            _motorSvr.Motors.Add(new Motor {
-                Alias = "S1",
-                Max = 10000,
-                Min = -10000,
-                Value = 0
-            });
-            _motorSvr.Motors.Add(new Motor {
-                Alias = "S2",
-                Max = 10000,
-                Min = -10000,
-                Value = 0
-            });
+            _targetSvr = targetService;
+            _systemService = systemService;
 
-            Motors.AddRange(_motorSvr.Motors);
+            Model = _systemService.UIs[0];
+
+            //var target = new BinableTargetCollection();
+
+
+            ValidTargets.AddRange(_targetSvr.Targets);
 
             SystemInfo = $"{operationMode}";
         }

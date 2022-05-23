@@ -11,29 +11,37 @@ using taskmaker_wpf.ViewModels;
 namespace taskmaker_wpf.Model.Core {
     public class BaseModel { }
 
-    public partial class UI : IBindable {
+    public partial class UI : IBindableTarget {
         public int Dim => 2;
 
         private NDarray _inputValue;
 
-        // Input
-        public bool SetValue(object[] values) {
-            _inputValue = values;
+        //// Input
+        //public bool SetValue(object[] values) {
+        //    _inputValue = values;
 
-            return true;
+        //    return true;
+        //}
+
+        //// Output
+        //public NDarray ToNDarray() {
+        //    // TODO: dont use!
+        //    //var lambdas = Complex.GetLambdas()
+        //    var result = Map.MapTo(_inputValue);
+        //    return result;
+        //}
+
+        public void SetValue<T>(T value) {
+            throw new NotImplementedException();
         }
 
-        // Output
-        public NDarray ToNDarray() {
-            // TODO: dont use!
-            //var lambdas = Complex.GetLambdas()
-            var result = Map.MapTo(_inputValue);
-            return result;
+        public T1 GetValue<T1>() {
+            throw new NotImplementedException();
         }
     }
 
     public interface IBindableTarget {
-        int Dim { get; set; }
+        int Dim { get; }
 
         void SetValue<T>(T value);
         T1 GetValue<T1>();
@@ -41,14 +49,18 @@ namespace taskmaker_wpf.Model.Core {
     }
 
     public partial class UI {
+        public string Name { get; set; }
+        public Guid Uid { get; set; }
         public SortedList NodeCollection { get; set; } = new SortedList();
         public ComplexM Complex { get; set; }
         public NLinearMap Map { get; set; }
 
-        private IBindableTarget _target;
+        private BinableTargetCollection _target = new BinableTargetCollection();
 
         public UI() {
+            Uid = Guid.NewGuid();
         }
+
 
         public Guid Add(NDarray<float> pt) {
             var node = new NodeM() {
@@ -68,8 +80,9 @@ namespace taskmaker_wpf.Model.Core {
             NodeCollection.Clear();
         }
 
-        public void BindTarget(IBindableTarget target) {
-            _target = target;
+        public void AddTarget(IValue target) {
+            _target.Add(target);
+            //_target = target;
         }
 
         public void SetTargetValue(Guid uid) {

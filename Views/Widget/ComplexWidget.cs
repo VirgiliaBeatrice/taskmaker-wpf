@@ -23,6 +23,22 @@ namespace taskmaker_wpf.Views {
         Panning
     }
 
+    public class ViewPort {
+        private double _width;
+        private double _height;
+
+        private Rect _bound;
+
+        public ViewPort() {
+            _bound = new Rect();
+        }
+
+        public Point WorldToScreen(Point wPt) {
+            var screenCenterX = _width / 2.0;
+            var screenCenterY = _height / 2.0;
+            var screenX = (wPt.X - center)
+        }
+
     public class ComplexWidget : Canvas {
 
         public OperationMode Mode {
@@ -403,6 +419,13 @@ namespace taskmaker_wpf.Views {
                     break;
                 case Key.D4:
                     ExteriorCommand.Execute(null);
+                    break;
+                case Key.T:
+                    var lb = (FindName("lbTargets") as ListBox);
+                    if (lb.Visibility == Visibility.Hidden)
+                        lb.Visibility = Visibility.Visible;
+                    else 
+                        lb.Visibility = Visibility.Hidden;
                     break;
             }
         }

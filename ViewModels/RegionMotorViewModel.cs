@@ -78,7 +78,7 @@ namespace taskmaker_wpf.ViewModels {
             _motorId = "Motor" + motor.MotorId;
             _boardId = "Board" + motor.BoardId;
             _name = motor.Alias;
-            _value = motor.Value;
+            _value = (int)motor.Value;
             _min = motor.Min;
             _max = motor.Max;
 

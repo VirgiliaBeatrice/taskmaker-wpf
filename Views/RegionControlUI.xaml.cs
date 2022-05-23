@@ -16,6 +16,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using taskmaker_wpf.ViewModels;
 using Numpy;
+using taskmaker_wpf.Model.Data;
 
 namespace taskmaker_wpf.Views {
     /// <summary>
@@ -82,6 +83,10 @@ namespace taskmaker_wpf.Views {
 
         private void skElement_MouseUp(object sender, MouseButtonEventArgs e) {
             //Console.WriteLine("Up: " + e.ChangedButton.ToString());
+
+        }
+
+        private void lbTargets_SelectionChanged(object sender, SelectionChangedEventArgs e) {
 
         }
     }
