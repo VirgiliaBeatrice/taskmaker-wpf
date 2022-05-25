@@ -89,6 +89,14 @@ namespace taskmaker_wpf.Views {
             var bitmap = new SKBitmap(info);
             var canvas = new SKCanvas(bitmap);
 
+            canvas.Save();
+
+            var t = (Parent as ComplexWidget).Transform;
+
+            canvas.SetMatrix(t);
+
+            Console.WriteLine(t.TransX + " " + t.TransY);
+
             var stroke = new SKPaint {
                 IsAntialias = true,
                 StrokeWidth = 1,
@@ -121,6 +129,8 @@ namespace taskmaker_wpf.Views {
 
             canvas.DrawPath(_region, stroke);
             canvas.DrawPath(_region, fill);
+
+            canvas.Restore();
 
             var ret = bitmap.ToWriteableBitmap();
 

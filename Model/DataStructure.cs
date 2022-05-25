@@ -226,7 +226,7 @@ namespace taskmaker_wpf.Model.Data {
         }
 
         public static VoronoiRegionM[] Create(NodeM[] extremes, SimplexM[] simplices) {
-            if (extremes.Length <= 3) {
+            if (extremes.Length <= 2) {
                 throw new Exception("Invalid extremes");
             }
 

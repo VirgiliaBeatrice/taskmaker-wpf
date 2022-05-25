@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SkiaSharp;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -27,17 +28,30 @@ namespace taskmaker_wpf.Views {
         private double _width;
         private double _height;
 
-        private Rect _bound;
+        private SKRect _bound;
+        private SKMatrix _translate = SKMatrix.Identity;
+        private SKPoint _center;
 
-        public ViewPort() {
-            _bound = new Rect();
+        public ViewPort(float width, float height) {
+            _bound = new SKRect() {
+                Size = new SKSize(width, height),
+            };
+
+            _center = new SKPoint() {
+                X = _bound.MidX,
+                Y = _bound.MidY
+            };
         }
 
-        public Point WorldToScreen(Point wPt) {
-            var screenCenterX = _width / 2.0;
-            var screenCenterY = _height / 2.0;
-            var screenX = (wPt.X - center)
+        public void Translate(float x, float y) {
+            _translate = SKMatrix.CreateTranslation(x, y);
         }
+
+        public SKPoint ScreenToWorld(SKPoint pt) {
+            return _translate.MapPoint(pt);
+        }
+
+    }
 
     public class ComplexWidget : Canvas {
 
@@ -329,6 +343,18 @@ namespace taskmaker_wpf.Views {
 
 
 
+        public SKMatrix Transform {
+            get { return (SKMatrix)GetValue(TransformProperty); }
+            set { SetValue(TransformProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Transform.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TransformProperty =
+            DependencyProperty.Register("Transform", typeof(SKMatrix), typeof(ComplexWidget), new FrameworkPropertyMetadata(SKMatrix.Identity, flags: FrameworkPropertyMetadataOptions.AffectsRender, new PropertyChangedCallback(OnPropertyChanged_Transform)));
+
+        private static void OnPropertyChanged_Transform(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            (d as ComplexWidget).InvalidateVisual();
+        }
 
         public IObservable<EventPattern<MouseButtonEventArgs>> MouseDownObs { get; set; }
         public IObservable<EventPattern<MouseButtonEventArgs>> MouseUpObs { get; set; }
@@ -354,21 +380,32 @@ namespace taskmaker_wpf.Views {
                 .Repeat()
                 .Subscribe(OnAddNode);
 
-            var pan = MouseDownObs
-                .Where(e => Mode == OperationMode.Panning)
-                .Take(1)
-                .Do((e) => {
+            //var pan = MouseDownObs
+            //    .Where(e => Mode == OperationMode.Panning)
+            //    .Take(1)
+            //    .Do((e) => {
+            //        CaptureMouse();
+            //        _last = e.EventArgs.GetPosition(this);
+            //    })
+            //    .SelectMany(MouseMoveObs.Throttle(TimeSpan.FromMilliseconds(50)))
+            //    .TakeUntil(MouseUpObs)
+            //    .Finally(() => { ReleaseMouseCapture(); })
+            //    //.Do((e) => 
+            //    //    ReleaseMouseCapture())
+            //    .Repeat()
+            //    .ObserveOn(Dispatcher)
+            //    .Subscribe(OnPanning);
+
+            var pan = MouseMoveObs
+                .SkipUntil(MouseDownObs.Do(e => {
                     CaptureMouse();
                     _last = e.EventArgs.GetPosition(this);
-                })
-                .SelectMany(MouseMoveObs.Throttle(TimeSpan.FromMilliseconds(50)))
-                .TakeUntil(MouseUpObs)
-                .Finally(() => { ReleaseMouseCapture(); })
-                //.Do((e) => 
-                //    ReleaseMouseCapture())
+                }))
+                .TakeUntil(MouseUpObs.Do(e => ReleaseMouseCapture()))
                 .Repeat()
-                .ObserveOn(Dispatcher)
                 .Subscribe(OnPanning);
+                    
+                
 
             _topics.Add(add);
             _topics.Add(pan);
@@ -381,15 +418,16 @@ namespace taskmaker_wpf.Views {
 
             if (!IsMouseCaptured) return;
 
-            var v = _last - obj.EventArgs.GetPosition(this);
-            var t = ((MatrixTransform)RenderTransform).Matrix;
+            var curr = obj.EventArgs.GetPosition(this);
+            //Console.WriteLine($"Curr: {curr}");
+            //Console.WriteLine($"Last: {_last}");
+            var v = _last - curr;
+            //Console.WriteLine($"V: {v}");
+            //var t = Transform;
 
-            t.Translate(-v.X, -v.Y);
-
-            RenderTransform = new MatrixTransform(t);
-
-            _last = obj.EventArgs.GetPosition(this);
-            InvalidateVisual();
+            Transform = SKMatrix.CreateTranslation((float)-v.X, (float)-v.Y);
+            //RenderTransform = new TranslateTransform(-v.X, -v.Y);
+            Children.OfType<FrameworkElement>().ToList().ForEach(e => e.InvalidateVisual());
         }
 
         private void OnKeyPressed(EventPattern<KeyEventArgs> obj) {
