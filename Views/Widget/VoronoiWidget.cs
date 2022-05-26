@@ -12,8 +12,64 @@ using SkiaSharp;
 using SkiaSharp.Views.WPF;
 
 namespace taskmaker_wpf.Views {
-    public class VoronoiWidget : FrameworkElement {
-        private SKPath _region;
+    public class SKFrameworkElement : FrameworkElement {
+        private WriteableBitmap _bitmap;
+
+        public SKFrameworkElement() {
+            SizeChanged += SKFrameWorkElement_SizeChanged;
+        }
+
+        private void SKFrameWorkElement_SizeChanged(object sender, SizeChangedEventArgs e) {
+            CreateBitmap();
+            InvalidateVisual();
+        }
+
+        protected virtual void Draw(SKCanvas canvas) { }
+
+
+        protected virtual void CreateBitmap() {
+            var width = (int)ActualWidth;
+            var height = (int)ActualHeight;
+
+            if (height > 0 && width > 0 && Parent != null) {
+                _bitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Pbgra32, null);
+            }
+            else
+                _bitmap = null;
+        }
+
+        protected override void OnRender(DrawingContext drawingContext) {
+            if (_bitmap == null)
+                return;
+
+            _bitmap.Lock();
+
+            var info = new SKImageInfo {
+                Width = (int)_bitmap.Width,
+                Height = (int)_bitmap.Height,
+                ColorType = SKColorType.Bgra8888,
+                AlphaType = SKAlphaType.Premul,
+            };
+            using (var surface = SKSurface.Create(info, _bitmap.BackBuffer, _bitmap.BackBufferStride)) {
+                //OnCreateRegion();
+                surface.Canvas.Clear();
+                Draw(surface.Canvas);
+            }
+
+            _bitmap.AddDirtyRect(new Int32Rect(
+                0,
+                0,
+                (int)_bitmap.Width,
+                (int)_bitmap.Height));
+            _bitmap.Unlock();
+
+            drawingContext.DrawImage(_bitmap, new Rect(0, 0, ActualWidth, ActualHeight));
+
+        }
+    }
+
+        public class VoronoiWidget : SKFrameworkElement {
+        private SKPath _shape;
 
         public Guid Id {
             get { return (Guid)GetValue(IdProperty); }
@@ -31,31 +87,40 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for Points.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty PointsProperty =
-            DependencyProperty.Register("Points", typeof(Point[]), typeof(VoronoiWidget), new PropertyMetadata(null));
+            DependencyProperty.Register("Points", typeof(Point[]), typeof(VoronoiWidget), new FrameworkPropertyMetadata(new Point[] { }, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        private static void OnPropertyChanged_Points(DependencyObject d, DependencyPropertyChangedEventArgs args) {
+            (d as VoronoiWidget).CreateBitmap();
+            (d as VoronoiWidget).InvalidateVisual();
+        }
+
+        public VoronoiWidget() : base() { }
 
         protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters) {
             var pt = hitTestParameters.HitPoint;
             var skPt = pt.ToSKPoint();
 
-            if (_region?.Contains(skPt.X, skPt.Y) == true)
+            if (_shape?.Contains(skPt.X, skPt.Y) == true)
                 return new PointHitTestResult(this, pt);
             else
                 return null;
         }
 
-        protected void OnCreateRegion() {
-            _region?.Dispose();
+        internal void CreateShape() {
+            _shape?.Dispose();
 
-            _region = new SKPath();
+            _shape = new SKPath();
+
+            if (Points == null) return;
 
             var points = Points.Select(e => e.ToSKPoint()).ToArray();
 
             if (points.Length == 4) {
-                _region.MoveTo(points[0]);
-                _region.LineTo(points[1]);
-                _region.LineTo(points[2]);
-                _region.LineTo(points[3]);
-                _region.Close();
+                _shape.MoveTo(points[0]);
+                _shape.LineTo(points[1]);
+                _shape.LineTo(points[2]);
+                _shape.LineTo(points[3]);
+                _shape.Close();
             }
             else if (points.Length == 3) {
                 var radius = (points[1] - points[0]).Length;
@@ -77,25 +142,20 @@ namespace taskmaker_wpf.Views {
 
                 var mid = p0 + midP0;
 
-                _region.MoveTo(o);
-                _region.LineTo(p0);
-                _region.ArcTo(mid, p1, radius);
-                _region.LineTo(p1);
-                _region.Close();
+                _shape.MoveTo(o);
+                _shape.LineTo(p0);
+                _shape.ArcTo(mid, p1, radius);
+                _shape.LineTo(p1);
+                _shape.Close();
             }
         }
 
-        protected WriteableBitmap OnSKRender(SKImageInfo info) {
-            var bitmap = new SKBitmap(info);
-            var canvas = new SKCanvas(bitmap);
-
+        protected override void Draw(SKCanvas canvas) {
             canvas.Save();
 
-            var t = (Parent as ComplexWidget).Transform;
+            var t = (Parent as ComplexWidget).ViewPort.GetTranslate();
 
             canvas.SetMatrix(t);
-
-            Console.WriteLine(t.TransX + " " + t.TransY);
 
             var stroke = new SKPaint {
                 IsAntialias = true,
@@ -108,11 +168,13 @@ namespace taskmaker_wpf.Views {
                 Color = SKColors.Bisque
             };
 
-            if (_region.PointCount == 6) {
+            CreateShape();
+
+            if (_shape.PointCount == 6) {
                 var transparent = SKColors.Bisque.WithAlpha(0);
                 fill.Shader = SKShader.CreateRadialGradient(
-                    _region.Points[0],
-                    (_region.Points[1] - _region.Points[0]).Length,
+                    _shape.Points[0],
+                    (_shape.Points[1] - _shape.Points[0]).Length,
                     new SKColor[] { SKColors.Bisque, transparent },
                     SKShaderTileMode.Clamp);
             }
@@ -120,34 +182,20 @@ namespace taskmaker_wpf.Views {
                 var transparent = SKColors.Bisque.WithAlpha(0);
 
                 fill.Shader = SKShader.CreateLinearGradient(
-                    _region.Points[1],
-                    _region.Points[2],
+                    _shape.Points[1],
+                    _shape.Points[2],
                     new SKColor[] { SKColors.Bisque, transparent },
                     SKShaderTileMode.Clamp);
             }
 
 
-            canvas.DrawPath(_region, stroke);
-            canvas.DrawPath(_region, fill);
+            canvas.DrawPath(_shape, stroke);
+            canvas.DrawPath(_shape, fill);
 
             canvas.Restore();
 
-            var ret = bitmap.ToWriteableBitmap();
-
             stroke.Dispose();
             fill.Dispose();
-
-            return ret;
-        }
-
-        protected override void OnRender(DrawingContext drawingContext) {
-            OnCreateRegion();
-
-            var bitmap = OnSKRender(new SKImageInfo((int)(Parent as Canvas).ActualWidth, (int)(Parent as Canvas).ActualHeight));
-
-            drawingContext.PushTransform(new TranslateTransform());
-            drawingContext.DrawImage(bitmap, new Rect(0, 0, (Parent as Canvas).ActualWidth, (int)(Parent as Canvas).ActualHeight));
-            drawingContext.Pop();
         }
     }
 }

@@ -29,31 +29,51 @@ namespace taskmaker_wpf.Views {
         private double _height;
 
         private SKRect _bound;
+
+        // Viewport to World
         private SKMatrix _translate = SKMatrix.Identity;
-        private SKPoint _center;
+        private SKPoint _vCenter;
+        private SKPoint _wCenter;
 
         public ViewPort(float width, float height) {
             _bound = new SKRect() {
                 Size = new SKSize(width, height),
             };
 
-            _center = new SKPoint() {
+            _vCenter = new SKPoint() {
                 X = _bound.MidX,
                 Y = _bound.MidY
             };
+
+            // 
+            // _wCenter = _translate.MapPoint(v);
         }
 
         public void Translate(float x, float y) {
-            _translate = SKMatrix.CreateTranslation(x, y);
+            _vCenter.X = x;
+            _vCenter.Y = y;
+
+            _translate = SKMatrix.CreateTranslation(_vCenter.X, _vCenter.Y);
+            //_translate.PreConcat(SKMatrix.CreateTranslation(x, y));
         }
 
-        public SKPoint ScreenToWorld(SKPoint pt) {
-            return _translate.MapPoint(pt);
+        public SKMatrix GetTranslate() {
+            return _translate;
+        }
+
+        public SKPoint ViewportToWorld(SKPoint vPt) {
+            return _translate.MapPoint(vPt);
+        }
+
+        public SKPoint WorldToViewport(SKPoint wPt) {
+            return _translate.Invert().MapPoint(wPt);
         }
 
     }
 
     public class ComplexWidget : Canvas {
+
+        public ViewPort ViewPort { get; set; }
 
         public OperationMode Mode {
             get { return (OperationMode)GetValue(ModeProperty); }
@@ -115,7 +135,17 @@ namespace taskmaker_wpf.Views {
                 var newVoronoi = new VoronoiWidget {
                     DataContext = item,
                     Id = item.Uid,
+                    Width = complex.ActualWidth,
+                    Height = complex.ActualHeight,
                 };
+
+                //newVoronoi.UpdateLayout();
+
+                SetTop(newVoronoi, 0);
+                SetLeft(newVoronoi,0);
+                SetZIndex(newVoronoi, 1);
+
+                complex.Children.Add(newVoronoi);
 
                 BindingOperations.SetBinding(
                     newVoronoi,
@@ -125,9 +155,7 @@ namespace taskmaker_wpf.Views {
                         Path = new PropertyPath("Points")
                     });
 
-                ComplexWidget.SetZIndex(newVoronoi, 1);
 
-                complex.Children.Add(newVoronoi);
             }
         }
 
@@ -152,7 +180,15 @@ namespace taskmaker_wpf.Views {
                 var newSimplex = new SimplexWidget() {
                     DataContext = item,
                     Id = item.Uid,
+                    Width = complex.ActualWidth,
+                    Height = complex.ActualHeight,
                 };
+
+                SetTop(complex, 0);
+                SetLeft(complex, 0);
+                SetZIndex(newSimplex, 2);
+
+                complex.Children.Add(newSimplex);
 
                 BindingOperations.SetBinding(
                     newSimplex,
@@ -162,9 +198,6 @@ namespace taskmaker_wpf.Views {
                         Path = new PropertyPath("Points")
                     });
 
-                ComplexWidget.SetZIndex(newSimplex, 2);
-
-                complex.Children.Add(newSimplex);
             }
         }
 
@@ -200,72 +233,20 @@ namespace taskmaker_wpf.Views {
                         newNode.Style = ItemStyle;
                         newNode.Click += OnClick;
 
-                        ComplexWidget.SetZIndex(newNode, 5);
+                        SetZIndex(newNode, 5);
 
                         Children.Add(newNode);
-
                     }
-                    
-                    else if (item is VoronoiData voronoi) {
-                        //var newVoronoi = new VoronoiWidget {
-                        //    DataContext = voronoi,
-                        //    Id = voronoi.Uid,
-                        //};
-
-                        //BindingOperations.SetBinding(
-                        //    newVoronoi,
-                        //    VoronoiWidget.PointsProperty,
-                        //    new Binding {
-                        //        Source = item,
-                        //        Path = new PropertyPath("Points")
-                        //    });
-
-                        //Children.OfType<VoronoiWidget>()
-                        //    .ToList()
-                        //    .ForEach(x => Children.Remove(x));
-                        //Children.Add(newVoronoi);
-                    }
-
                 }
-                //foreach (var item in e.NewItems) {
-                //    var idx = e.NewStartingIndex;
-                //    var newNode = new NodeWidget("Node" + idx) {
-                //        DataContext = DataContext
-                //    };
-                //    //newNode.ItemRemove += ItemRemove;
-
-                //    AddChild(newNode);
-
-                //    var bind = new Binding {
-                //        Source = DataContext,
-                //        Path = new PropertyPath($"Nodes_v1[{idx}].Location"),
-                //    };
-
-                //    BindingOperations.SetBinding(
-                //        newNode,
-                //        NodeWidget.LocationProperty,
-                //        bind);
-                //    //BindingOperations.SetBinding(
-                //    //    newNode,
-                //    //    NodeWidget.WillRemoveProperty,
-                //    //    new Binding {
-                //    //        Source = DataContext,
-                //    //        Path = new PropertyPath($"Nodes_v1[{idx}].WillRemove")});
-                //}
             }
             else if (e.Action == NotifyCollectionChangedAction.Remove) {
                 foreach (var item in e.OldItems.OfType<Node>()) {
-                    var target = Children.Cast<NodeWidget>()
+                    var target = Children.OfType<NodeWidget>()
                         .Where(x => x.Id == item.Uid)
                         .First();
 
                     Children.Remove(target);
                 }
-                //foreach (var item in e.OldItems) {
-                //    var idx = e.OldStartingIndex;
-
-                //    Remove("Node" + idx);
-                //}
             }
         }
 
@@ -401,7 +382,10 @@ namespace taskmaker_wpf.Views {
                     CaptureMouse();
                     _last = e.EventArgs.GetPosition(this);
                 }))
-                .TakeUntil(MouseUpObs.Do(e => ReleaseMouseCapture()))
+                .TakeUntil(MouseUpObs.Do(e => {
+                    ReleaseMouseCapture();
+                    OnPanned();
+                }))
                 .Repeat()
                 .Subscribe(OnPanning);
                     
@@ -409,7 +393,14 @@ namespace taskmaker_wpf.Views {
 
             _topics.Add(add);
             _topics.Add(pan);
+
+            ViewPort = new ViewPort((float)ActualWidth, (float)ActualHeight);
         }
+
+        private void OnPanned() {
+            Children.OfType<FrameworkElement>().ToList().ForEach(e => e.InvalidateVisual());
+        }
+
         private Point _last;
 
         private void OnPanning(EventPattern<MouseEventArgs> obj) {
@@ -425,9 +416,10 @@ namespace taskmaker_wpf.Views {
             //Console.WriteLine($"V: {v}");
             //var t = Transform;
 
-            Transform = SKMatrix.CreateTranslation((float)-v.X, (float)-v.Y);
+            ViewPort.Translate((float)-v.X, (float)-v.Y);
+            //Transform = SKMatrix.CreateTranslation((float)-v.X, (float)-v.Y);
             //RenderTransform = new TranslateTransform(-v.X, -v.Y);
-            Children.OfType<FrameworkElement>().ToList().ForEach(e => e.InvalidateVisual());
+            //Children.OfType<FrameworkElement>().ToList().ForEach(e => e.InvalidateVisual());
         }
 
         private void OnKeyPressed(EventPattern<KeyEventArgs> obj) {
