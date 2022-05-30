@@ -8,7 +8,20 @@ using System.Windows.Input;
 using System.Windows.Media;
 
 namespace taskmaker_wpf.Views {
-    public class NodeWidget : FrameworkElement {
+    public class NodeWidget : SKFrameworkElement {
+
+
+
+        public Point Location {
+            get { return (Point)GetValue(LocationProperty); }
+            set { SetValue(LocationProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Location.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty LocationProperty =
+            DependencyProperty.Register("Location", typeof(Point), typeof(NodeWidget), new PropertyMetadata(new Point()));
+
+
 
 
         public Guid Id {
@@ -20,19 +33,6 @@ namespace taskmaker_wpf.Views {
         public static readonly DependencyProperty IdProperty =
             DependencyProperty.Register("Id", typeof(Guid), typeof(NodeWidget), new PropertyMetadata(Guid.Empty));
 
-
-        public bool IsDirty {
-            get { return (bool)GetValue(IsDirtyProperty); }
-            set { SetValue(IsDirtyProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for IsDirty.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty IsDirtyProperty =
-            DependencyProperty.Register("IsDirty", typeof(bool), typeof(NodeWidget), new PropertyMetadata(false, OnPropertyChanged_IsDirty));
-
-        private static void OnPropertyChanged_IsDirty(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            (d as NodeWidget).InvalidateVisual();
-        }
 
         public static readonly RoutedEvent ClickEvent = EventManager.RegisterRoutedEvent("Click", RoutingStrategy.Direct, typeof(RoutedEventHandler), typeof(NodeWidget));
 
@@ -48,12 +48,7 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for IsSelected.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty IsSelectedProperty =
-            DependencyProperty.Register("IsSelected", typeof(bool), typeof(NodeWidget), new PropertyMetadata(false, OnPropertyChanged));
-
-
-        protected static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            (d as NodeWidget).InvalidateVisual();
-        }
+            DependencyProperty.Register("IsSelected", typeof(bool), typeof(NodeWidget), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
 
         static NodeWidget() {
         }
@@ -110,69 +105,37 @@ namespace taskmaker_wpf.Views {
         protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters) {
             Point pt = hitTestParameters.HitPoint;
 
-            if ((pt - new Point()).LengthSquared <= 25.0f)
+            if ((pt - Location).LengthSquared <= 25.0f)
                 return new PointHitTestResult(this, pt);
             else
                 return null;
         }
 
-        protected override void OnRender(DrawingContext drawingContext) {
-            var info = new SKBitmap(20, 20);
-            var bound = new SKRect(0, 0, info.Width, info.Height);
-            var canvas = new SKCanvas(info);
-            var stroke = new SKPaint {
-                IsAntialias = true,
-                StrokeWidth = 2,
-                IsStroke = true,
-                Color = SKColors.Black,
-            };
-            var fill = new SKPaint {
-                IsAntialias = true,
-                Color = SKColors.YellowGreen
-            };
+        protected override void Draw(SKCanvas canvas) {
+            canvas.Save();
 
-            if (IsMouseOver)
-                stroke.Color = SKColors.AliceBlue;
-            if (IsSelected)
-                fill.Color = SKColors.AliceBlue;
+            var t = (Parent as ComplexWidget).ViewPort.GetTranslate();
 
-            canvas.DrawRect(bound, fill);
-            canvas.DrawCircle(new SKPoint(10, 10), 5, stroke);
-            canvas.DrawCircle(new SKPoint(10, 10), 5, fill);
+            canvas.SetMatrix(t);
 
+            using (var fill = new SKPaint())
+            using (var stroke = new SKPaint()) {
+                stroke.IsAntialias = true;
+                stroke.StrokeWidth = 2;
+                stroke.IsStroke = true;
+                stroke.Color = SKColors.Black;
 
-            stroke.Dispose();
-            fill.Dispose();
-            canvas.Dispose();
+                fill.IsAntialias = true;
+                fill.Color = SKColors.YellowGreen;
 
-            var bitmap = info.ToWriteableBitmap();
-            info.Dispose();
-            //bitmap.Unlock();
-            drawingContext.PushTransform(new TranslateTransform(-10, -10));
-            drawingContext.DrawImage(bitmap, new Rect(0, 0, 20, 20));
-            drawingContext.Pop();
+                if (IsMouseOver)
+                    stroke.Color = SKColors.AliceBlue;
+                if (IsSelected)
+                    fill.Color = SKColors.AliceBlue;
 
-            //if (Width > 0 && Height > 0) {
-            //    if (_bitmap == null || _bitmap.Width != _width || _bitmap.Height != _height) {
-            //        _bitmap = new WriteableBitmap(_width, _height, 96, 96, PixelFormats.Pbgra32, null);
-            //    }
-
-            //    _bitmap.Lock();
-            //    using (var surface = SKSurface.Create(_width, _height, SKImageInfo.PlatformColorType, SKAlphaType.Premul, _bitmap.BackBuffer, _bitmap.BackBufferStride)) {
-            //        var canvas = surface.Canvas;
-            //        canvas.Scale((float)_dpiX, (float)_dpiY);
-            //        canvas.Clear();
-            //        using (new SKAutoCanvasRestore(canvas, true)) {
-            //            Presenter.Render(canvas, Renderer, Container, _offsetX, _offsetY);
-            //        }
-            //    }
-            //    _bitmap.AddDirtyRect(new Int32Rect(0, 0, _width, _height));
-            //    _bitmap.Unlock();
-
-            //    drawingContext.DrawImage(_bitmap, new Rect(0, 0, _actualWidth, _actualHeight));
-            //}
-
-            //base.OnRender(drawingContext);
+                canvas.DrawCircle(Location.ToSKPoint(), 10, fill);
+                canvas.DrawCircle(Location.ToSKPoint(), 10, stroke);
+            }
         }
     }
 }

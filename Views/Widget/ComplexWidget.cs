@@ -1,9 +1,11 @@
-﻿using SkiaSharp;
+﻿using Prism.Mvvm;
+using SkiaSharp;
 using SkiaSharp.Views.WPF;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -13,6 +15,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using taskmaker_wpf.ViewModels;
@@ -25,7 +28,25 @@ namespace taskmaker_wpf.Views {
         Panning
     }
 
-    public class ViewPort {
+    public class SKMatrixConverter : MarkupExtension, IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            var text = string.Join(",", ((SKMatrix)value).Values);
+            return text;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            throw new NotImplementedException();
+        }
+
+        public override object ProvideValue(IServiceProvider serviceProvider) {
+            return this;
+        }
+    }
+
+    public class ViewPort : BindableBase {
+        private WriteableBitmap _bitmap;
+        private SKSurface _surface;
+        private SKImageInfo _info;
         private double _width;
         private double _height;
 
@@ -33,7 +54,17 @@ namespace taskmaker_wpf.Views {
 
         // Viewport to World
         private SKMatrix _translate = SKMatrix.Identity;
-        public SKPoint VCenter => _vCenter;
+
+        public SKMatrix Transform {
+            get { return _translate; }
+            set { SetProperty(ref _translate, value); }
+        }
+
+
+        public SKPoint VCenter {
+            get => _vCenter;
+            private set { SetProperty(ref _vCenter, value); }
+        }
 
         private SKPoint _vCenter;
         private SKPoint _wCenter;
@@ -57,10 +88,14 @@ namespace taskmaker_wpf.Views {
         }
 
         public void Translate(float x, float y) {
-            _vCenter.X += x;
-            _vCenter.Y += y;
+            //_vCenter.X += x;
+            //_vCenter.Y += y;
+            var newX = _vCenter.X + x;
+            var newY = _vCenter.Y + y;
 
-            _translate = SKMatrix.CreateTranslation(_vCenter.X, _vCenter.Y);
+            VCenter = new SKPoint(newX, newY);
+
+            Transform = SKMatrix.CreateTranslation(_vCenter.X, _vCenter.Y);
             //_translate.PreConcat(SKMatrix.CreateTranslation(x, y));
         }
 
@@ -76,6 +111,58 @@ namespace taskmaker_wpf.Views {
             return _translate.Invert().MapPoint(wPt);
         }
 
+        public void CreateContext(int width, int height) {
+            if (height > 0 && width > 0) {
+                _bitmap = new WriteableBitmap(
+                    width,
+                    height,
+                    96,
+                    96,
+                    PixelFormats.Pbgra32,
+                    BitmapPalettes.Halftone256Transparent);
+                _info = new SKImageInfo {
+                    Width = (int)_bitmap.Width,
+                    Height = (int)_bitmap.Height,
+                    ColorType = SKColorType.Bgra8888,
+                    AlphaType = SKAlphaType.Premul,
+                };
+                
+                _surface?.Dispose();
+
+                _surface = SKSurface.Create(_info, _bitmap.BackBuffer, _bitmap.BackBufferStride);
+            }
+            else {
+                _bitmap = null;
+                _surface?.Dispose();
+            }
+        }
+
+        public void Clear() {
+            _bitmap.Lock();
+
+            _surface.Canvas.Clear();
+
+            _bitmap.Unlock();
+        }
+
+        public void Render(Action<SKCanvas> onDraw) {
+            if (_bitmap is null) return;
+
+            _bitmap.Lock();
+
+            onDraw(_surface.Canvas);
+
+            _bitmap.AddDirtyRect(new Int32Rect {
+                X = 0,
+                Y = 0,
+                Width = (int)_bitmap.Width,
+                Height = (int)_bitmap.Height
+            });
+
+            _bitmap.Unlock();
+        }
+
+        public WriteableBitmap GetContext() => _bitmap;
     }
 
     public class ComplexWidget : Canvas {
@@ -236,13 +323,25 @@ namespace taskmaker_wpf.Views {
                         var newNode = new NodeWidget() {
                             DataContext = node,
                             Id = node.Uid,
+                            Width = ActualWidth,
+                            Height = ActualHeight
+                            //Location = node.Location.ToSKPoint()
                         };
                         newNode.Style = ItemStyle;
                         newNode.Click += OnClick;
 
+                        SetTop(newNode, 0);
+                        SetLeft(newNode, 0);
                         SetZIndex(newNode, 5);
 
                         Children.Add(newNode);
+
+                        BindingOperations.SetBinding(
+                            newNode,
+                            NodeWidget.LocationProperty,
+                            new Binding {
+                                //Source = node,
+                                Path = new PropertyPath("Location")});
                     }
                 }
             }
@@ -402,9 +501,43 @@ namespace taskmaker_wpf.Views {
             _topics.Add(pan);
 
             ViewPort = new ViewPort((float)ActualWidth, (float)ActualHeight);
+
+            var indicator = new IndicatorWidget();
+
+            indicator.Visibility = Visibility.Hidden;
+            indicator.Width = 20;
+            indicator.Height = 20;
+            //SetTop(indicator, ActualHeight / 2);
+            //SetLeft(indicator, ActualWidth / 2);
+            SetZIndex(indicator, 10);
+
+            Children.Add(indicator);
+
+            SizeChanged += (s, e) => {
+                var i = Children.OfType<IndicatorWidget>().First();
+
+                SetTop(i, ActualHeight / 2);
+                SetLeft(i, ActualWidth / 2);
+
+                ViewPort.CreateContext((int)ActualWidth, (int)ActualHeight);
+                InvalidateVisual();
+
+                ViewPort.Clear();
+
+                foreach (var item in Children.OfType<SKFrameworkElement>()) {
+                    item.InvalidateVisual();
+                }
+            };
+        }
+
+        protected override void OnRender(DrawingContext dc) {
+            base.OnRender(dc);
+            dc.DrawImage(ViewPort.GetContext(), new Rect(0, 0, ActualWidth, ActualHeight));
         }
 
         private void OnPanned() {
+            ViewPort.Clear();
+            //InvalidateVisual();
             Children.OfType<FrameworkElement>().ToList().ForEach(e => e.InvalidateVisual());
         }
 
@@ -420,7 +553,7 @@ namespace taskmaker_wpf.Views {
             //Console.WriteLine($"Curr: {curr}");
             //Console.WriteLine($"Last: {_last}");
             var v = _last - curr;
-            Console.WriteLine($"V: {v}");
+            //Console.WriteLine($"V: {v}");
             //var t = Transform;
 
             ViewPort.Translate((float)-v.X, (float)-v.Y);
@@ -439,6 +572,17 @@ namespace taskmaker_wpf.Views {
 
             if (obj.EventArgs.Key == Key.D2) {
                 Mode = OperationMode.Panning;
+                return;
+            }
+
+            if (obj.EventArgs.Key == Key.I) {
+                var indicator = Children.OfType<IndicatorWidget>().First();
+                if (indicator.IsVisible) {
+                    indicator.Visibility = Visibility.Hidden;
+                } else {
+                    indicator.Visibility = Visibility.Visible;
+                }
+                //indicator.InvalidateVisual();
                 return;
             }
 

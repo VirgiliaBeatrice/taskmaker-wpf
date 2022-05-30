@@ -13,58 +13,20 @@ using SkiaSharp.Views.WPF;
 
 namespace taskmaker_wpf.Views {
     public class SKFrameworkElement : FrameworkElement {
-        private WriteableBitmap _bitmap;
+        //private WriteableBitmap _bitmap;
 
         public SKFrameworkElement() {
             SizeChanged += SKFrameWorkElement_SizeChanged;
         }
 
         private void SKFrameWorkElement_SizeChanged(object sender, SizeChangedEventArgs e) {
-            CreateBitmap();
             InvalidateVisual();
         }
 
         protected virtual void Draw(SKCanvas canvas) { }
 
-
-        protected virtual void CreateBitmap() {
-            var width = (int)ActualWidth;
-            var height = (int)ActualHeight;
-
-            if (height > 0 && width > 0 && Parent != null) {
-                _bitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Pbgra32, null);
-            }
-            else
-                _bitmap = null;
-        }
-
         protected override void OnRender(DrawingContext drawingContext) {
-            if (_bitmap == null)
-                return;
-
-            _bitmap.Lock();
-
-            var info = new SKImageInfo {
-                Width = (int)_bitmap.Width,
-                Height = (int)_bitmap.Height,
-                ColorType = SKColorType.Bgra8888,
-                AlphaType = SKAlphaType.Premul,
-            };
-            using (var surface = SKSurface.Create(info, _bitmap.BackBuffer, _bitmap.BackBufferStride)) {
-                //OnCreateRegion();
-                surface.Canvas.Clear();
-                Draw(surface.Canvas);
-            }
-
-            _bitmap.AddDirtyRect(new Int32Rect(
-                0,
-                0,
-                (int)_bitmap.Width,
-                (int)_bitmap.Height));
-            _bitmap.Unlock();
-
-            drawingContext.DrawImage(_bitmap, new Rect(0, 0, ActualWidth, ActualHeight));
-
+            (Parent as ComplexWidget).ViewPort.Render(Draw);
         }
     }
 
@@ -87,11 +49,10 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for Points.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty PointsProperty =
-            DependencyProperty.Register("Points", typeof(Point[]), typeof(VoronoiWidget), new FrameworkPropertyMetadata(new Point[] { }, FrameworkPropertyMetadataOptions.AffectsRender));
+            DependencyProperty.Register("Points", typeof(Point[]), typeof(VoronoiWidget), new FrameworkPropertyMetadata(new Point[] { }, FrameworkPropertyMetadataOptions.AffectsRender, new PropertyChangedCallback(OnPropertyChanged_Points)));
 
-        private static void OnPropertyChanged_Points(DependencyObject d, DependencyPropertyChangedEventArgs args) {
-            (d as VoronoiWidget).CreateBitmap();
-            (d as VoronoiWidget).InvalidateVisual();
+        private static void OnPropertyChanged_Points(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            (d as VoronoiWidget).CreateShape();
         }
 
         public VoronoiWidget() : base() { }
@@ -189,8 +150,8 @@ namespace taskmaker_wpf.Views {
             }
 
 
-            canvas.DrawPath(_shape, stroke);
             canvas.DrawPath(_shape, fill);
+            canvas.DrawPath(_shape, stroke);
 
             canvas.Restore();
 
