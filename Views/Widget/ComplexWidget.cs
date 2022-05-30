@@ -1,4 +1,5 @@
 ﻿using SkiaSharp;
+using SkiaSharp.Views.WPF;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -32,6 +33,8 @@ namespace taskmaker_wpf.Views {
 
         // Viewport to World
         private SKMatrix _translate = SKMatrix.Identity;
+        public SKPoint VCenter => _vCenter;
+
         private SKPoint _vCenter;
         private SKPoint _wCenter;
 
@@ -49,9 +52,13 @@ namespace taskmaker_wpf.Views {
             // _wCenter = _translate.MapPoint(v);
         }
 
+        public void SetTranslate(float x, float y) {
+            _translate = SKMatrix.CreateTranslation(x, y);
+        }
+
         public void Translate(float x, float y) {
-            _vCenter.X = x;
-            _vCenter.Y = y;
+            _vCenter.X += x;
+            _vCenter.Y += y;
 
             _translate = SKMatrix.CreateTranslation(_vCenter.X, _vCenter.Y);
             //_translate.PreConcat(SKMatrix.CreateTranslation(x, y));
@@ -413,13 +420,14 @@ namespace taskmaker_wpf.Views {
             //Console.WriteLine($"Curr: {curr}");
             //Console.WriteLine($"Last: {_last}");
             var v = _last - curr;
-            //Console.WriteLine($"V: {v}");
+            Console.WriteLine($"V: {v}");
             //var t = Transform;
 
             ViewPort.Translate((float)-v.X, (float)-v.Y);
             //Transform = SKMatrix.CreateTranslation((float)-v.X, (float)-v.Y);
             //RenderTransform = new TranslateTransform(-v.X, -v.Y);
             //Children.OfType<FrameworkElement>().ToList().ForEach(e => e.InvalidateVisual());
+            _last = curr;
         }
 
         private void OnKeyPressed(EventPattern<KeyEventArgs> obj) {
