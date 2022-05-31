@@ -83,12 +83,14 @@ namespace taskmaker_wpf.Views {
         }
 
         protected override void OnMouseEnter(MouseEventArgs e) {
-            InvalidateVisual();
+            (Parent as ComplexWidget).InvalidateSKContext();
+
             base.OnMouseEnter(e);
         }
 
         protected override void OnMouseLeave(MouseEventArgs e) {
-            InvalidateVisual();
+            (Parent as ComplexWidget).InvalidateSKContext();
+
             base.OnMouseLeave(e);
         }
 
@@ -104,14 +106,17 @@ namespace taskmaker_wpf.Views {
 
         protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters) {
             Point pt = hitTestParameters.HitPoint;
+            //var wPt = (Parent as ComplexWidget).ViewPort.ViewportToWorld(pt.ToSKPoint());
+            var vLoc = (Parent as ComplexWidget).ViewPort.WorldToViewport(Location.ToSKPoint());
 
-            if ((pt - Location).LengthSquared <= 25.0f)
+
+            if ((pt.ToSKPoint() - vLoc).LengthSquared <= 100.0f)
                 return new PointHitTestResult(this, pt);
             else
                 return null;
         }
 
-        protected override void Draw(SKCanvas canvas) {
+        public override void Draw(SKCanvas canvas) {
             canvas.Save();
 
             var t = (Parent as ComplexWidget).ViewPort.GetTranslate();

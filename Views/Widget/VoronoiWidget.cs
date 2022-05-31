@@ -12,25 +12,8 @@ using SkiaSharp;
 using SkiaSharp.Views.WPF;
 
 namespace taskmaker_wpf.Views {
-    public class SKFrameworkElement : FrameworkElement {
-        //private WriteableBitmap _bitmap;
 
-        public SKFrameworkElement() {
-            SizeChanged += SKFrameWorkElement_SizeChanged;
-        }
-
-        private void SKFrameWorkElement_SizeChanged(object sender, SizeChangedEventArgs e) {
-            InvalidateVisual();
-        }
-
-        protected virtual void Draw(SKCanvas canvas) { }
-
-        protected override void OnRender(DrawingContext drawingContext) {
-            (Parent as ComplexWidget).ViewPort.Render(Draw);
-        }
-    }
-
-        public class VoronoiWidget : SKFrameworkElement {
+    public class VoronoiWidget : SKFrameworkElement {
         private SKPath _shape;
 
         public Guid Id {
@@ -52,7 +35,7 @@ namespace taskmaker_wpf.Views {
             DependencyProperty.Register("Points", typeof(Point[]), typeof(VoronoiWidget), new FrameworkPropertyMetadata(new Point[] { }, FrameworkPropertyMetadataOptions.AffectsRender, new PropertyChangedCallback(OnPropertyChanged_Points)));
 
         private static void OnPropertyChanged_Points(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            (d as VoronoiWidget).CreateShape();
+            (d as VoronoiWidget).InvalidateShape();
         }
 
         public VoronoiWidget() : base() { }
@@ -67,7 +50,7 @@ namespace taskmaker_wpf.Views {
                 return null;
         }
 
-        internal void CreateShape() {
+        internal void InvalidateShape() {
             _shape?.Dispose();
 
             _shape = new SKPath();
@@ -111,7 +94,9 @@ namespace taskmaker_wpf.Views {
             }
         }
 
-        protected override void Draw(SKCanvas canvas) {
+        public override void Draw(SKCanvas canvas) {
+            InvalidateShape();
+
             canvas.Save();
 
             var t = (Parent as ComplexWidget).ViewPort.GetTranslate();
@@ -120,7 +105,7 @@ namespace taskmaker_wpf.Views {
 
             var stroke = new SKPaint {
                 IsAntialias = true,
-                StrokeWidth = 1,
+                StrokeWidth = 2,
                 IsStroke = true,
                 Color = SKColors.Black,
             };
@@ -128,8 +113,6 @@ namespace taskmaker_wpf.Views {
                 IsAntialias = true,
                 Color = SKColors.Bisque
             };
-
-            CreateShape();
 
             if (_shape.PointCount == 6) {
                 var transparent = SKColors.Bisque.WithAlpha(0);

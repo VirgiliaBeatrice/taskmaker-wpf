@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -25,7 +26,8 @@ namespace taskmaker_wpf.Views {
         Default = 0,
         Add,
         Edit,
-        Panning
+        Panning,
+        Trace
     }
 
     public class SKMatrixConverter : MarkupExtension, IValueConverter {
@@ -61,22 +63,21 @@ namespace taskmaker_wpf.Views {
         }
 
 
-        public SKPoint VCenter {
-            get => _vCenter;
-            private set { SetProperty(ref _vCenter, value); }
+        private SKPoint _wOffset;
+        public SKPoint WOffset {
+            get => _wOffset;
+            private set { SetProperty(ref _wOffset, value); }
         }
 
-        private SKPoint _vCenter;
-        private SKPoint _wCenter;
 
         public ViewPort(float width, float height) {
             _bound = new SKRect() {
                 Size = new SKSize(width, height),
             };
 
-            _vCenter = new SKPoint() {
-                X = _bound.MidX,
-                Y = _bound.MidY
+            WOffset = new SKPoint() {
+                X = 0,
+                Y = 0
             };
 
             // 
@@ -87,28 +88,30 @@ namespace taskmaker_wpf.Views {
             _translate = SKMatrix.CreateTranslation(x, y);
         }
 
+
         public void Translate(float x, float y) {
             //_vCenter.X += x;
             //_vCenter.Y += y;
-            var newX = _vCenter.X + x;
-            var newY = _vCenter.Y + y;
+            var newX = _wOffset.X + x;
+            var newY = _wOffset.Y + y;
 
-            VCenter = new SKPoint(newX, newY);
+            WOffset = new SKPoint(newX, newY);
 
-            Transform = SKMatrix.CreateTranslation(_vCenter.X, _vCenter.Y);
-            //_translate.PreConcat(SKMatrix.CreateTranslation(x, y));
+            Transform = SKMatrix.CreateTranslation(_wOffset.X, _wOffset.Y);
         }
 
         public SKMatrix GetTranslate() {
             return _translate;
         }
 
+        // V(world) = Inv(T) * V(viewport) 
         public SKPoint ViewportToWorld(SKPoint vPt) {
-            return _translate.MapPoint(vPt);
+            return Transform.Invert().MapPoint(vPt);
         }
 
+        // V(viewport) = T * V(world)
         public SKPoint WorldToViewport(SKPoint wPt) {
-            return _translate.Invert().MapPoint(wPt);
+            return Transform.MapPoint(wPt);
         }
 
         public void CreateContext(int width, int height) {
@@ -141,6 +144,48 @@ namespace taskmaker_wpf.Views {
             _bitmap.Lock();
 
             _surface.Canvas.Clear();
+
+            _bitmap.Unlock();
+        }
+
+        public SortedDictionary<int, List<Action<SKCanvas>>> RenderQueue = new SortedDictionary<int, List<Action<SKCanvas>>>(); 
+
+        //public void Register(Action<SKCanvas> onDraw, int zIdx) {
+        //    var hasVal = RenderQueue.ContainsKey(zIdx);
+
+        //    if (hasVal) {
+        //        RenderQueue[zIdx].Add(onDraw);
+        //    }
+        //    else {
+        //        RenderQueue[zIdx] = new List<Action<SKCanvas>>();
+        //        RenderQueue[zIdx].Add(onDraw);
+        //    }
+        //}
+
+        //public 
+
+        public void Render(IEnumerable<SKFrameworkElement> objects) {
+            if (_bitmap is null) return;
+
+            _bitmap.Lock();
+
+            _surface.Canvas.Clear();
+
+            foreach (var item in objects) {
+                item.Draw(_surface.Canvas);
+            }
+
+            //foreach(var value in RenderQueue.Values) {
+            //    value.ForEach(e => e.Invoke(_surface.Canvas));
+            //}
+            //onDraw(_surface.Canvas);
+
+            _bitmap.AddDirtyRect(new Int32Rect {
+                X = 0,
+                Y = 0,
+                Width = (int)_bitmap.Width,
+                Height = (int)_bitmap.Height
+            });
 
             _bitmap.Unlock();
         }
@@ -248,9 +293,9 @@ namespace taskmaker_wpf.Views {
                         Source = item,
                         Path = new PropertyPath("Points")
                     });
-
-
             }
+
+            complex.InvalidateSKContext();
         }
 
         public IEnumerable SimplexSource {
@@ -291,8 +336,9 @@ namespace taskmaker_wpf.Views {
                         Source = item,
                         Path = new PropertyPath("Points")
                     });
-
             }
+
+            complex.InvalidateSKContext();
         }
 
         public IEnumerable NodeSource {
@@ -450,9 +496,13 @@ namespace taskmaker_wpf.Views {
         public IObservable<EventPattern<KeyEventArgs>> KeyDownObs { get; set; }
         public IObservable<EventPattern<KeyEventArgs>> KeyUpObs { get; set; }
 
+        public Subject<OperationMode> ModeObs { get; set; }
+
         public ComplexWidget() {
             PrepareObservable();
             //AddNode();
+
+            ModeObs = new Subject<OperationMode>();
 
             var keyPressed = KeyDownObs
                 .Take(1)
@@ -494,8 +544,28 @@ namespace taskmaker_wpf.Views {
                 }))
                 .Repeat()
                 .Subscribe(OnPanning);
-                    
-                
+
+            var traceM = MouseMoveObs
+                .SkipUntil(MouseDownObs)
+                .TakeUntil(MouseUpObs);
+            //.Repeat();
+
+            var trace_1 = ModeObs
+                .StartWith(Mode)
+                .Where(e => e == OperationMode.Trace)
+                .SelectMany(traceM)
+                //.Throttle(TimeSpan.FromMilliseconds(100))
+                //.ObserveOnDispatcher()
+                .Repeat()
+                .Subscribe(OnTracing);
+
+            void OnTracing(EventPattern<MouseEventArgs> e) {
+                var i = Children.OfType<IndicatorWidget>().First();
+
+                i.Location = e.EventArgs.GetPosition(this);
+
+                InvalidateSKContext();
+            }
 
             _topics.Add(add);
             _topics.Add(pan);
@@ -516,18 +586,19 @@ namespace taskmaker_wpf.Views {
             SizeChanged += (s, e) => {
                 var i = Children.OfType<IndicatorWidget>().First();
 
-                SetTop(i, ActualHeight / 2);
-                SetLeft(i, ActualWidth / 2);
-
                 ViewPort.CreateContext((int)ActualWidth, (int)ActualHeight);
-                InvalidateVisual();
+                //ViewPort.Clear();
 
-                ViewPort.Clear();
-
-                foreach (var item in Children.OfType<SKFrameworkElement>()) {
-                    item.InvalidateVisual();
-                }
+                InvalidateSKContext();
+                //foreach (var item in Children.OfType<SKFrameworkElement>()) {
+                //    item.InvalidateVisual();
+                //}
             };
+        }
+
+        public void InvalidateSKContext() {
+            ViewPort.Render(OrderByZIndex());
+            InvalidateVisual();
         }
 
         protected override void OnRender(DrawingContext dc) {
@@ -538,7 +609,8 @@ namespace taskmaker_wpf.Views {
         private void OnPanned() {
             ViewPort.Clear();
             //InvalidateVisual();
-            Children.OfType<FrameworkElement>().ToList().ForEach(e => e.InvalidateVisual());
+            InvalidateSKContext();
+            //Children.OfType<FrameworkElement>().ToList().ForEach(e => e.InvalidateVisual());
         }
 
         private Point _last;
@@ -552,15 +624,17 @@ namespace taskmaker_wpf.Views {
             var curr = obj.EventArgs.GetPosition(this);
             //Console.WriteLine($"Curr: {curr}");
             //Console.WriteLine($"Last: {_last}");
-            var v = _last - curr;
+            var v = curr - _last;
             //Console.WriteLine($"V: {v}");
             //var t = Transform;
 
-            ViewPort.Translate((float)-v.X, (float)-v.Y);
+            ViewPort.Translate((float)v.X, (float)v.Y);
             //Transform = SKMatrix.CreateTranslation((float)-v.X, (float)-v.Y);
             //RenderTransform = new TranslateTransform(-v.X, -v.Y);
             //Children.OfType<FrameworkElement>().ToList().ForEach(e => e.InvalidateVisual());
             _last = curr;
+            InvalidateSKContext();
+
         }
 
         private void OnKeyPressed(EventPattern<KeyEventArgs> obj) {
@@ -575,6 +649,14 @@ namespace taskmaker_wpf.Views {
                 return;
             }
 
+            if (obj.EventArgs.Key == Key.D5) {
+                Mode = OperationMode.Trace;
+
+                ModeObs.OnNext(Mode);
+                
+                return;
+            }
+
             if (obj.EventArgs.Key == Key.I) {
                 var indicator = Children.OfType<IndicatorWidget>().First();
                 if (indicator.IsVisible) {
@@ -583,6 +665,8 @@ namespace taskmaker_wpf.Views {
                     indicator.Visibility = Visibility.Visible;
                 }
                 //indicator.InvalidateVisual();
+
+                InvalidateSKContext();
                 return;
             }
 
@@ -626,16 +710,23 @@ namespace taskmaker_wpf.Views {
                 this, nameof(KeyUp));
         } 
 
+        internal IEnumerable<SKFrameworkElement> OrderByZIndex() {
+            var widgets = Children.OfType<SKFrameworkElement>().ToList();
+
+            return widgets.OrderBy(e => Canvas.GetZIndex(e));
+        }
+
         private void OnAddNode(EventPattern<MouseButtonEventArgs> e) {
             if (Mode != OperationMode.Add)
                 return;
             
-            Console.WriteLine("Add");
+            //Console.WriteLine("Add");
             AddItemCommand.Execute(e.EventArgs.GetPosition((IInputElement)e.Sender));
 
             // Exit to default
             Mode = OperationMode.Default;
 
+            InvalidateSKContext();
         }
 
         private void OnRemoveNode(EventPattern<KeyEventArgs> obj) {

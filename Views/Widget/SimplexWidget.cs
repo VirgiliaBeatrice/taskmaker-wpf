@@ -54,14 +54,16 @@ namespace taskmaker_wpf.Views {
             var pt = hitTestParameters.HitPoint;
             var skPt = pt.ToSKPoint();
 
-            if (_shape?.Contains(skPt.X, skPt.Y) == true)
+            var wPt = (Parent as ComplexWidget).ViewPort.ViewportToWorld(skPt);
+
+            if (_shape?.Contains(wPt.X, wPt.Y) == true)
                 return new PointHitTestResult(this, pt);
             else
                 return null;
         }
 
 
-        protected override void Draw(SKCanvas canvas) {
+        public override void Draw(SKCanvas canvas) {
             canvas.Save();
 
             var t = (Parent as ComplexWidget).ViewPort.GetTranslate();

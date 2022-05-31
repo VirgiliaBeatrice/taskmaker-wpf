@@ -240,6 +240,7 @@
     </Compile>
     <Compile Include="Views\Widget\ComplexWidget.cs" />
     <Compile Include="Views\Widget\SimplexWidget.cs" />
+    <Compile Include="Views\Widget\SKFrameworkElement.cs" />
     <Compile Include="Views\Widget\VoronoiWidget.cs" />
     <Compile Include="Views\Widget\Core.cs" />
     <Compile Include="Views\DebugUtilities\DebugInfoWidget.cs" />
