@@ -36,6 +36,7 @@
             RemoveItemCommand="{Binding RemoveItemCommand}"
             InteriorCommand="{Binding BuildInteriorCommand}"
             ExteriorCommand="{Binding BuildExteriorCommand}"
+            InterpolateCommand="{Binding InterpolateCommand}"
                              Background="LightGray">
             <local:ComplexWidget.ItemStyle>
                 <Style>

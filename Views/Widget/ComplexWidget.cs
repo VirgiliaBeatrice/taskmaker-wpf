@@ -10,8 +10,6 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -129,7 +127,7 @@ namespace taskmaker_wpf.Views {
                     ColorType = SKColorType.Bgra8888,
                     AlphaType = SKAlphaType.Premul,
                 };
-                
+
                 _surface?.Dispose();
 
                 _surface = SKSurface.Create(_info, _bitmap.BackBuffer, _bitmap.BackBufferStride);
@@ -148,7 +146,7 @@ namespace taskmaker_wpf.Views {
             _bitmap.Unlock();
         }
 
-        public SortedDictionary<int, List<Action<SKCanvas>>> RenderQueue = new SortedDictionary<int, List<Action<SKCanvas>>>(); 
+        public SortedDictionary<int, List<Action<SKCanvas>>> RenderQueue = new SortedDictionary<int, List<Action<SKCanvas>>>();
 
         //public void Register(Action<SKCanvas> onDraw, int zIdx) {
         //    var hasVal = RenderQueue.ContainsKey(zIdx);
@@ -281,7 +279,7 @@ namespace taskmaker_wpf.Views {
                 //newVoronoi.UpdateLayout();
 
                 SetTop(newVoronoi, 0);
-                SetLeft(newVoronoi,0);
+                SetLeft(newVoronoi, 0);
                 SetZIndex(newVoronoi, 1);
 
                 complex.Children.Add(newVoronoi);
@@ -387,7 +385,8 @@ namespace taskmaker_wpf.Views {
                             NodeWidget.LocationProperty,
                             new Binding {
                                 //Source = node,
-                                Path = new PropertyPath("Location")});
+                                Path = new PropertyPath("Location")
+                            });
                     }
                 }
             }
@@ -465,6 +464,16 @@ namespace taskmaker_wpf.Views {
 
 
 
+        public ICommand InterpolateCommand {
+            get { return (ICommand)GetValue(InterpolateCommandProperty); }
+            set { SetValue(InterpolateCommandProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for InterpolateCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty InterpolateCommandProperty =
+            DependencyProperty.Register("InterpolateCommand", typeof(ICommand), typeof(ComplexWidget), new UIPropertyMetadata(null));
+
+
         public Style ItemStyle {
             get { return (Style)GetValue(ItemStyleProperty); }
             set { SetValue(ItemStyleProperty, value); }
@@ -473,21 +482,6 @@ namespace taskmaker_wpf.Views {
         // Using a DependencyProperty as the backing store for ItemStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ItemStyleProperty =
             DependencyProperty.Register("ItemStyle", typeof(Style), typeof(ComplexWidget), new PropertyMetadata(null));
-
-
-
-        public SKMatrix Transform {
-            get { return (SKMatrix)GetValue(TransformProperty); }
-            set { SetValue(TransformProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for Transform.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty TransformProperty =
-            DependencyProperty.Register("Transform", typeof(SKMatrix), typeof(ComplexWidget), new FrameworkPropertyMetadata(SKMatrix.Identity, flags: FrameworkPropertyMetadataOptions.AffectsRender, new PropertyChangedCallback(OnPropertyChanged_Transform)));
-
-        private static void OnPropertyChanged_Transform(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            (d as ComplexWidget).InvalidateVisual();
-        }
 
         public IObservable<EventPattern<MouseButtonEventArgs>> MouseDownObs { get; set; }
         public IObservable<EventPattern<MouseButtonEventArgs>> MouseUpObs { get; set; }
@@ -560,9 +554,11 @@ namespace taskmaker_wpf.Views {
                 .Subscribe(OnTracing);
 
             void OnTracing(EventPattern<MouseEventArgs> e) {
-                var i = Children.OfType<IndicatorWidget>().First();
+                InterpolateCommand.Execute(ViewPort.ViewportToWorld(e.EventArgs.GetPosition(this).ToSKPoint()));
 
-                i.Location = e.EventArgs.GetPosition(this);
+                //var i = Children.OfType<IndicatorWidget>().First();
+
+                //i.Location = e.EventArgs.GetPosition(this);
 
                 InvalidateSKContext();
             }
@@ -653,7 +649,7 @@ namespace taskmaker_wpf.Views {
                 Mode = OperationMode.Trace;
 
                 ModeObs.OnNext(Mode);
-                
+
                 return;
             }
 
@@ -661,7 +657,8 @@ namespace taskmaker_wpf.Views {
                 var indicator = Children.OfType<IndicatorWidget>().First();
                 if (indicator.IsVisible) {
                     indicator.Visibility = Visibility.Hidden;
-                } else {
+                }
+                else {
                     indicator.Visibility = Visibility.Visible;
                 }
                 //indicator.InvalidateVisual();
@@ -690,7 +687,7 @@ namespace taskmaker_wpf.Views {
                     var lb = (FindName("lbTargets") as ListBox);
                     if (lb.Visibility == Visibility.Hidden)
                         lb.Visibility = Visibility.Visible;
-                    else 
+                    else
                         lb.Visibility = Visibility.Hidden;
                     break;
             }
@@ -708,7 +705,7 @@ namespace taskmaker_wpf.Views {
                 this, nameof(KeyDown));
             KeyUpObs = Observable.FromEventPattern<KeyEventArgs>(
                 this, nameof(KeyUp));
-        } 
+        }
 
         internal IEnumerable<SKFrameworkElement> OrderByZIndex() {
             var widgets = Children.OfType<SKFrameworkElement>().ToList();
@@ -719,7 +716,7 @@ namespace taskmaker_wpf.Views {
         private void OnAddNode(EventPattern<MouseButtonEventArgs> e) {
             if (Mode != OperationMode.Add)
                 return;
-            
+
             //Console.WriteLine("Add");
             AddItemCommand.Execute(e.EventArgs.GetPosition((IInputElement)e.Sender));
 

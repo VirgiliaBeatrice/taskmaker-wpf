@@ -332,5 +332,22 @@ namespace taskmaker_wpf.ViewModels {
         private void BuildExterior() {
             CreateExterior();
         }
+
+        private DelegateCommand<object> interpolateCommand;
+
+        public ICommand InterpolateCommand {
+            get {
+                if (interpolateCommand == null) {
+                    interpolateCommand = new DelegateCommand<object>(Interpolate);
+                }
+
+                return interpolateCommand;
+            }
+        }
+
+        private void Interpolate(object arg) {
+            var pt = (Point)arg;
+            var result = Model.Map.MapTo(pt.ToNDarray());
+        }
     }
 }
