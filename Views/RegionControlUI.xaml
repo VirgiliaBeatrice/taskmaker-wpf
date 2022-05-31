@@ -54,8 +54,8 @@
                 SelectionMode="Multiple">
             </ListBox>
             <TextBlock
-                Width="100"
-                Height="100"
+                Width="200"
+                Height="40"
                 Text="{Binding ElementName=complex, Path=ViewPort.Transform, Converter={local:SKMatrixConverter} }"
                  />
         </local:ComplexWidget>
