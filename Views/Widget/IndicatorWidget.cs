@@ -54,9 +54,6 @@ namespace taskmaker_wpf.Views {
 
                 effect.Dispose();
             }
-
-
-
         }
     }
 

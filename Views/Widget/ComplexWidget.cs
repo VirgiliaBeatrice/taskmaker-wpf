@@ -614,6 +614,8 @@ namespace taskmaker_wpf.Views {
                 //    item.InvalidateVisual();
                 //}
             };
+
+            Cursor = Cursors.None;
         }
 
         public void InvalidateSKContext() {

@@ -21,6 +21,7 @@ using taskmaker_wpf.Services;
 using System.Reactive.Subjects;
 using System.Collections.ObjectModel;
 using taskmaker_wpf.Model.Data;
+using System.Windows.Controls;
 
 namespace taskmaker_wpf.ViewModels {
     public class Node : BindableBase {
@@ -348,6 +349,29 @@ namespace taskmaker_wpf.ViewModels {
         private void Interpolate(object arg) {
             var pt = (Point)arg;
             //var result = Model.Map.MapTo(pt.ToNDarray());
+        }
+
+        private DelegateCommand<object> selectedTargetsChanged;
+
+        public ICommand SelectedTargetsChanged {
+            get {
+                if (selectedTargetsChanged == null) {
+                    selectedTargetsChanged = new DelegateCommand<object>(PerformSelectedTargetsChanged);
+                }
+
+                return selectedTargetsChanged;
+            }
+        }
+
+        private void PerformSelectedTargetsChanged(object param) {
+            if (param is SelectionChangedEventArgs args) {
+                if (args.AddedItems.Count != 0) {
+                    Model.AddTarget(args.AddedItems[0] as IValue);
+                }
+                if (args.RemovedItems.Count != 0) {
+                    Model.RemoveTarget(args.RemovedItems[0] as IValue);
+                }
+            }
         }
     }
 }

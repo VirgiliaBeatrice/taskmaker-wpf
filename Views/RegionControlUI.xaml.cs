@@ -85,9 +85,5 @@ namespace taskmaker_wpf.Views {
             //Console.WriteLine("Up: " + e.ChangedButton.ToString());
 
         }
-
-        private void lbTargets_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-
-        }
     }
 }

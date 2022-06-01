@@ -85,6 +85,10 @@ namespace taskmaker_wpf.Model.Core {
             //_target = target;
         }
 
+        public void RemoveTarget(IValue target) {
+            _target.Remove(target);
+        }
+
         public void SetTargetValue(Guid uid) {
             var node = NodeCollection[uid] as NodeM;
             var value = _target?.GetValue<NDarray<float>>();

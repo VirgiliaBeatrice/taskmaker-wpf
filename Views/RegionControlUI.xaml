@@ -44,20 +44,27 @@
                     <Setter Property="local:ComplexWidget.Top" Value="{Binding Path=Location.Y}" />
                 </Style>
             </local:ComplexWidget.ItemStyle>
-            <ListBox
-                x:Name="lbTargets"
-                Visibility="Hidden"
-                ItemsSource="{Binding ValidTargets}"
-                SelectionChanged="lbTargets_SelectionChanged"
-                Width="100"
-                Height="100"
-                SelectionMode="Multiple">
-            </ListBox>
-            <TextBlock
-                Width="200"
-                Height="40"
-                Text="{Binding ElementName=complex, Path=ViewPort.Transform, Converter={local:SKMatrixConverter} }"
-                 />
+            <StackPanel>
+                <ListBox
+                    x:Name="lbTargets"
+                    Visibility="Hidden"
+                    ItemsSource="{Binding ValidTargets}"
+                    Width="100"
+                    Height="100"
+                    SelectionMode="Multiple">
+                    <b:Interaction.Triggers>
+                        <b:EventTrigger EventName="SelectionChanged">
+                            <b:InvokeCommandAction Command="{Binding SelectedTargetsChanged}" PassEventArgsToCommand="True"/>
+                        </b:EventTrigger>
+
+                    </b:Interaction.Triggers>
+                </ListBox>
+                <TextBlock
+                    Width="200"
+                    Height="40"
+                    Text="{Binding ElementName=complex, Path=ViewPort.Transform, Converter={local:SKMatrixConverter} }"
+                     />
+            </StackPanel>
         </local:ComplexWidget>
         
         <StackPanel

@@ -12,6 +12,16 @@ namespace taskmaker_wpf.Views {
 
 
 
+        public double Radius {
+            get { return (double)GetValue(RadiusProperty); }
+            set { SetValue(RadiusProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Radius.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty RadiusProperty =
+            DependencyProperty.Register("Radius", typeof(double), typeof(NodeWidget), new PropertyMetadata(10.0));
+
+
         public Point Location {
             get { return (Point)GetValue(LocationProperty); }
             set { SetValue(LocationProperty, value); }
@@ -40,6 +50,18 @@ namespace taskmaker_wpf.Views {
             add { AddHandler(ClickEvent, value); }
             remove { RemoveHandler(ClickEvent, value); }
         }
+
+
+
+        public bool HasBindingValue {
+            get { return (bool)GetValue(HasBindingValueProperty); }
+            set { SetValue(HasBindingValueProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for HasBindingValue.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty HasBindingValueProperty =
+            DependencyProperty.Register("HasBindingValue", typeof(bool), typeof(NodeWidget), new PropertyMetadata(false));
+
 
         public bool IsSelected {
             get { return (bool)GetValue(IsSelectedProperty); }
@@ -110,7 +132,7 @@ namespace taskmaker_wpf.Views {
             var vLoc = (Parent as ComplexWidget).ViewPort.WorldToViewport(Location.ToSKPoint());
 
 
-            if ((pt.ToSKPoint() - vLoc).LengthSquared <= 100.0f)
+            if ((pt.ToSKPoint() - vLoc).LengthSquared <= Math.Pow(Radius, 2.0))
                 return new PointHitTestResult(this, pt);
             else
                 return null;
@@ -135,11 +157,13 @@ namespace taskmaker_wpf.Views {
 
                 if (IsMouseOver)
                     stroke.Color = SKColors.AliceBlue;
+                if (HasBindingValue)
+                    fill.Color = SKColors.Orange;
                 if (IsSelected)
                     fill.Color = SKColors.AliceBlue;
 
-                canvas.DrawCircle(Location.ToSKPoint(), 10, fill);
-                canvas.DrawCircle(Location.ToSKPoint(), 10, stroke);
+                canvas.DrawCircle(Location.ToSKPoint(), (float)Radius, fill);
+                canvas.DrawCircle(Location.ToSKPoint(), (float)Radius, stroke);
             }
         }
     }
