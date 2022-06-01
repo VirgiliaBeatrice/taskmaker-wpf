@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using SkiaSharp;
@@ -48,6 +49,18 @@ namespace taskmaker_wpf.Views {
                 return new PointHitTestResult(this, pt);
             else
                 return null;
+        }
+
+        protected override void OnMouseEnter(MouseEventArgs e) {
+            (Parent as ComplexWidget).InvalidateSKContext();
+            
+            base.OnMouseEnter(e);
+        }
+
+        protected override void OnMouseLeave(MouseEventArgs e) {
+            (Parent as ComplexWidget).InvalidateSKContext();
+
+            base.OnMouseLeave(e);
         }
 
         internal void InvalidateShape() {
@@ -114,21 +127,26 @@ namespace taskmaker_wpf.Views {
                 Color = SKColors.Bisque
             };
 
+            var fillColor = SKColors.Bisque;
+
+            if (IsMouseOver)
+                fillColor = SKColors.BlanchedAlmond;
+
             if (_shape.PointCount == 6) {
-                var transparent = SKColors.Bisque.WithAlpha(0);
+                var transparent = fillColor.WithAlpha(0);
                 fill.Shader = SKShader.CreateRadialGradient(
                     _shape.Points[0],
                     (_shape.Points[1] - _shape.Points[0]).Length,
-                    new SKColor[] { SKColors.Bisque, transparent },
+                    new SKColor[] { fillColor, transparent },
                     SKShaderTileMode.Clamp);
             }
             else {
-                var transparent = SKColors.Bisque.WithAlpha(0);
+                var transparent = fillColor.WithAlpha(0);
 
                 fill.Shader = SKShader.CreateLinearGradient(
                     _shape.Points[1],
                     _shape.Points[2],
-                    new SKColor[] { SKColors.Bisque, transparent },
+                    new SKColor[] { fillColor, transparent },
                     SKShaderTileMode.Clamp);
             }
 

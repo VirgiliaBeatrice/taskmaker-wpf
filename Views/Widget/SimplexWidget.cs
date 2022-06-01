@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using SkiaSharp;
@@ -62,6 +63,18 @@ namespace taskmaker_wpf.Views {
                 return null;
         }
 
+        protected override void OnMouseEnter(MouseEventArgs e) {
+            (Parent as ComplexWidget).InvalidateSKContext();
+
+            base.OnMouseEnter(e);
+        }
+
+        protected override void OnMouseLeave(MouseEventArgs e) {
+            (Parent as ComplexWidget).InvalidateSKContext();
+
+            base.OnMouseLeave(e);
+        }
+
 
         public override void Draw(SKCanvas canvas) {
             canvas.Save();
@@ -82,6 +95,9 @@ namespace taskmaker_wpf.Views {
             };
 
             CreateShape();
+
+            if (IsMouseOver)
+                fill.Color = SKColors.BlanchedAlmond;
 
             canvas.DrawPath(_shape, stroke);
             canvas.DrawPath(_shape, fill);
