@@ -8,6 +8,59 @@ using System.Threading.Tasks;
 using System.Windows;
 
 namespace taskmaker_wpf.Views {
+    public class CursorWidget : SKFrameworkElement {
+
+
+        public Point Location {
+            get { return (Point)GetValue(LocationProperty); }
+            set { SetValue(LocationProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Location.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty LocationProperty =
+            DependencyProperty.Register("Location", typeof(Point), typeof(CursorWidget), new PropertyMetadata(new Point()));
+
+        public override void Draw(SKCanvas canvas) {
+            using (var axis = new SKPaint())
+            using (var circle = new SKPaint()) {
+                axis.IsAntialias = true;
+                axis.StrokeWidth = 2;
+                axis.Style = SKPaintStyle.Stroke;
+                axis.Color = SKColors.Black;
+
+                var effect = SKPathEffect.CreateDash(
+                    new[] { 4.0f, 4.0f },
+                    0);
+
+                circle.IsAntialias = true;
+                circle.StrokeWidth = 2;
+                circle.Style = SKPaintStyle.Stroke;
+                circle.Color = SKColors.White;
+
+
+                canvas.DrawCircle(Location.ToSKPoint(), 10.0f, circle);
+
+                circle.PathEffect = effect;
+                circle.Color = SKColors.Red;
+                canvas.DrawCircle(Location.ToSKPoint(), 10.0f, circle);
+
+                var a = Location.ToSKPoint() - new SKPoint(15, 0);
+                var b = Location.ToSKPoint() + new SKPoint(15, 0);
+                var c = Location.ToSKPoint() - new SKPoint(0, 15);
+                var d = Location.ToSKPoint() + new SKPoint(0, 15);
+
+                canvas.DrawLine(a, b, axis);
+                canvas.DrawLine(c, d, axis);
+
+                effect.Dispose();
+            }
+
+
+
+        }
+    }
+
+
     public class IndicatorWidget : SKFrameworkElement {
         public Point Location {
             get { return (Point)GetValue(LocationProperty); }

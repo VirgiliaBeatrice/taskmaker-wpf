@@ -107,9 +107,17 @@ namespace taskmaker_wpf.Views {
             return Transform.Invert().MapPoint(vPt);
         }
 
+        public Point ViewportToWorld(Point vPt) {
+            return ViewportToWorld(vPt.ToSKPoint()).ToPoint();
+        }
+
         // V(viewport) = T * V(world)
         public SKPoint WorldToViewport(SKPoint wPt) {
             return Transform.MapPoint(wPt);
+        }
+
+        public Point WorldToViewport(Point wPt) {
+            return WorldToViewport(wPt.ToSKPoint()).ToPoint();
         }
 
         public void CreateContext(int width, int height) {
@@ -546,15 +554,15 @@ namespace taskmaker_wpf.Views {
 
             var trace_1 = ModeObs
                 .StartWith(Mode)
-                .Where(e => e == OperationMode.Trace)
                 .SelectMany(traceM)
                 //.Throttle(TimeSpan.FromMilliseconds(100))
                 //.ObserveOnDispatcher()
                 .Repeat()
+                .Where(e => Mode == OperationMode.Trace)
                 .Subscribe(OnTracing);
 
             void OnTracing(EventPattern<MouseEventArgs> e) {
-                InterpolateCommand.Execute(ViewPort.ViewportToWorld(e.EventArgs.GetPosition(this).ToSKPoint()));
+                InterpolateCommand.Execute(ViewPort.ViewportToWorld(e.EventArgs.GetPosition(this)));
 
                 //var i = Children.OfType<IndicatorWidget>().First();
 
@@ -578,6 +586,22 @@ namespace taskmaker_wpf.Views {
             SetZIndex(indicator, 10);
 
             Children.Add(indicator);
+
+            var cursor = new CursorWidget();
+
+            cursor.Width = 10;
+            cursor.Height = 10;
+
+            SetZIndex(cursor, 10);
+
+            Children.Add(cursor);
+
+            var test = MouseMoveObs
+                .Subscribe(e => {
+                    cursor.Location = e.EventArgs.GetPosition(this);
+
+                    InvalidateSKContext();
+                });
 
             SizeChanged += (s, e) => {
                 var i = Children.OfType<IndicatorWidget>().First();

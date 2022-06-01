@@ -347,7 +347,7 @@ namespace taskmaker_wpf.ViewModels {
 
         private void Interpolate(object arg) {
             var pt = (Point)arg;
-            var result = Model.Map.MapTo(pt.ToNDarray());
+            //var result = Model.Map.MapTo(pt.ToNDarray());
         }
     }
 }

@@ -202,7 +202,7 @@
     <Compile Include="PCController\Pose.cs" />
     <Compile Include="PCController\PoseData.cs" />
     <Compile Include="Qhull\QhullCSharp.cs" />
-    <Compile Include="Views\IndicatorWidget.cs" />
+    <Compile Include="Views\Widget\IndicatorWidget.cs" />
     <Compile Include="Views\MessageBoxTargetSelector.xaml.cs">
       <DependentUpon>MessageBoxTargetSelector.xaml</DependentUpon>
     </Compile>
