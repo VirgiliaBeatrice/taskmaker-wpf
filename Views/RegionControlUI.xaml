@@ -54,7 +54,9 @@
                     SelectionMode="Multiple">
                     <b:Interaction.Triggers>
                         <b:EventTrigger EventName="SelectionChanged">
-                            <b:InvokeCommandAction Command="{Binding SelectedTargetsChanged}" PassEventArgsToCommand="True"/>
+                            <b:InvokeCommandAction
+                                Command="{Binding SelectedTargetsChanged}"
+                                CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox}, Path=SelectedItems}" />
                         </b:EventTrigger>
 
                     </b:Interaction.Triggers>
