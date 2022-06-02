@@ -371,7 +371,7 @@ namespace taskmaker_wpf.Views {
         private void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
             if (e.Action == NotifyCollectionChangedAction.Add) {
                 foreach (var item in e.NewItems) {
-                    if (item is Node node) {
+                    if (item is NodeData node) {
                         var newNode = new NodeWidget() {
                             DataContext = node,
                             Id = node.Uid,
@@ -399,7 +399,7 @@ namespace taskmaker_wpf.Views {
                 }
             }
             else if (e.Action == NotifyCollectionChangedAction.Remove) {
-                foreach (var item in e.OldItems.OfType<Node>()) {
+                foreach (var item in e.OldItems.OfType<NodeData>()) {
                     var target = Children.OfType<NodeWidget>()
                         .Where(x => x.Id == item.Uid)
                         .First();

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Numpy;
 using SkiaSharp;
 using taskmaker_wpf.ViewModels;
+using taskmaker_wpf.Qhull;
 
 namespace taskmaker_wpf.Model.Data {
     public class NodeM : IDisposable {
@@ -24,6 +25,12 @@ namespace taskmaker_wpf.Model.Data {
             Uid = Guid.NewGuid();
         }
 
+        public NodeData ToData() {
+            return new NodeData {
+                Uid = Uid,
+                Location = Location.ToPoint()
+            };
+        }
 
         protected virtual void Dispose(bool disposing) {
             if (!disposedValue) {
@@ -52,12 +59,12 @@ namespace taskmaker_wpf.Model.Data {
         }
     }
 
-    public interface IRegionUnit {
+    public interface IRegion {
         IBary Bary { get; set; }
     }
 
 
-    public class SimplexM : IDisposable, IRegionUnit {
+    public class SimplexM : IDisposable, IRegion {
         private bool disposedValue;
         public Guid Uid { get; set; }
         public List<NodeM> Nodes { get; set; } = new List<NodeM>();
@@ -88,11 +95,7 @@ namespace taskmaker_wpf.Model.Data {
         }
 
         public void SetBary() {
-            var indices = np.asarray(Nodes.Select(e => e.Id).ToArray());
-            var basis = np.array(Nodes.Select(e => e.Location).ToArray());
-
-            Bary = new SimplexBaryD(basis);
-            Bary.Indices = indices;
+            Bary = new SimplexBaryD(Nodes);
         }
 
         protected virtual void Dispose(bool disposing) {
@@ -127,63 +130,83 @@ namespace taskmaker_wpf.Model.Data {
 
     public class ComplexM : IDisposable {
         private bool disposedValue;
+
+        public Guid Uid { get; set; }
+
+        public List<NodeM> Nodes { get; set; } = new List<NodeM>();
         public List<SimplexM> Simplices { get; set; } = new List<SimplexM>();
         public List<VoronoiRegionM> Regions { get; set; } = new List<VoronoiRegionM>();
-        //public ExteriorM Exterior { get; set; }
 
         public ComplexBaryD Bary { get; set; } = null;
 
-        public ComplexM() { }
-
-        public void AddSimplex(params NodeM[] nodes) {
-            if (nodes.Length == 3) {
-                var simplex = new SimplexM(nodes);
-
-                Simplices.Add(simplex);
-            } else {
-                throw new NotImplementedException();
-
-            }
+        public ComplexM() {
+            Uid = new Guid();
         }
 
-        public void AddSimplices(IEnumerable<SimplexM> nodes) {
+        public NodeM Add(NDarray<float> pt) {
+            var node = new NodeM() {
+                Location = pt
+            };
+
+            Nodes.Add(node);
+
+            return node;
+        }
+
+        public void RemoveAt(Guid uid) {
+            Nodes.RemoveAll(e => e.Uid == uid);
+        }
+
+        public void CreateComplex() {
+            var nodes = np.array(
+                Nodes.Select(e => e.Location)
+                .ToArray());
+
+            var simplices = QhullCSharp.RunDelaunay(nodes)
+                .Select(
+                    e => new SimplexM(
+                        Nodes.ElementAt(e[0]),
+                        Nodes.ElementAt(e[1]),
+                        Nodes.ElementAt(e[2])))
+                .ToArray();
+
+            AddSimplices(simplices);
+
+            // reverse for ccw
+            var extremes = QhullCSharp.RunConvex(nodes)
+                .Select(
+                    e => Nodes.ElementAt(e))
+                .Reverse()
+                .ToArray();
+
+            // Create exterior
+            Regions = new List<VoronoiRegionM>(ExteriorM.Create(extremes, simplices));
+
+            // Initial barys
+            InitializeBarys();
+        }
+
+        public SimplexData[] GetSimplexData() {
+            return Simplices.Select(e => e.ToData()).ToArray();
+        }
+
+        public VoronoiData[] GetVoronoiData() {
+            return Regions.Select(e => e.ToData()).ToArray();
+        }
+
+        internal void AddSimplices(IEnumerable<SimplexM> nodes) {
             Simplices.AddRange(nodes);
         }
 
-        public void SetBary() {
+        internal void InitializeBarys() {
             Simplices.ForEach(e => e.SetBary());
             Regions.ForEach(e => e.SetBary());
 
-            var r1 = Simplices
-                .SelectMany(x => x.Nodes).ToArray();
-            var r2 = r1.Distinct().ToArray();
-            var r3 = r2.Select(e => e.Location).ToArray();
-
-            var basis = np.array(Simplices
-                .SelectMany(x => x.Nodes)
-                .Distinct()
-                .Select(e => e.Location));
-            var simplexBarys = Simplices
-                .Select(x => x.Bary).ToArray<IBary>();
-            var voronoiBarys = Regions
-                .Select(x => x.Bary).ToArray<IBary>();
-            var allBarys = simplexBarys
-                .Concat(voronoiBarys).ToArray();
-
-            Bary = new ComplexBaryD(
-                basis,
-                allBarys);
-        }
-        public NDarray GetLambdas(IRegionUnit target, NDarray p) {
-            return Bary.GetLambdas(target.Bary, p);
+            Bary = new ComplexBaryD(Nodes);
         }
 
-        public NDarray GetLambdas(SimplexM target, NDarray p) {
-            return Bary.GetLambdas(target.Bary, p);
-        }
-
-        public NDarray GetLambdas(VoronoiRegionM target, NDarray p) {
-            return Bary.GetLambdas(target.Bary, p);
+        public NDarray GetLambdas(IRegion region, NDarray p) {
+            return Bary.GetLambdas(region.Bary, p);
         }
 
         protected virtual void Dispose(bool disposing) {
@@ -306,7 +329,7 @@ namespace taskmaker_wpf.Model.Data {
         }
     }
 
-    public abstract class VoronoiRegionM : IDisposable, IRegionUnit {
+    public abstract class VoronoiRegionM : IDisposable, IRegion {
         //public abstract SimplexBary GetBary();
         public Guid Uid { get; set; }
         public abstract IBary Bary { get; set; }
@@ -379,22 +402,6 @@ namespace taskmaker_wpf.Model.Data {
 
         public override void SetBary() {
             Bary = new VoronoiBaryD(new SimplexBaryD[] { Governor.Bary as SimplexBaryD });
-        }
-
-        public RectVoronoiRegionRecord ToRecord() {
-            var vertices = RectVertices
-                .Select(e => 
-                    e.GetData<double>()
-                        .Select(i => Convert.ToSingle(i)).ToArray())
-                .ToArray();
-
-            return new RectVoronoiRegionRecord {
-                radius = Factor,
-                a = vertices[0],
-                b = vertices[1],
-                bP = vertices[2],
-                aP = vertices[3]
-            };
         }
 
         public RectVoronoiRegion(NodeM[] nodes, SimplexM governor) {
@@ -522,15 +529,6 @@ namespace taskmaker_wpf.Model.Data {
                 Governors.Select(e => e.Bary as SimplexBaryD).ToArray());
             (Bary as VoronoiBaryD).GetFactors += GetFactors;
             
-        }
-
-        public SectoralVoronoiRegionRecord ToRecord() {
-            return new SectoralVoronoiRegionRecord {
-                radius = Factor,
-                o = Node.Location.GetData<float>(),
-                a = _rays[0].GetData<float>(),
-                b = _rays[1].GetData<float>(),
-            };
         }
 
         protected virtual void Dispose(bool disposing) {

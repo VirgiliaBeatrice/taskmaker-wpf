@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +8,8 @@ using Numpy;
 
 namespace taskmaker_wpf.Model.Data {
     public interface IBary {
-        NDarray Indices { get; set; }
+        //NDarray Indices { get; set; }
+        NodeM[] BasisRef { get; }
         NDarray Zero { get; }
         NDarray GetLambdas(NDarray p, params object[] args);
     }
@@ -15,53 +17,54 @@ namespace taskmaker_wpf.Model.Data {
     public class SimplexBaryD : IBary, IDisposable {
         private bool disposedValue;
 
-        public NDarray Basis { get; set; }
-        public NDarray Indices { get; set; }
+        private NodeM[] _nodeRefs;
+        private NDarray _basis;
+
+        public NodeM[] BasisRef => _nodeRefs;
+        //public NDarray Indices { get; set; }
         public NDarray A { get; private set; }
 
-        public SimplexBaryD(NDarray basis) {
-            Basis = np.asanyarray(basis).T;
-            
-            using(var affineFactor = np.ones(Basis.shape[1])) {
-                if (Basis.shape[1] == 2)
-                    A = basis;
+        public SimplexBaryD(IEnumerable<NodeM> refs) {
+            _nodeRefs = refs.ToArray();
+            _basis = np.array(_nodeRefs.Select(e => e.Location).ToArray()).T;
+
+            using (var affineFactor = np.ones(_basis.shape[1])) {
+                if (_basis.shape[1] == 2)
+                    A = _basis;
                 else
-                    A = np.vstack(affineFactor, Basis);
+                    A = np.vstack(affineFactor, _basis);
             }
         }
 
         public NDarray GetLambdas(NDarray b, params object[] args) {
-            var B = np.hstack(np.ones(1), b);
-
-            if (Basis.shape[1] == 2) {
-                B.Dispose();
-                B = b;
-            }
+            var B = _basis.shape[1] == 2 ? b : np.hstack(np.ones(1), b);
 
             var x = np.linalg.solve(A, B);
 
             if (args.Length == 0)
                 return x;
             else {
-                var newResult = np.zeros((int)args[0]);
+                var length = (int)args[0];
+                var indices = (int[])args[1];
+                var newX = np.zeros(length);
 
                 for (var i = 0; i < x.shape[0]; i++) {
-                    newResult[$"{Indices[i] - 1}"] = x[i];
+                    newX[$"{indices[i]}"] = x[i];
                 }
 
                 x.Dispose();
 
-                return newResult;
+                return newX;
             }
         }
 
-        public NDarray Zero => np.zeros(Basis.shape[0], 1);
+        public NDarray Zero => np.atleast_2d(np.zeros(_basis.shape[0]));
 
         protected virtual void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
                     // TODO: dispose managed state (managed objects)
-                    Basis.Dispose();
+                    _basis.Dispose();
                     A.Dispose();
                 }
 
@@ -97,7 +100,7 @@ namespace taskmaker_wpf.Model.Data {
 
         public NDarray Zero => GovernorBarys[0].Zero;
 
-        public NDarray Indices { get; set; }
+        public NodeM[] BasisRef => GovernorBarys.SelectMany(e => e.BasisRef).Distinct().ToArray();
 
         public NDarray GetLambdas(NDarray p, params object[] args) {
             if (GovernorBarys.Length == 1) {
@@ -138,44 +141,19 @@ namespace taskmaker_wpf.Model.Data {
         }
     }
 
-    public class ComplexBaryD : IDisposable {
-        private bool disposedValue;
+    public class ComplexBaryD {
+        public int BasisDim => _basis.Length;
+        private NodeM[] _basis;
 
-        public NDarray Basis { get; set; }
-        public IBary[] Barys { get; set; }
-
-        public ComplexBaryD(NDarray basis, IBary[] barys) {
-            Basis = basis;
-            Barys = barys;
+        public ComplexBaryD(IEnumerable<NodeM> basis) {
+            _basis = basis.ToArray();
         }
+
 
         public NDarray GetLambdas(IBary target, NDarray p) {
-            return target.GetLambdas(p, Basis.shape[0]);
-        }
+            var indices = target.BasisRef.Select(e => _basis.ToList().IndexOf(e)).ToArray();
 
-        protected virtual void Dispose(bool disposing) {
-            if (!disposedValue) {
-                if (disposing) {
-                    // TODO: dispose managed state (managed objects)
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
-                disposedValue = true;
-            }
-        }
-
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~ComplexBary()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
-
-        public void Dispose() {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            return target.GetLambdas(p, _basis.Length, indices);
         }
     }
 
@@ -192,9 +170,11 @@ namespace taskmaker_wpf.Model.Data {
             Barys = barys;
 
             // Shape: 2 - BiLinear, n -  
-            var dim = new int[] { targetDim, Barys.Length };
-            _shape = dim.Concat(Barys.Select(e => e.Basis.shape[0])).ToArray();
-            //_shape = dim.Concat(Barys.Select(e => e.Basis.shape[0])).Concat(new int[] { targetDim }).ToArray();
+            var partialDim = new int[] { targetDim, Barys.Length };
+            _shape = partialDim
+                .Concat(Barys
+                    .Select(e => e.BasisDim))
+                .ToArray();
 
             _wTensor = np.empty(_shape);
             _wTensor.fill(np.nan);

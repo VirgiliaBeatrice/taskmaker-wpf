@@ -33,6 +33,7 @@ namespace taskmaker_wpf {
             // Register services
             containerRegistry.RegisterSingleton<MotorService>();
             containerRegistry.RegisterSingleton<SerialService>();
+            containerRegistry.RegisterSingleton<SystemService>();
 
             // Register messagebox
             containerRegistry.RegisterDialog<CMessageBox, MessageBoxViewModel>("standard");

@@ -24,7 +24,7 @@ using taskmaker_wpf.Model.Data;
 using System.Windows.Controls;
 
 namespace taskmaker_wpf.ViewModels {
-    public class Node : BindableBase {
+    public class NodeData : BindableBase {
         private Guid _uid;
         public Guid Uid {
             get { return _uid; }
@@ -124,14 +124,14 @@ namespace taskmaker_wpf.ViewModels {
     }
 
     public class RegionControlUIViewModel : BindableBase {
-        public Window Parent { get; set; }
-        public Model.Core.UI Model { get; set; }
+        public ComplexM Model { get; set; }
+        //public Model.Core.UI Model { get; set; }
         public Views.Pages.SimplexView Page { get; set; }
         //public Model.Data.MotorCollection Motors { get; set; }
 
         //private MotorService _motorSvr;
         private TargetService _targetSvr;
-        private SystemService _systemService;
+        private SystemService _systemSvr;
 
         #region Bindable Properties
         private int _count;
@@ -149,7 +149,7 @@ namespace taskmaker_wpf.ViewModels {
 
         public ObservableCollection<IValue> ValidTargets { get; set; } = new ObservableCollection<IValue>();
 
-        public ObservableCollection<Node> Nodes { get; set; } = new ObservableCollection<Node>();
+        public ObservableCollection<NodeData> Nodes { get; set; } = new ObservableCollection<NodeData>();
 
         //public ObservableCollection<SimplexData> Simplices { get; set; } = new ObservableCollection<SimplexData> ();
         private SimplexData[] _simplices;
@@ -169,16 +169,13 @@ namespace taskmaker_wpf.ViewModels {
 
         public RegionControlUIViewModel(
             TargetService targetService,
-            SystemService systemService,
-            Window parent) {
-            Parent = parent;
-            //Model = new Model.Core.UI();
+            SystemService systemService) {
 
             _targetSvr = targetService;
-            _systemService = systemService;
+            _systemSvr = systemService;
 
-            Model = _systemService.UIs[0];
-
+            _systemSvr.Complexes.Add(new ComplexM());
+            Model = _systemSvr.Complexes[0];
             //var target = new BinableTargetCollection();
 
 
@@ -198,12 +195,6 @@ namespace taskmaker_wpf.ViewModels {
         //        .Repeat()
         //        .Subscribe(e => Console.WriteLine(e.GetTouchPoint(Parent).TouchDevice.Id));
         //}
-
-        private void SetBarys() {
-            // Init all barys
-            Model.Complex.SetBary();
-            Model.CreateMap();
-        }
 
         //private void RegisterManipulateMode() {
         //    Unregister();
@@ -240,19 +231,29 @@ namespace taskmaker_wpf.ViewModels {
 
         //        }
         //    }
+        private void CreateComplex() {
+            Model.CreateComplex();
+
+            Simplices = Model.GetSimplexData();
+            Voronois = Model.GetVoronoiData();
+        }
 
         private void CreateInterior() {
-            Model.CreateRegions();
+            CreateComplex();
+            //Model.CreateComplex();
+            //Model.CreateRegions();
 
-            var data = Model.GetSimplexCollectionData();
+            //Model.Complex.Simplices.ForEach(e => e.SetBary());
 
-            Simplices = data;
+            //var data = Model.GetSimplexCollectionData();
+
+            //Simplices = data;
         }
 
         private void CreateExterior() {
-            var data = Model.GetVoronoiCollectionData();
+            //var data = Model.GetVoronoiCollectionData();
 
-            Voronois = data;
+            //Voronois = data;
         }
 
         private OperationMode operationMode;
@@ -276,10 +277,11 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private void AddItem(object pt) {
-            var value = ((Point)pt).ToSKPoint().ToNDarray();
-            var uid = Model.Add(value);
+            var value = ((Point)pt).ToNDarray();
+            var node = Model.Add(value);
 
-            Nodes.Add(new Node { Location = (Point)pt, Uid = uid });
+            node.ToData();
+            Nodes.Add(node.ToData());
         }
 
         private DelegateCommand<object> removeItemCommand;
@@ -298,8 +300,8 @@ namespace taskmaker_wpf.ViewModels {
             var uid = (Guid)obj;
 
             Model.RemoveAt(uid);
-            var idx = Nodes.ToList().FindIndex(e => e.Uid == uid);
-            Nodes.RemoveAt(idx);
+
+            Nodes.Remove(Nodes.Where(e => e.Uid == uid).First());
         }
 
         private DelegateCommand buildInteriorCommand;
@@ -351,27 +353,28 @@ namespace taskmaker_wpf.ViewModels {
             //var result = Model.Map.MapTo(pt.ToNDarray());
         }
 
-        private DelegateCommand<object> selectedTargetsChanged;
+        private DelegateCommand<IList<object>> selectedTargetsChanged;
 
         public ICommand SelectedTargetsChanged {
             get {
                 if (selectedTargetsChanged == null) {
-                    selectedTargetsChanged = new DelegateCommand<object>(PerformSelectedTargetsChanged);
+                    selectedTargetsChanged = new DelegateCommand<IList<object>>(PerformSelectedTargetsChanged);
                 }
 
                 return selectedTargetsChanged;
             }
         }
 
-        private void PerformSelectedTargetsChanged(object param) {
-            if (param is SelectionChangedEventArgs args) {
-                if (args.AddedItems.Count != 0) {
-                    Model.AddTarget(args.AddedItems[0] as IValue);
-                }
-                if (args.RemovedItems.Count != 0) {
-                    Model.RemoveTarget(args.RemovedItems[0] as IValue);
-                }
-            }
+        private void PerformSelectedTargetsChanged(IList<object> param) {
+            //param.ToList()
+            //if (param is SelectedItemsCollection args) {
+            //    if (args.AddedItems.Count != 0) {
+            //        Model.AddTarget(args.AddedItems[0] as IValue);
+            //    }
+            //    if (args.RemovedItems.Count != 0) {
+            //        Model.RemoveTarget(args.RemovedItems[0] as IValue);
+            //    }
+            //}
         }
     }
 }

@@ -8,9 +8,15 @@ using taskmaker_wpf.Model.Data;
 using PCController;
 using mMotor = taskmaker_wpf.Model.Data.Motor;
 using cMotor = PCController.Motor;
-using taskmaker_wpf.Model.Core;
 
 namespace taskmaker_wpf.Services {
+    public class SystemService {
+        public List<NLinearMap> Maps { get; set; } = new List<NLinearMap>();
+        public List<ComplexM> Complexes { get; set; } = new List<ComplexM>();
+
+        public SystemService() { }
+    }
+
     public class TargetService {
         public List<IValue> Targets { get; set; } = new List<IValue> { };
 
@@ -23,19 +29,11 @@ namespace taskmaker_wpf.Services {
                             Max = 10000,
                             Min = -10000,
                             Value = 0,
-                            Alias = "S0"
+                            Alias = $"S{e}"
                         };
 
                         Targets.Add(motor);
                     });
-        }
-    }
-
-    public class SystemService {
-        public List<UI> UIs { get; set; } = new List<UI>();
-
-        public SystemService() {
-            UIs.Add(new UI { Name = "Example1" });
         }
     }
 
