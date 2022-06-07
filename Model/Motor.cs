@@ -10,12 +10,6 @@ using System.IO.Ports;
 using taskmaker_wpf.Model.Core;
 
 namespace taskmaker_wpf.Model.Data {
-    public interface IBindable {
-        int Dim { get; }
-        bool SetValue(object[] values);
-        NDarray ToNDarray();
-    }
-
     public class Motor : IValue {
         private double _value;
         public double Value {
@@ -93,7 +87,7 @@ namespace taskmaker_wpf.Model.Data {
         }
 
         public void SetValue<TValue>(TValue values) {
-            if (values is int[] inputs) {
+            if (values is double[] inputs) {
                 for (int i = 0; i < inputs.Length; i++) {
                     this[i].Value = inputs[i];
                 }
@@ -105,6 +99,10 @@ namespace taskmaker_wpf.Model.Data {
 
         public NDarray ToNDarray() {
             return np.array(this.Select(m => (float)m.Value).ToArray());
+        }
+
+        public override string ToString() {
+            return string.Join(", ", this.Select(e => (int)e.Value));
         }
     }
 

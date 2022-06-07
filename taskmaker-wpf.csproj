@@ -202,6 +202,9 @@
     <Compile Include="PCController\Pose.cs" />
     <Compile Include="PCController\PoseData.cs" />
     <Compile Include="Qhull\QhullCSharp.cs" />
+    <Compile Include="Views\DirectControlModal.xaml.cs">
+      <DependentUpon>DirectControlModal.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Widget\IndicatorWidget.cs" />
     <Compile Include="Views\MessageBoxTargetSelector.xaml.cs">
       <DependentUpon>MessageBoxTargetSelector.xaml</DependentUpon>
@@ -239,6 +242,9 @@
       <DependentUpon>TestWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Widget\ComplexWidget.cs" />
+    <Compile Include="Views\Widget\Inspector.xaml.cs">
+      <DependentUpon>Inspector.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Widget\SimplexWidget.cs" />
     <Compile Include="Views\Widget\SKFrameworkElement.cs" />
     <Compile Include="Views\Widget\VoronoiWidget.cs" />
@@ -251,6 +257,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ViewModels\RegionControlUIViewModel.cs" />
+    <Page Include="Views\DirectControlModal.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MessageBoxTargetSelector.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -280,6 +290,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\TestWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Widget\Inspector.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -47,7 +47,7 @@ namespace taskmaker_wpf.Views {
 
         private void SKElement_PaintSurface(object sender, SkiaSharp.Views.Desktop.SKPaintSurfaceEventArgs e) {
             var canvas = e.Surface.Canvas;
-            canvas.Clear(SKColors.AntiqueWhite);
+            //canvas.Clear(SKColors.AntiqueWhite);
 
             //if (Engine.RenderQueue.Count != 0) {
             //    do {
@@ -58,7 +58,7 @@ namespace taskmaker_wpf.Views {
             //    } while(Engine.RenderQueue.Count != 0);
             //}
 
-            Engine.Paint(_viewModel.Page.Root, canvas);
+            //Engine.Paint(_viewModel.Page.Root, canvas);
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e) {

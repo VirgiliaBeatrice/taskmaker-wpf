@@ -42,7 +42,7 @@ namespace taskmaker_wpf.Model.Data {
             var x = np.linalg.solve(A, B);
 
             if (args.Length == 0)
-                return x;
+                return np.atleast_2d(x);
             else {
                 var length = (int)args[0];
                 var indices = (int[])args[1];
@@ -54,7 +54,7 @@ namespace taskmaker_wpf.Model.Data {
 
                 x.Dispose();
 
-                return newX;
+                return np.atleast_2d(newX);
             }
         }
 
@@ -166,11 +166,20 @@ namespace taskmaker_wpf.Model.Data {
 
         private bool _isSet => !bool.Parse(np.isnan(_wTensor.sum()).repr);
 
+
+        /// <summary>
+        /// NLinearMap
+        /// [ targetDim , ...(BasisDims) ]
+        /// targetDim = dimension of target's collection 
+        /// ...(BasisDims) = spreading of basis dimension of each barys
+        /// </summary>
+        /// <param name="barys"></param>
+        /// <param name="targetDim"></param>
         public NLinearMap(ComplexBaryD[] barys, int targetDim) {
             Barys = barys;
 
             // Shape: 2 - BiLinear, n -  
-            var partialDim = new int[] { targetDim, Barys.Length };
+            var partialDim = new int[] { targetDim };
             _shape = partialDim
                 .Concat(Barys
                     .Select(e => e.BasisDim))
@@ -181,7 +190,8 @@ namespace taskmaker_wpf.Model.Data {
         }
 
         public void SetValue(int[] indices, NDarray value) {
-            _wTensor[$":,:,{indices[0]}"] = np.atleast_2d(value).T;
+            // only 1 bary
+            _wTensor[$":,{indices[0]}"] = np.atleast_2d(value);
         }
 
         public NDarray MapTo(NDarray lambdas) {

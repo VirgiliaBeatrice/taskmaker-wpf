@@ -395,6 +395,12 @@ namespace taskmaker_wpf.Views {
                                 //Source = node,
                                 Path = new PropertyPath("Location")
                             });
+                        BindingOperations.SetBinding(
+                            newNode,
+                            NodeWidget.IsSetProperty,
+                            new Binding {
+                                Path = new PropertyPath("IsSet")
+                            });
                     }
                 }
             }
@@ -424,6 +430,18 @@ namespace taskmaker_wpf.Views {
                 }
             }
         }
+
+
+
+        public ICommand SetValueCommand {
+            get { return (ICommand)GetValue(SetValueCommandProperty); }
+            set { SetValue(SetValueCommandProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for SetValueCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SetValueCommandProperty =
+            DependencyProperty.Register("SetValueCommand", typeof(ICommand), typeof(ComplexWidget), new PropertyMetadata(null));
+
 
 
 
@@ -562,7 +580,26 @@ namespace taskmaker_wpf.Views {
                 .Subscribe(OnTracing);
 
             void OnTracing(EventPattern<MouseEventArgs> e) {
-                InterpolateCommand.Execute(ViewPort.ViewportToWorld(e.EventArgs.GetPosition(this)));
+                var pt = e.EventArgs.GetPosition(this);
+                var result = VisualTreeHelper.HitTest(this, pt);
+
+                if (result.VisualHit is VoronoiWidget v) {
+                    var args = new object[] {
+                        ViewPort.ViewportToWorld(pt),
+                        v.Id
+                    };
+
+                    InterpolateCommand.Execute(args);
+                }
+                else if (result.VisualHit is SimplexWidget s) {
+                    var args = new object[] {
+                        ViewPort.ViewportToWorld(pt),
+                        s.Id
+                    };
+
+                    InterpolateCommand.Execute(args);
+                }
+
 
                 //var i = Children.OfType<IndicatorWidget>().First();
 
@@ -716,7 +753,17 @@ namespace taskmaker_wpf.Views {
                     else
                         lb.Visibility = Visibility.Hidden;
                     break;
+                case Key.S:
+                    OnSetValue();
+                    break;
             }
+        }
+
+        private void OnSetValue() {
+            if (SelectedNode is null)
+                return;
+
+            SetValueCommand.Execute(SelectedNode.Id);
         }
 
         protected void PrepareObservable() {

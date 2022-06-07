@@ -53,14 +53,14 @@ namespace taskmaker_wpf.Views {
 
 
 
-        public bool HasBindingValue {
-            get { return (bool)GetValue(HasBindingValueProperty); }
-            set { SetValue(HasBindingValueProperty, value); }
+        public bool IsSet {
+            get { return (bool)GetValue(IsSetProperty); }
+            set { SetValue(IsSetProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for HasBindingValue.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty HasBindingValueProperty =
-            DependencyProperty.Register("HasBindingValue", typeof(bool), typeof(NodeWidget), new PropertyMetadata(false));
+        public static readonly DependencyProperty IsSetProperty =
+            DependencyProperty.Register("IsSet", typeof(bool), typeof(NodeWidget), new PropertyMetadata(false));
 
 
         public bool IsSelected {
@@ -71,9 +71,6 @@ namespace taskmaker_wpf.Views {
         // Using a DependencyProperty as the backing store for IsSelected.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty IsSelectedProperty =
             DependencyProperty.Register("IsSelected", typeof(bool), typeof(NodeWidget), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
-
-        static NodeWidget() {
-        }
 
         public NodeWidget() {
             var mouseLeftDownAsObs = Observable.FromEventPattern<MouseButtonEventHandler, MouseButtonEventArgs>(
@@ -157,7 +154,7 @@ namespace taskmaker_wpf.Views {
 
                 if (IsMouseOver)
                     stroke.Color = SKColors.AliceBlue;
-                if (HasBindingValue)
+                if (IsSet)
                     fill.Color = SKColors.Orange;
                 if (IsSelected)
                     fill.Color = SKColors.AliceBlue;

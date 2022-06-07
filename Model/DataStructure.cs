@@ -16,6 +16,7 @@ namespace taskmaker_wpf.Model.Data {
         public int Id { get; set; }
         public NDarray<float> Location { get; set; }
         public NDarray<float> TargetValue { get; set; }
+        public bool IsSet { get; set; } = false;
 
         public NodeM(int id) {
             Id = id;
@@ -28,7 +29,8 @@ namespace taskmaker_wpf.Model.Data {
         public NodeData ToData() {
             return new NodeData {
                 Uid = Uid,
-                Location = Location.ToPoint()
+                Location = Location.ToPoint(),
+                IsSet = IsSet
             };
         }
 
@@ -127,8 +129,7 @@ namespace taskmaker_wpf.Model.Data {
         }
     }
 
-
-    public class ComplexM : IDisposable {
+    public class ComplexM : IValue, IDisposable {
         private bool disposedValue;
 
         public Guid Uid { get; set; }
@@ -137,7 +138,10 @@ namespace taskmaker_wpf.Model.Data {
         public List<SimplexM> Simplices { get; set; } = new List<SimplexM>();
         public List<VoronoiRegionM> Regions { get; set; } = new List<VoronoiRegionM>();
 
+        public BinableTargetCollection Targets { get; set; } = new BinableTargetCollection();
+
         public ComplexBaryD Bary { get; set; } = null;
+        public double Value { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public ComplexM() {
             Uid = new Guid();
@@ -205,8 +209,17 @@ namespace taskmaker_wpf.Model.Data {
             Bary = new ComplexBaryD(Nodes);
         }
 
-        public NDarray GetLambdas(IRegion region, NDarray p) {
-            return Bary.GetLambdas(region.Bary, p);
+        public IRegion FindRegionById(Guid id) {
+            var a = Regions.Find(e => e.Uid == id);
+            var b = Simplices.Find(e => e.Uid == id);
+
+            if (a != null)
+                return a;
+
+            if (b != null)
+                return b;
+
+            return null;
         }
 
         protected virtual void Dispose(bool disposing) {
@@ -503,20 +516,23 @@ namespace taskmaker_wpf.Model.Data {
         }
 
         private NDarray GetFactors(NDarray p) {
-            var a = Nodes[0].Location;
+            //var a = Nodes[0].Location;
+            var a = _rays[0];
             var o = Nodes[1].Location;
-            var b = Nodes[2].Location;
+            var b = _rays[1];
+            //var b = Nodes[2].Location;
 
             var ao = a - o;
             var bo = b - o;
             var po = p - o;
 
-            var theta0 = np.arcsin(
-                np.cross(ao, po) / (np.linalg.norm(ao) * np.linalg.norm(po)));
-            var theta1 = np.arcsin(
-                np.cross(bo, po) / (np.linalg.norm(bo) * np.linalg.norm(po)));
+            var theta0 = np.abs(np.arccos(
+                np.dot(ao, po) / (np.linalg.norm(ao) * np.linalg.norm(po))));
+            var theta1 = np.abs(np.arccos(
+                np.dot(bo, po) / (np.linalg.norm(bo) * np.linalg.norm(po))));
+            var theta = theta0 + theta1;
 
-            return np.array(new NDarray[] { theta0, theta1 }).squeeze();
+            return np.array(new NDarray[] { theta1 / theta, theta0 / theta }).squeeze();
 
         }
 

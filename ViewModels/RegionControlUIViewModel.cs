@@ -36,6 +36,12 @@ namespace taskmaker_wpf.ViewModels {
             get => _location; 
             set => SetProperty(ref _location, value); 
         }
+
+        private bool _isSet;
+        public bool IsSet {
+            get { return _isSet; }
+            set => SetProperty(ref _isSet, value);
+        }
     }
 
     public class SimplexData : BindableBase {
@@ -125,11 +131,7 @@ namespace taskmaker_wpf.ViewModels {
 
     public class RegionControlUIViewModel : BindableBase {
         public ComplexM Model { get; set; }
-        //public Model.Core.UI Model { get; set; }
-        public Views.Pages.SimplexView Page { get; set; }
-        //public Model.Data.MotorCollection Motors { get; set; }
 
-        //private MotorService _motorSvr;
         private TargetService _targetSvr;
         private SystemService _systemSvr;
 
@@ -147,11 +149,20 @@ namespace taskmaker_wpf.ViewModels {
         private string _systemInfo;
         private string _statusMsg;
 
+        private NLinearMap _map;
+
+        private IValue[] _targets;
+        public IValue[] Targets {
+            get => _targets;
+            set => SetProperty(ref _targets, value);
+        }
+
+        private Guid _selectedNode;
+
         public ObservableCollection<IValue> ValidTargets { get; set; } = new ObservableCollection<IValue>();
 
         public ObservableCollection<NodeData> Nodes { get; set; } = new ObservableCollection<NodeData>();
 
-        //public ObservableCollection<SimplexData> Simplices { get; set; } = new ObservableCollection<SimplexData> ();
         private SimplexData[] _simplices;
         public SimplexData[] Simplices {
             get { return _simplices; }
@@ -174,8 +185,10 @@ namespace taskmaker_wpf.ViewModels {
             _targetSvr = targetService;
             _systemSvr = systemService;
 
-            _systemSvr.Complexes.Add(new ComplexM());
-            Model = _systemSvr.Complexes[0];
+
+            Model = new ComplexM();
+            _systemSvr.Complexes.Add(Model);
+
             //var target = new BinableTargetCollection();
 
 
@@ -188,54 +201,41 @@ namespace taskmaker_wpf.ViewModels {
             Console.WriteLine("A test command has been invoked.");
         }
 
-        //private void RegisterTouchManipulateMode() {
-        //    Unregister();
-
-        //    var touchDrag = (Parent as MainWindow).OTouchDrag
-        //        .Repeat()
-        //        .Subscribe(e => Console.WriteLine(e.GetTouchPoint(Parent).TouchDevice.Id));
-        //}
-
-        //private void RegisterManipulateMode() {
-        //    Unregister();
-
-        //    var leftMove = (Parent as MainWindow).OMouseDrag
-        //        .Subscribe(Function);
-
-        //    void Function(MouseEventArgs x) {
-        //        var position = x.GetPosition(Parent).ToSKPoint();
-        //        var result = _Find_Target(Page.Root, position);
-
-        //        if (result != null) {
-        //            // TODO
-        //            var target = Model.FindRegionById(result.ModelHash);
-
-        //            if (target != null) {
-        //                var lambdas = np.atleast_2d(Model.Complex.GetLambdas(target, np.array(position.X, position.Y)));
-
-        //                var targetValue = Model.Map.MapTo(lambdas);
-
-        //                Console.WriteLine(targetValue);
-
-        //                //_seq.Enqueue(lambdas.astype(np.float32).GetData<float>()[0]);
-
-        //                //var widget = Page.Root.FindByName<DataMonitorWidget>("Debug");
-        //                //var state = new DataMonitorState {
-        //                //    Bound = new SKRect(0, 0, 200, 40),
-        //                //    Seqs = _seq.ToArray()
-        //                //};
-
-        //                //Engine.SetState(widget, state);
-        //                //Console.WriteLine(lambdas);
-        //            }
-
-        //        }
-        //    }
         private void CreateComplex() {
             Model.CreateComplex();
 
             Simplices = Model.GetSimplexData();
             Voronois = Model.GetVoronoiData();
+
+            // TODO: For test purpose
+            _map = new NLinearMap(
+                new ComplexBaryD[] { Model.Bary },
+                Model.Targets.Dim);
+
+            _systemSvr.Maps.Add(_map);
+        }
+
+        private void CreateMap() {
+            _map = new NLinearMap(
+                new ComplexBaryD[] { Model.Bary },
+                Model.Targets.Dim);
+
+            _systemSvr.Maps.Add(_map);
+        }
+
+        private void SetValue(Guid? id) {
+            if (id is null) return;
+
+            var values = Model.Targets.ToNDarray();
+            var targetNode = Model.Nodes.Find(e => e.Uid == id);
+            var idx = Model.Nodes.FindIndex(e => e.Uid == id);
+
+            targetNode.IsSet = true;
+
+            _map.SetValue(new[] { idx }, values);
+
+            var node = Nodes.Where(e => e.Uid == id).First();
+            node.IsSet = true;
         }
 
         private void CreateInterior() {
@@ -255,6 +255,13 @@ namespace taskmaker_wpf.ViewModels {
 
             //Voronois = data;
         }
+
+        private string _debug;
+        public string Debug {
+            get => _debug;
+            set => SetProperty(ref _debug, value);
+        }
+
 
         private OperationMode operationMode;
 
@@ -280,7 +287,6 @@ namespace taskmaker_wpf.ViewModels {
             var value = ((Point)pt).ToNDarray();
             var node = Model.Add(value);
 
-            node.ToData();
             Nodes.Add(node.ToData());
         }
 
@@ -349,8 +355,24 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private void Interpolate(object arg) {
-            var pt = (Point)arg;
-            //var result = Model.Map.MapTo(pt.ToNDarray());
+            var args = (object[])arg;
+
+            var pt = (Point)args[0];
+            var targetId = (Guid?)args[1];
+
+            if (targetId is null) return;
+            else {
+                var id = (Guid)targetId;
+                var targetBary = Model.FindRegionById(id).Bary;
+
+                var lambdas = Model.Bary.GetLambdas(targetBary, pt.ToNDarray());
+                //_map.Barys
+                var result = _map.MapTo(lambdas);
+                Model.Targets.SetValue(result.GetData<double>());
+
+                Debug = Model.Targets.ToString();
+            }
+
         }
 
         private DelegateCommand<IList<object>> selectedTargetsChanged;
@@ -366,15 +388,22 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private void PerformSelectedTargetsChanged(IList<object> param) {
-            //param.ToList()
-            //if (param is SelectedItemsCollection args) {
-            //    if (args.AddedItems.Count != 0) {
-            //        Model.AddTarget(args.AddedItems[0] as IValue);
-            //    }
-            //    if (args.RemovedItems.Count != 0) {
-            //        Model.RemoveTarget(args.RemovedItems[0] as IValue);
-            //    }
-            //}
+            Model.Targets.Clear();
+            Model.Targets.AddRange(param.OfType<IValue>());
+
+            Targets = param.OfType<IValue>().ToArray();
+        }
+
+        private DelegateCommand<Guid?> setValueCommand;
+
+        public ICommand SetValueCommand {
+            get {
+                if (setValueCommand == null) {
+                    setValueCommand = new DelegateCommand<Guid?>(SetValue);
+                }
+
+                return setValueCommand;
+            }
         }
     }
 }
