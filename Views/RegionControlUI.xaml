@@ -7,11 +7,11 @@
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:prism="http://prismlibrary.com/"
              xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels"
+             xmlns:w ="clr-namespace:taskmaker_wpf.Views.Widget"
              d:DataContext="{d:DesignInstance Type=viewmodels:RegionControlUIViewModel}"
              xmlns:data="clr-namespace:taskmaker_wpf.Model.Data"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800"
-             Loaded="UserControl_Loaded">
+             d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.InputBindings>
     </UserControl.InputBindings>
     <Grid>
@@ -29,6 +29,22 @@
         <DockPanel
             LastChildFill="True"
             Grid.Row="1">
+            <TabControl
+                DockPanel.Dock="Right"
+                Width="200">
+                <TabItem
+                    Header="Inspector">
+                    <w:Inspector />
+                </TabItem>
+                <TabItem
+                    Header="Targets">
+                    <local:TargetsPanel
+                        ValidTargets="{Binding Targets}"
+                        SelectedTargets="{Binding SelectedTargets}" />
+                </TabItem>
+                
+            </TabControl>
+            <!--
             <StackPanel
                 Width="200"
                 DockPanel.Dock="Right">
@@ -81,7 +97,7 @@
                 </ItemsControl>
 
             </StackPanel>
-            
+            -->
             <local:ComplexWidget 
                 DockPanel.Dock="Left"
                 Width="auto"
@@ -97,6 +113,7 @@
                 ExteriorCommand="{Binding BuildExteriorCommand}"
                 InterpolateCommand="{Binding InterpolateCommand}"
                 SetValueCommand="{Binding SetValueCommand}"
+                SetInspectedObjectCommand="{Binding SetInspectedObjectCommand}"
                 Background="LightGray">
                 <local:ComplexWidget.ItemStyle>
                     <Style>

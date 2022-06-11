@@ -20,10 +20,6 @@ namespace taskmaker_wpf.Views {
     public partial class TestWindow : Window {
         public TestWindow() {
             InitializeComponent();
-            UpdateComponents();
-        }
-
-        private void UpdateComponents() {
         }
     }
 }

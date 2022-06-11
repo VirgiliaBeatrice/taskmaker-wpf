@@ -19,13 +19,8 @@
             <BitmapImage x:Key="panel" UriSource="../icons/panel.png"/>
         </ResourceDictionary>
     </Window.Resources>
-    <!--
-    <Window.InputBindings>
-        <KeyBinding Key="F2" Command="{Binding TestCommand}" />
 
-
-    </Window.InputBindings>
-    -->
+    
     <Grid Margin="5">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto"/>

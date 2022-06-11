@@ -243,7 +243,7 @@ namespace taskmaker_wpf.Views {
         protected override void OnMouseEnter(MouseEventArgs e) {
             var result = Focus();
 
-            Console.WriteLine(result);
+            //Console.WriteLine(result);
             base.OnMouseEnter(e);
         }
 
@@ -428,6 +428,9 @@ namespace taskmaker_wpf.Views {
                 else {
                     SelectedNode = SelectedNode.IsSelected ? w : null;
                 }
+
+                if (SelectedNode != null)
+                    SetInspectedObjectCommand.Execute(SelectedNode.Id);
             }
         }
 
@@ -498,6 +501,19 @@ namespace taskmaker_wpf.Views {
         // Using a DependencyProperty as the backing store for InterpolateCommand.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty InterpolateCommandProperty =
             DependencyProperty.Register("InterpolateCommand", typeof(ICommand), typeof(ComplexWidget), new UIPropertyMetadata(null));
+
+
+
+        public ICommand SetInspectedObjectCommand {
+            get { return (ICommand)GetValue(SetInspectedObjectCommandProperty); }
+            set { SetValue(SetInspectedObjectCommandProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for SetInspectedObjectCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SetInspectedObjectCommandProperty =
+            DependencyProperty.Register("SetInspectedObjectCommand", typeof(ICommand), typeof(ComplexWidget), new PropertyMetadata(null));
+
+
 
 
         public Style ItemStyle {

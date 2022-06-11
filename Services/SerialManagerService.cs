@@ -13,14 +13,9 @@ namespace taskmaker_wpf.Services {
     public class SystemService {
         public List<NLinearMap> Maps { get; set; } = new List<NLinearMap>();
         public List<ComplexM> Complexes { get; set; } = new List<ComplexM>();
+        public List<ISelectableTarget> Targets { get; set; } = new List<ISelectableTarget>();
 
-        public SystemService() { }
-    }
-
-    public class TargetService {
-        public List<IValue> Targets { get; set; } = new List<IValue> { };
-
-        public TargetService() {
+        public SystemService() {
             Enumerable.Range(0, 3)
                 .ToList()
                 .ForEach(

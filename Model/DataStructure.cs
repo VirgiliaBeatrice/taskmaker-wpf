@@ -129,7 +129,7 @@ namespace taskmaker_wpf.Model.Data {
         }
     }
 
-    public class ComplexM : IValue, IDisposable {
+    public class ComplexM : ITarget, IDisposable {
         private bool disposedValue;
 
         public Guid Uid { get; set; }

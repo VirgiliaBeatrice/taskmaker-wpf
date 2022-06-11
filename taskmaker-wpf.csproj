@@ -205,6 +205,9 @@
     <Compile Include="Views\DirectControlModal.xaml.cs">
       <DependentUpon>DirectControlModal.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\TargetsPanel.xaml.cs">
+      <DependentUpon>TargetsPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Widget\IndicatorWidget.cs" />
     <Compile Include="Views\MessageBoxTargetSelector.xaml.cs">
       <DependentUpon>MessageBoxTargetSelector.xaml</DependentUpon>
@@ -286,6 +289,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\RegionSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TargetsPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

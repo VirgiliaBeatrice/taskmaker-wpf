@@ -8,17 +8,19 @@ using cMotor = PCController.Motor;
 using PCController;
 using System.IO.Ports;
 using taskmaker_wpf.Model.Core;
+using taskmaker_wpf.Views.Widget;
+using Prism.Mvvm;
 
 namespace taskmaker_wpf.Model.Data {
-    public class Motor : IValue {
+    public class Motor : BindableBase, ISelectableTarget, IInspectorTarget {
         private double _value;
         public double Value {
             get => _value;
             set {
-                _value = value;
+                SetProperty(ref _value, value);
 
-                if (_instance != null)
-                    _instance.Value = (int)value;
+                //if (_instance != null)
+                //    _instance.Value = (int)value;
             }
         }
 
@@ -27,11 +29,14 @@ namespace taskmaker_wpf.Model.Data {
         private string _alias;
         private string _label;
         private string _id;
+        private bool _isSelected;
 
         private cMotor _instance;
         private int _boardId;
         private int _motorId;
         
+
+
         public int Max { get => _max; set => _max = value; }
         public int Min { get => _min; set => _min = value; }
         public string Alias { get => _alias; set => _alias = value; }
@@ -39,6 +44,10 @@ namespace taskmaker_wpf.Model.Data {
         public string Id { get => _id; set => _id = value; }
         public int BoardId { get => _boardId; set => _boardId = value; }
         public int MotorId { get => _motorId; set => _motorId = value; }
+        public bool IsSelected {
+            get => _isSelected;
+            set => SetProperty(ref _isSelected, value);
+        }
 
         public Motor() {
             _value = 0;
@@ -67,11 +76,17 @@ namespace taskmaker_wpf.Model.Data {
         }
     }
 
-    public interface IValue {
+    public interface ITarget {
         double Value { get; set; }
     }
 
-    public class BinableTargetCollection : List<IValue>, IBindableTarget {
+    public interface ISelectable {
+        bool IsSelected { get; set; }
+    }
+
+    public interface ISelectableTarget : ITarget, ISelectable { }
+
+    public class BinableTargetCollection : List<ISelectableTarget>, IBindableTarget {
         public int Dim => Count;
 
         public TValue GetValue<TValue>() {

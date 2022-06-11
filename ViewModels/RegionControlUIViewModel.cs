@@ -22,9 +22,10 @@ using System.Reactive.Subjects;
 using System.Collections.ObjectModel;
 using taskmaker_wpf.Model.Data;
 using System.Windows.Controls;
+using taskmaker_wpf.Views.Widget;
 
 namespace taskmaker_wpf.ViewModels {
-    public class NodeData : BindableBase {
+    public class NodeData : BindableBase, IInspectorTarget {
         private Guid _uid;
         public Guid Uid {
             get { return _uid; }
@@ -132,7 +133,7 @@ namespace taskmaker_wpf.ViewModels {
     public class RegionControlUIViewModel : BindableBase {
         public ComplexM Model { get; set; }
 
-        private TargetService _targetSvr;
+        //private TargetService _targetSvr;
         private SystemService _systemSvr;
 
         #region Bindable Properties
@@ -151,15 +152,27 @@ namespace taskmaker_wpf.ViewModels {
 
         private NLinearMap _map;
 
-        private IValue[] _targets;
-        public IValue[] Targets {
+        /// <summary>
+        /// Targets loaded from system service
+        /// </summary>
+        private ITarget[] _targets;
+        public ITarget[] Targets {
             get => _targets;
             set => SetProperty(ref _targets, value);
         }
 
+        /// <summary>
+        /// Targets being selected
+        /// </summary>
+        private ITarget[] _selectedTargets;
+        public ITarget[] SelectedTargets {
+            get => _selectedTargets;
+            set => SetProperty(ref _selectedTargets, value);
+        }
+
         private Guid _selectedNode;
 
-        public ObservableCollection<IValue> ValidTargets { get; set; } = new ObservableCollection<IValue>();
+        //public ObservableCollection<ITarget> ValidTargets { get; set; } = new ObservableCollection<ITarget>();
 
         public ObservableCollection<NodeData> Nodes { get; set; } = new ObservableCollection<NodeData>();
 
@@ -175,14 +188,10 @@ namespace taskmaker_wpf.ViewModels {
             set { SetProperty(ref _voronois, value); }
         }
 
-        public DelegateCommand TestCommand { get; set; }
-
-
         public RegionControlUIViewModel(
-            TargetService targetService,
             SystemService systemService) {
 
-            _targetSvr = targetService;
+            //_targetSvr = targetService;
             _systemSvr = systemService;
 
 
@@ -191,14 +200,27 @@ namespace taskmaker_wpf.ViewModels {
 
             //var target = new BinableTargetCollection();
 
+            // Update targets from service
+            Targets = _systemSvr.Targets.ToArray();
 
-            ValidTargets.AddRange(_targetSvr.Targets);
+            foreach (var item in _systemSvr.Targets.OfType<BindableBase>()) {
+                item.PropertyChanged += Item_PropertyChanged;
+            }
+            SelectedTargets = Model.Targets.ToArray();
 
             SystemInfo = $"{operationMode}";
         }
 
-        public void CommandTest() {
-            Console.WriteLine("A test command has been invoked.");
+        private void Item_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs args) {
+            if (args.PropertyName == nameof(Motor.IsSelected)) {
+                Model.Targets.Clear();
+
+                Model.Targets.AddRange(
+                    _systemSvr.Targets
+                    .Where(e => e.IsSelected));
+
+                SelectedTargets = Model.Targets.ToArray();
+            }
         }
 
         private void CreateComplex() {
@@ -260,6 +282,12 @@ namespace taskmaker_wpf.ViewModels {
         public string Debug {
             get => _debug;
             set => SetProperty(ref _debug, value);
+        }
+
+        private object[] _inspectedTargets;
+        public object[] InspectedTargets {
+            get => _inspectedTargets;
+            set => SetProperty(ref _inspectedTargets, value);
         }
 
 
@@ -389,9 +417,9 @@ namespace taskmaker_wpf.ViewModels {
 
         private void PerformSelectedTargetsChanged(IList<object> param) {
             Model.Targets.Clear();
-            Model.Targets.AddRange(param.OfType<IValue>());
+            Model.Targets.AddRange(param.OfType<ISelectableTarget>());
 
-            Targets = param.OfType<IValue>().ToArray();
+            SelectedTargets = Model.Targets.ToArray();
         }
 
         private DelegateCommand<Guid?> setValueCommand;
@@ -404,6 +432,30 @@ namespace taskmaker_wpf.ViewModels {
 
                 return setValueCommand;
             }
+        }
+
+        private DelegateCommand<Guid?> setInspectedObject;
+
+        public ICommand SetInspectedObjectCommand {
+            get {
+                if (setInspectedObject == null) {
+                    setInspectedObject = new DelegateCommand<Guid?>(SetInspectedObject);
+                }
+
+                return setInspectedObject;
+            }
+        }
+
+        private void SetInspectedObject(Guid? obj) {
+            if (obj is null) return;
+
+            var target = Nodes.ToList().Find(e => e.Uid == obj);
+
+            InspectedTargets = new object[] {
+                target
+            };
+            //InspectedTargets.Clear();
+            //InspectedTargets.Add(target);
         }
     }
 }
