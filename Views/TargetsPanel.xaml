@@ -39,12 +39,12 @@
                     Minimum="{Binding Min}"
                     IsSnapToTickEnabled="True"
                     TickFrequency="1"
-                    ValueChanged="Slider_ValueChanged"
                     />
                 <TextBox
                     Grid.Column="4"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
+                    Width="40"
                     Text="{Binding ElementName=slider, Path=Value, Mode=TwoWay}" />
             </Grid>
         </DataTemplate>
@@ -68,7 +68,7 @@
                     Grid.Column="1"
                     VerticalAlignment="Center"
                     Margin="2, 0, 2, 0"
-                    Text="Select Targets"
+                    Text="Select --Targets--"
                     ItemsSource="{Binding ElementName=targetPanel, Path=ValidTargets}">
                     <d:ComboBox.SelectedIndex>
                         0

@@ -220,7 +220,12 @@ namespace taskmaker_wpf.ViewModels {
                     .Where(e => e.IsSelected));
 
                 SelectedTargets = Model.Targets.ToArray();
+                OnSelectedTargetsChanged();
             }
+        }
+
+        private void OnSelectedTargetsChanged() {
+            CreateMap();
         }
 
         private void CreateComplex() {
@@ -238,6 +243,9 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private void CreateMap() {
+            // Remove old map from service if exists
+            _systemSvr.Maps.Remove(_map);
+
             _map = new NLinearMap(
                 new ComplexBaryD[] { Model.Bary },
                 Model.Targets.Dim);

@@ -47,9 +47,5 @@ namespace taskmaker_wpf.Views {
         public TargetsPanel() {
             InitializeComponent();
         }
-
-        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
-            Console.WriteLine("Changed");
-        }
     }
 }

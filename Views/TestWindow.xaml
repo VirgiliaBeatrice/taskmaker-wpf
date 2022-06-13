@@ -17,36 +17,38 @@
             <BitmapImage x:Key="settings" UriSource="../icons/settings.png"/>
             <BitmapImage x:Key="control" UriSource="../icons/triangle.png"/>
             <BitmapImage x:Key="panel" UriSource="../icons/panel.png"/>
+
         </ResourceDictionary>
     </Window.Resources>
 
     
     <Grid Margin="5">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="40"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <StackPanel 
-            HorizontalAlignment="Center"
+            HorizontalAlignment="Stretch"
             VerticalAlignment="Top"
-            Grid.Row="0" Orientation="Vertical">
+            Grid.Row="0"
+            Orientation="Vertical">
+            <StackPanel.Resources>
+                <Style
+                    TargetType="Image">
+                    <Setter Property="Width" Value="20" />
+                    <Setter Property="Height" Value="20" />
+                </Style>
+            </StackPanel.Resources>
             <Button
                 Margin="4"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Width="30"
-                Height="30"
                 Command="{Binding NavigateCommand}"
                 CommandParameter="RegionHome"
                 >
-                <Image Source="{StaticResource home}" />
+                <Image
+                    Source="{StaticResource home}"/>
             </Button>
             <Button
                 Margin="4"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Width="30"
-                Height="30"
                 Command="{Binding NavigateCommand}"
                 CommandParameter="RegionSettings"
                 >
@@ -54,31 +56,16 @@
             </Button>
             <Button
                 Margin="4"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Width="30"
-                Height="30"
                 Command="{Binding NavigateCommand}"
                 CommandParameter="RegionControlUI">
                 <Image Source="{StaticResource control}" />
             </Button>
             <Button
                 Margin="4"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Width="30"
-                Height="30"
                 Command="{Binding NavigateCommand}"
                 CommandParameter="RegionMotor">
                 <Image Source="{StaticResource panel}" />
             </Button>
-            <TextBlock Text="Test">
-                <b:Interaction.Triggers>
-                    <b:EventTrigger EventName="MouseDown">
-                        <prism:InvokeCommandAction Command="{Binding TestCmd}" />
-                    </b:EventTrigger>
-                </b:Interaction.Triggers>
-            </TextBlock>
         </StackPanel>
         <ContentControl
             BorderBrush="Blue"
