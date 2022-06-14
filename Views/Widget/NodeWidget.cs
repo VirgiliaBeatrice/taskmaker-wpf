@@ -8,9 +8,11 @@ using System.Windows.Input;
 using System.Windows.Media;
 
 namespace taskmaker_wpf.Views {
-    public class NodeWidget : SKFrameworkElement {
+    public interface ISelectableWidget {
+        bool IsSelected { get; set; }
+    }
 
-
+    public class NodeWidget : SKFrameworkElement, ISelectableWidget {
 
         public double Radius {
             get { return (double)GetValue(RadiusProperty); }
@@ -116,7 +118,11 @@ namespace taskmaker_wpf.Views {
         private void OnClick(EventPattern<MouseButtonEventArgs> e) {
             IsSelected = !IsSelected;
 
-            RaiseClickEvent();
+            if (IsSelected) {
+                (Parent as ComplexWidget).InspectedWidget = this;
+            }
+
+            //RaiseClickEvent();
 
             e.EventArgs.Handled = true;
 

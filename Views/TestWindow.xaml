@@ -22,9 +22,10 @@
     </Window.Resources>
 
     
-    <Grid Margin="5">
+    <Grid 
+        >
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="40"/>
+            <ColumnDefinition Width="50"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <StackPanel 
@@ -40,7 +41,6 @@
                 </Style>
             </StackPanel.Resources>
             <Button
-                Margin="4"
                 Command="{Binding NavigateCommand}"
                 CommandParameter="RegionHome"
                 >
@@ -48,20 +48,17 @@
                     Source="{StaticResource home}"/>
             </Button>
             <Button
-                Margin="4"
                 Command="{Binding NavigateCommand}"
                 CommandParameter="RegionSettings"
                 >
                 <Image Source="{StaticResource settings}" />
             </Button>
             <Button
-                Margin="4"
                 Command="{Binding NavigateCommand}"
                 CommandParameter="RegionControlUI">
                 <Image Source="{StaticResource control}" />
             </Button>
             <Button
-                Margin="4"
                 Command="{Binding NavigateCommand}"
                 CommandParameter="RegionMotor">
                 <Image Source="{StaticResource panel}" />

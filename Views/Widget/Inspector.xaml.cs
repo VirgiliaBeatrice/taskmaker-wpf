@@ -22,16 +22,19 @@ namespace taskmaker_wpf.Views.Widget {
     /// Interaction logic for Inspector.xaml
     /// </summary>
     public partial class Inspector : UserControl {
-
-
-        public IEnumerable InspectedObjects {
-            get { return (IEnumerable)GetValue(InspectedObjectsProperty); }
-            set { SetValue(InspectedObjectsProperty, value); }
+        public FrameworkElement InspectedWidget {
+            get { return (FrameworkElement)GetValue(InspectedWidgetProperty); }
+            set { SetValue(InspectedWidgetProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for InspectedObjects.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty InspectedObjectsProperty =
-            DependencyProperty.Register("InspectedObjects", typeof(IEnumerable), typeof(Inspector), new PropertyMetadata(new object[0]));
+        // Using a DependencyProperty as the backing store for InspectedObject.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty InspectedWidgetProperty =
+            DependencyProperty.Register(
+                "InspectedWidget",
+                typeof(FrameworkElement),
+                typeof(Inspector),
+                new FrameworkPropertyMetadata(null,
+                                              FrameworkPropertyMetadataOptions.AffectsRender));
 
 
 
@@ -47,14 +50,14 @@ namespace taskmaker_wpf.Views.Widget {
         public DataTemplate MotorDataTemplate { get; set; }
 
         public override DataTemplate SelectTemplate(object item, DependencyObject container) {
-            var target = (IInspectorTarget)item;
+            var target = (FrameworkElement)item;
 
-            if (target is NodeData) {
+            if (target is NodeWidget) {
                 return NodeDataTemplate;
             }
-            else if (target is Motor) {
-                return MotorDataTemplate;
-            }
+            //else if (target is Motor) {
+            //    return MotorDataTemplate;
+            //}
             else
                 return base.SelectTemplate(item, container);
         }

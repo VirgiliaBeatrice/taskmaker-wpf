@@ -247,6 +247,19 @@ namespace taskmaker_wpf.Views {
             base.OnMouseEnter(e);
         }
 
+
+
+        public FrameworkElement InspectedWidget {
+            get { return (FrameworkElement)GetValue(InspectedWidgetProperty); }
+            set { SetValue(InspectedWidgetProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for InspectedObject.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty InspectedWidgetProperty =
+            DependencyProperty.Register("InspectedWidget", typeof(FrameworkElement), typeof(ComplexWidget), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
+
+
+
         public NodeWidget SelectedNode {
             get { return (NodeWidget)GetValue(SelectedNodeProperty); }
             set { SetValue(SelectedNodeProperty, value); }
@@ -553,6 +566,13 @@ namespace taskmaker_wpf.Views {
                 .Repeat()
                 .Subscribe(OnAddNode);
 
+            var click = MouseDownObs
+                .Take(1)
+                .Concat(MouseUpObs.Take(1))
+                .TakeLast(1)
+                .Repeat()
+                .Subscribe(OnClicked);
+
             //var pan = MouseDownObs
             //    .Where(e => Mode == OperationMode.Panning)
             //    .Take(1)
@@ -669,6 +689,20 @@ namespace taskmaker_wpf.Views {
             };
 
             Cursor = Cursors.None;
+        }
+
+        private void OnClicked(EventPattern<MouseButtonEventArgs> args) {
+            if (Mode == OperationMode.Default) {
+                InspectedWidget = null;
+
+                foreach(var child in Children.OfType<ISelectableWidget>()) {
+                    child.IsSelected = false;
+                }
+
+                //SetInspectedObjectCommand.Execute();
+
+                args.EventArgs.Handled = true;
+            }
         }
 
         public void InvalidateSKContext() {

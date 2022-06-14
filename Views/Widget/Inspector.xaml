@@ -7,13 +7,14 @@
              xmlns:local="clr-namespace:taskmaker_wpf.Views.Widget"
              xmlns:vm="clr-namespace:taskmaker_wpf.ViewModels"
              xmlns:m="clr-namespace:taskmaker_wpf.Model.Data"
+             xmlns:widgets="clr-namespace:taskmaker_wpf.Views"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="200">
     <UserControl.Resources>
         <DataTemplate
             x:Key="nodeDataTemplate"
-            DataType="{x:Type vm:NodeData}">
+            DataType="{x:Type widgets:NodeWidget}">
 
             <Grid>
                 <Grid.RowDefinitions>
@@ -47,7 +48,7 @@
                     Grid.Row="1"
                     Grid.Column="2"
                     VerticalAlignment="Center"
-                    Text="{Binding Path=Location.X}"/>
+                    Text="{Binding Path=DataContext.Location.X}"/>
                 <Label 
                     Grid.Row="1"
                     Grid.Column="3"
@@ -56,7 +57,7 @@
                     Grid.Row="1"
                     Grid.Column="4"
                     VerticalAlignment="Center"
-                    Text="{Binding Path=Location.Y}"/>
+                    Text="{Binding Path=DataContext.Location.Y}"/>
 
                 <Label
                     Grid.Row="2"
@@ -67,7 +68,7 @@
                     Grid.Row="2"
                     Grid.Column="1"
                     Grid.ColumnSpan="4"
-                    Text="{Binding Path=Uid}" />
+                    Text="{Binding Path=DataContext.Uid}" />
 
                 <Label
                     Grid.Row="3"
@@ -78,7 +79,7 @@
                     Grid.Column="1"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Left"
-                    IsChecked="{Binding IsSet}" />
+                    IsChecked="{Binding DataContext.IsSet}" />
             </Grid>
 
         </DataTemplate>
@@ -89,18 +90,14 @@
     </UserControl.Resources>
     <Grid>
         <StackPanel>
-            <Label
-                Content="Inspector"
-                />
-            <ItemsControl
-                ItemsSource="{Binding ElementName=inspector, Path=InspectedObjects}"
-                ItemTemplateSelector="{StaticResource inspectorTargetTemplateSelector}">
-                <d:ItemsControl.ItemsSource>
-                    <x:Array Type="{x:Type sys:Object}">
-                        <vm:NodeData />
-                    </x:Array>
-                </d:ItemsControl.ItemsSource>
-            </ItemsControl>
+            <ContentPresenter
+                Content="{Binding ElementName=inspector, Path=InspectedWidget}"
+                ContentTemplateSelector="{StaticResource inspectorTargetTemplateSelector}"
+                >
+                <d:ContentPresenter.Content>
+                    <widgets:NodeWidget />
+                </d:ContentPresenter.Content>
+            </ContentPresenter>
         </StackPanel>
     </Grid>
 </UserControl>

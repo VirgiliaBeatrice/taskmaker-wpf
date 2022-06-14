@@ -34,7 +34,9 @@
                 Width="200">
                 <TabItem
                     Header="Inspector">
-                    <w:Inspector />
+                    <w:Inspector
+                        InspectedWidget="{Binding InspectedWidget}"
+                        />
                 </TabItem>
                 <TabItem
                     Header="Targets">
@@ -110,10 +112,9 @@
                 AddItemCommand="{Binding AddItemCommand}"
                 RemoveItemCommand="{Binding RemoveItemCommand}"
                 InteriorCommand="{Binding BuildInteriorCommand}"
-                ExteriorCommand="{Binding BuildExteriorCommand}"
                 InterpolateCommand="{Binding InterpolateCommand}"
                 SetValueCommand="{Binding SetValueCommand}"
-                SetInspectedObjectCommand="{Binding SetInspectedObjectCommand}"
+                InspectedWidget="{Binding Path=InspectedWidget, Mode=TwoWay}"
                 Background="LightGray">
                 <local:ComplexWidget.ItemStyle>
                     <Style>

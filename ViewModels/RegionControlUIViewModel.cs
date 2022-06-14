@@ -188,6 +188,14 @@ namespace taskmaker_wpf.ViewModels {
             set { SetProperty(ref _voronois, value); }
         }
 
+        private FrameworkElement _inspectedWidget;
+        public FrameworkElement InspectedWidget {
+            get { return _inspectedWidget; }
+            set { SetProperty(ref _inspectedWidget, value); }
+        }
+
+
+
         public RegionControlUIViewModel(
             SystemService systemService) {
 
@@ -291,13 +299,6 @@ namespace taskmaker_wpf.ViewModels {
             get => _debug;
             set => SetProperty(ref _debug, value);
         }
-
-        private object[] _inspectedTargets;
-        public object[] InspectedTargets {
-            get => _inspectedTargets;
-            set => SetProperty(ref _inspectedTargets, value);
-        }
-
 
         private OperationMode operationMode;
 
@@ -440,30 +441,6 @@ namespace taskmaker_wpf.ViewModels {
 
                 return setValueCommand;
             }
-        }
-
-        private DelegateCommand<Guid?> setInspectedObject;
-
-        public ICommand SetInspectedObjectCommand {
-            get {
-                if (setInspectedObject == null) {
-                    setInspectedObject = new DelegateCommand<Guid?>(SetInspectedObject);
-                }
-
-                return setInspectedObject;
-            }
-        }
-
-        private void SetInspectedObject(Guid? obj) {
-            if (obj is null) return;
-
-            var target = Nodes.ToList().Find(e => e.Uid == obj);
-
-            InspectedTargets = new object[] {
-                target
-            };
-            //InspectedTargets.Clear();
-            //InspectedTargets.Add(target);
         }
     }
 }
