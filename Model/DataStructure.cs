@@ -138,7 +138,7 @@ namespace taskmaker_wpf.Model.Data {
         public List<SimplexM> Simplices { get; set; } = new List<SimplexM>();
         public List<VoronoiRegionM> Regions { get; set; } = new List<VoronoiRegionM>();
 
-        public BinableTargetCollection Targets { get; set; } = new BinableTargetCollection();
+        public BindableTargetCollection Targets { get; set; } = new BindableTargetCollection();
 
         public ComplexBaryD Bary { get; set; } = null;
         public double Value { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }

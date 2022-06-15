@@ -419,9 +419,9 @@ namespace taskmaker_wpf.Views {
             }
             else if (e.Action == NotifyCollectionChangedAction.Remove) {
                 foreach (var item in e.OldItems.OfType<NodeData>()) {
-                    var target = Children.OfType<NodeWidget>()
-                        .Where(x => x.Id == item.Uid)
-                        .First();
+                    var target = Children
+                                 .OfType<NodeWidget>()
+                                 .First(x => x.Id == item.Uid);
 
                     Children.Remove(target);
                 }
@@ -691,13 +691,29 @@ namespace taskmaker_wpf.Views {
             Cursor = Cursors.None;
         }
 
+        public void ResetSelection(ISelectableWidget exception = null) {
+            foreach (var widget in Children.OfType<ISelectableWidget>().Except(new [] { exception })) {
+                widget.IsSelected = false;
+            }
+        }
+
+        public void SetSelection(ISelectableWidget widget) {
+            ResetSelection(widget);
+
+            if (widget is NodeWidget node)
+                SelectedNode = node;
+
+            InspectedWidget = widget as FrameworkElement;
+        }
+
         private void OnClicked(EventPattern<MouseButtonEventArgs> args) {
             if (Mode == OperationMode.Default) {
                 InspectedWidget = null;
 
-                foreach(var child in Children.OfType<ISelectableWidget>()) {
-                    child.IsSelected = false;
-                }
+                ResetSelection();
+                //foreach(var child in Children.OfType<ISelectableWidget>()) {
+                //    child.IsSelected = false;
+                //}
 
                 //SetInspectedObjectCommand.Execute();
 
@@ -747,46 +763,34 @@ namespace taskmaker_wpf.Views {
         }
 
         private void OnKeyPressed(EventPattern<KeyEventArgs> obj) {
-            if (obj.EventArgs.Key == Key.D1) {
-                Mode = OperationMode.Add;
+            switch (obj.EventArgs.Key)
+            {
+                case Key.D1:
+                    Mode = OperationMode.Add;
 
-                return;
-            }
+                    return;
+                case Key.D2:
+                    Mode = OperationMode.Panning;
+                    return;
+                case Key.D5:
+                    Mode = OperationMode.Trace;
 
-            if (obj.EventArgs.Key == Key.D2) {
-                Mode = OperationMode.Panning;
-                return;
-            }
+                    ModeObs.OnNext(Mode);
 
-            if (obj.EventArgs.Key == Key.D5) {
-                Mode = OperationMode.Trace;
+                    return;
+                case Key.I:
+                {
+                    var indicator = Children.OfType<IndicatorWidget>().First();
+                    indicator.Visibility = indicator.IsVisible ? Visibility.Hidden : Visibility.Visible;
+                    //indicator.InvalidateVisual();
 
-                ModeObs.OnNext(Mode);
-
-                return;
-            }
-
-            if (obj.EventArgs.Key == Key.I) {
-                var indicator = Children.OfType<IndicatorWidget>().First();
-                if (indicator.IsVisible) {
-                    indicator.Visibility = Visibility.Hidden;
+                    InvalidateSKContext();
+                    return;
                 }
-                else {
-                    indicator.Visibility = Visibility.Visible;
-                }
-                //indicator.InvalidateVisual();
+                case Key.Escape:
+                    Mode = OperationMode.Default;
 
-                InvalidateSKContext();
-                return;
-            }
-
-            if (obj.EventArgs.Key == Key.Escape) {
-                Mode = OperationMode.Default;
-
-                return;
-            }
-
-            switch (obj.EventArgs.Key) {
+                    return;
                 case Key.Delete:
                     OnRemoveNode(obj);
                     break;
@@ -797,14 +801,11 @@ namespace taskmaker_wpf.Views {
                     ExteriorCommand.Execute(null);
                     break;
                 case Key.T:
-                    var lb = (FindName("lbTargets") as ListBox);
-                    if (lb.Visibility == Visibility.Hidden)
-                        lb.Visibility = Visibility.Visible;
-                    else
-                        lb.Visibility = Visibility.Hidden;
                     break;
                 case Key.S:
                     OnSetValue();
+                    break;
+                default:
                     break;
             }
         }

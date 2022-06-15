@@ -54,7 +54,7 @@ namespace taskmaker_wpf.Model.Core {
     //    public ComplexM Complex { get; set; }
     //    public NLinearMap Map { get; set; }
 
-    //    private BinableTargetCollection _target = new BinableTargetCollection();
+    //    private BindableTargetCollection _target = new BindableTargetCollection();
 
     //    public UI() {
     //        Uid = Guid.NewGuid();

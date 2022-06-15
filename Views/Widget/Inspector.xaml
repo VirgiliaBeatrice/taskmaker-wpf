@@ -79,7 +79,7 @@
                     Grid.Column="1"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Left"
-                    IsChecked="{Binding DataContext.IsSet}" />
+                    IsChecked="{Binding Path=DataContext.IsSet}" />
             </Grid>
 
         </DataTemplate>
@@ -95,7 +95,8 @@
                 ContentTemplateSelector="{StaticResource inspectorTargetTemplateSelector}"
                 >
                 <d:ContentPresenter.Content>
-                    <widgets:NodeWidget />
+                    <widgets:NodeWidget IsSet="True"/>
+
                 </d:ContentPresenter.Content>
             </ContentPresenter>
         </StackPanel>

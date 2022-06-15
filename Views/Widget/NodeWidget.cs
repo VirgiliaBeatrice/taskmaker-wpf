@@ -119,7 +119,9 @@ namespace taskmaker_wpf.Views {
             IsSelected = !IsSelected;
 
             if (IsSelected) {
-                (Parent as ComplexWidget).InspectedWidget = this;
+                var parent = ((ComplexWidget)Parent);
+
+                parent.SetSelection(this);
             }
 
             //RaiseClickEvent();
@@ -159,7 +161,7 @@ namespace taskmaker_wpf.Views {
                 fill.Color = SKColors.YellowGreen;
 
                 if (IsMouseOver)
-                    stroke.Color = SKColors.AliceBlue;
+                    stroke.Color = SKColors.Black.WithAlpha((256/2));
                 if (IsSet)
                     fill.Color = SKColors.Orange;
                 if (IsSelected)

@@ -86,7 +86,7 @@ namespace taskmaker_wpf.Model.Data {
 
     public interface ISelectableTarget : ITarget, ISelectable { }
 
-    public class BinableTargetCollection : List<ISelectableTarget>, IBindableTarget {
+    public class BindableTargetCollection : List<ISelectableTarget>, IBindableTarget {
         public int Dim => Count;
 
         public TValue GetValue<TValue>() {
