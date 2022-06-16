@@ -11,7 +11,8 @@ namespace taskmaker_wpf.Model.Data {
         //NDarray Indices { get; set; }
         NodeM[] BasisRef { get; }
         NDarray Zero { get; }
-        NDarray GetLambdas(NDarray p, params object[] args);
+        //NDarray GetLambdas(NDarray p, params object[] args);
+        NDarray GetLambdas(NDarray p, NodeM[] collection);
     }
 
     public class SimplexBaryD : IBary, IDisposable {
@@ -36,26 +37,26 @@ namespace taskmaker_wpf.Model.Data {
             }
         }
 
-        public NDarray GetLambdas(NDarray b, params object[] args) {
+        public NDarray GetLambdas(NDarray b, NodeM[] collection) {
             var B = _basis.shape[1] == 2 ? b : np.hstack(np.ones(1), b);
 
             var x = np.linalg.solve(A, B);
 
-            if (args.Length == 0)
-                return np.atleast_2d(x);
-            else {
-                var length = (int)args[0];
-                var indices = (int[])args[1];
-                var newX = np.zeros(length);
+            var length = collection.Length;
+            var indices = BasisRef
+                          .Select(e => collection
+                                       .ToList()
+                                       .IndexOf(e))
+                          .ToArray();
+            var newX = np.zeros(length);
 
-                for (var i = 0; i < x.shape[0]; i++) {
-                    newX[$"{indices[i]}"] = x[i];
-                }
-
-                x.Dispose();
-
-                return np.atleast_2d(newX);
+            for (var i = 0; i < x.shape[0]; i++) {
+                newX[$"{indices[i]}"] = x[i];
             }
+
+            x.Dispose();
+
+            return np.atleast_2d(newX);
         }
 
         public NDarray Zero => np.atleast_2d(np.zeros(_basis.shape[0]));
@@ -102,14 +103,23 @@ namespace taskmaker_wpf.Model.Data {
 
         public NodeM[] BasisRef => GovernorBarys.SelectMany(e => e.BasisRef).Distinct().ToArray();
 
-        public NDarray GetLambdas(NDarray p, params object[] args) {
+        public NDarray GetLambdas(NDarray p, NodeM[] collection) {
+            //Func<NodeM[], NodeM[], int[]> GetIndexCollection = (subset, set) => {
+            //    return subset.Select(e => set.ToList().IndexOf(e)).ToArray();
+            //};
+
             if (GovernorBarys.Length == 1) {
-                return GovernorBarys[0].GetLambdas(p, args);
+                //var indices = GetIndexCollection(GovernorBarys[0].BasisRef, collection);
+
+                return GovernorBarys[0].GetLambdas(p, collection);
             }
             else {
+                //var indexCollection0 = GetIndexCollection(GovernorBarys[0].BasisRef, collection);
+                //var indexCollection1 = GetIndexCollection(GovernorBarys[1].BasisRef, collection);
+
                 var factors = GetFactors(p);
-                var lambda0 = factors[0] * GovernorBarys[0].GetLambdas(p, args);
-                var lambda1 = factors[1] * GovernorBarys[1].GetLambdas(p, args);
+                var lambda0 = factors[0] * GovernorBarys[0].GetLambdas(p, collection);
+                var lambda1 = factors[1] * GovernorBarys[1].GetLambdas(p, collection);
 
                 return lambda0 + lambda1;
             }
@@ -151,9 +161,7 @@ namespace taskmaker_wpf.Model.Data {
 
 
         public NDarray GetLambdas(IBary target, NDarray p) {
-            var indices = target.BasisRef.Select(e => _basis.ToList().IndexOf(e)).ToArray();
-
-            return target.GetLambdas(p, _basis.Length, indices);
+            return target.GetLambdas(p, _basis);
         }
     }
 

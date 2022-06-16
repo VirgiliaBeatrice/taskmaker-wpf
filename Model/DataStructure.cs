@@ -257,10 +257,6 @@ namespace taskmaker_wpf.Model.Data {
 
         public List<VoronoiRegionM> Regions { get; set; } = new List<VoronoiRegionM>();
 
-        public ExteriorM(IEnumerable<VoronoiRegionM> regions) {
-            Regions.AddRange(regions);
-        }
-
         public static VoronoiRegionM[] Create(NodeM[] extremes, SimplexM[] simplices) {
             if (extremes.Length <= 2) {
                 throw new Exception("Invalid extremes");
@@ -277,13 +273,13 @@ namespace taskmaker_wpf.Model.Data {
                     prev = extremes.Last();
                     next = extremes[i + 1];
                 }
-                else if (i > 0 & i < extremes.Length - 1) {
+                else if (i < extremes.Length - 1) {
                     prev = extremes[i - 1];
                     next = extremes[i + 1];
                 }
                 //else if (i >= extremes.Length - 1) {
                 else {
-                prev = extremes[i - 1];
+                    prev = extremes[i - 1];
                     next = extremes.First();
                 }
 
@@ -295,7 +291,7 @@ namespace taskmaker_wpf.Model.Data {
                     simplices, 
                     e => e.IsVertex(it) & e.IsVertex(next));
                 var sectorVoro = new SectoralVoronoiRegion(
-                    new NodeM[] { prev, it, next},
+                    new NodeM[] { prev, it, next },
                     new SimplexM[] { prevGov, nextGov });
 
                 newRegions.Add(sectorVoro);
@@ -349,21 +345,13 @@ namespace taskmaker_wpf.Model.Data {
         public abstract VoronoiData ToData();
         public abstract void SetBary();
 
-        public VoronoiRegionM() {
+        protected VoronoiRegionM() {
             Uid = Guid.NewGuid();
         }
 
         public void Dispose() {
             throw new NotImplementedException();
         }
-    }
-
-    public struct RectVoronoiRegionRecord {
-        public float radius;
-        public float[] a;
-        public float[] b;
-        public float[] bP;
-        public float[] aP;
     }
 
     public class RectVoronoiRegion : VoronoiRegionM {
@@ -532,7 +520,7 @@ namespace taskmaker_wpf.Model.Data {
                 np.dot(bo, po) / (np.linalg.norm(bo) * np.linalg.norm(po))));
             var theta = theta0 + theta1;
 
-            return np.array(new NDarray[] { theta1 / theta, theta0 / theta }).squeeze();
+            return np.array(new NDarray[] { theta1 / theta, theta0 / theta });
 
         }
 

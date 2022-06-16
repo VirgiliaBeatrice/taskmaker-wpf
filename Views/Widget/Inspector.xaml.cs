@@ -34,7 +34,7 @@ namespace taskmaker_wpf.Views.Widget {
                 typeof(FrameworkElement),
                 typeof(Inspector),
                 new FrameworkPropertyMetadata(null,
-                                              FrameworkPropertyMetadataOptions.AffectsRender));
+                    FrameworkPropertyMetadataOptions.AffectsRender));
 
 
 
@@ -48,6 +48,9 @@ namespace taskmaker_wpf.Views.Widget {
     public class InspectorTargetTemplateSelector : DataTemplateSelector {
         public DataTemplate NodeDataTemplate { get; set; }
         public DataTemplate MotorDataTemplate { get; set; }
+        public DataTemplate ComplexWidgetDataTemplate { get; set; }
+        public DataTemplate SimplexWidgetDataTemplate { get; set; }
+        public DataTemplate VoronoiWidgetDataTemplate { get; set; }
 
         public override DataTemplate SelectTemplate(object item, DependencyObject container) {
             var target = (FrameworkElement)item;
@@ -55,11 +58,32 @@ namespace taskmaker_wpf.Views.Widget {
             if (target is NodeWidget) {
                 return NodeDataTemplate;
             }
+            else if (target is ComplexWidget) {
+                return ComplexWidgetDataTemplate;
+            }
+
+            else if (target is SimplexWidget) {
+                return SimplexWidgetDataTemplate;
+            }
+            else if (target is VoronoiWidget) {
+                return VoronoiWidgetDataTemplate;
+            }
             //else if (target is Motor) {
             //    return MotorDataTemplate;
             //}
             else
                 return base.SelectTemplate(item, container);
+        }
+    }
+
+    public class SystemTypeTemplateSelector : DataTemplateSelector {
+        public DataTemplate BooleanTemplate { get; set; }
+
+        public override DataTemplate SelectTemplate(object item, DependencyObject container) {
+            if (item is bool)
+                return BooleanTemplate;
+
+            return base.SelectTemplate(item, container);
         }
     }
 }

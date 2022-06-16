@@ -217,7 +217,6 @@ namespace taskmaker_wpf.Views {
     }
 
     public class ComplexWidget : Canvas {
-
         public ViewPort ViewPort { get; set; }
 
         public OperationMode Mode {
@@ -225,9 +224,18 @@ namespace taskmaker_wpf.Views {
             set { SetValue(ModeProperty, value); }
         }
 
+        internal static readonly DependencyPropertyKey IsSetPropertyKey = DependencyProperty.RegisterReadOnly(
+            "IsSet",
+            typeof(bool),
+            typeof(ComplexWidget),
+            new FrameworkPropertyMetadata());
+
+        public bool IsSet => (bool)GetValue(IsSetPropertyKey.DependencyProperty);
+
         // Using a DependencyProperty as the backing store for Mode.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ModeProperty =
-            DependencyProperty.Register("Mode", typeof(OperationMode), typeof(ComplexWidget), new PropertyMetadata(OperationMode.Default, OnModeChanged));
+            DependencyProperty.Register("Mode", typeof(OperationMode), typeof(ComplexWidget),
+                new PropertyMetadata(OperationMode.Default, OnModeChanged));
 
         private static void OnModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
             if (e.NewValue != e.OldValue) { }
@@ -248,7 +256,6 @@ namespace taskmaker_wpf.Views {
         }
 
 
-
         public FrameworkElement InspectedWidget {
             get { return (FrameworkElement)GetValue(InspectedWidgetProperty); }
             set { SetValue(InspectedWidgetProperty, value); }
@@ -256,8 +263,8 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for InspectedObject.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty InspectedWidgetProperty =
-            DependencyProperty.Register("InspectedWidget", typeof(FrameworkElement), typeof(ComplexWidget), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
-
+            DependencyProperty.Register("InspectedWidget", typeof(FrameworkElement), typeof(ComplexWidget),
+                new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
 
 
         public NodeWidget SelectedNode {
@@ -267,9 +274,8 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for SelectedNode.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SelectedNodeProperty =
-            DependencyProperty.Register("SelectedNode", typeof(NodeWidget), typeof(ComplexWidget), new PropertyMetadata(null));
-
-
+            DependencyProperty.Register("SelectedNode", typeof(NodeWidget), typeof(ComplexWidget),
+                new PropertyMetadata(null));
 
 
         public IEnumerable VoronoiSource {
@@ -279,15 +285,16 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for VoronoiSource.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty VoronoiSourceProperty =
-            DependencyProperty.Register("VoronoiSource", typeof(IEnumerable), typeof(ComplexWidget), new PropertyMetadata(null, OnPropertyChanged_Voronoi));
+            DependencyProperty.Register("VoronoiSource", typeof(IEnumerable), typeof(ComplexWidget),
+                new PropertyMetadata(null, OnPropertyChanged_Voronoi));
 
         private static void OnPropertyChanged_Voronoi(DependencyObject d, DependencyPropertyChangedEventArgs e) {
             var complex = d as ComplexWidget;
 
             // Clear
             complex.Children.OfType<VoronoiWidget>()
-                .ToList()
-                .ForEach(x => complex.Children.Remove(x));
+                   .ToList()
+                   .ForEach(x => complex.Children.Remove(x));
 
             foreach (var item in (VoronoiData[])e.NewValue) {
                 var newVoronoi = new VoronoiWidget {
@@ -324,15 +331,16 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for SimplexSource.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SimplexSourceProperty =
-            DependencyProperty.Register("SimplexSource", typeof(IEnumerable), typeof(ComplexWidget), new PropertyMetadata(null, OnPropertyChanged_Simplex));
+            DependencyProperty.Register("SimplexSource", typeof(IEnumerable), typeof(ComplexWidget),
+                new PropertyMetadata(null, OnPropertyChanged_Simplex));
 
         private static void OnPropertyChanged_Simplex(DependencyObject d, DependencyPropertyChangedEventArgs e) {
             var complex = d as ComplexWidget;
 
             // Clear
             complex.Children.OfType<SimplexWidget>()
-                .ToList()
-                .ForEach(x => complex.Children.Remove(x));
+                   .ToList()
+                   .ForEach(x => complex.Children.Remove(x));
 
             foreach (var item in (SimplexData[])e.NewValue) {
                 var newSimplex = new SimplexWidget() {
@@ -367,7 +375,8 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for NodeSource.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty NodeSourceProperty =
-            DependencyProperty.Register("NodeSource", typeof(IEnumerable), typeof(ComplexWidget), new FrameworkPropertyMetadata(OnCollectionPropertyChanged));
+            DependencyProperty.Register("NodeSource", typeof(IEnumerable), typeof(ComplexWidget),
+                new FrameworkPropertyMetadata(OnCollectionPropertyChanged));
 
         private static void OnCollectionPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
             if (d is ComplexWidget cw) {
@@ -448,7 +457,6 @@ namespace taskmaker_wpf.Views {
         }
 
 
-
         public ICommand SetValueCommand {
             get { return (ICommand)GetValue(SetValueCommandProperty); }
             set { SetValue(SetValueCommandProperty, value); }
@@ -456,9 +464,8 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for SetValueCommand.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SetValueCommandProperty =
-            DependencyProperty.Register("SetValueCommand", typeof(ICommand), typeof(ComplexWidget), new PropertyMetadata(null));
-
-
+            DependencyProperty.Register("SetValueCommand", typeof(ICommand), typeof(ComplexWidget),
+                new PropertyMetadata(null));
 
 
         public ICommand InteriorCommand {
@@ -468,8 +475,8 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for InteriorCommand.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty InteriorCommandProperty =
-            DependencyProperty.Register("InteriorCommand", typeof(ICommand), typeof(ComplexWidget), new PropertyMetadata(null));
-
+            DependencyProperty.Register("InteriorCommand", typeof(ICommand), typeof(ComplexWidget),
+                new PropertyMetadata(null));
 
 
         public ICommand ExteriorCommand {
@@ -479,9 +486,8 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for ExteriorCommand.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ExteriorCommandProperty =
-            DependencyProperty.Register("ExteriorCommand", typeof(ICommand), typeof(ComplexWidget), new PropertyMetadata(null));
-
-
+            DependencyProperty.Register("ExteriorCommand", typeof(ICommand), typeof(ComplexWidget),
+                new PropertyMetadata(null));
 
 
         public ICommand RemoveItemCommand {
@@ -491,8 +497,8 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for RemoveItemCommand.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty RemoveItemCommandProperty =
-            DependencyProperty.Register("RemoveItemCommand", typeof(ICommand), typeof(ComplexWidget), new PropertyMetadata(null));
-
+            DependencyProperty.Register("RemoveItemCommand", typeof(ICommand), typeof(ComplexWidget),
+                new PropertyMetadata(null));
 
 
         public ICommand AddItemCommand {
@@ -502,8 +508,8 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for AddItemCommand.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty AddItemCommandProperty =
-            DependencyProperty.Register("AddItemCommand", typeof(ICommand), typeof(ComplexWidget), new UIPropertyMetadata(null));
-
+            DependencyProperty.Register("AddItemCommand", typeof(ICommand), typeof(ComplexWidget),
+                new UIPropertyMetadata(null));
 
 
         public ICommand InterpolateCommand {
@@ -513,8 +519,8 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for InterpolateCommand.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty InterpolateCommandProperty =
-            DependencyProperty.Register("InterpolateCommand", typeof(ICommand), typeof(ComplexWidget), new UIPropertyMetadata(null));
-
+            DependencyProperty.Register("InterpolateCommand", typeof(ICommand), typeof(ComplexWidget),
+                new UIPropertyMetadata(null));
 
 
         public ICommand SetInspectedObjectCommand {
@@ -524,9 +530,8 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for SetInspectedObjectCommand.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SetInspectedObjectCommandProperty =
-            DependencyProperty.Register("SetInspectedObjectCommand", typeof(ICommand), typeof(ComplexWidget), new PropertyMetadata(null));
-
-
+            DependencyProperty.Register("SetInspectedObjectCommand", typeof(ICommand), typeof(ComplexWidget),
+                new PropertyMetadata(null));
 
 
         public Style ItemStyle {
@@ -554,24 +559,24 @@ namespace taskmaker_wpf.Views {
             ModeObs = new Subject<OperationMode>();
 
             var keyPressed = KeyDownObs
-                .Take(1)
-                .Concat(KeyUpObs.Take(1))
-                .TakeLast(1)
-                .Repeat()
-                .Subscribe(OnKeyPressed);
+                             .Take(1)
+                             .Concat(KeyUpObs.Take(1))
+                             .TakeLast(1)
+                             .Repeat()
+                             .Subscribe(OnKeyPressed);
 
             var add = MouseDownObs.Take(1)
-                .Concat(MouseUpObs.Take(1))
-                .TakeLast(1)
-                .Repeat()
-                .Subscribe(OnAddNode);
+                                  .Concat(MouseUpObs.Take(1))
+                                  .TakeLast(1)
+                                  .Repeat()
+                                  .Subscribe(OnAddNode);
 
             var click = MouseDownObs
-                .Take(1)
-                .Concat(MouseUpObs.Take(1))
-                .TakeLast(1)
-                .Repeat()
-                .Subscribe(OnClicked);
+                        .Take(1)
+                        .Concat(MouseUpObs.Take(1))
+                        .TakeLast(1)
+                        .Repeat()
+                        .Subscribe(OnClicked);
 
             //var pan = MouseDownObs
             //    .Where(e => Mode == OperationMode.Panning)
@@ -590,30 +595,30 @@ namespace taskmaker_wpf.Views {
             //    .Subscribe(OnPanning);
 
             var pan = MouseMoveObs
-                .SkipUntil(MouseDownObs.Do(e => {
-                    CaptureMouse();
-                    _last = e.EventArgs.GetPosition(this);
-                }))
-                .TakeUntil(MouseUpObs.Do(e => {
-                    ReleaseMouseCapture();
-                    OnPanned();
-                }))
-                .Repeat()
-                .Subscribe(OnPanning);
+                      .SkipUntil(MouseDownObs.Do(e => {
+                          CaptureMouse();
+                          _last = e.EventArgs.GetPosition(this);
+                      }))
+                      .TakeUntil(MouseUpObs.Do(e => {
+                          ReleaseMouseCapture();
+                          OnPanned();
+                      }))
+                      .Repeat()
+                      .Subscribe(OnPanning);
 
             var traceM = MouseMoveObs
-                .SkipUntil(MouseDownObs)
-                .TakeUntil(MouseUpObs);
+                         .SkipUntil(MouseDownObs)
+                         .TakeUntil(MouseUpObs);
             //.Repeat();
 
             var trace_1 = ModeObs
-                .StartWith(Mode)
-                .SelectMany(traceM)
-                //.Throttle(TimeSpan.FromMilliseconds(100))
-                //.ObserveOnDispatcher()
-                .Repeat()
-                .Where(e => Mode == OperationMode.Trace)
-                .Subscribe(OnTracing);
+                          .StartWith(Mode)
+                          .SelectMany(traceM)
+                          //.Throttle(TimeSpan.FromMilliseconds(100))
+                          //.ObserveOnDispatcher()
+                          .Repeat()
+                          .Where(e => Mode == OperationMode.Trace)
+                          .Subscribe(OnTracing);
 
             void OnTracing(EventPattern<MouseEventArgs> e) {
                 var pt = e.EventArgs.GetPosition(this);
@@ -692,7 +697,7 @@ namespace taskmaker_wpf.Views {
         }
 
         public void ResetSelection(ISelectableWidget exception = null) {
-            foreach (var widget in Children.OfType<ISelectableWidget>().Except(new [] { exception })) {
+            foreach (var widget in Children.OfType<ISelectableWidget>().Except(new[] { exception })) {
                 widget.IsSelected = false;
             }
         }
@@ -759,12 +764,10 @@ namespace taskmaker_wpf.Views {
             //Children.OfType<FrameworkElement>().ToList().ForEach(e => e.InvalidateVisual());
             _last = curr;
             InvalidateSKContext();
-
         }
 
         private void OnKeyPressed(EventPattern<KeyEventArgs> obj) {
-            switch (obj.EventArgs.Key)
-            {
+            switch (obj.EventArgs.Key) {
                 case Key.D1:
                     Mode = OperationMode.Add;
 
@@ -778,8 +781,7 @@ namespace taskmaker_wpf.Views {
                     ModeObs.OnNext(Mode);
 
                     return;
-                case Key.I:
-                {
+                case Key.I: {
                     var indicator = Children.OfType<IndicatorWidget>().First();
                     indicator.Visibility = indicator.IsVisible ? Visibility.Hidden : Visibility.Visible;
                     //indicator.InvalidateVisual();
@@ -834,7 +836,7 @@ namespace taskmaker_wpf.Views {
         internal IEnumerable<SKFrameworkElement> OrderByZIndex() {
             var widgets = Children.OfType<SKFrameworkElement>().ToList();
 
-            return widgets.OrderBy(e => Canvas.GetZIndex(e));
+            return widgets.OrderBy(e => GetZIndex(e));
         }
 
         private void OnAddNode(EventPattern<MouseButtonEventArgs> e) {

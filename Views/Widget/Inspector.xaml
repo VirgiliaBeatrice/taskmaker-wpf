@@ -12,8 +12,9 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="200">
     <UserControl.Resources>
+
         <DataTemplate
-            x:Key="nodeDataTemplate"
+            x:Key="NodeDataTemplate"
             DataType="{x:Type widgets:NodeWidget}">
 
             <Grid>
@@ -48,7 +49,7 @@
                     Grid.Row="1"
                     Grid.Column="2"
                     VerticalAlignment="Center"
-                    Text="{Binding Path=DataContext.Location.X}"/>
+                    Text="{Binding Path=Location.X}"/>
                 <Label 
                     Grid.Row="1"
                     Grid.Column="3"
@@ -57,7 +58,7 @@
                     Grid.Row="1"
                     Grid.Column="4"
                     VerticalAlignment="Center"
-                    Text="{Binding Path=DataContext.Location.Y}"/>
+                    Text="{Binding Path=Location.Y}"/>
 
                 <Label
                     Grid.Row="2"
@@ -68,7 +69,7 @@
                     Grid.Row="2"
                     Grid.Column="1"
                     Grid.ColumnSpan="4"
-                    Text="{Binding Path=DataContext.Uid}" />
+                    Text="{Binding Path=Uid}" />
 
                 <Label
                     Grid.Row="3"
@@ -79,24 +80,67 @@
                     Grid.Column="1"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Left"
-                    IsChecked="{Binding Path=DataContext.IsSet}" />
+                    IsChecked="{Binding Path=IsSet}" />
             </Grid>
 
         </DataTemplate>
-        
+
+        <DataTemplate
+            x:Key="BooleanDataTemplate"
+            DataType="{x:Type sys:Boolean}">
+            <CheckBox
+                VerticalAlignment="Center"
+                IsChecked="{Binding Path=.}"
+            />
+        </DataTemplate>
+
+        <DataTemplate
+            x:Key="DoubleDataTemplate"
+            DataType="{x:Type sys:Double}">
+            <TextBox Text="{Binding Path=.}"></TextBox>
+        </DataTemplate>
+
+
+        <local:SystemTypeTemplateSelector
+            x:Key="SystemTypeTemplateSelector"
+            BooleanTemplate="{StaticResource BooleanDataTemplate}"
+        />
+
+        <DataTemplate
+            x:Key="ComplexWidgetDataTemplate"
+            DataType="{x:Type widgets:ComplexWidget}">
+            <StackPanel>
+                <StackPanel.Background>
+                    AliceBlue
+                </StackPanel.Background>
+                <Label
+                    Content="Complex Widget"
+                    FontWeight="Bold"
+                    />
+                <StackPanel
+                    Margin="4 0 0 0"
+                    Orientation="Horizontal">
+                    <Label>IsSet</Label>
+                    <ContentPresenter
+                        Content="{Binding Path=IsSet}"
+                        ContentTemplateSelector="{StaticResource SystemTypeTemplateSelector}">
+                    </ContentPresenter>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
         <local:InspectorTargetTemplateSelector
-            NodeDataTemplate="{StaticResource nodeDataTemplate}"
-            x:Key="inspectorTargetTemplateSelector"/>
+            NodeDataTemplate="{StaticResource NodeDataTemplate}"
+            ComplexWidgetDataTemplate="{StaticResource ComplexWidgetDataTemplate}"
+            x:Key="InspectorTargetTemplateSelector"/>
     </UserControl.Resources>
     <Grid>
         <StackPanel>
             <ContentPresenter
                 Content="{Binding ElementName=inspector, Path=InspectedWidget}"
-                ContentTemplateSelector="{StaticResource inspectorTargetTemplateSelector}"
+                ContentTemplateSelector="{StaticResource InspectorTargetTemplateSelector}"
                 >
                 <d:ContentPresenter.Content>
-                    <widgets:NodeWidget IsSet="True"/>
-
+                    <widgets:ComplexWidget />
                 </d:ContentPresenter.Content>
             </ContentPresenter>
         </StackPanel>
