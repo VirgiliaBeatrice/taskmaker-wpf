@@ -208,6 +208,9 @@
     <Compile Include="Views\TargetsPanel.xaml.cs">
       <DependentUpon>TargetsPanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\UnitWidget.xaml.cs">
+      <DependentUpon>UnitWidget.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Widget\IndicatorWidget.cs" />
     <Compile Include="Views\MessageBoxTargetSelector.xaml.cs">
       <DependentUpon>MessageBoxTargetSelector.xaml</DependentUpon>
@@ -297,6 +300,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\TestWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\UnitWidget.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

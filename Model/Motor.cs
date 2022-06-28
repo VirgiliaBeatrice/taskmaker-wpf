@@ -103,7 +103,7 @@ namespace taskmaker_wpf.Model.Data {
 
         public void SetValue<TValue>(TValue values) {
             if (values is double[] inputs) {
-                for (int i = 0; i < inputs.Length; i++) {
+                for (var i = 0; i < inputs.Length; i++) {
                     this[i].Value = inputs[i];
                 }
             }
@@ -121,7 +121,7 @@ namespace taskmaker_wpf.Model.Data {
         }
     }
 
-    static public class Nuibot {
+    public static class Nuibot {
         static public SerialPort Port { get; set; }
         static public Boards Boards { get; set; } = new Boards();
         static public Motors Motors { get; set; } = new Motors();

@@ -109,6 +109,14 @@
         <DataTemplate
             x:Key="ComplexWidgetDataTemplate"
             DataType="{x:Type widgets:ComplexWidget}">
+            <DataTemplate.Resources>
+                <Style
+                    TargetType="{x:Type StackPanel}"
+                    >
+                    <Setter Property="Margin" Value="4 0 0 0" />
+                </Style>
+            </DataTemplate.Resources>
+
             <StackPanel>
                 <StackPanel.Background>
                     AliceBlue
@@ -118,7 +126,6 @@
                     FontWeight="Bold"
                     />
                 <StackPanel
-                    Margin="4 0 0 0"
                     Orientation="Horizontal">
                     <Label>IsSet</Label>
                     <ContentPresenter
