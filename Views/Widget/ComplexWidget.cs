@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reactive;
@@ -552,6 +553,9 @@ namespace taskmaker_wpf.Views {
 
         public Subject<OperationMode> ModeObs { get; set; }
 
+        private DateTime _timestamp;
+        private Queue<object> _tapArgs;
+
         public ComplexWidget() {
             PrepareObservable();
             //AddNode();
@@ -577,6 +581,59 @@ namespace taskmaker_wpf.Views {
                         .TakeLast(1)
                         .Repeat()
                         .Subscribe(OnClicked);
+
+
+            // touch manipulation
+            TouchDown += (sender, e) => {
+                _timestamp = DateTime.Now;
+                _tapArgs = new Queue<object>();
+
+                _tapArgs.Enqueue(e);
+            };
+
+            TouchUp += (sender, e) => {
+                var timeout = _timestamp - DateTime.Now > TimeSpan.FromMilliseconds(1000);
+
+                if (!timeout) {
+                    var downArgs = _tapArgs.Dequeue() as TouchEventArgs;
+                    var upArgs = e;
+
+                    Console.WriteLine("Tap! {0} {1}", downArgs.TouchDevice.Id, upArgs.TouchDevice.Id);
+                }
+            };
+            //var touchDown = Observable
+            //    .FromEventPattern<TouchEventArgs>(this, nameof(TouchDown));
+            //var touchUp = Observable
+            //    .FromEventPattern<TouchEventArgs>(this, nameof(TouchUp));
+            //var touchMove = Observable
+            //    .FromEventPattern<TouchEventArgs>(this, nameof(TouchMove));
+
+
+            //touchDown
+            //    .Subscribe((e) => {
+            //        var args = e.EventArgs;
+
+            //        Console.WriteLine("Touchdown. {0}", args.GetIntermediateTouchPoints(this));
+            //    });
+
+            //touchUp
+            //    .Subscribe((e) => {
+            //        var args = e.EventArgs;
+
+            //        Console.WriteLine("Touchup. {0}", args.GetIntermediateTouchPoints(this));
+            //    });
+
+            //var tapGesture = touchDown
+            //    //.Take(1)
+            //    .Merge(touchUp)
+            //    .Timeout(TimeSpan.FromMilliseconds(1000), Observable.Empty<EventPattern<TouchEventArgs>>())
+            //    .ToArray()
+            //    //.Repeat()
+            //    .Subscribe(
+            //        array => {
+            //            Console.WriteLine(array.Length);
+            //        });
+
 
             //var pan = MouseDownObs
             //    .Where(e => Mode == OperationMode.Panning)
