@@ -554,6 +554,7 @@ namespace taskmaker_wpf.Views {
         public Subject<OperationMode> ModeObs { get; set; }
 
         private DateTime _timestamp;
+        private int _capturedTouchDevice = -1;
         private Queue<object> _tapArgs;
 
         public ComplexWidget() {
@@ -585,20 +586,24 @@ namespace taskmaker_wpf.Views {
 
             // touch manipulation
             TouchDown += (sender, e) => {
-                _timestamp = DateTime.Now;
-                _tapArgs = new Queue<object>();
+                if (_capturedTouchDevice == -1) {
 
-                _tapArgs.Enqueue(e);
+                    if (e.TouchDevice.Capture(this)) {
+                        _timestamp = DateTime.Now;
+                        _capturedTouchDevice = e.TouchDevice.Id;
+                    }
+                }
             };
 
             TouchUp += (sender, e) => {
-                var timeout = _timestamp - DateTime.Now > TimeSpan.FromMilliseconds(1000);
+                if (e.TouchDevice.Id == _capturedTouchDevice) {
+                    var timeout = _timestamp - DateTime.Now > TimeSpan.FromMilliseconds(1000);
 
-                if (!timeout) {
-                    var downArgs = _tapArgs.Dequeue() as TouchEventArgs;
-                    var upArgs = e;
+                    if (!timeout) {
+                        Console.WriteLine("Tap! {0}", _capturedTouchDevice);
 
-                    Console.WriteLine("Tap! {0} {1}", downArgs.TouchDevice.Id, upArgs.TouchDevice.Id);
+                        _capturedTouchDevice = -1;
+                    }
                 }
             };
             //var touchDown = Observable

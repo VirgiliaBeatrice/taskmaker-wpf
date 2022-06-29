@@ -211,6 +211,7 @@
     <Compile Include="Views\UnitWidget.xaml.cs">
       <DependentUpon>UnitWidget.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Widget\GestureRecognizer\TapGestureRecognizer.cs" />
     <Compile Include="Views\Widget\IndicatorWidget.cs" />
     <Compile Include="Views\MessageBoxTargetSelector.xaml.cs">
       <DependentUpon>MessageBoxTargetSelector.xaml</DependentUpon>
