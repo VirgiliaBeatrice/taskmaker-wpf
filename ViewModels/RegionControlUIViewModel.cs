@@ -185,6 +185,14 @@ namespace taskmaker_wpf.ViewModels
         private DelegateCommand<Guid?> _setValueCommand;
 
 
+        public ObservableCollection<ControlUI> UIs => _systemSvr.UIs;
+
+        private ControlUI _selectedUI;
+        public ControlUI SelectedUI {
+            get => _selectedUI;
+            set => SetProperty(ref _selectedUI, value);
+        }
+
         public RegionControlUIViewModel(
             SystemService systemService)
         {
@@ -500,6 +508,22 @@ namespace taskmaker_wpf.ViewModels
             Model.Targets.AddRange(param.OfType<ISelectableTarget>());
 
             SelectedTargets = Model.Targets.ToArray();
+        }
+
+        private DelegateCommand addControlUICommand;
+
+        public ICommand AddControlUICommand {
+            get {
+                if (addControlUICommand == null) {
+                    addControlUICommand = new DelegateCommand(AddControlUI);
+                }
+
+                return addControlUICommand;
+            }
+        }
+
+        private void AddControlUI() {
+            _systemSvr.UIs.Add(new ControlUI());
         }
     }
 }

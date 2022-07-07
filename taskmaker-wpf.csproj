@@ -202,8 +202,17 @@
     <Compile Include="PCController\Pose.cs" />
     <Compile Include="PCController\PoseData.cs" />
     <Compile Include="Qhull\QhullCSharp.cs" />
+    <Compile Include="Views\ControlUISelectionDialog.xaml.cs">
+      <DependentUpon>ControlUISelectionDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\DirectControlModal.xaml.cs">
       <DependentUpon>DirectControlModal.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\NavigationView.xaml.cs">
+      <DependentUpon>NavigationView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RegionControlUISelection.xaml.cs">
+      <DependentUpon>RegionControlUISelection.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\TargetsPanel.xaml.cs">
       <DependentUpon>TargetsPanel.xaml</DependentUpon>
@@ -264,11 +273,23 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ViewModels\RegionControlUIViewModel.cs" />
+    <Page Include="Views\ControlUISelectionDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\DirectControlModal.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MessageBoxTargetSelector.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\NavigationView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RegionControlUISelection.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -22,14 +22,6 @@ namespace taskmaker_wpf.ViewModels {
 
         private ICommand updateCommand;
         public ICommand UpdateCommand => updateCommand ?? (updateCommand = new DelegateCommand(UpdateCommandExecute));
-        private ICommand testCmd;
-        public ICommand TestCmd => testCmd ?? (testCmd = new DelegateCommand<MouseEventArgs>(TestCmdExecute));
-
-        public Subject<int> Count { get; set; }
-        private void TestCmdExecute(MouseEventArgs obj) {
-            Count.OnNext(1);
-            //throw new NotImplementedException();
-        }
 
 
         private void UpdateCommandExecute() {
@@ -37,17 +29,17 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private readonly IRegionManager _regionManager;
+        private readonly SystemService _systemSvr;
 
-        public TestWindowViewModel(IRegionManager regionManager) {
+        public ControlUI SelectedUI;
+
+        public TestWindowViewModel(IRegionManager regionManager, SystemService systemSvr) {
             _regionManager = regionManager;
+            _regionManager.RegisterViewWithRegion("NavigationRegion",
+                typeof(Views.NavigationView));
             _regionManager.RegisterViewWithRegion("ContentRegion", typeof(Views.RegionHome));
 
-            Count = new Subject<int>();
-            Count.Subscribe(
-                (e) => { Console.WriteLine(e); },
-                (e) => { Console.WriteLine(e); },
-                () => { Console.WriteLine("end"); });
-            
+            _systemSvr = systemSvr;
         }
 
         public void TestCommandExecute() {
@@ -55,8 +47,14 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         public void NavigateCommandExecute(string navigatePath) {
-            if (navigatePath != null)
-                _regionManager.RequestNavigate("ContentRegion", navigatePath);
+            if (navigatePath != null) {
+                if (navigatePath == "RegionControlUI") {
+                    _regionManager.RequestNavigate("ContentRegion", nameof(Views.RegionControlUISelection));
+                }
+                else {
+                    _regionManager.RequestNavigate("ContentRegion", navigatePath);
+                }
+            }
         }
     }
 }

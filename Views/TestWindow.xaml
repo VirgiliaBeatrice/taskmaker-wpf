@@ -25,49 +25,23 @@
     <Grid 
         >
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="50"/>
+            <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <StackPanel 
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Top"
-            Grid.Row="0"
-            Orientation="Vertical">
-            <StackPanel.Resources>
-                <Style
-                    TargetType="Image">
-                    <Setter Property="Width" Value="20" />
-                    <Setter Property="Height" Value="20" />
-                </Style>
-            </StackPanel.Resources>
-            <Button
-                Command="{Binding NavigateCommand}"
-                CommandParameter="RegionHome"
-                >
-                <Image
-                    Source="{StaticResource home}"/>
-            </Button>
-            <Button
-                Command="{Binding NavigateCommand}"
-                CommandParameter="RegionSettings"
-                >
-                <Image Source="{StaticResource settings}" />
-            </Button>
-            <Button
-                Command="{Binding NavigateCommand}"
-                CommandParameter="RegionControlUI">
-                <Image Source="{StaticResource control}" />
-            </Button>
-            <Button
-                Command="{Binding NavigateCommand}"
-                CommandParameter="RegionMotor">
-                <Image Source="{StaticResource panel}" />
-            </Button>
-        </StackPanel>
+
         <ContentControl
-            BorderBrush="Blue"
-            BorderThickness="4"
+            d:Width="50"
+            Background="BlanchedAlmond"
+            Grid.Column="0"
+            prism:RegionManager.RegionName="NavigationRegion"
+            />
+        
+        
+        <ContentControl
+            Margin="15"
+            Background="Aquamarine"
             Grid.Column="1"
-            prism:RegionManager.RegionName="ContentRegion" />
+            prism:RegionManager.RegionName="ContentRegion" 
+            prism:RegionManager.RegionContext="{Binding SelectedUI}"/>
     </Grid>
 </Window>
