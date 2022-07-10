@@ -202,9 +202,7 @@
     <Compile Include="PCController\Pose.cs" />
     <Compile Include="PCController\PoseData.cs" />
     <Compile Include="Qhull\QhullCSharp.cs" />
-    <Compile Include="Views\ControlUISelectionDialog.xaml.cs">
-      <DependentUpon>ControlUISelectionDialog.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="ViewModels\RegionControlUISelectionViewModel.cs" />
     <Compile Include="Views\DirectControlModal.xaml.cs">
       <DependentUpon>DirectControlModal.xaml</DependentUpon>
     </Compile>
@@ -273,10 +271,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ViewModels\RegionControlUIViewModel.cs" />
-    <Page Include="Views\ControlUISelectionDialog.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\DirectControlModal.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -3,11 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:taskmaker_wpf.Views" xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:RegionControlUIViewModel}"
+             xmlns:local="clr-namespace:taskmaker_wpf.Views" xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:RegionControlUISelectionViewModel}"
              mc:Ignorable="d" 
              Height="200" Width="400" >
     <Grid
-        VerticalAlignment="Center"
+        VerticalAlignment="Top"
         Margin="20">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto"/>
@@ -41,11 +41,11 @@
 
             </Grid.ColumnDefinitions>
             <ComboBox
+                x:Name="_cbUICollection"
                 VerticalAlignment="Center"
                 Grid.Column="0"
                 Margin="4"
                 ItemsSource="{Binding UIs}"
-                SelectedItem="{Binding SelectedUI}"
                 />
             <Button
                 Grid.Column="1"
@@ -53,7 +53,7 @@
                 Margin="4"
                 Width="20"
                 Height="20"
-                Command="{Binding AddControlUICommand}"
+                Command="{Binding AddCmd}"
                 />
         </Grid>
 
@@ -72,6 +72,8 @@
                 Content="OK"
                 HorizontalAlignment="Center"
                 Width="50"
+                Command="{Binding NavigateToNextCommand}"
+                CommandParameter="{Binding ElementName=_cbUICollection, Path=SelectedItem}"
                 />
             <Button
                 Margin="5"

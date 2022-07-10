@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Input;
+using Prism.Regions;
 using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Services;
 using taskmaker_wpf.Views;
@@ -137,7 +138,7 @@ namespace taskmaker_wpf.ViewModels
         }
     }
 
-    public class RegionControlUIViewModel : BindableBase
+    public class RegionControlUIViewModel : BindableBase, INavigationAware
     {
         private int _count;
         private string _debug;
@@ -510,20 +511,18 @@ namespace taskmaker_wpf.ViewModels
             SelectedTargets = Model.Targets.ToArray();
         }
 
-        private DelegateCommand addControlUICommand;
+        private ControlUI _ui;
 
-        public ICommand AddControlUICommand {
-            get {
-                if (addControlUICommand == null) {
-                    addControlUICommand = new DelegateCommand(AddControlUI);
-                }
-
-                return addControlUICommand;
-            }
+        public void OnNavigatedTo(NavigationContext navigationContext) {
+            _ui = navigationContext.Parameters["ui"] as ControlUI;
         }
 
-        private void AddControlUI() {
-            _systemSvr.UIs.Add(new ControlUI());
+        public bool IsNavigationTarget(NavigationContext navigationContext) {
+            return true;
+        }
+
+        public void OnNavigatedFrom(NavigationContext navigationContext) {
+            throw new NotImplementedException();
         }
     }
 }

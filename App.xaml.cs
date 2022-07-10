@@ -31,6 +31,7 @@ namespace taskmaker_wpf {
             containerRegistry.RegisterForNavigation<RegionControlUI>();
             containerRegistry.RegisterForNavigation<RegionControlUISelection>();
 
+
             // Register services
             containerRegistry.RegisterSingleton<MotorService>();
             containerRegistry.RegisterSingleton<SerialService>();

@@ -41,7 +41,6 @@
             Margin="15"
             Background="Aquamarine"
             Grid.Column="1"
-            prism:RegionManager.RegionName="ContentRegion" 
-            prism:RegionManager.RegionContext="{Binding SelectedUI}"/>
+            prism:RegionManager.RegionName="ContentRegion" />
     </Grid>
 </Window>

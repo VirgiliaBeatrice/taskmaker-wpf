@@ -56,7 +56,7 @@
             <GridSplitter Grid.Column="3" Width="2" HorizontalAlignment="Center" />
             <TextBlock Grid.Column="4" Text="Min" Style="{StaticResource labelMarginStyle}"/>
             <GridSplitter Grid.Column="5" Width="2" HorizontalAlignment="Center" />
-            <TextBlock Grid.Column="6" Text="Control" Style="{StaticResource labelMarginStyle}"/>
+            <TextBlock Grid.Column="6" Text="ControlUISelectionViewModel" Style="{StaticResource labelMarginStyle}"/>
             <GridSplitter Grid.Column="7" Width="2" HorizontalAlignment="Center" />
             <TextBlock Grid.Column="8" Text="Max" Style="{StaticResource labelMarginStyle}"/>
             <GridSplitter Grid.Column="9" Width="2" HorizontalAlignment="Center" />
