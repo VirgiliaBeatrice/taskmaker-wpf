@@ -172,12 +172,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Model\Bary.cs" />
-    <Compile Include="Model\ControlUI\Core.cs" />
-    <Compile Include="Model\Core.cs" />
-    <Compile Include="Model\DataStructure.cs" />
-    <Compile Include="Model\Motor.cs" />
-    <Compile Include="Model\SimplicialMapping\SimplicialMapping.cs" />
+    <Compile Include="Models\Bary.cs" />
+    <Compile Include="Models\ControlUI.cs" />
+    <Compile Include="Models\ControlUI\Core.cs" />
+    <Compile Include="Models\Core.cs" />
+    <Compile Include="Models\DataStructure.cs" />
+    <Compile Include="Models\Motor.cs" />
+    <Compile Include="Models\SimplicialMapping\SimplicialMapping.cs" />
     <Compile Include="PCController\Board.cs" />
     <Compile Include="PCController\Boards.cs" />
     <Compile Include="PCController\CommandId.cs" />
@@ -208,6 +209,9 @@
     </Compile>
     <Compile Include="Views\NavigationView.xaml.cs">
       <DependentUpon>NavigationView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\NodePanel.xaml.cs">
+      <DependentUpon>NodePanel.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\RegionControlUISelection.xaml.cs">
       <DependentUpon>RegionControlUISelection.xaml</DependentUpon>
@@ -280,6 +284,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\NavigationView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\NodePanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

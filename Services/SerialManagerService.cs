@@ -9,16 +9,13 @@ using PCController;
 using mMotor = taskmaker_wpf.Model.Data.Motor;
 using cMotor = PCController.Motor;
 using System.Collections.ObjectModel;
+using taskmaker_wpf.Models;
 
 namespace taskmaker_wpf.Services {
-    public class ControlUI {
-
-    }
     public class SystemService {
         public List<NLinearMap> Maps { get; set; } = new List<NLinearMap>();
         public List<ComplexM> Complexes { get; set; } = new List<ComplexM>();
         public List<ISelectableTarget> Targets { get; set; } = new List<ISelectableTarget>();
-        //public List<ControlUI> UIs { get; set; } = new List<ControlUI>();
 
         public ObservableCollection<ControlUI> UIs { get; set; } = new ObservableCollection<ControlUI>();
 

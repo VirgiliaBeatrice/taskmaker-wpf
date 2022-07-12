@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:taskmaker_wpf.Views" xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:RegionControlUISelectionViewModel}"
              mc:Ignorable="d" 
-             Height="200" Width="400" >
+             d:Height="200" d:Width="400" >
     <Grid
         VerticalAlignment="Top"
         Margin="20">

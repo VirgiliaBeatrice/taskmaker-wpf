@@ -174,6 +174,7 @@ namespace taskmaker_wpf.Model.Data {
 
         private bool _isSet => !bool.Parse(np.isnan(_wTensor.sum()).repr);
 
+        public NLinearMap() { }
 
         /// <summary>
         /// NLinearMap
@@ -184,6 +185,21 @@ namespace taskmaker_wpf.Model.Data {
         /// <param name="barys"></param>
         /// <param name="targetDim"></param>
         public NLinearMap(ComplexBaryD[] barys, int targetDim) {
+            Initialize(barys, targetDim);
+            //Barys = barys;
+
+            //// Shape: 2 - BiLinear, n -  
+            //var partialDim = new int[] { targetDim };
+            //_shape = partialDim
+            //    .Concat(Barys
+            //        .Select(e => e.BasisDim))
+            //    .ToArray();
+
+            //_wTensor = np.empty(_shape);
+            //_wTensor.fill(np.nan);
+        }
+
+        private void Initialize(ComplexBaryD[] barys, int targetDim) {
             Barys = barys;
 
             // Shape: 2 - BiLinear, n -  

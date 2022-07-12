@@ -12,6 +12,7 @@ using System.Windows;
 using System.Windows.Input;
 using Prism.Regions;
 using taskmaker_wpf.Model.Data;
+using taskmaker_wpf.Models;
 using taskmaker_wpf.Services;
 using taskmaker_wpf.Views;
 using taskmaker_wpf.Views.Widget;
@@ -521,8 +522,6 @@ namespace taskmaker_wpf.ViewModels
             return true;
         }
 
-        public void OnNavigatedFrom(NavigationContext navigationContext) {
-            throw new NotImplementedException();
-        }
+        public void OnNavigatedFrom(NavigationContext navigationContext) { }
     }
 }
