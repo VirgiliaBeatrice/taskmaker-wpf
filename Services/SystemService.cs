@@ -8,8 +8,8 @@ using System.Collections.Specialized;
 
 namespace taskmaker_wpf.Services {
     public class SystemService : BindableBase {
-        public ObservableCollection<NLinearMap> Maps { get; set; } = new ObservableCollection<NLinearMap>();
-        public ObservableCollection<ComplexM> Complexes { get; set; } = new ObservableCollection<ComplexM>();
+        //public ObservableCollection<NLinearMap> Maps { get; set; } = new ObservableCollection<NLinearMap>();
+        //public ObservableCollection<ComplexM> Complexes { get; set; } = new ObservableCollection<ComplexM>();
 
 
         private ObservableCollection<Motor> _motors = new ObservableCollection<Motor>();

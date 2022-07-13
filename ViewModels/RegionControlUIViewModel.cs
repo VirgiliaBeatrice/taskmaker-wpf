@@ -148,12 +148,12 @@ namespace taskmaker_wpf.ViewModels
 
         private string _keymapInfo;
 
-        private NLinearMap _map;
+        private NLinearMap _map => _ui.Map;
 
         /// <summary>
         ///     Targets being selected
         /// </summary>
-        private ITarget[] _selectedTargets;
+        private ISelectableTarget[] _selectedTargets;
 
         private SimplexData[] _simplices;
         private string _statusMsg;
@@ -162,10 +162,9 @@ namespace taskmaker_wpf.ViewModels
         //private TargetService _targetSvr;
         private SystemService _systemSvr;
 
-        /// <summary>
-        ///     Targets loaded from system service
-        /// </summary>
-        private ITarget[] _targets;
+        public ISelectableTarget[] ValidTargets => _systemSvr.Targets;
+        public 
+
 
         private VoronoiData[] _voronois;
 
@@ -187,33 +186,9 @@ namespace taskmaker_wpf.ViewModels
         private DelegateCommand<Guid?> _setValueCommand;
 
 
-        public ObservableCollection<ControlUI> UIs => _systemSvr.UIs;
-
-        private ControlUI _selectedUI;
-        public ControlUI SelectedUI {
-            get => _selectedUI;
-            set => SetProperty(ref _selectedUI, value);
-        }
-
         public RegionControlUIViewModel(
-            SystemService systemService)
-        {
-            //_targetSvr = targetService;
+            SystemService systemService) {
             _systemSvr = systemService;
-
-
-            Model = new ComplexM();
-            _systemSvr.Complexes.Add(Model);
-
-            //var target = new BindableTargetCollection();
-
-            // Update targets from service
-            Targets = _systemSvr.Targets.ToArray();
-
-            foreach (var item in _systemSvr.Targets.OfType<BindableBase>())
-            {
-                item.PropertyChanged += Item_PropertyChanged;
-            }
 
             SelectedTargets = Model.Targets.ToArray();
 
@@ -222,19 +197,12 @@ namespace taskmaker_wpf.ViewModels
 
         public ComplexM Model { get; set; }
 
-        public ITarget[] Targets
-        {
-            get => _targets;
-            set => SetProperty(ref _targets, value);
-        }
-
-        public ITarget[] SelectedTargets
-        {
+        public ISelectableTarget[] SelectedTargets {
             get => _selectedTargets;
             set => SetProperty(ref _selectedTargets, value);
         }
 
-        public ObservableCollection<NodeData> Nodes { get; set; } = new ObservableCollection<NodeData>();
+        //public ObservableCollection<NodeData> Nodes { get; set; } = new ObservableCollection<NodeData>();
 
         public SimplexData[] Simplices
         {
@@ -389,7 +357,14 @@ namespace taskmaker_wpf.ViewModels
 
         private void OnSelectedTargetsChanged()
         {
-            CreateMap();
+            InvalidateMap();
+            //CreateMap();
+        }
+
+        private void InvalidateMap() {
+            _map.Initialize(
+                new[] { Model.Bary },
+                Model.Targets.Dim);
         }
 
         private void CreateComplex()
@@ -400,23 +375,10 @@ namespace taskmaker_wpf.ViewModels
             Voronois = Model.GetVoronoiData();
 
             // TODO: For test purpose
-            _map = new NLinearMap(
+            // map has been created by system service
+            _map.Initialize(
                 new[] { Model.Bary },
                 Model.Targets.Dim);
-
-            _systemSvr.Maps.Add(_map);
-        }
-
-        private void CreateMap()
-        {
-            // Remove old map from service if exists
-            _systemSvr.Maps.Remove(_map);
-
-            _map = new NLinearMap(
-                new[] { Model.Bary },
-                Model.Targets.Dim);
-
-            _systemSvr.Maps.Add(_map);
         }
 
         private void SetValue(Guid? id)

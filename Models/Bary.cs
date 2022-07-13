@@ -199,7 +199,7 @@ namespace taskmaker_wpf.Model.Data {
             //_wTensor.fill(np.nan);
         }
 
-        private void Initialize(ComplexBaryD[] barys, int targetDim) {
+        public void Initialize(ComplexBaryD[] barys, int targetDim) {
             Barys = barys;
 
             // Shape: 2 - BiLinear, n -  
