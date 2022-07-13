@@ -203,7 +203,9 @@
     <Compile Include="PCController\Pose.cs" />
     <Compile Include="PCController\PoseData.cs" />
     <Compile Include="Qhull\QhullCSharp.cs" />
+    <Compile Include="Services\SystemService.cs" />
     <Compile Include="ViewModels\RegionControlUISelectionViewModel.cs" />
+    <Compile Include="ViewModels\TargetsPanelViewModel.cs" />
     <Compile Include="Views\DirectControlModal.xaml.cs">
       <DependentUpon>DirectControlModal.xaml</DependentUpon>
     </Compile>
@@ -223,6 +225,7 @@
       <DependentUpon>UnitWidget.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Widget\GestureRecognizer\TapGestureRecognizer.cs" />
+    <Compile Include="Views\Core.cs" />
     <Compile Include="Views\Widget\IndicatorWidget.cs" />
     <Compile Include="Views\MessageBoxTargetSelector.xaml.cs">
       <DependentUpon>MessageBoxTargetSelector.xaml</DependentUpon>

@@ -4,46 +4,9 @@ using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using taskmaker_wpf.Model.Data;
 using PCController;
-using mMotor = taskmaker_wpf.Model.Data.Motor;
-using cMotor = PCController.Motor;
-using System.Collections.ObjectModel;
-using taskmaker_wpf.Models;
 
 namespace taskmaker_wpf.Services {
-    public class SystemService {
-        public List<NLinearMap> Maps { get; set; } = new List<NLinearMap>();
-        public List<ComplexM> Complexes { get; set; } = new List<ComplexM>();
-        public List<ISelectableTarget> Targets { get; set; } = new List<ISelectableTarget>();
-
-        public ObservableCollection<ControlUI> UIs { get; set; } = new ObservableCollection<ControlUI>();
-
-
-    public SystemService() {
-            Enumerable.Range(0, 3)
-                .ToList()
-                .ForEach(
-                    e => {
-                        var motor = new mMotor() {
-                            Max = 10000,
-                            Min = -10000,
-                            Value = 0,
-                            Alias = $"S{e}"
-                        };
-
-                        Targets.Add(motor);
-                    });
-        }
-    }
-
-    public class MotorService {
-        public List<mMotor> Motors { get; set; } = new List<mMotor> { };
-
-        public MotorService() {
-        }
-    }
-
     public class SerialService {
         public List<string> Ports { get; set; } = new List<string> { };
         public Motors Motors { get; set; }
@@ -89,7 +52,7 @@ namespace taskmaker_wpf.Services {
             _nMotor = Boards.NMotor;
             _nBoard = Boards.Count;
 
-            Motors.AddRange(Enumerable.Repeat(new cMotor(), _nMotor));
+            Motors.AddRange(Enumerable.Repeat(new Motor(), _nMotor));
 
             Boards.Clear();
             Motors.Clear();
@@ -98,7 +61,7 @@ namespace taskmaker_wpf.Services {
             return 0;
         }
 
-        public cMotor GetMotorInstance(int board, int motor) {
+        public Motor GetMotorInstance(int board, int motor) {
             return Motors[board * _nBoard + motor];
         }
     }

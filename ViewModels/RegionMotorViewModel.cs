@@ -39,7 +39,7 @@ namespace taskmaker_wpf.ViewModels {
             get => _name;
             set {
                 SetProperty(ref _name, value);
-                Parent.Alias = _name;
+                Parent.Name = _name;
             }
         }
 
@@ -77,7 +77,7 @@ namespace taskmaker_wpf.ViewModels {
         public BindableMotor(Motor motor) {
             _motorId = "Motor" + motor.MotorId;
             _boardId = "Board" + motor.BoardId;
-            _name = motor.Alias;
+            _name = motor.Name;
             _value = (int)motor.Value;
             _min = motor.Min;
             _max = motor.Max;
@@ -117,8 +117,7 @@ namespace taskmaker_wpf.ViewModels {
         public ICommand RemoveMotorCmd => removeMotorCmd ?? (removeMotorCmd = new DelegateCommand<BindableMotor>(RemoveMotorCmdExecute));
 
         private void RemoveMotorCmdExecute(BindableMotor bMotor) {
-            Motors.Remove(bMotor);
-            _motorService.Motors.Remove(bMotor.Parent);
+            //Motors.Remove(bMotor);
         }
 
         private ICommand addMotorCmd;
@@ -128,8 +127,7 @@ namespace taskmaker_wpf.ViewModels {
             var newMotor = new Motor();
             var newBindableMotor = new BindableMotor(newMotor);
 
-            _motorService.Motors.Add(newMotor);
-            Motors.Add(newBindableMotor);
+            //Motors.Add(newBindableMotor);
         }
 
         private ICommand setCmd;
@@ -139,29 +137,34 @@ namespace taskmaker_wpf.ViewModels {
             Console.WriteLine(text);
         }
 
-        public ObservableCollection<BindableMotor> Motors { get; private set; }
+        public ObservableCollection<Motor> Motors => _systemSvr.Motors;
 
-        public ObservableCollection<string> BoardIds { get; set; }
-        public ObservableCollection<string> MotorIds { get; set; }
+        private ObservableCollection<string> _boardIds = new ObservableCollection<string>();
+        public ObservableCollection<string> BoardIds {
+            get => _boardIds;
+            set => SetProperty(ref _boardIds, value);
+        }
+
+        private ObservableCollection<string> _motorIds = new ObservableCollection<string>();
+        public ObservableCollection<string> MotorIds {
+            get => _motorIds;
+            set => SetProperty(ref _motorIds, value);
+        }
 
         private IRegionManager _regionManager;
-        private MotorService _motorService;
         private SerialService _serialSrv;
+        private readonly SystemService _systemSvr;
 
         public RegionMotorViewModel(
             IRegionManager regionManager,
             SerialService serialSrv,
-            MotorService motorService) {
+            SystemService systemSvr) {
             _regionManager = regionManager;
-            _motorService = motorService;
             _serialSrv = serialSrv;
+            _systemSvr = systemSvr;
 
-            Motors = new ObservableCollection<BindableMotor>();
-            _motorService.Motors.ForEach(e => {
-                Motors.Add(new BindableMotor(e));
-            });
-            BoardIds = new ObservableCollection<string>();
-            MotorIds = new ObservableCollection<string>();
+            //Motors = new ObservableCollection<Motor>();
+            //MotorIds = new ObservableCollection<string>();
 
             ListBoards();
             ListMotors();

@@ -19,7 +19,7 @@ using taskmaker_wpf.Views.Widget;
 
 namespace taskmaker_wpf.ViewModels
 {
-    public class NodeData : BindableBase, IInspectorTarget
+    public class NodeData : BindableBase, IInspectable
     {
         private bool _isSet;
 

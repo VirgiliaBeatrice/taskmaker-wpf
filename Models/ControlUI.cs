@@ -8,12 +8,24 @@ using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Model.SimplicialMapping;
 
 namespace taskmaker_wpf.Models {
-    public class ControlUI {
+    public enum ControlUIState {
+        Init = 0,
+        Created,
+        Mapped
+    }
+
+    public class ControlUI : ISelectableTarget {
         public NLinearMap Map { get; private set; } = new NLinearMap();
         public ComplexM Complex { get; private set; } = new ComplexM();
 
         public string Name { get; set; } = "ControlUI";
-        
+        public double Value { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public bool IsSelected { get; set; } = false;
+
         public ControlUI() { }
+
+        public override string ToString() {
+            return Name;
+        }
     }
 }

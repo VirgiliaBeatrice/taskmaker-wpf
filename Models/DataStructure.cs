@@ -132,6 +132,8 @@ namespace taskmaker_wpf.Model.Data {
     public class ComplexM : ITarget, IDisposable {
         private bool disposedValue;
 
+        // temporary solution, delete soon
+        public string Name { get; set; }
         public Guid Uid { get; set; }
 
         public List<NodeM> Nodes { get; set; } = new List<NodeM>();

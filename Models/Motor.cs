@@ -10,9 +10,10 @@ using System.IO.Ports;
 using taskmaker_wpf.Model.Core;
 using taskmaker_wpf.Views.Widget;
 using Prism.Mvvm;
+using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.Model.Data {
-    public class Motor : BindableBase, ISelectableTarget, IInspectorTarget {
+    public class Motor : BindableBase, ISelectableTarget, IInspectable {
         private double _value;
         public double Value {
             get => _value;
@@ -26,7 +27,7 @@ namespace taskmaker_wpf.Model.Data {
 
         private int _max;
         private int _min;
-        private string _alias;
+        private string _name;
         private string _label;
         private string _id;
         private bool _isSelected;
@@ -39,7 +40,7 @@ namespace taskmaker_wpf.Model.Data {
 
         public int Max { get => _max; set => _max = value; }
         public int Min { get => _min; set => _min = value; }
-        public string Alias { get => _alias; set => _alias = value; }
+        public string Name { get => _name; set => _name = value; }
         public string Label { get => _label; set => _label = value; }
         public string Id { get => _id; set => _id = value; }
         public int BoardId { get => _boardId; set => _boardId = value; }
@@ -72,11 +73,12 @@ namespace taskmaker_wpf.Model.Data {
         //}
 
         public override string ToString() {
-            return $"Motor[{Alias}]";
+            return $"Motor[{Name}]";
         }
     }
 
     public interface ITarget {
+        string Name { get; set; }
         double Value { get; set; }
     }
 

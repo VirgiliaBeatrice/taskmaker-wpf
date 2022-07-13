@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using taskmaker_wpf.Services;
+using taskmaker_wpf.Models;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -30,8 +31,6 @@ namespace taskmaker_wpf.ViewModels {
 
         private readonly IRegionManager _regionManager;
         private readonly SystemService _systemSvr;
-
-        public ControlUI SelectedUI;
 
         public TestWindowViewModel(IRegionManager regionManager, SystemService systemSvr) {
             _regionManager = regionManager;

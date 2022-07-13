@@ -7,7 +7,7 @@
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="40" />
+            <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Label
@@ -16,7 +16,6 @@
             VerticalContentAlignment="Center"
             HorizontalContentAlignment="Center"
             Content="Title" FontWeight="Bold"
-            FontSize="14"
             Foreground="White"
             />
         <Grid

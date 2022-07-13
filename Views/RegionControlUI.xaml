@@ -10,7 +10,8 @@
              xmlns:w ="clr-namespace:taskmaker_wpf.Views.Widget"
              d:DataContext="{d:DesignInstance Type=viewmodels:RegionControlUIViewModel}"
              xmlns:data="clr-namespace:taskmaker_wpf.Model.Data"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
+             prism:ViewModelLocator.AutoWireViewModel="True"
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.InputBindings>
     </UserControl.InputBindings>
@@ -34,9 +35,7 @@
                 </TabItem>
                 <TabItem
                     Header="Targets">
-                    <local:TargetsPanel
-                        ValidTargets="{Binding Targets}"
-                        SelectedTargets="{Binding SelectedTargets}" />
+                    <local:TargetsPanel />
                 </TabItem>
                 
             </TabControl>

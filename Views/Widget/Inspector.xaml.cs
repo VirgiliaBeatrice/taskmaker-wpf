@@ -43,8 +43,6 @@ namespace taskmaker_wpf.Views.Widget {
         }
     }
 
-    public interface IInspectorTarget { }
-
     public class InspectorTargetTemplateSelector : DataTemplateSelector {
         public DataTemplate NodeDataTemplate { get; set; }
         public DataTemplate MotorDataTemplate { get; set; }
