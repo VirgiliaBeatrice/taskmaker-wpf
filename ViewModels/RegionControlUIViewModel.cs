@@ -43,67 +43,45 @@ namespace taskmaker_wpf.ViewModels
         public NodeM GetNode() => _target;
     }
 
-    //public class NodeData : BindableBase, IInspectable
-    //{
-    //    private bool _isSet;
+    public class StatefulSimplex : BindableBase {
+        private SimplexM _target;
 
-    //    private Point _location;
-    //    private Guid _uid;
+        private Point[] _points;
+        public Point[] Points {
+            get => _points;
+            set => SetProperty(ref _points, value);
+        }
 
-    //    public Guid Uid
-    //    {
-    //        get { return _uid; }
-    //        set => SetProperty(ref _uid, value);
-    //    }
+        public StatefulSimplex(SimplexM target) {
+            _target = target;
 
-    //    public Point Location
-    //    {
-    //        get => _location;
-    //        set => SetProperty(ref _location, value);
-    //    }
+            _points = _target.Nodes
+                .Select(e => e.Location.ToPoint())
+                .ToArray();
+        }
 
-    //    public bool IsSet
-    //    {
-    //        get { return _isSet; }
-    //        set => SetProperty(ref _isSet, value);
-    //    }
-    //}
+        public SimplexM GetSimplex() => _target;
+    }
 
-    //public class SimplexData : BindableBase
-    //{
-    //    private Point[] _points;
-    //    private Guid _uid;
+    public class StatefulVoronoi : BindableBase {
+        private VoronoiRegionM _target;
 
-    //    public Guid Uid
-    //    {
-    //        get { return _uid; }
-    //        set => SetProperty(ref _uid, value);
-    //    }
+        private Point[] _points;
+        public Point[] Points {
+            get => _points;
+            set => SetProperty(ref _points, value);
+        }
 
-    //    public Point[] Points
-    //    {
-    //        get => _points;
-    //        set => SetProperty(ref _points, value);
-    //    }
-    //}
+        public StatefulVoronoi(VoronoiRegionM target) {
+            _target = target;
 
-    //public class VoronoiData : BindableBase
-    //{
-    //    private Point[] _points;
-    //    private Guid _uid;
+            _points = _target.Vertices
+                .Select(e => e.ToPoint())
+                .ToArray();
+        }
 
-    //    public Guid Uid
-    //    {
-    //        get { return _uid; }
-    //        set => SetProperty(ref _uid, value);
-    //    }
-
-    //    public Point[] Points
-    //    {
-    //        get => _points;
-    //        set => SetProperty(ref _points, value);
-    //    }
-    //}
+        public VoronoiRegionM GetSimplex() => _target;
+    }
 
 
     public static class Helper
@@ -187,6 +165,24 @@ namespace taskmaker_wpf.ViewModels
             set => SetProperty(ref _nodes, value);
         }
 
+        private ObservableCollection<StatefulSimplex> _simplices;
+        public ObservableCollection<StatefulSimplex> Simplices {
+            get => _simplices;
+            set => SetProperty(ref _simplices, value);
+        }
+
+        private ObservableCollection<StatefulVoronoi> _voronois;
+        public ObservableCollection<StatefulVoronoi> Voronois {
+            get { return _voronois; }
+            set { SetProperty(ref _voronois, value); }
+        }
+
+        private NodeWidget _selectedNodeWidget;
+        public NodeWidget SelectedNodeWidget {
+            get => _selectedNodeWidget;
+            set => SetProperty(ref _selectedNodeWidget, value);
+        }
+
         private DelegateCommand<Point?> _addNodeCommand;
         public DelegateCommand<Point?> AddNodeCommand =>
             _addNodeCommand ?? (_addNodeCommand = new DelegateCommand<Point?>(ExecuteAddNodeCommand));
@@ -200,22 +196,36 @@ namespace taskmaker_wpf.ViewModels
             _nodes.Add(newStatefulNode);
         }
 
+        private DelegateCommand _buildCommand;
+        public DelegateCommand BuildCommand =>
+            _buildCommand ?? (_buildCommand = new DelegateCommand(ExecuteBuildCommand));
 
-        //private VoronoiData[] _voronois;
+        void ExecuteBuildCommand() {
+            UI.Complex.CreateComplex();
+
+            if (Simplices == null)
+                Simplices = new ObservableCollection<StatefulSimplex>();
+            if (Voronois == null)
+                Voronois = new ObservableCollection<StatefulVoronoi>();
+
+            Simplices.Clear();
+            Voronois.Clear();
+
+            var simplices = UI.Complex.Simplices
+                .Select(e => new StatefulSimplex(e));
+            var voronois = UI.Complex.Regions
+                .Select(e => new StatefulVoronoi(e));
+
+            Simplices.AddRange(simplices);
+            Voronois.AddRange(voronois);
+        }
+
 
         // https://blog.csdn.net/jiuzaizuotian2014/article/details/104856673
-        private DelegateCommand<object> _addItemCommand;
-
-        private DelegateCommand _buildExteriorCommand;
-
-        private DelegateCommand _buildInteriorCommand;
 
         private DelegateCommand<object> _interpolateCommand;
 
         private OperationMode _operationMode;
-
-        private DelegateCommand<IList<object>> _selectedTargetsChanged;
-
 
         public RegionControlUIViewModel(
             SystemService systemService) {
@@ -273,32 +283,6 @@ namespace taskmaker_wpf.ViewModels
             RemoveNode(parameter);
         }
 
-        public ICommand BuildInteriorCommand
-        {
-            get
-            {
-                if (_buildInteriorCommand == null)
-                {
-                    _buildInteriorCommand = new DelegateCommand(BuildInterior);
-                }
-
-                return _buildInteriorCommand;
-            }
-        }
-
-        public ICommand BuildExteriorCommand
-        {
-            get
-            {
-                if (_buildExteriorCommand == null)
-                {
-                    _buildExteriorCommand = new DelegateCommand(BuildExterior);
-                }
-
-                return _buildExteriorCommand;
-            }
-        }
-
         public ICommand InterpolateCommand
         {
             get
@@ -312,6 +296,18 @@ namespace taskmaker_wpf.ViewModels
             }
         }
 
+        private DelegateCommand _setValueCommand;
+        public DelegateCommand SetValueCommand =>
+            _setValueCommand ?? (_setValueCommand = new DelegateCommand(ExecuteSetValueCommand));
+
+        void ExecuteSetValueCommand() {
+            if (SelectedNodeWidget is null) return;
+
+            var node = ((StatefulNode)SelectedNodeWidget.DataContext).GetNode();
+
+            SetNodeValue(node);
+        }
+
 
         private DelegateCommand<NodeM> _setNodeValueCommand;
         public DelegateCommand<NodeM> SetNodeValueCommand =>
@@ -320,27 +316,6 @@ namespace taskmaker_wpf.ViewModels
         void ExecuteSetNodeValueCommand(NodeM parameter) {
             SetNodeValue(parameter);
         }
-
-        public int Count
-        {
-            get { return _count; }
-            set { SetProperty(ref _count, value); }
-        }
-
-        //private void Item_PropertyChanged(object sender, PropertyChangedEventArgs args)
-        //{
-        //    if (args.PropertyName == nameof(Motor.IsSelected))
-        //    {
-        //        Model.Targets.Clear();
-
-        //        Model.Targets.AddRange(
-        //            _systemSvr.Targets
-        //                .Where(e => e.IsSelected));
-
-        //        SelectedTargets = Model.Targets.ToArray();
-        //        OnSelectedTargetsChanged();
-        //    }
-        //}
 
         private void OnSelectedTargetsChanged()
         {
@@ -370,8 +345,8 @@ namespace taskmaker_wpf.ViewModels
 
         private void SetNodeValue(NodeM node) {
             var targetValue = UI.Complex.Targets.ToNDarray();
-            var idx = Model.Nodes.FindIndex(e => e.Uid == node.Uid);
-
+            //var idx = Model.Nodes.FindIndex(e => e.Uid == node.Uid);
+            var idx = UI.Complex.Nodes.FindIndex(e => e.Uid == node.Uid);
             node.IsSet = true;
 
             UI.Map.SetValue(new[] { idx }, targetValue);

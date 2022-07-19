@@ -192,25 +192,17 @@ namespace taskmaker_wpf.Model.Data {
                 .ToArray();
 
             // Create exterior
-            Regions = new List<VoronoiRegionM>(ExteriorM.Create(extremes, simplices));
+            Regions = new List<VoronoiRegionM>(VoronoiRegionM.Create(extremes, simplices));
 
             // Initial barys
             InitializeBarys();
         }
 
-        //public SimplexData[] GetSimplexData() {
-        //    return Simplices.Select(e => e.ToData()).ToArray();
-        //}
-
-        //public VoronoiData[] GetVoronoiData() {
-        //    return Regions.Select(e => e.ToData()).ToArray();
-        //}
-
-        internal void AddSimplices(IEnumerable<SimplexM> nodes) {
+        private void AddSimplices(IEnumerable<SimplexM> nodes) {
             Simplices.AddRange(nodes);
         }
 
-        internal void InitializeBarys() {
+        private void InitializeBarys() {
             Simplices.ForEach(e => e.SetBary());
             Regions.ForEach(e => e.SetBary());
 
@@ -260,10 +252,76 @@ namespace taskmaker_wpf.Model.Data {
     }
 
 
-    public class ExteriorM : IDisposable {
-        private bool disposedValue;
+    //public class ExteriorM{
+    //    public static VoronoiRegionM[] Create(NodeM[] extremes, SimplexM[] simplices) {
+    //        if (extremes.Length <= 2) {
+    //            throw new Exception("Invalid extremes");
+    //        }
 
-        public List<VoronoiRegionM> Regions { get; set; } = new List<VoronoiRegionM>();
+    //        NodeM prev, it, next;
+
+    //        var newRegions = new List<VoronoiRegionM>();
+
+    //        for (var i = 0; i < extremes.Length; i++) {
+    //            it = extremes[i];
+
+    //            if (i <= 0) {
+    //                prev = extremes.Last();
+    //                next = extremes[i + 1];
+    //            }
+    //            else if (i < extremes.Length - 1) {
+    //                prev = extremes[i - 1];
+    //                next = extremes[i + 1];
+    //            }
+    //            //else if (i >= extremes.Length - 1) {
+    //            else {
+    //                prev = extremes[i - 1];
+    //                next = extremes.First();
+    //            }
+
+    //            // Find governor simplices for sectoral voronoi region
+    //            var prevGov = Array.Find(
+    //                simplices, 
+    //                e => e.IsVertex(prev) & e.IsVertex(it));
+    //            var nextGov = Array.Find(
+    //                simplices, 
+    //                e => e.IsVertex(it) & e.IsVertex(next));
+    //            var sectorVoro = new SectoralVoronoiRegion(
+    //                new NodeM[] { prev, it, next },
+    //                new SimplexM[] { prevGov, nextGov });
+
+    //            newRegions.Add(sectorVoro);
+
+    //            // Find governor simplices for rectangular voronoi region
+    //            var gov = Array.Find(simplices, 
+    //                e => e.IsVertex(it) & e.IsVertex(next));
+    //            var rectVoro = new RectVoronoiRegion(
+    //                new NodeM[] { it, next },
+    //                gov);
+
+    //            newRegions.Add(rectVoro);
+    //        }
+
+    //        return newRegions.ToArray();
+    //    }
+    //}
+
+    public abstract class VoronoiRegionM : IDisposable, IRegion {
+        //public abstract SimplexBary GetBary();
+        public Guid Uid { get; set; }
+        public abstract IBary Bary { get; set; }
+        public abstract NDarray[] Vertices { get; set; }
+
+        //public abstract VoronoiData ToData();
+        public abstract void SetBary();
+
+        protected VoronoiRegionM() {
+            Uid = Guid.NewGuid();
+        }
+
+        public void Dispose() {
+            throw new NotImplementedException();
+        }
 
         public static VoronoiRegionM[] Create(NodeM[] extremes, SimplexM[] simplices) {
             if (extremes.Length <= 2) {
@@ -293,10 +351,10 @@ namespace taskmaker_wpf.Model.Data {
 
                 // Find governor simplices for sectoral voronoi region
                 var prevGov = Array.Find(
-                    simplices, 
+                    simplices,
                     e => e.IsVertex(prev) & e.IsVertex(it));
                 var nextGov = Array.Find(
-                    simplices, 
+                    simplices,
                     e => e.IsVertex(it) & e.IsVertex(next));
                 var sectorVoro = new SectoralVoronoiRegion(
                     new NodeM[] { prev, it, next },
@@ -305,7 +363,7 @@ namespace taskmaker_wpf.Model.Data {
                 newRegions.Add(sectorVoro);
 
                 // Find governor simplices for rectangular voronoi region
-                var gov = Array.Find(simplices, 
+                var gov = Array.Find(simplices,
                     e => e.IsVertex(it) & e.IsVertex(next));
                 var rectVoro = new RectVoronoiRegion(
                     new NodeM[] { it, next },
@@ -315,50 +373,6 @@ namespace taskmaker_wpf.Model.Data {
             }
 
             return newRegions.ToArray();
-        }
-
-        protected virtual void Dispose(bool disposing) {
-            if (!disposedValue) {
-                if (disposing) {
-                    // TODO: dispose managed state (managed objects)
-                    foreach(var c in Regions) {
-                        c.Dispose();
-                    }
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
-                disposedValue = true;
-            }
-        }
-
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~ExteriorM()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
-
-        public void Dispose() {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-    }
-
-    public abstract class VoronoiRegionM : IDisposable, IRegion {
-        //public abstract SimplexBary GetBary();
-        public Guid Uid { get; set; }
-        public abstract IBary Bary { get; set; }
-        //public abstract VoronoiData ToData();
-        public abstract void SetBary();
-
-        protected VoronoiRegionM() {
-            Uid = Guid.NewGuid();
-        }
-
-        public void Dispose() {
-            throw new NotImplementedException();
         }
     }
 
@@ -371,7 +385,7 @@ namespace taskmaker_wpf.Model.Data {
         public NodeM Node1 { get; set; }
         public override IBary Bary { get; set; }
 
-        public NDarray[] RectVertices { get; set; }
+        public override NDarray[] Vertices { get; set; }
 
         private NDarray[] CreateRectangleVertices(NDarray a, NDarray b) {
             var dir = b - a;
@@ -418,7 +432,7 @@ namespace taskmaker_wpf.Model.Data {
             Node0 = nodes[0];
             Node1 = nodes[1];
 
-            RectVertices = CreateRectangleVertices(Node0.Location, Node1.Location);
+            Vertices = CreateRectangleVertices(Node0.Location, Node1.Location);
         }
 
         protected virtual void Dispose(bool disposing) {
@@ -428,7 +442,7 @@ namespace taskmaker_wpf.Model.Data {
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                foreach(var v in RectVertices) {
+                foreach(var v in Vertices) {
                     v.Dispose();
                 }
 
@@ -463,7 +477,7 @@ namespace taskmaker_wpf.Model.Data {
         public SimplexM[] Governors { get; set; }
         public NodeM Node => Nodes[1];
         public NodeM[] Nodes { get; set; }
-        public NDarray[] Vertices { get; set; }
+        public override NDarray[] Vertices { get; set; }
         public override IBary Bary { get; set; }
 
 

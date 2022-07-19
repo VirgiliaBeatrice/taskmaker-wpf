@@ -381,12 +381,32 @@ namespace taskmaker_wpf.Views {
 
         private static void OnCollectionPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
             if (d is ComplexWidget cw) {
-                if (e.OldValue is INotifyCollectionChanged oldCollection) {
-                    oldCollection.CollectionChanged -= cw.OnNodeCollectionChanged;
-                }
+                if (e.Property == NodeSourceProperty) {
+                    if (e.OldValue is INotifyCollectionChanged oldCollection) {
+                        oldCollection.CollectionChanged -= cw.OnNodeCollectionChanged;
+                    }
 
-                if (e.NewValue is INotifyCollectionChanged newCollection) {
-                    newCollection.CollectionChanged += cw.OnNodeCollectionChanged;
+                    if (e.NewValue is INotifyCollectionChanged newCollection) {
+                        newCollection.CollectionChanged += cw.OnNodeCollectionChanged;
+                    }
+                }
+                else if (e.Property == SimplexSourceProperty) {
+                    if (e.OldValue is INotifyCollectionChanged oldCollection) {
+                        oldCollection.CollectionChanged -= cw.OnSimplexCollectionChanged;
+                    }
+
+                    if (e.NewValue is INotifyCollectionChanged newCollection) {
+                        newCollection.CollectionChanged += cw.OnSimplexCollectionChanged;
+                    }
+                }
+                else if (e.Property == VoronoiSourceProperty) {
+                    if (e.OldValue is INotifyCollectionChanged oldCollection) {
+                        oldCollection.CollectionChanged -= cw.OnVoronoiCollectionChanged;
+                    }
+
+                    if (e.NewValue is INotifyCollectionChanged newCollection) {
+                        newCollection.CollectionChanged += cw.OnVoronoiCollectionChanged;
+                    }
                 }
             }
         }
@@ -417,14 +437,14 @@ namespace taskmaker_wpf.Views {
                         });
                     BindingOperations.SetBinding(
                         widget,
-                        NodeWidget.WidthProperty,
+                        WidthProperty,
                         new Binding {
                             ElementName = "complex",
                             Path = new PropertyPath("ActualWidth")
                         });
                     BindingOperations.SetBinding(
                         widget,
-                        NodeWidget.HeightProperty,
+                        HeightProperty,
                         new Binding {
                             ElementName = "complex",
                             Path = new PropertyPath("ActualHeight")
@@ -448,54 +468,136 @@ namespace taskmaker_wpf.Views {
             }
         }
 
-        //private void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
-        //    if (e.Action == NotifyCollectionChangedAction.Add) {
-        //        foreach (var item in e.NewItems) {
-        //            if (item is NodeData node) {
-        //                var newNode = new NodeWidget() {
-        //                    DataContext = node,
-        //                    Id = node.Uid,
-        //                    Width = ActualWidth,
-        //                    Height = ActualHeight
-        //                    //Location = node.Location.ToSKPoint()
-        //                };
-        //                newNode.Style = ItemStyle;
-        //                newNode.Click += OnClick;
 
-        //                SetTop(newNode, 0);
-        //                SetLeft(newNode, 0);
-        //                SetZIndex(newNode, 5);
 
-        //                Children.Add(newNode);
+        public IEnumerable SimplexSource {
+            get { return (IEnumerable)GetValue(SimplexSourceProperty); }
+            set { SetValue(SimplexSourceProperty, value); }
+        }
 
-        //                BindingOperations.SetBinding(
-        //                    newNode,
-        //                    NodeWidget.LocationProperty,
-        //                    new Binding {
-        //                        //Source = node,
-        //                        Path = new PropertyPath("Location")
-        //                    });
-        //                BindingOperations.SetBinding(
-        //                    newNode,
-        //                    NodeWidget.IsSetProperty,
-        //                    new Binding {
-        //                        Path = new PropertyPath("IsSet")
-        //                    });
-        //            }
-        //        }
-        //    }
-        //    else if (e.Action == NotifyCollectionChangedAction.Remove) {
-        //        foreach (var item in e.OldItems.OfType<NodeData>()) {
-        //            var target = Children
-        //                         .OfType<NodeWidget>()
-        //                         .First(x => x.Id == item.Uid);
+        // Using a DependencyProperty as the backing store for SimplexSource.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SimplexSourceProperty =
+            DependencyProperty.Register("SimplexSource", typeof(IEnumerable), typeof(ComplexWidget), new PropertyMetadata(null, OnCollectionPropertyChanged));
 
-        //            Children.Remove(target);
-        //        }
-        //    }
-        //}
+        private void OnSimplexCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
+            if (e.Action == NotifyCollectionChangedAction.Add) {
+                foreach (StatefulSimplex item in e.NewItems) {
+                    var widget = new SimplexWidget {
+                        DataContext = item,
+                        Focusable = true
+                    };
 
-        internal void OnClick(object sender, RoutedEventArgs e) {
+                    SetLeft(widget, 0);
+                    SetTop(widget, 0);
+                    SetZIndex(widget, 2);
+
+                    Children.Add(widget);
+
+                    BindingOperations.SetBinding(
+                        widget,
+                        WidthProperty,
+                        new Binding {
+                            ElementName = "complex",
+                            Path = new PropertyPath("ActualWidth")
+                        });
+                    BindingOperations.SetBinding(
+                        widget,
+                        HeightProperty,
+                        new Binding {
+                            ElementName = "complex",
+                            Path = new PropertyPath("ActualHeight")
+                        });
+                    BindingOperations.SetBinding(
+                        widget,
+                        SimplexWidget.PointsProperty,
+                        new Binding {
+                            Path = new PropertyPath("Points")
+                        });
+                }
+            }
+            else if (e.Action == NotifyCollectionChangedAction.Remove) {
+                foreach (StatefulSimplex item in e.OldItems) {
+                    var widget = Children
+                        .OfType<SimplexWidget>()
+                        .Where(e1 => e1.DataContext == item).First();
+
+                    Children.Remove(widget);
+                }
+            }
+        }
+
+
+
+        public IEnumerable VoronoiSource {
+            get { return (IEnumerable)GetValue(VoronoiSourceProperty); }
+            set { SetValue(VoronoiSourceProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for VoronoiSource.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty VoronoiSourceProperty =
+            DependencyProperty.Register("VoronoiSource", typeof(IEnumerable), typeof(ComplexWidget), new PropertyMetadata(null, OnCollectionPropertyChanged));
+
+        private void OnVoronoiCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
+            if (e.Action == NotifyCollectionChangedAction.Add) {
+                foreach (StatefulVoronoi item in e.NewItems) {
+                    var widget = new VoronoiWidget {
+                        DataContext = item,
+                        Focusable = true
+                    };
+
+                    SetLeft(widget, 0);
+                    SetTop(widget, 0);
+                    SetZIndex(widget, 2);
+
+                    Children.Add(widget);
+
+                    BindingOperations.SetBinding(
+                        widget,
+                        WidthProperty,
+                        new Binding {
+                            ElementName = "complex",
+                            Path = new PropertyPath("ActualWidth")
+                        });
+                    BindingOperations.SetBinding(
+                        widget,
+                        HeightProperty,
+                        new Binding {
+                            ElementName = "complex",
+                            Path = new PropertyPath("ActualHeight")
+                        });
+                    BindingOperations.SetBinding(
+                        widget,
+                        VoronoiWidget.PointsProperty,
+                        new Binding {
+                            Path = new PropertyPath("Points")
+                        });
+                }
+            }
+            else if (e.Action == NotifyCollectionChangedAction.Remove) {
+                foreach (StatefulVoronoi item in e.OldItems) {
+                    var widget = Children
+                        .OfType<VoronoiWidget>()
+                        .Where(e1 => e1.DataContext == item).First();
+
+                    Children.Remove(widget);
+                }
+            }
+        }
+
+
+
+        public FrameworkElement SelectedNodeWidget {
+            get { return (FrameworkElement)GetValue(SelectedNodeWidgetProperty); }
+            set { SetValue(SelectedNodeWidgetProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for SelectedNodeWidget.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SelectedNodeWidgetProperty =
+            DependencyProperty.Register("SelectedNodeWidget", typeof(FrameworkElement), typeof(ComplexWidget), new PropertyMetadata(null));
+
+
+
+        private void OnClick(object sender, RoutedEventArgs e) {
             // TODO: Ugly
             if (sender is NodeWidget w) {
                 if (SelectedNode == null) {
@@ -511,9 +613,19 @@ namespace taskmaker_wpf.Views {
 
                 if (SelectedNode != null)
                     SetInspectedObjectCommand.Execute(SelectedNode.Id);
-            }
+                }
         }
 
+        public void Select(NodeWidget el) {
+            foreach(var widget in Children.OfType<NodeWidget>()) {
+                widget.IsSelected = false;
+            }
+
+            if (el != null) {
+                el.IsSelected = true;
+                SelectedNodeWidget = el;
+            }
+        }
 
         public ICommand SetValueCommand {
             get { return (ICommand)GetValue(SetValueCommandProperty); }
@@ -524,6 +636,19 @@ namespace taskmaker_wpf.Views {
         public static readonly DependencyProperty SetValueCommandProperty =
             DependencyProperty.Register("SetValueCommand", typeof(ICommand), typeof(ComplexWidget),
                 new PropertyMetadata(null));
+
+
+
+        public ICommand CreateCommand {
+            get { return (ICommand)GetValue(CreateCommandProperty); }
+            set { SetValue(CreateCommandProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for CreateCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CreateCommandProperty =
+            DependencyProperty.Register("CreateCommand", typeof(ICommand), typeof(ComplexWidget), new PropertyMetadata(null));
+
+
 
 
         public ICommand InteriorCommand {
@@ -559,14 +684,14 @@ namespace taskmaker_wpf.Views {
                 new PropertyMetadata(null));
 
 
-        public ICommand AddItemCommand {
-            get { return (ICommand)GetValue(AddItemCommandProperty); }
-            set { SetValue(AddItemCommandProperty, value); }
+        public ICommand AddNodeCommand {
+            get { return (ICommand)GetValue(AddNodeCommandProperty); }
+            set { SetValue(AddNodeCommandProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for AddItemCommand.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty AddItemCommandProperty =
-            DependencyProperty.Register("AddItemCommand", typeof(ICommand), typeof(ComplexWidget),
+        public static readonly DependencyProperty AddNodeCommandProperty =
+            DependencyProperty.Register("AddNodeCommand", typeof(ICommand), typeof(ComplexWidget),
                 new UIPropertyMetadata(null));
 
 
@@ -841,14 +966,14 @@ namespace taskmaker_wpf.Views {
             }
         }
 
-        public void SetSelection(ISelectableWidget widget) {
-            ResetSelection(widget);
+        //public void SetSelection(ISelectableWidget widget) {
+        //    ResetSelection(widget);
 
-            if (widget is NodeWidget node)
-                SelectedNode = node;
+        //    if (widget is NodeWidget node)
+        //        SelectedNode = node;
 
-            InspectedWidget = widget as FrameworkElement;
-        }
+        //    InspectedWidget = widget as FrameworkElement;
+        //}
 
         private void OnClicked(EventPattern<MouseButtonEventArgs> args) {
             if (Mode == OperationMode.Default) {
@@ -907,6 +1032,12 @@ namespace taskmaker_wpf.Views {
 
         private void OnKeyPressed(KeyEventArgs obj) {
             switch (obj.Key) {
+                case Key.A:
+                    Mode = OperationMode.Add;
+                    break;
+                case Key.B:
+                    CreateCommand.Execute(null);
+                    break;
                 case Key.D1:
                     Mode = OperationMode.Add;
 
@@ -920,14 +1051,6 @@ namespace taskmaker_wpf.Views {
                     ModeObs.OnNext(Mode);
 
                     return;
-                case Key.I: {
-                    var indicator = Children.OfType<IndicatorWidget>().First();
-                    indicator.Visibility = indicator.IsVisible ? Visibility.Hidden : Visibility.Visible;
-                    //indicator.InvalidateVisual();
-
-                    InvalidateSKContext();
-                    return;
-                }
                 case Key.Escape:
                     Mode = OperationMode.Default;
 
@@ -935,16 +1058,11 @@ namespace taskmaker_wpf.Views {
                 case Key.Delete:
                     //OnRemoveNode(obj);
                     break;
-                case Key.D3:
-                    InteriorCommand.Execute(null);
-                    break;
-                case Key.D4:
-                    ExteriorCommand.Execute(null);
-                    break;
                 case Key.T:
                     break;
                 case Key.S:
-                    OnSetValue();
+                    //OnSetValue();
+                    OnSetValueNew();
                     break;
                 default:
                     break;
@@ -956,6 +1074,12 @@ namespace taskmaker_wpf.Views {
                 return;
 
             SetValueCommand.Execute(SelectedNode.Id);
+        }
+
+        private void OnSetValueNew() {
+            if (SelectedNodeWidget is null) return;
+
+            SetValueCommand.Execute(null);
         }
 
         protected void PrepareObservable() {
@@ -983,7 +1107,7 @@ namespace taskmaker_wpf.Views {
                 return;
 
             //Console.WriteLine("Add");
-            AddItemCommand.Execute(e.EventArgs.GetPosition((IInputElement)e.Sender));
+            AddNodeCommand.Execute(e.EventArgs.GetPosition((IInputElement)e.Sender));
 
             // Exit to default
             Mode = OperationMode.Default;

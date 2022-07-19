@@ -124,7 +124,8 @@ namespace taskmaker_wpf.Views {
             if (IsSelected) {
                 var parent = ((ComplexWidget)Parent);
 
-                parent.SetSelection(this);
+                //parent.SetSelection(this);
+                parent.Select(this);
             }
 
             //RaiseClickEvent();

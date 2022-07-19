@@ -102,7 +102,12 @@
                 Focusable="True"
                 Mode="{Binding Path=OperationMode}"
                 NodeSource="{Binding Nodes}"
-                AddItemCommand="{Binding AddNodeCommand}"
+                SimplexSource="{Binding Simplices}"
+                VoronoiSource="{Binding Voronois}"
+                AddNodeCommand="{Binding AddNodeCommand}"
+                SetValueCommand="{Binding SetValueCommand}"
+                CreateCommand="{Binding BuildCommand}"
+                SelectedNodeWidget="{Binding SelectedNodeWidget, Mode=OneWayToSource}"
                 Background="LightGray" Cursor="None">
                 <!--
                 
