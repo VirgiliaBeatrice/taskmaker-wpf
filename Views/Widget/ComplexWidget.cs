@@ -4,6 +4,7 @@ using SkiaSharp.Views.WPF;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
@@ -242,19 +243,18 @@ namespace taskmaker_wpf.Views {
             if (e.NewValue != e.OldValue) { }
         }
 
-        private List<IDisposable> _topics = new List<IDisposable>();
-
-        private void Unsubscribe() {
-            _topics.ForEach(e => e.Dispose());
-            _topics.Clear();
-        }
-
         protected override void OnMouseEnter(MouseEventArgs e) {
-            var result = Focus();
+            //var result = Focus();
 
-            //Console.WriteLine(result);
+            ////Console.WriteLine(result);
             base.OnMouseEnter(e);
         }
+
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e) {
+            Focus();
+            base.OnMouseLeftButtonDown(e);
+        }
+
 
 
         public FrameworkElement InspectedWidget {
@@ -279,95 +279,95 @@ namespace taskmaker_wpf.Views {
                 new PropertyMetadata(null));
 
 
-        public IEnumerable VoronoiSource {
-            get { return (IEnumerable)GetValue(VoronoiSourceProperty); }
-            set { SetValue(VoronoiSourceProperty, value); }
-        }
+        //public IEnumerable VoronoiSource {
+        //    get { return (IEnumerable)GetValue(VoronoiSourceProperty); }
+        //    set { SetValue(VoronoiSourceProperty, value); }
+        //}
 
-        // Using a DependencyProperty as the backing store for VoronoiSource.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty VoronoiSourceProperty =
-            DependencyProperty.Register("VoronoiSource", typeof(IEnumerable), typeof(ComplexWidget),
-                new PropertyMetadata(null, OnPropertyChanged_Voronoi));
+        //// Using a DependencyProperty as the backing store for VoronoiSource.  This enables animation, styling, binding, etc...
+        //public static readonly DependencyProperty VoronoiSourceProperty =
+        //    DependencyProperty.Register("VoronoiSource", typeof(IEnumerable), typeof(ComplexWidget),
+        //        new PropertyMetadata(null, OnPropertyChanged_Voronoi));
 
-        private static void OnPropertyChanged_Voronoi(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            var complex = d as ComplexWidget;
+        //private static void OnPropertyChanged_Voronoi(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+        //    var complex = d as ComplexWidget;
 
-            // Clear
-            complex.Children.OfType<VoronoiWidget>()
-                   .ToList()
-                   .ForEach(x => complex.Children.Remove(x));
+        //    // Clear
+        //    complex.Children.OfType<VoronoiWidget>()
+        //           .ToList()
+        //           .ForEach(x => complex.Children.Remove(x));
 
-            foreach (var item in (VoronoiData[])e.NewValue) {
-                var newVoronoi = new VoronoiWidget {
-                    DataContext = item,
-                    Id = item.Uid,
-                    Width = complex.ActualWidth,
-                    Height = complex.ActualHeight,
-                };
+        //    foreach (var item in (VoronoiData[])e.NewValue) {
+        //        var newVoronoi = new VoronoiWidget {
+        //            DataContext = item,
+        //            Id = item.Uid,
+        //            Width = complex.ActualWidth,
+        //            Height = complex.ActualHeight,
+        //        };
 
-                //newVoronoi.UpdateLayout();
+        //        //newVoronoi.UpdateLayout();
 
-                SetTop(newVoronoi, 0);
-                SetLeft(newVoronoi, 0);
-                SetZIndex(newVoronoi, 1);
+        //        SetTop(newVoronoi, 0);
+        //        SetLeft(newVoronoi, 0);
+        //        SetZIndex(newVoronoi, 1);
 
-                complex.Children.Add(newVoronoi);
+        //        complex.Children.Add(newVoronoi);
 
-                BindingOperations.SetBinding(
-                    newVoronoi,
-                    VoronoiWidget.PointsProperty,
-                    new Binding {
-                        Source = item,
-                        Path = new PropertyPath("Points")
-                    });
-            }
+        //        BindingOperations.SetBinding(
+        //            newVoronoi,
+        //            VoronoiWidget.PointsProperty,
+        //            new Binding {
+        //                Source = item,
+        //                Path = new PropertyPath("Points")
+        //            });
+        //    }
 
-            complex.InvalidateSKContext();
-        }
+        //    complex.InvalidateSKContext();
+        //}
 
-        public IEnumerable SimplexSource {
-            get { return (IEnumerable)GetValue(SimplexSourceProperty); }
-            set { SetValue(SimplexSourceProperty, value); }
-        }
+        //public IEnumerable SimplexSource {
+        //    get { return (IEnumerable)GetValue(SimplexSourceProperty); }
+        //    set { SetValue(SimplexSourceProperty, value); }
+        //}
 
-        // Using a DependencyProperty as the backing store for SimplexSource.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty SimplexSourceProperty =
-            DependencyProperty.Register("SimplexSource", typeof(IEnumerable), typeof(ComplexWidget),
-                new PropertyMetadata(null, OnPropertyChanged_Simplex));
+        //// Using a DependencyProperty as the backing store for SimplexSource.  This enables animation, styling, binding, etc...
+        //public static readonly DependencyProperty SimplexSourceProperty =
+        //    DependencyProperty.Register("SimplexSource", typeof(IEnumerable), typeof(ComplexWidget),
+        //        new PropertyMetadata(null, OnPropertyChanged_Simplex));
 
-        private static void OnPropertyChanged_Simplex(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            var complex = d as ComplexWidget;
+        //private static void OnPropertyChanged_Simplex(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+        //    var complex = d as ComplexWidget;
 
-            // Clear
-            complex.Children.OfType<SimplexWidget>()
-                   .ToList()
-                   .ForEach(x => complex.Children.Remove(x));
+        //    // Clear
+        //    complex.Children.OfType<SimplexWidget>()
+        //           .ToList()
+        //           .ForEach(x => complex.Children.Remove(x));
 
-            foreach (var item in (SimplexData[])e.NewValue) {
-                var newSimplex = new SimplexWidget() {
-                    DataContext = item,
-                    Id = item.Uid,
-                    Width = complex.ActualWidth,
-                    Height = complex.ActualHeight,
-                };
+        //    foreach (var item in (SimplexData[])e.NewValue) {
+        //        var newSimplex = new SimplexWidget() {
+        //            DataContext = item,
+        //            Id = item.Uid,
+        //            Width = complex.ActualWidth,
+        //            Height = complex.ActualHeight,
+        //        };
 
-                SetTop(complex, 0);
-                SetLeft(complex, 0);
-                SetZIndex(newSimplex, 2);
+        //        SetTop(complex, 0);
+        //        SetLeft(complex, 0);
+        //        SetZIndex(newSimplex, 2);
 
-                complex.Children.Add(newSimplex);
+        //        complex.Children.Add(newSimplex);
 
-                BindingOperations.SetBinding(
-                    newSimplex,
-                    SimplexWidget.PointsProperty,
-                    new Binding {
-                        Source = item,
-                        Path = new PropertyPath("Points")
-                    });
-            }
+        //        BindingOperations.SetBinding(
+        //            newSimplex,
+        //            SimplexWidget.PointsProperty,
+        //            new Binding {
+        //                Source = item,
+        //                Path = new PropertyPath("Points")
+        //            });
+        //    }
 
-            complex.InvalidateSKContext();
-        }
+        //    complex.InvalidateSKContext();
+        //}
 
         public IEnumerable NodeSource {
             get { return (IEnumerable)GetValue(NodeSourceProperty); }
@@ -382,61 +382,118 @@ namespace taskmaker_wpf.Views {
         private static void OnCollectionPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
             if (d is ComplexWidget cw) {
                 if (e.OldValue is INotifyCollectionChanged oldCollection) {
-                    oldCollection.CollectionChanged -= cw.CollectionChanged;
+                    oldCollection.CollectionChanged -= cw.OnNodeCollectionChanged;
                 }
 
                 if (e.NewValue is INotifyCollectionChanged newCollection) {
-                    newCollection.CollectionChanged += cw.CollectionChanged;
+                    newCollection.CollectionChanged += cw.OnNodeCollectionChanged;
                 }
             }
         }
 
-        private void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
+        private void OnNodeCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
             if (e.Action == NotifyCollectionChangedAction.Add) {
-                foreach (var item in e.NewItems) {
-                    if (item is NodeData node) {
-                        var newNode = new NodeWidget() {
-                            DataContext = node,
-                            Id = node.Uid,
-                            Width = ActualWidth,
-                            Height = ActualHeight
-                            //Location = node.Location.ToSKPoint()
-                        };
-                        newNode.Style = ItemStyle;
-                        newNode.Click += OnClick;
+                foreach(StatefulNode item in e.NewItems) {
+                    var widget = new NodeWidget {
+                        DataContext = item,
+                        Focusable = true,
+                        //Width = ActualWidth,
+                        Height = ActualHeight
+                    };
 
-                        SetTop(newNode, 0);
-                        SetLeft(newNode, 0);
-                        SetZIndex(newNode, 5);
+                    SetLeft(widget, 0);
+                    SetTop(widget, 0);
+                    SetZIndex(widget, 5);
 
-                        Children.Add(newNode);
+                    //widget.Style = ItemStyle;
 
-                        BindingOperations.SetBinding(
-                            newNode,
-                            NodeWidget.LocationProperty,
-                            new Binding {
-                                //Source = node,
-                                Path = new PropertyPath("Location")
-                            });
-                        BindingOperations.SetBinding(
-                            newNode,
-                            NodeWidget.IsSetProperty,
-                            new Binding {
-                                Path = new PropertyPath("IsSet")
-                            });
-                    }
+                    Children.Add(widget);
+
+                    BindingOperations.SetBinding(
+                        widget,
+                        NodeWidget.LocationProperty,
+                        new Binding {
+                            Path = new PropertyPath("Location")
+                        });
+                    BindingOperations.SetBinding(
+                        widget,
+                        NodeWidget.WidthProperty,
+                        new Binding {
+                            ElementName = "complex",
+                            Path = new PropertyPath("ActualWidth")
+                        });
+                    BindingOperations.SetBinding(
+                        widget,
+                        NodeWidget.HeightProperty,
+                        new Binding {
+                            ElementName = "complex",
+                            Path = new PropertyPath("ActualHeight")
+                        });
+                    //BindingOperations.SetBinding(
+                    //    widget,
+                    //    NodeWidget.IsSetProperty,
+                    //    new Binding {
+                    //        Path = new PropertyPath("IsSet")
+                    //    });
                 }
             }
             else if (e.Action == NotifyCollectionChangedAction.Remove) {
-                foreach (var item in e.OldItems.OfType<NodeData>()) {
-                    var target = Children
-                                 .OfType<NodeWidget>()
-                                 .First(x => x.Id == item.Uid);
+                foreach(StatefulNode item in e.OldItems) {
+                    var widget = Children
+                        .OfType<NodeWidget>()
+                        .Where(e1 => e1.DataContext == item).First();
 
-                    Children.Remove(target);
+                    Children.Remove(widget);
                 }
             }
         }
+
+        //private void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
+        //    if (e.Action == NotifyCollectionChangedAction.Add) {
+        //        foreach (var item in e.NewItems) {
+        //            if (item is NodeData node) {
+        //                var newNode = new NodeWidget() {
+        //                    DataContext = node,
+        //                    Id = node.Uid,
+        //                    Width = ActualWidth,
+        //                    Height = ActualHeight
+        //                    //Location = node.Location.ToSKPoint()
+        //                };
+        //                newNode.Style = ItemStyle;
+        //                newNode.Click += OnClick;
+
+        //                SetTop(newNode, 0);
+        //                SetLeft(newNode, 0);
+        //                SetZIndex(newNode, 5);
+
+        //                Children.Add(newNode);
+
+        //                BindingOperations.SetBinding(
+        //                    newNode,
+        //                    NodeWidget.LocationProperty,
+        //                    new Binding {
+        //                        //Source = node,
+        //                        Path = new PropertyPath("Location")
+        //                    });
+        //                BindingOperations.SetBinding(
+        //                    newNode,
+        //                    NodeWidget.IsSetProperty,
+        //                    new Binding {
+        //                        Path = new PropertyPath("IsSet")
+        //                    });
+        //            }
+        //        }
+        //    }
+        //    else if (e.Action == NotifyCollectionChangedAction.Remove) {
+        //        foreach (var item in e.OldItems.OfType<NodeData>()) {
+        //            var target = Children
+        //                         .OfType<NodeWidget>()
+        //                         .First(x => x.Id == item.Uid);
+
+        //            Children.Remove(target);
+        //        }
+        //    }
+        //}
 
         internal void OnClick(object sender, RoutedEventArgs e) {
             // TODO: Ugly
@@ -557,18 +614,32 @@ namespace taskmaker_wpf.Views {
         private int _capturedTouchDevice = -1;
         private Queue<object> _tapArgs;
 
+        private Key? _capturedKey;
+
         public ComplexWidget() {
             PrepareObservable();
             //AddNode();
 
             ModeObs = new Subject<OperationMode>();
 
-            var keyPressed = KeyDownObs
-                             .Take(1)
-                             .Concat(KeyUpObs.Take(1))
-                             .TakeLast(1)
-                             .Repeat()
-                             .Subscribe(OnKeyPressed);
+            KeyDown += (s, e) => {
+                _capturedKey = e.Key;
+            };
+            KeyUp += (s, e) => {
+                if (e.Key == _capturedKey) {
+                    OnKeyPressed(e);
+                }
+
+                _capturedKey = null;
+            };
+
+
+            //var keyPressed = KeyDownObs
+            //                 .Take(1)
+            //                 .Concat(KeyUpObs.Take(1))
+            //                 .TakeLast(1)
+            //                 .Repeat()
+            //                 .Subscribe(OnKeyPressed);
 
             var add = MouseDownObs.Take(1)
                                   .Concat(MouseUpObs.Take(1))
@@ -711,14 +782,15 @@ namespace taskmaker_wpf.Views {
                 InvalidateSKContext();
             }
 
-            _topics.Add(add);
-            _topics.Add(pan);
+            //_topics.Add(add);
+            //_topics.Add(pan);
 
             ViewPort = new ViewPort((float)ActualWidth, (float)ActualHeight);
 
             var indicator = new IndicatorWidget();
 
             indicator.Visibility = Visibility.Hidden;
+            indicator.IsHitTestVisible = false;
             indicator.Width = 20;
             indicator.Height = 20;
             //SetTop(indicator, ActualHeight / 2);
@@ -732,6 +804,7 @@ namespace taskmaker_wpf.Views {
             cursor.Width = 10;
             cursor.Height = 10;
 
+            cursor.IsHitTestVisible = false;
             SetZIndex(cursor, 10);
 
             Children.Add(cursor);
@@ -756,6 +829,10 @@ namespace taskmaker_wpf.Views {
             };
 
             Cursor = Cursors.None;
+        }
+
+        private void ComplexWidget_KeyDown(object sender, KeyEventArgs e) {
+            throw new NotImplementedException();
         }
 
         public void ResetSelection(ISelectableWidget exception = null) {
@@ -828,8 +905,8 @@ namespace taskmaker_wpf.Views {
             InvalidateSKContext();
         }
 
-        private void OnKeyPressed(EventPattern<KeyEventArgs> obj) {
-            switch (obj.EventArgs.Key) {
+        private void OnKeyPressed(KeyEventArgs obj) {
+            switch (obj.Key) {
                 case Key.D1:
                     Mode = OperationMode.Add;
 
@@ -856,7 +933,7 @@ namespace taskmaker_wpf.Views {
 
                     return;
                 case Key.Delete:
-                    OnRemoveNode(obj);
+                    //OnRemoveNode(obj);
                     break;
                 case Key.D3:
                     InteriorCommand.Execute(null);

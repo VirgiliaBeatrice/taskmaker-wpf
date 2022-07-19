@@ -4,6 +4,7 @@ using System;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -31,10 +32,12 @@ namespace taskmaker_wpf.Views {
 
         // Using a DependencyProperty as the backing store for Location.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty LocationProperty =
-            DependencyProperty.Register("Location", typeof(Point), typeof(NodeWidget), new PropertyMetadata(new Point()));
+            DependencyProperty.Register("Location", typeof(Point), typeof(NodeWidget), new PropertyMetadata(new Point(), OnLocationChanged));
 
-
-
+        private static void OnLocationChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            //Canvas.SetLeft(d as NodeWidget, ((Point)e.NewValue).X);
+            //Canvas.SetTop(d as NodeWidget, ((Point)e.NewValue).Y);
+        }
 
         public Guid Id {
             get { return (Guid)GetValue(IdProperty); }
@@ -168,7 +171,9 @@ namespace taskmaker_wpf.Views {
                     fill.Color = SKColors.AliceBlue;
 
                 canvas.DrawCircle(Location.ToSKPoint(), (float)Radius, fill);
+                //canvas.DrawCircle(new SKPoint(0, 0), (float)Radius, fill);
                 canvas.DrawCircle(Location.ToSKPoint(), (float)Radius, stroke);
+                //canvas.DrawCircle(new SKPoint(0, 0), (float)Radius, stroke);
             }
         }
     }

@@ -13,7 +13,7 @@ using Prism.Mvvm;
 using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.Model.Data {
-    public class Motor : BindableBase, ISelectableTarget, IInspectable {
+    public class Motor : BindableBase, ITarget, IInspectable {
         private double _value;
         public double Value {
             get => _value;
@@ -82,13 +82,7 @@ namespace taskmaker_wpf.Model.Data {
         double Value { get; set; }
     }
 
-    public interface ISelectable {
-        bool IsSelected { get; set; }
-    }
-
-    public interface ISelectableTarget : ITarget, ISelectable { }
-
-    public class BindableTargetCollection : List<ISelectableTarget>, IBindableTarget {
+    public class BindableTargetCollection : List<ITarget>, IBindableTarget {
         public int Dim => Count;
 
         public TValue GetValue<TValue>() {

@@ -35,7 +35,9 @@
                 </TabItem>
                 <TabItem
                     Header="Targets">
-                    <local:TargetsPanel />
+                    <local:TargetsPanel
+                        DataContext="{Binding TargetsPanelVM}"
+                        />
                 </TabItem>
                 
             </TabControl>
@@ -100,6 +102,10 @@
                 Focusable="True"
                 Mode="{Binding Path=OperationMode}"
                 NodeSource="{Binding Nodes}"
+                AddItemCommand="{Binding AddNodeCommand}"
+                Background="LightGray" Cursor="None">
+                <!--
+                
                 SimplexSource="{Binding Simplices}"
                 VoronoiSource="{Binding Voronois}"
                 AddItemCommand="{Binding AddItemCommand}"
@@ -108,15 +114,8 @@
                 InterpolateCommand="{Binding InterpolateCommand}"
                 SetValueCommand="{Binding SetValueCommand}"
                 InspectedWidget="{Binding Path=InspectedWidget, Mode=TwoWay}"
-                Background="LightGray">
-                <local:ComplexWidget.ItemStyle>
-                    <Style>
-                        <Setter Property="local:ComplexWidget.Left" Value="{Binding Path=Location.X}" />
-                        <Setter Property="local:ComplexWidget.Top" Value="{Binding Path=Location.Y}" />
-                    </Style>
-                </local:ComplexWidget.ItemStyle>
-                <StackPanel>
-            </StackPanel>
+                
+                -->
             </local:ComplexWidget>
             
         </DockPanel>

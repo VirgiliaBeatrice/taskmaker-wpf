@@ -7,14 +7,20 @@ using Numpy;
 using SkiaSharp;
 using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Qhull;
+using Prism.Mvvm;
 
 namespace taskmaker_wpf.Model.Data {
-    public class NodeM : IDisposable {
+    public class NodeM : BindableBase, IDisposable {
         private bool disposedValue;
 
         public Guid Uid { get; set; }
         public int Id { get; set; }
-        public NDarray<float> Location { get; set; }
+
+        private NDarray<float> _location;
+        public NDarray<float> Location {
+            get => _location;
+            set => SetProperty(ref _location, value);
+        }
         public NDarray<float> TargetValue { get; set; }
         public bool IsSet { get; set; } = false;
 
@@ -26,13 +32,13 @@ namespace taskmaker_wpf.Model.Data {
             Uid = Guid.NewGuid();
         }
 
-        public NodeData ToData() {
-            return new NodeData {
-                Uid = Uid,
-                Location = Location.ToPoint(),
-                IsSet = IsSet
-            };
-        }
+        //public NodeData ToData() {
+        //    return new NodeData {
+        //        Uid = Uid,
+        //        Location = Location.ToPoint(),
+        //        IsSet = IsSet
+        //    };
+        //}
 
         protected virtual void Dispose(bool disposing) {
             if (!disposedValue) {
@@ -86,15 +92,15 @@ namespace taskmaker_wpf.Model.Data {
             return Nodes.Contains(node);
         }
 
-        public SimplexData ToData() {
-            var data = new SimplexData {
-                Uid = Uid,
-                Points = Nodes.Select(e => e.Location.ToPoint())
-                              .ToArray()
-            };
+        //public SimplexData ToData() {
+        //    var data = new SimplexData {
+        //        Uid = Uid,
+        //        Points = Nodes.Select(e => e.Location.ToPoint())
+        //                      .ToArray()
+        //    };
 
-            return data;
-        }
+        //    return data;
+        //}
 
         public void SetBary() {
             Bary = new SimplexBaryD(Nodes);
@@ -192,13 +198,13 @@ namespace taskmaker_wpf.Model.Data {
             InitializeBarys();
         }
 
-        public SimplexData[] GetSimplexData() {
-            return Simplices.Select(e => e.ToData()).ToArray();
-        }
+        //public SimplexData[] GetSimplexData() {
+        //    return Simplices.Select(e => e.ToData()).ToArray();
+        //}
 
-        public VoronoiData[] GetVoronoiData() {
-            return Regions.Select(e => e.ToData()).ToArray();
-        }
+        //public VoronoiData[] GetVoronoiData() {
+        //    return Regions.Select(e => e.ToData()).ToArray();
+        //}
 
         internal void AddSimplices(IEnumerable<SimplexM> nodes) {
             Simplices.AddRange(nodes);
@@ -344,7 +350,7 @@ namespace taskmaker_wpf.Model.Data {
         //public abstract SimplexBary GetBary();
         public Guid Uid { get; set; }
         public abstract IBary Bary { get; set; }
-        public abstract VoronoiData ToData();
+        //public abstract VoronoiData ToData();
         public abstract void SetBary();
 
         protected VoronoiRegionM() {
@@ -437,12 +443,12 @@ namespace taskmaker_wpf.Model.Data {
             Dispose(disposing: false);
         }
 
-        public override VoronoiData ToData() {
-            return new VoronoiData {
-                Uid = Uid,
-                Points = RectVertices.Select(e => e.ToPoint()).ToArray()
-            };
-        }
+        //public override VoronoiData ToData() {
+        //    return new VoronoiData {
+        //        Uid = Uid,
+        //        Points = RectVertices.Select(e => e.ToPoint()).ToArray()
+        //    };
+        //}
     }
 
     public struct SectoralVoronoiRegionRecord {
@@ -553,12 +559,12 @@ namespace taskmaker_wpf.Model.Data {
             }
         }
 
-        public override VoronoiData ToData() {
-            return new VoronoiData {
-                Uid = Uid,
-                Points = Vertices.Select(e => e.ToPoint()).ToArray()
-            };
-        }
+        //public override VoronoiData ToData() {
+        //    return new VoronoiData {
+        //        Uid = Uid,
+        //        Points = Vertices.Select(e => e.ToPoint()).ToArray()
+        //    };
+        //}
 
         // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
         ~SectoralVoronoiRegion() {

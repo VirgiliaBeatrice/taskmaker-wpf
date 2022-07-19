@@ -10,7 +10,6 @@
              d:DataContext="{d:DesignInstance Type=viewmodels:TargetsPanelViewModel}"
              mc:Ignorable="d" 
              xmlns:prism="http://prismlibrary.com/"
-             prism:ViewModelLocator.AutoWireViewModel="True"
              d:DesignHeight="450" d:DesignWidth="200">
     <UserControl.Resources>
         <local:ISelectableTargetConverter
@@ -32,7 +31,7 @@
 
                 <Label
                     Grid.Column="0"
-                    Content="{Binding Alias}"
+                    Content="{Binding Name}"
                     />
                 <Slider
                     x:Name="slider"
@@ -66,6 +65,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*"/>
                     <ColumnDefinition Width="4*"/>
+                    <ColumnDefinition Width="2*"/>
                 </Grid.ColumnDefinitions>
 
                 <Label
@@ -76,6 +76,8 @@
                     VerticalAlignment="Center"
                     Margin="2, 0, 2, 0"
                     Text="Select --Targets--"
+                    IsEditable="True"
+                    IsReadOnly="True"
                     ItemsSource="{Binding ValidTargets}">
                     <d:ComboBox.SelectedIndex>
                         0
@@ -103,11 +105,18 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
+                <Button
+                    Grid.Column="2"
+                    Content="Update"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Command="{Binding UpdateCommand}"
+                    />
             </Grid>
 
             <ItemsControl 
                 Margin="0, 4, 0, 4"
-                ItemsSource="{Binding SelectedTargets}"
+                ItemsSource="{Binding UiTargets}"
                 ItemTemplate="{StaticResource motorControlPanel}">
                 <d:ItemsControl.ItemsSource>
                     <x:Array Type="{x:Type sys:Object}">

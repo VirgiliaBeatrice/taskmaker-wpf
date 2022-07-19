@@ -24,8 +24,8 @@ namespace taskmaker_wpf.Services {
             set => SetProperty(ref _UIs, value);
         }
 
-        private ISelectableTarget[] _targets;
-        public ISelectableTarget[] Targets {
+        private ITarget[] _targets;
+        public ITarget[] Targets {
             get => _targets;
             set => SetProperty(ref _targets, value);
         }
@@ -52,7 +52,7 @@ namespace taskmaker_wpf.Services {
         }
 
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
-            var merged = new List<ISelectableTarget>();
+            var merged = new List<ITarget>();
 
             merged.AddRange(Motors);
             merged.AddRange(UIs);

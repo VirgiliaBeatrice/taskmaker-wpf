@@ -168,6 +168,7 @@ namespace taskmaker_wpf.Model.Data {
     public class NLinearMap : IDisposable {
         public ComplexBaryD[] Barys { get; set; }
 
+        private int _targetDim;
         private NDarray _wTensor;
         private int[] _shape;
         private bool disposedValue;
@@ -186,24 +187,21 @@ namespace taskmaker_wpf.Model.Data {
         /// <param name="targetDim"></param>
         public NLinearMap(ComplexBaryD[] barys, int targetDim) {
             Initialize(barys, targetDim);
-            //Barys = barys;
-
-            //// Shape: 2 - BiLinear, n -  
-            //var partialDim = new int[] { targetDim };
-            //_shape = partialDim
-            //    .Concat(Barys
-            //        .Select(e => e.BasisDim))
-            //    .ToArray();
-
-            //_wTensor = np.empty(_shape);
-            //_wTensor.fill(np.nan);
         }
 
         public void Initialize(ComplexBaryD[] barys, int targetDim) {
             Barys = barys;
+            _targetDim = targetDim;
+
+            InvalidateTensor();
+        }
+
+        private void InvalidateTensor() {
+            if (Barys == null) return;
+            if (_targetDim == 0) return;
 
             // Shape: 2 - BiLinear, n -  
-            var partialDim = new int[] { targetDim };
+            var partialDim = new int[] { _targetDim };
             _shape = partialDim
                 .Concat(Barys
                     .Select(e => e.BasisDim))
@@ -211,6 +209,18 @@ namespace taskmaker_wpf.Model.Data {
 
             _wTensor = np.empty(_shape);
             _wTensor.fill(np.nan);
+        }
+
+        public void Invalidate(ComplexBaryD[] barys) {
+            Barys = barys;
+
+            InvalidateTensor();
+        }
+
+        public void Invalidate(int targetDim) {
+            _targetDim = targetDim;
+            
+            InvalidateTensor();
         }
 
         public void SetValue(int[] indices, NDarray value) {
