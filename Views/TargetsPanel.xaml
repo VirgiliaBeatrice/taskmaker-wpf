@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:taskmaker_wpf.Views"
              xmlns:m="clr-namespace:taskmaker_wpf.Model.Data"
@@ -51,7 +52,9 @@
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
                     Width="40"
-                    Text="{Binding ElementName=slider, Path=Value, Mode=TwoWay}" />
+                    Text="{Binding ElementName=slider, Path=Value, Mode=TwoWay}"
+                    KeyDown="OnKeyDown">
+                </TextBox>
             </Grid>
         </DataTemplate>
     </UserControl.Resources>

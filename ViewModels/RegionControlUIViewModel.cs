@@ -28,22 +28,22 @@ namespace taskmaker_wpf.ViewModels
             set => SetProperty(ref _location, value);
         }
 
+        private bool _isSet;
+        public bool IsSet {
+            get => _isSet;
+            set => SetProperty(ref _isSet, value);
+        }
+
         public StatefulNode(NodeM target) {
             _target = target;
             _location = _target.Location.ToPoint();
-
-            _target.PropertyChanged += (s, e) => {
-                if (e.PropertyName == nameof(_target.Location)) {
-                    Location = _target.Location.ToPoint();
-                }
-            };
-
+            _isSet = _target.IsSet;
         }
 
         public NodeM GetNode() => _target;
     }
 
-    public class StatefulSimplex : BindableBase {
+    public class StatefulSimplex : BindableBase, ITraceRegion {
         private SimplexM _target;
 
         private Point[] _points;
@@ -61,9 +61,11 @@ namespace taskmaker_wpf.ViewModels
         }
 
         public SimplexM GetSimplex() => _target;
+
+        public object GetRef() => _target;
     }
 
-    public class StatefulVoronoi : BindableBase {
+    public class StatefulVoronoi : BindableBase, ITraceRegion {
         private VoronoiRegionM _target;
 
         private Point[] _points;
@@ -81,6 +83,11 @@ namespace taskmaker_wpf.ViewModels
         }
 
         public VoronoiRegionM GetSimplex() => _target;
+        public object GetRef() => _target;
+    }
+
+    public interface ITraceRegion {
+        object GetRef();
     }
 
 
@@ -143,7 +150,6 @@ namespace taskmaker_wpf.ViewModels
 
     public class RegionControlUIViewModel : BindableBase, INavigationAware
     {
-        private int _count;
         private string _debug;
 
         private FrameworkElement _inspectedWidget;
@@ -183,6 +189,25 @@ namespace taskmaker_wpf.ViewModels
             set => SetProperty(ref _selectedNodeWidget, value);
         }
 
+        private Point _tracePoint = new Point();
+        public Point TracePoint {
+            get => _tracePoint;
+            set {
+                SetProperty(ref _tracePoint, value);
+
+                if (_operationMode == OperationMode.Trace) {
+                    Interpolate();
+                }
+            }
+        }
+
+        private FrameworkElement _hitElement;
+        public FrameworkElement HitElement {
+            get => _hitElement;
+            set => SetProperty(ref _hitElement, value);
+        }
+
+
         private DelegateCommand<Point?> _addNodeCommand;
         public DelegateCommand<Point?> AddNodeCommand =>
             _addNodeCommand ?? (_addNodeCommand = new DelegateCommand<Point?>(ExecuteAddNodeCommand));
@@ -218,6 +243,10 @@ namespace taskmaker_wpf.ViewModels
 
             Simplices.AddRange(simplices);
             Voronois.AddRange(voronois);
+
+            if (UI.Complex.Targets.Count != 0) {
+                UI.SetMap();
+            }
         }
 
 
@@ -225,7 +254,11 @@ namespace taskmaker_wpf.ViewModels
 
         private DelegateCommand<object> _interpolateCommand;
 
-        private OperationMode _operationMode;
+        private OperationMode _operationMode = Views.OperationMode.Default;
+        public OperationMode OperationMode {
+            get => _operationMode;
+            set => SetProperty(ref _operationMode, value);
+        }
 
         public RegionControlUIViewModel(
             SystemService systemService) {
@@ -249,12 +282,6 @@ namespace taskmaker_wpf.ViewModels
         {
             get => _debug;
             set => SetProperty(ref _debug, value);
-        }
-
-        public OperationMode OperationMode
-        {
-            get => _operationMode;
-            set => SetProperty(ref _operationMode, value);
         }
 
         public string KeymapInfo
@@ -283,19 +310,6 @@ namespace taskmaker_wpf.ViewModels
             RemoveNode(parameter);
         }
 
-        public ICommand InterpolateCommand
-        {
-            get
-            {
-                if (_interpolateCommand == null)
-                {
-                    _interpolateCommand = new DelegateCommand<object>(Interpolate);
-                }
-
-                return _interpolateCommand;
-            }
-        }
-
         private DelegateCommand _setValueCommand;
         public DelegateCommand SetValueCommand =>
             _setValueCommand ?? (_setValueCommand = new DelegateCommand(ExecuteSetValueCommand));
@@ -303,149 +317,69 @@ namespace taskmaker_wpf.ViewModels
         void ExecuteSetValueCommand() {
             if (SelectedNodeWidget is null) return;
 
-            var node = ((StatefulNode)SelectedNodeWidget.DataContext).GetNode();
-
-            SetNodeValue(node);
+            SetNodeValue(SelectedNodeWidget.DataContext as StatefulNode);
         }
 
-
-        private DelegateCommand<NodeM> _setNodeValueCommand;
-        public DelegateCommand<NodeM> SetNodeValueCommand =>
-            _setNodeValueCommand ?? (_setNodeValueCommand = new DelegateCommand<NodeM>(ExecuteSetNodeValueCommand));
-
-        void ExecuteSetNodeValueCommand(NodeM parameter) {
-            SetNodeValue(parameter);
-        }
-
-        private void OnSelectedTargetsChanged()
-        {
-            InvalidateMap();
-            //CreateMap();
-        }
-
-        private void InvalidateMap() {
-            _map.Initialize(
-                new[] { Model.Bary },
-                Model.Targets.Dim);
-        }
-
-        private void CreateComplex()
-        {
-            Model.CreateComplex();
-
-            //Simplices = Model.GetSimplexData();
-            //Voronois = Model.GetVoronoiData();
-
-            // TODO: For test purpose
-            // map has been created by system service
-            _map.Initialize(
-                new[] { Model.Bary },
-                Model.Targets.Dim);
-        }
-
-        private void SetNodeValue(NodeM node) {
+        private void SetNodeValue(StatefulNode sNode) {
+            var node = sNode.GetNode();
             var targetValue = UI.Complex.Targets.ToNDarray();
             //var idx = Model.Nodes.FindIndex(e => e.Uid == node.Uid);
-            var idx = UI.Complex.Nodes.FindIndex(e => e.Uid == node.Uid);
+            var idx = UI.Complex.Nodes.FindIndex(e => e == node);
             node.IsSet = true;
+            sNode.IsSet = true;
 
             UI.Map.SetValue(new[] { idx }, targetValue);
-        }
-
-        //private void SetValue(Guid? id)
-        //{
-        //    if (id is null) return;
-
-        //    var values = Model.Targets.ToNDarray();
-        //    var targetNode = Model.Nodes.Find(e => e.Uid == id);
-        //    var idx = Model.Nodes.FindIndex(e => e.Uid == id);
-
-        //    targetNode.IsSet = true;
-
-        //    _map.SetValue(new[] { idx }, values);
-
-        //    var node = Nodes.First(e => e.Uid == id);
-        //    node.IsSet = true;
-        //}
-
-        private void CreateInterior()
-        {
-            CreateComplex();
-            //Model.CreateComplex();
-            //Model.CreateRegions();
-
-            //Model.Complex.Simplices.ForEach(e => e.SetBary());
-
-            //var data = Model.GetSimplexCollectionData();
-
-            //Simplices = data;
-        }
-
-        private void CreateExterior()
-        {
-            //var data = Model.GetVoronoiCollectionData();
-
-            //Voronois = data;
-        }
-
-        private void AddNode(Point point) {
-            var node = new NodeM {
-                Location = point.ToNDarray()
-            };
-
-            UI.Complex.Nodes.Add(node);
         }
 
         private void RemoveNode(NodeM node) {
             UI.Complex.Nodes.Remove(node);
         }
 
-        //private void AddItem(object pt)
+        //private void Interpolate(object arg)
         //{
-        //    var value = ((Point)pt).ToNDarray();
-        //    var node = Model.Add(value);
+        //    var args = (object[])arg;
 
-        //    Nodes.Add(node.ToData());
+        //    var pt = (Point)args[0];
+        //    var targetId = (Guid?)args[1];
+
+        //    if (targetId is null) return;
+        //    else
+        //    {
+        //        var id = (Guid)targetId;
+        //        var targetBary = Model.FindRegionById(id).Bary;
+
+        //        var lambdas = Model.Bary.GetLambdas(targetBary, pt.ToNDarray());
+        //        //_map.Barys
+        //        var result = _map.MapTo(lambdas);
+        //        Model.Targets.SetValue(result.GetData<double>());
+
+        //        Debug = Model.Targets.ToString();
+        //    }
         //}
 
-        //private void RemoveItem(object obj)
-        //{
-        //    var uid = (Guid)obj;
+        private void Interpolate() {
+            var pt = TracePoint;
 
-        //    Model.RemoveAt(uid);
+            var target = HitElement?.DataContext as ITraceRegion;
 
-        //    Nodes.Remove(Nodes.First(e => e.Uid == uid));
-        //}
+            if (target is null) return;
+            else {
+                if (target is StatefulSimplex) {
+                    var bary = (target.GetRef() as SimplexM).Bary;
+                    var lambdas = UI.Complex.Bary.GetLambdas(bary, pt.ToNDarray());
+                    var result = _map.MapTo(lambdas);
 
-        private void BuildInterior()
-        {
-            CreateInterior();
-        }
+                    UI.Complex.Targets.SetValue(result.GetData<double>());
+                }
+                else if (target is StatefulVoronoi) {
+                    var bary = (target.GetRef() as VoronoiRegionM).Bary;
+                    var lambdas = UI.Complex.Bary.GetLambdas(bary, pt.ToNDarray());
+                    var result = _map.MapTo(lambdas);
 
-        private void BuildExterior()
-        {
-            CreateExterior();
-        }
+                    UI.Complex.Targets.SetValue(result.GetData<double>());
+                }
 
-        private void Interpolate(object arg)
-        {
-            var args = (object[])arg;
-
-            var pt = (Point)args[0];
-            var targetId = (Guid?)args[1];
-
-            if (targetId is null) return;
-            else
-            {
-                var id = (Guid)targetId;
-                var targetBary = Model.FindRegionById(id).Bary;
-
-                var lambdas = Model.Bary.GetLambdas(targetBary, pt.ToNDarray());
-                //_map.Barys
-                var result = _map.MapTo(lambdas);
-                Model.Targets.SetValue(result.GetData<double>());
-
-                Debug = Model.Targets.ToString();
+                Debug = UI.Complex.Targets.ToString();
             }
         }
 

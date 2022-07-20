@@ -20,10 +20,6 @@ namespace taskmaker_wpf.Models {
 
         public ControlUI() { }
 
-        private void InvalidateMap(ComplexBaryD[] barys, int targetDim) {
-            Map.Initialize(barys, targetDim);
-        }
-
         public NodeM AddNode(NDarray<float> pt) {
             var node = new NodeM {
                 Location = pt
@@ -37,8 +33,11 @@ namespace taskmaker_wpf.Models {
         public void SetTargets(ITarget[] targets) {
             Complex.Targets.Clear();
             Complex.Targets.AddRange(targets);
+        }
 
+        public void SetMap() {
             Map.Invalidate(Complex.Targets.Dim);
+            Map.Invalidate(new ComplexBaryD[] { Complex.Bary });
         }
 
 

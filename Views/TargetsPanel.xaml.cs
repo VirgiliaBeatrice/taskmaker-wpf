@@ -23,6 +23,18 @@ namespace taskmaker_wpf.Views {
         public TargetsPanel() {
             InitializeComponent();
         }
+
+        private void OnKeyDown(object sender, KeyEventArgs e) {
+            var tb = sender as TextBox;
+
+            if (e.Key == Key.Enter) {
+                var binding = BindingOperations.GetBindingExpression(tb, TextBox.TextProperty);
+
+                if (binding != null) {
+                    binding.UpdateSource();
+                }
+            }
+        }
     }
 
     public class ISelectableTargetConverter : IValueConverter {

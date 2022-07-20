@@ -221,11 +221,6 @@ namespace taskmaker_wpf.Views {
     public class ComplexWidget : Canvas {
         public ViewPort ViewPort { get; set; }
 
-        public OperationMode Mode {
-            get { return (OperationMode)GetValue(ModeProperty); }
-            set { SetValue(ModeProperty, value); }
-        }
-
         internal static readonly DependencyPropertyKey IsSetPropertyKey = DependencyProperty.RegisterReadOnly(
             "IsSet",
             typeof(bool),
@@ -234,6 +229,11 @@ namespace taskmaker_wpf.Views {
 
         public bool IsSet => (bool)GetValue(IsSetPropertyKey.DependencyProperty);
 
+
+        public OperationMode Mode {
+            get { return (OperationMode)GetValue(ModeProperty); }
+            set { SetValue(ModeProperty, value); }
+        }
         // Using a DependencyProperty as the backing store for Mode.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ModeProperty =
             DependencyProperty.Register("Mode", typeof(OperationMode), typeof(ComplexWidget),
@@ -257,6 +257,16 @@ namespace taskmaker_wpf.Views {
 
 
 
+        public Point TracePoint {
+            get { return (Point)GetValue(TracePointProperty); }
+            set { SetValue(TracePointProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for TracePoint.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TracePointProperty =
+            DependencyProperty.Register("TracePoint", typeof(Point), typeof(ComplexWidget), new PropertyMetadata(new Point()));
+
+
         public FrameworkElement InspectedWidget {
             get { return (FrameworkElement)GetValue(InspectedWidgetProperty); }
             set { SetValue(InspectedWidgetProperty, value); }
@@ -278,96 +288,6 @@ namespace taskmaker_wpf.Views {
             DependencyProperty.Register("SelectedNode", typeof(NodeWidget), typeof(ComplexWidget),
                 new PropertyMetadata(null));
 
-
-        //public IEnumerable VoronoiSource {
-        //    get { return (IEnumerable)GetValue(VoronoiSourceProperty); }
-        //    set { SetValue(VoronoiSourceProperty, value); }
-        //}
-
-        //// Using a DependencyProperty as the backing store for VoronoiSource.  This enables animation, styling, binding, etc...
-        //public static readonly DependencyProperty VoronoiSourceProperty =
-        //    DependencyProperty.Register("VoronoiSource", typeof(IEnumerable), typeof(ComplexWidget),
-        //        new PropertyMetadata(null, OnPropertyChanged_Voronoi));
-
-        //private static void OnPropertyChanged_Voronoi(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-        //    var complex = d as ComplexWidget;
-
-        //    // Clear
-        //    complex.Children.OfType<VoronoiWidget>()
-        //           .ToList()
-        //           .ForEach(x => complex.Children.Remove(x));
-
-        //    foreach (var item in (VoronoiData[])e.NewValue) {
-        //        var newVoronoi = new VoronoiWidget {
-        //            DataContext = item,
-        //            Id = item.Uid,
-        //            Width = complex.ActualWidth,
-        //            Height = complex.ActualHeight,
-        //        };
-
-        //        //newVoronoi.UpdateLayout();
-
-        //        SetTop(newVoronoi, 0);
-        //        SetLeft(newVoronoi, 0);
-        //        SetZIndex(newVoronoi, 1);
-
-        //        complex.Children.Add(newVoronoi);
-
-        //        BindingOperations.SetBinding(
-        //            newVoronoi,
-        //            VoronoiWidget.PointsProperty,
-        //            new Binding {
-        //                Source = item,
-        //                Path = new PropertyPath("Points")
-        //            });
-        //    }
-
-        //    complex.InvalidateSKContext();
-        //}
-
-        //public IEnumerable SimplexSource {
-        //    get { return (IEnumerable)GetValue(SimplexSourceProperty); }
-        //    set { SetValue(SimplexSourceProperty, value); }
-        //}
-
-        //// Using a DependencyProperty as the backing store for SimplexSource.  This enables animation, styling, binding, etc...
-        //public static readonly DependencyProperty SimplexSourceProperty =
-        //    DependencyProperty.Register("SimplexSource", typeof(IEnumerable), typeof(ComplexWidget),
-        //        new PropertyMetadata(null, OnPropertyChanged_Simplex));
-
-        //private static void OnPropertyChanged_Simplex(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-        //    var complex = d as ComplexWidget;
-
-        //    // Clear
-        //    complex.Children.OfType<SimplexWidget>()
-        //           .ToList()
-        //           .ForEach(x => complex.Children.Remove(x));
-
-        //    foreach (var item in (SimplexData[])e.NewValue) {
-        //        var newSimplex = new SimplexWidget() {
-        //            DataContext = item,
-        //            Id = item.Uid,
-        //            Width = complex.ActualWidth,
-        //            Height = complex.ActualHeight,
-        //        };
-
-        //        SetTop(complex, 0);
-        //        SetLeft(complex, 0);
-        //        SetZIndex(newSimplex, 2);
-
-        //        complex.Children.Add(newSimplex);
-
-        //        BindingOperations.SetBinding(
-        //            newSimplex,
-        //            SimplexWidget.PointsProperty,
-        //            new Binding {
-        //                Source = item,
-        //                Path = new PropertyPath("Points")
-        //            });
-        //    }
-
-        //    complex.InvalidateSKContext();
-        //}
 
         public IEnumerable NodeSource {
             get { return (IEnumerable)GetValue(NodeSourceProperty); }
@@ -449,12 +369,12 @@ namespace taskmaker_wpf.Views {
                             ElementName = "complex",
                             Path = new PropertyPath("ActualHeight")
                         });
-                    //BindingOperations.SetBinding(
-                    //    widget,
-                    //    NodeWidget.IsSetProperty,
-                    //    new Binding {
-                    //        Path = new PropertyPath("IsSet")
-                    //    });
+                    BindingOperations.SetBinding(
+                        widget,
+                        NodeWidget.IsSetProperty,
+                        new Binding {
+                            Path = new PropertyPath("IsSet")
+                        });
                 }
             }
             else if (e.Action == NotifyCollectionChangedAction.Remove) {
@@ -597,24 +517,16 @@ namespace taskmaker_wpf.Views {
 
 
 
-        private void OnClick(object sender, RoutedEventArgs e) {
-            // TODO: Ugly
-            if (sender is NodeWidget w) {
-                if (SelectedNode == null) {
-                    SelectedNode = w;
-                }
-                else if (SelectedNode != null && SelectedNode != w) {
-                    SelectedNode.IsSelected = false;
-                    SelectedNode = w;
-                }
-                else {
-                    SelectedNode = SelectedNode.IsSelected ? w : null;
-                }
-
-                if (SelectedNode != null)
-                    SetInspectedObjectCommand.Execute(SelectedNode.Id);
-                }
+        public FrameworkElement HitElement {
+            get { return (FrameworkElement)GetValue(HitElementProperty); }
+            set { SetValue(HitElementProperty, value); }
         }
+
+        // Using a DependencyProperty as the backing store for HitElement.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty HitElementProperty =
+            DependencyProperty.Register("HitElement", typeof(FrameworkElement), typeof(ComplexWidget), new PropertyMetadata(null));
+
+
 
         public void Select(NodeWidget el) {
             foreach(var widget in Children.OfType<NodeWidget>()) {
@@ -639,38 +551,14 @@ namespace taskmaker_wpf.Views {
 
 
 
-        public ICommand CreateCommand {
-            get { return (ICommand)GetValue(CreateCommandProperty); }
-            set { SetValue(CreateCommandProperty, value); }
+        public ICommand BuildCommand {
+            get { return (ICommand)GetValue(BuildCommandProperty); }
+            set { SetValue(BuildCommandProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for CreateCommand.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty CreateCommandProperty =
-            DependencyProperty.Register("CreateCommand", typeof(ICommand), typeof(ComplexWidget), new PropertyMetadata(null));
-
-
-
-
-        public ICommand InteriorCommand {
-            get { return (ICommand)GetValue(InteriorCommandProperty); }
-            set { SetValue(InteriorCommandProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for InteriorCommand.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty InteriorCommandProperty =
-            DependencyProperty.Register("InteriorCommand", typeof(ICommand), typeof(ComplexWidget),
-                new PropertyMetadata(null));
-
-
-        public ICommand ExteriorCommand {
-            get { return (ICommand)GetValue(ExteriorCommandProperty); }
-            set { SetValue(ExteriorCommandProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for ExteriorCommand.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ExteriorCommandProperty =
-            DependencyProperty.Register("ExteriorCommand", typeof(ICommand), typeof(ComplexWidget),
-                new PropertyMetadata(null));
+        public static readonly DependencyProperty BuildCommandProperty =
+            DependencyProperty.Register("BuildCommand", typeof(ICommand), typeof(ComplexWidget), new PropertyMetadata(null));
 
 
         public ICommand RemoveItemCommand {
@@ -715,16 +603,6 @@ namespace taskmaker_wpf.Views {
         public static readonly DependencyProperty SetInspectedObjectCommandProperty =
             DependencyProperty.Register("SetInspectedObjectCommand", typeof(ICommand), typeof(ComplexWidget),
                 new PropertyMetadata(null));
-
-
-        public Style ItemStyle {
-            get { return (Style)GetValue(ItemStyleProperty); }
-            set { SetValue(ItemStyleProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for ItemStyle.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ItemStyleProperty =
-            DependencyProperty.Register("ItemStyle", typeof(Style), typeof(ComplexWidget), new PropertyMetadata(null));
 
         public IObservable<EventPattern<MouseButtonEventArgs>> MouseDownObs { get; set; }
         public IObservable<EventPattern<MouseButtonEventArgs>> MouseUpObs { get; set; }
@@ -864,48 +742,61 @@ namespace taskmaker_wpf.Views {
                       .Repeat()
                       .Subscribe(OnPanning);
 
-            var traceM = MouseMoveObs
-                         .SkipUntil(MouseDownObs)
-                         .TakeUntil(MouseUpObs);
-            //.Repeat();
+            //var traceM = MouseMoveObs
+            //             .SkipUntil(MouseDownObs)
+            //             .TakeUntil(MouseUpObs);
+            ////.Repeat();
 
-            var trace_1 = ModeObs
-                          .StartWith(Mode)
-                          .SelectMany(traceM)
-                          //.Throttle(TimeSpan.FromMilliseconds(100))
-                          //.ObserveOnDispatcher()
-                          .Repeat()
-                          .Where(e => Mode == OperationMode.Trace)
-                          .Subscribe(OnTracing);
-
-            void OnTracing(EventPattern<MouseEventArgs> e) {
-                var pt = e.EventArgs.GetPosition(this);
-                var result = VisualTreeHelper.HitTest(this, pt);
-
-                if (result.VisualHit is VoronoiWidget v) {
-                    var args = new object[] {
-                        ViewPort.ViewportToWorld(pt),
-                        v.Id
-                    };
-
-                    InterpolateCommand.Execute(args);
-                }
-                else if (result.VisualHit is SimplexWidget s) {
-                    var args = new object[] {
-                        ViewPort.ViewportToWorld(pt),
-                        s.Id
-                    };
-
-                    InterpolateCommand.Execute(args);
-                }
+            //var trace_1 = ModeObs
+            //              .StartWith(Mode)
+            //              .SelectMany(traceM)
+            //              //.Throttle(TimeSpan.FromMilliseconds(100))
+            //              //.ObserveOnDispatcher()
+            //              .Repeat()
+            //              .Where(e => Mode == OperationMode.Trace)
+            //              .Subscribe(OnTracing);
 
 
-                //var i = Children.OfType<IndicatorWidget>().First();
 
-                //i.Location = e.EventArgs.GetPosition(this);
+            //void OnTracing(EventPattern<MouseEventArgs> e) {
+            //    var pt = e.EventArgs.GetPosition(this);
+            //    var result = VisualTreeHelper.HitTest(this, pt);
 
-                InvalidateSKContext();
-            }
+            //    (e.Sender as ComplexWidget).TracePoint = ViewPort.ViewportToWorld(pt);
+
+            //    if (result.VisualHit is SimplexWidget s) {
+            //        HitElement = s;
+            //    }
+            //    else if (result.VisualHit is VoronoiWidget v) {
+            //        HitElement = v;
+            //    }
+            //    else {
+            //        HitElement = null;
+            //    }
+            //    //if (result.VisualHit is VoronoiWidget v) {
+            //    //    var args = new object[] {
+            //    //        ViewPort.ViewportToWorld(pt),
+            //    //        v.Id
+            //    //    };
+
+            //    //    InterpolateCommand.Execute(args);
+            //    //}
+            //    //else if (result.VisualHit is SimplexWidget s) {
+            //    //    var args = new object[] {
+            //    //        ViewPort.ViewportToWorld(pt),
+            //    //        s.Id
+            //    //    };
+
+            //    //    InterpolateCommand.Execute(args);
+            //    //}
+
+
+            //    //var i = Children.OfType<IndicatorWidget>().First();
+
+            //    //i.Location = e.EventArgs.GetPosition(this);
+
+            //    InvalidateSKContext();
+            //}
 
             //_topics.Add(add);
             //_topics.Add(pan);
@@ -956,8 +847,54 @@ namespace taskmaker_wpf.Views {
             Cursor = Cursors.None;
         }
 
-        private void ComplexWidget_KeyDown(object sender, KeyEventArgs e) {
-            throw new NotImplementedException();
+        private bool _isTracing = false;
+
+        private void OnModeChanged() {
+            switch (Mode) {
+                case OperationMode.Trace:
+                    MouseDown += TraceModeOnMouseDown;
+                    MouseUp += TraceModeOnMouseUp;
+                    MouseMove += TraceModeOnMouseMove;
+                    break;
+            }
+        }
+
+        private void OnBeforeModeChanged() {
+            switch(Mode) {
+                case OperationMode.Trace:
+                    MouseDown -= TraceModeOnMouseDown;
+                    MouseUp -= TraceModeOnMouseUp;
+                    MouseMove -= TraceModeOnMouseMove;
+                    break;
+            }
+        }
+
+        private void TraceModeOnMouseDown(object sender, MouseButtonEventArgs e) {
+            _isTracing = true;
+        }
+
+        private void TraceModeOnMouseUp(object sender, MouseButtonEventArgs e) {
+            _isTracing = false;
+            HitElement = null;
+        }
+
+        private void TraceModeOnMouseMove(object sender, MouseEventArgs e) {
+            if (_isTracing) {
+                var pt = e.GetPosition(this);
+                var result = VisualTreeHelper.HitTest(this, pt);
+
+                (sender as ComplexWidget).TracePoint = ViewPort.ViewportToWorld(pt);
+
+                if (result.VisualHit is SimplexWidget s) {
+                    HitElement = s;
+                }
+                else if (result.VisualHit is VoronoiWidget v) {
+                    HitElement = v;
+                }
+                else {
+                    HitElement = null;
+                }
+            }
         }
 
         public void ResetSelection(ISelectableWidget exception = null) {
@@ -966,25 +903,11 @@ namespace taskmaker_wpf.Views {
             }
         }
 
-        //public void SetSelection(ISelectableWidget widget) {
-        //    ResetSelection(widget);
-
-        //    if (widget is NodeWidget node)
-        //        SelectedNode = node;
-
-        //    InspectedWidget = widget as FrameworkElement;
-        //}
-
         private void OnClicked(EventPattern<MouseButtonEventArgs> args) {
             if (Mode == OperationMode.Default) {
                 InspectedWidget = null;
 
                 ResetSelection();
-                //foreach(var child in Children.OfType<ISelectableWidget>()) {
-                //    child.IsSelected = false;
-                //}
-
-                //SetInspectedObjectCommand.Execute();
 
                 args.EventArgs.Handled = true;
             }
@@ -1031,30 +954,29 @@ namespace taskmaker_wpf.Views {
         }
 
         private void OnKeyPressed(KeyEventArgs obj) {
+            OnBeforeModeChanged();
+
             switch (obj.Key) {
                 case Key.A:
                     Mode = OperationMode.Add;
                     break;
                 case Key.B:
-                    CreateCommand.Execute(null);
+                    BuildCommand.Execute(null);
                     break;
                 case Key.D1:
                     Mode = OperationMode.Add;
 
-                    return;
+                    break;
                 case Key.D2:
                     Mode = OperationMode.Panning;
-                    return;
+                    break;
                 case Key.D5:
                     Mode = OperationMode.Trace;
-
-                    ModeObs.OnNext(Mode);
-
-                    return;
+                    break;
                 case Key.Escape:
                     Mode = OperationMode.Default;
 
-                    return;
+                    break;
                 case Key.Delete:
                     //OnRemoveNode(obj);
                     break;
@@ -1067,13 +989,8 @@ namespace taskmaker_wpf.Views {
                 default:
                     break;
             }
-        }
 
-        private void OnSetValue() {
-            if (SelectedNode is null)
-                return;
-
-            SetValueCommand.Execute(SelectedNode.Id);
+            OnModeChanged();
         }
 
         private void OnSetValueNew() {

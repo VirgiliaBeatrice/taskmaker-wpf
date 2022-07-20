@@ -100,13 +100,15 @@
                 Width="auto"
                 x:Name="complex"
                 Focusable="True"
-                Mode="{Binding Path=OperationMode}"
+                Mode="{Binding OperationMode, Mode=OneWayToSource}"
+                TracePoint="{Binding TracePoint, Mode=OneWayToSource}"
+                HitElement="{Binding HitElement, Mode=OneWayToSource}"
                 NodeSource="{Binding Nodes}"
                 SimplexSource="{Binding Simplices}"
                 VoronoiSource="{Binding Voronois}"
                 AddNodeCommand="{Binding AddNodeCommand}"
                 SetValueCommand="{Binding SetValueCommand}"
-                CreateCommand="{Binding BuildCommand}"
+                BuildCommand="{Binding BuildCommand}"
                 SelectedNodeWidget="{Binding SelectedNodeWidget, Mode=OneWayToSource}"
                 Background="LightGray" Cursor="None">
                 <!--
