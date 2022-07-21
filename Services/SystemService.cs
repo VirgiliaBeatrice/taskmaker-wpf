@@ -11,7 +11,6 @@ namespace taskmaker_wpf.Services {
         //public ObservableCollection<NLinearMap> Maps { get; set; } = new ObservableCollection<NLinearMap>();
         //public ObservableCollection<ComplexM> Complexes { get; set; } = new ObservableCollection<ComplexM>();
 
-
         private ObservableCollection<Motor> _motors = new ObservableCollection<Motor>();
         public ObservableCollection<Motor> Motors {
             get => _motors;
@@ -31,20 +30,20 @@ namespace taskmaker_wpf.Services {
         }
 
 
-        public SystemService() {
-            Enumerable.Range(0, 3)
-                .ToList()
-                .ForEach(
-                    e => {
-                        var motor = new Motor() {
-                            Max = 10000,
-                            Min = -10000,
-                            Value = 0,
-                            Name = $"S{e}"
-                        };
+        public SystemService(MotorAgent motorAgent) {
+            //Enumerable.Range(0, 3)
+            //    .ToList()
+            //    .ForEach(
+            //        e => {
+            //            var motor = new Motor() {
+            //                Max = 10000,
+            //                Min = -10000,
+            //                Value = 0,
+            //                Name = $"S{e}"
+            //            };
 
-                        Motors.Add(motor);
-                    });
+            //            Motors.Add(motor);
+            //        });
 
 
             UIs.CollectionChanged += OnCollectionChanged;

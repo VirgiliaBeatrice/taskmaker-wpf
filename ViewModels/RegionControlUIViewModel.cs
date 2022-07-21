@@ -260,9 +260,15 @@ namespace taskmaker_wpf.ViewModels
             set => SetProperty(ref _operationMode, value);
         }
 
+        private MotorAgent _motorAgent;
+
         public RegionControlUIViewModel(
-            SystemService systemService) {
+            SystemService systemService,
+            MotorAgent motorAgent
+            ) {
             _systemSvr = systemService;
+            _motorAgent = motorAgent;
+
 
             TargetsPanelVM = new TargetsPanelViewModel(_systemSvr);
             //TargetsPanelVM.UI = _ui;

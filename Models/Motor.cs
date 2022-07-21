@@ -11,17 +11,43 @@ using taskmaker_wpf.Model.Core;
 using taskmaker_wpf.Views.Widget;
 using Prism.Mvvm;
 using taskmaker_wpf.Views;
+using taskmaker_wpf.Services;
+using Prism.Modularity;
+using Prism.Ioc;
 
 namespace taskmaker_wpf.Model.Data {
-    public class Motor : BindableBase, ITarget, IInspectable {
+    public class MotorAgent {
+        private SerialService _serialSvr;
+
+        private List<Motor> _repository;
+        public List<Motor> Repository => _repository;
+
+
+        public MotorAgent(SerialService serialService) { 
+            _serialSvr = serialService;
+
+            _repository = new List<Motor>();
+        }
+
+        public Motor AddMotor() {
+            var motor = new Motor();
+            _repository.Add(motor);
+
+            return motor;
+        }
+    }
+
+
+    public class Motor : ITarget, IInspectable {
         private double _value;
         public double Value {
             get => _value;
             set {
-                SetProperty(ref _value, value);
+                _value = value;
 
-                //if (_instance != null)
-                //    _instance.Value = (int)value;
+                if (_instance != null) {
+                    _instance.Value = (int)_value;
+                }
             }
         }
 
@@ -30,7 +56,6 @@ namespace taskmaker_wpf.Model.Data {
         private string _name;
         private string _label;
         private string _id;
-        private bool _isSelected;
 
         private cMotor _instance;
         private int _boardId;
@@ -45,10 +70,6 @@ namespace taskmaker_wpf.Model.Data {
         public string Id { get => _id; set => _id = value; }
         public int BoardId { get => _boardId; set => _boardId = value; }
         public int MotorId { get => _motorId; set => _motorId = value; }
-        public bool IsSelected {
-            get => _isSelected;
-            set => SetProperty(ref _isSelected, value);
-        }
 
         public Motor() {
             _value = 0;
@@ -117,79 +138,84 @@ namespace taskmaker_wpf.Model.Data {
         }
     }
 
-    public static class Nuibot {
-        static public SerialPort Port { get; set; }
-        static public Boards Boards { get; set; } = new Boards();
-        static public Motors Motors { get; set; } = new Motors();
+    //public class Nuibot {
+    //    public SerialPort Port { get; set; }
+    //    public Boards Boards { get; set; } = new Boards();
+    //    public Motors Motors { get; set; } = new Motors();
 
+    //    private SerialService _serialSvr;
 
-        public static void Init(string[] args) {
-            string[] ports = SerialPort.GetPortNames();
+    //    public Nuibot(SerialService serialService) {
+    //        _serialSvr = serialService;
+    //    }
 
-            Console.WriteLine(string.Join(", ", ports));
+    //    public void Init(string[] args) {
+    //        string[] ports = SerialPort.GetPortNames();
 
-            ConectToBoards();
-        }
+    //        Console.WriteLine(string.Join(", ", ports));
 
-        static private void ConectToBoards() {
-            if (Port.IsOpen)
-                Port.Close();
+    //        ConectToBoards();
+    //    }
 
-            Port.PortName = "COM3";
-            Port.BaudRate = 2000000;
+    //    private void ConectToBoards() {
+    //        if (Port.IsOpen)
+    //            Port.Close();
 
-            try {
-                Port.Open();
-            }
-            catch {
-                return;
-            }
+    //        Port.PortName = "COM3";
+    //        Port.BaudRate = 2000000;
 
-            if (Port.IsOpen) {
-                Boards.Clear();
-                Boards.EnumerateBoard();
+    //        try {
+    //            Port.Open();
+    //        }
+    //        catch {
+    //            return;
+    //        }
 
-                ResetMotor();
+    //        if (Port.IsOpen) {
+    //            Boards.Clear();
+    //            Boards.EnumerateBoard();
 
-                if (Boards.NMotor != 0) {
-                    Console.WriteLine("Nuibot is ready.");
-                }
-            }
-        }
+    //            ResetMotor();
 
-        static private void ResetMotor() {
-            Motors.Clear();
+    //            if (Boards.NMotor != 0) {
+    //                Console.WriteLine("Nuibot is ready.");
+    //            }
+    //        }
+    //    }
 
-            for (int i = 0; i < Boards.NMotor; ++i) {
-                PCController.Motor m = new PCController.Motor();
+    //    private void ResetMotor() {
+    //        Motors.Clear();
 
-                Motors.Add(m);
-            }
+    //        for (int i = 0; i < Boards.NMotor; ++i) {
+    //            PCController.Motor m = new PCController.Motor();
 
-            short[] k = new short[Boards.NMotor];
-            short[] b = new short[Boards.NMotor];
-            short[] a = new short[Boards.NMotor];
-            short[] limit = new short[Boards.NMotor];
-            short[] release = new short[Boards.NMotor];
-            short[] torqueMin = new short[Boards.NMotor];
-            short[] torqueMax = new short[Boards.NMotor];
+    //            Motors.Add(m);
+    //        }
 
-            Boards.RecvParamPd(ref k, ref b);
-            Boards.RecvParamCurrent(ref a);
-            Boards.RecvParamTorque(ref torqueMin, ref torqueMax);
-            Boards.RecvParamHeat(ref limit, ref release);
+    //        short[] k = new short[Boards.NMotor];
+    //        short[] b = new short[Boards.NMotor];
+    //        short[] a = new short[Boards.NMotor];
+    //        short[] limit = new short[Boards.NMotor];
+    //        short[] release = new short[Boards.NMotor];
+    //        short[] torqueMin = new short[Boards.NMotor];
+    //        short[] torqueMax = new short[Boards.NMotor];
 
-            for (int i = 0; i < Boards.NMotor; ++i) {
-                Motors[i].pd.K = k[i];
-                Motors[i].pd.B = b[i];
-                Motors[i].pd.A = a[i];
-                if (limit[i] > 32000) limit[i] = 32000;
-                if (limit[i] < 0) limit[i] = 0;
-                Motors[i].heat.HeatLimit = limit[i] * release[i];
-                Motors[i].heat.HeatRelease = release[i];
-                Motors[i].torque.Minimum = torqueMin[i];
-                Motors[i].torque.Maximum = torqueMax[i];
-            }
-        }
-    }
+    //        Boards.RecvParamPd(ref k, ref b);
+    //        Boards.RecvParamCurrent(ref a);
+    //        Boards.RecvParamTorque(ref torqueMin, ref torqueMax);
+    //        Boards.RecvParamHeat(ref limit, ref release);
+
+    //        for (int i = 0; i < Boards.NMotor; ++i) {
+    //            Motors[i].pd.K = k[i];
+    //            Motors[i].pd.B = b[i];
+    //            Motors[i].pd.A = a[i];
+    //            if (limit[i] > 32000) limit[i] = 32000;
+    //            if (limit[i] < 0) limit[i] = 0;
+    //            Motors[i].heat.HeatLimit = limit[i] * release[i];
+    //            Motors[i].heat.HeatRelease = release[i];
+    //            Motors[i].torque.Minimum = torqueMin[i];
+    //            Motors[i].torque.Maximum = torqueMax[i];
+    //        }
+    //    }
+    //}
 }

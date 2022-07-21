@@ -15,40 +15,24 @@ using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Services;
 
 namespace taskmaker_wpf.ViewModels {
-    public class BindableMotor : BindableBase {
-        private string _motorId;
-        public string MotorId {
-            get => _motorId;
-            set {
-                SetProperty(ref _motorId, value);
-                //Parent.MotorId = _motorId;            
-            } 
-        }
-
-        private string _boardId;
-        public string BoardId {
-            get => _boardId;
-            set {
-                SetProperty(ref _boardId, value);
-                //Parent.BoardId = _boardId;
-            } 
-        }
+    public class StatefulMotor : BindableBase {
+        private Motor _ref;
 
         private string _name;
         public string Name {
             get => _name;
             set {
                 SetProperty(ref _name, value);
-                Parent.Name = _name;
+                _ref.Name = _name;
             }
         }
 
-        private int _value;
-        public int Value {
+        private double _value;
+        public double Value {
             get => _value;
             set {
                 SetProperty(ref _value, value);
-                Parent.Value = _value;
+                _ref.Value = _value;
             }
         }
 
@@ -57,7 +41,7 @@ namespace taskmaker_wpf.ViewModels {
             get => _min;
             set {
                 SetProperty(ref _min, value);
-                Parent.Min = _min;
+                _ref.Min = _min;
             }
         }
 
@@ -65,28 +49,41 @@ namespace taskmaker_wpf.ViewModels {
         public int Max {
             get => _max;
             set {
-                SetProperty(ref _max, value);
-                Parent.Max = _max;
+                SetProperty(ref _min, value);
+                _ref.Max = _max;
             }
         }
 
-        public Motor Parent { get => _parent; }
-
-        private Motor _parent;
-
-        public BindableMotor(Motor motor) {
-            _motorId = "Motor" + motor.MotorId;
-            _boardId = "Board" + motor.BoardId;
-            _name = motor.Name;
-            _value = (int)motor.Value;
-            _min = motor.Min;
-            _max = motor.Max;
-
-            _parent = motor;
+        private int _boardId;
+        public int BoardId {
+            get => _boardId;
+            set {
+                SetProperty(ref _boardId, value);
+                _ref.BoardId = _boardId;
+            }
         }
+
+        private int _motorId;
+        public int MotorId {
+            get => _motorId;
+            set {
+                SetProperty(ref _motorId, value);
+                _ref.MotorId = _motorId;
+            }
+        }
+
+        public StatefulMotor(Motor refMotor) {
+            _ref = refMotor;
+
+            Name = _ref.Name;
+            Value = _ref.Value;
+            Min = _ref.Min;
+            Max = _ref.Max;
+            BoardId = _ref.BoardId;
+            MotorId = _ref.MotorId;
+        }
+
     }
-
-
 
     public class RegionMotorViewModel : BindableBase, INavigationAware {
         private ICommand listBoardsCmd;
@@ -103,10 +100,10 @@ namespace taskmaker_wpf.ViewModels {
             ListMotors();
         }
 
-        private ICommand connectMotorCmd;
-        public ICommand ConnectMotorCmd => connectMotorCmd ?? (connectMotorCmd = new DelegateCommand<BindableMotor>(ConnectMotorCmdExecute));
+        private DelegateCommand<StatefulMotor> connectMotorCmd;
+        public DelegateCommand<StatefulMotor> ConnectMotorCmd => connectMotorCmd ?? (connectMotorCmd = new DelegateCommand<StatefulMotor>(ConnectMotorCmdExecute));
 
-        private void ConnectMotorCmdExecute(BindableMotor motor) {
+        private void ConnectMotorCmdExecute(StatefulMotor motor) {
             throw new NotImplementedException();
             //var instance = _serialSrv.GetMotorInstance(motor.BoardId, motor.MotorId);
 
@@ -114,9 +111,9 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private ICommand removeMotorCmd;
-        public ICommand RemoveMotorCmd => removeMotorCmd ?? (removeMotorCmd = new DelegateCommand<BindableMotor>(RemoveMotorCmdExecute));
+        public ICommand RemoveMotorCmd => removeMotorCmd ?? (removeMotorCmd = new DelegateCommand<StatefulMotor>(RemoveMotorCmdExecute));
 
-        private void RemoveMotorCmdExecute(BindableMotor bMotor) {
+        private void RemoveMotorCmdExecute(StatefulMotor bMotor) {
             //Motors.Remove(bMotor);
         }
 
@@ -124,10 +121,10 @@ namespace taskmaker_wpf.ViewModels {
         public ICommand AddMotorCmd => addMotorCmd ?? (addMotorCmd = new DelegateCommand(AddMotorCmdExecute));
 
         private void AddMotorCmdExecute() {
-            var newMotor = new Motor();
-            var newBindableMotor = new BindableMotor(newMotor);
+            var motor = _motorAgent.AddMotor();
+            var sMotor = new StatefulMotor(motor);
 
-            //Motors.Add(newBindableMotor);
+            Motors.Add(sMotor);
         }
 
         private ICommand setCmd;
@@ -137,7 +134,11 @@ namespace taskmaker_wpf.ViewModels {
             Console.WriteLine(text);
         }
 
-        public ObservableCollection<Motor> Motors => _systemSvr.Motors;
+        private ObservableCollection<StatefulMotor> _motors = new ObservableCollection<StatefulMotor>();
+        public ObservableCollection<StatefulMotor> Motors {
+            get => _motors;
+            set => SetProperty(ref _motors, value);
+        }
 
         private ObservableCollection<string> _boardIds = new ObservableCollection<string>();
         public ObservableCollection<string> BoardIds {
@@ -154,17 +155,20 @@ namespace taskmaker_wpf.ViewModels {
         private IRegionManager _regionManager;
         private SerialService _serialSrv;
         private readonly SystemService _systemSvr;
+        private readonly MotorAgent _motorAgent;
 
         public RegionMotorViewModel(
             IRegionManager regionManager,
             SerialService serialSrv,
-            SystemService systemSvr) {
+            SystemService systemSvr,
+            MotorAgent motorAgent) {
             _regionManager = regionManager;
             _serialSrv = serialSrv;
             _systemSvr = systemSvr;
 
-            //Motors = new ObservableCollection<Motor>();
-            //MotorIds = new ObservableCollection<string>();
+            _motorAgent = motorAgent;
+
+            Motors.AddRange(_motorAgent.Repository.Select(e => new StatefulMotor(e)));
 
             ListBoards();
             ListMotors();

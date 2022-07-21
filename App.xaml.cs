@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Prism.Ioc;
 using Prism.Unity;
+using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Services;
 using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Views;
@@ -35,6 +36,9 @@ namespace taskmaker_wpf {
             // Register services
             containerRegistry.RegisterSingleton<SerialService>();
             containerRegistry.RegisterSingleton<SystemService>();
+
+            // Register model agent
+            containerRegistry.Register<MotorAgent>();
 
             // Register messagebox
             containerRegistry.RegisterDialog<CMessageBox, MessageBoxViewModel>("standard");
