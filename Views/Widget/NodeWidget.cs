@@ -97,12 +97,6 @@ namespace taskmaker_wpf.Views {
             //    .TakeUntil()
         }
 
-        protected void RaiseClickEvent() {
-            var args = new RoutedEventArgs() { RoutedEvent = ClickEvent };
-
-            RaiseEvent(args);
-        }
-
         protected override void OnMouseEnter(MouseEventArgs e) {
             (Parent as ComplexWidget).InvalidateSKContext();
 

@@ -8,12 +8,16 @@ using taskmaker_wpf.Model.Data;
 using PCController;
 using mMotor = taskmaker_wpf.Model.Data.Motor;
 using cMotor = PCController.Motor;
+using System.Collections.ObjectModel;
 
 namespace taskmaker_wpf.Services {
     public class SystemService {
         public List<NLinearMap> Maps { get; set; } = new List<NLinearMap>();
         public List<ComplexM> Complexes { get; set; } = new List<ComplexM>();
-        public List<ISelectableTarget> Targets { get; set; } = new List<ISelectableTarget>();
+        //public List<ISelectableTarget> Targets { get; set; } = new List<ISelectableTarget>();
+
+        public ObservableCollection<ISelectableTarget> Targets { get; set; }
+            = new ObservableCollection<ISelectableTarget>();
 
         public SystemService() {
             Enumerable.Range(0, 3)
@@ -29,6 +33,15 @@ namespace taskmaker_wpf.Services {
 
                         Targets.Add(motor);
                     });
+        }
+
+        public void AddMotorTarget() {
+            Targets.Add(new mMotor {
+                Max = 10000,
+                Min = -10000,
+                Value = 0,
+                Alias = "Added" + (Targets.Count + 1)
+            });
         }
     }
 

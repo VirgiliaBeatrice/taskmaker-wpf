@@ -184,6 +184,7 @@ namespace taskmaker_wpf.ViewModels
 
         private DelegateCommand<Guid?> _setValueCommand;
 
+        private DelegateCommand _addTargetMotorCommand;
 
         public RegionControlUIViewModel(
             SystemService systemService)
@@ -198,25 +199,28 @@ namespace taskmaker_wpf.ViewModels
             //var target = new BindableTargetCollection();
 
             // Update targets from service
-            Targets = _systemSvr.Targets.ToArray();
+            
+            //Targets = _systemSvr.Targets.ToArray();
 
-            foreach (var item in _systemSvr.Targets.OfType<BindableBase>())
-            {
-                item.PropertyChanged += Item_PropertyChanged;
-            }
+            //foreach (var item in _systemSvr.Targets.OfType<BindableBase>())
+            //{
+            //    item.PropertyChanged += Item_PropertyChanged;
+            //}
 
-            SelectedTargets = Model.Targets.ToArray();
+            //SelectedTargets = Model.Targets.ToArray();
 
             SystemInfo = $"{_operationMode}";
         }
 
         public ComplexM Model { get; set; }
 
-        public ITarget[] Targets
-        {
-            get => _targets;
-            set => SetProperty(ref _targets, value);
-        }
+        public ObservableCollection<ISelectableTarget> Targets => _systemSvr.Targets;
+
+        //public ITarget[] Targets
+        //{
+        //    get => _targets;
+        //    set => SetProperty(ref _targets, value);
+        //}
 
         public ITarget[] SelectedTargets
         {
@@ -354,6 +358,19 @@ namespace taskmaker_wpf.ViewModels
 
                 return _setValueCommand;
             }
+        }
+
+        public ICommand AddTargetMotorCommand {
+            get {
+                if (_addTargetMotorCommand == null)
+                    _addTargetMotorCommand = new DelegateCommand(AddTargetMotor);
+
+                return _addTargetMotorCommand;
+            }
+        }
+
+        private void AddTargetMotor() {
+            _systemSvr.AddMotorTarget();
         }
 
         public int Count

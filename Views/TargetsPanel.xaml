@@ -7,7 +7,9 @@
              xmlns:local="clr-namespace:taskmaker_wpf.Views"
              xmlns:m="clr-namespace:taskmaker_wpf.Model.Data"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels"
              mc:Ignorable="d" 
+             d:DataContext="{d:DesignInstance Type=viewmodels:RegionControlUIViewModel}"
              d:DesignHeight="450" d:DesignWidth="200">
     <UserControl.Resources>
         <DataTemplate
@@ -52,6 +54,14 @@
     <Grid>
         <StackPanel
             Orientation="Vertical">
+ 
+            <Button
+                Margin="4"
+                Padding="10 0 10 0"
+                HorizontalAlignment="Center"
+                Content="Target - Add Motor"
+                Command="{Binding AddTargetMotorCommand}"
+                />
 
             <Grid
                 Margin="0, 4, 0, 4"
