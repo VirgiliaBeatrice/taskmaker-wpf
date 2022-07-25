@@ -226,7 +226,7 @@ namespace taskmaker_wpf.ViewModels
             _buildCommand ?? (_buildCommand = new DelegateCommand(ExecuteBuildCommand));
 
         void ExecuteBuildCommand() {
-            UI.Complex.CreateComplex();
+            UI.Complex.Build();
 
             if (Simplices == null)
                 Simplices = new ObservableCollection<StatefulSimplex>();
@@ -397,8 +397,8 @@ namespace taskmaker_wpf.ViewModels
         //    SelectedTargets = Model.Targets.ToArray();
         //}
 
-        private ControlUI _ui;
-        private ControlUI UI {
+        private ControlUi _ui;
+        private ControlUi UI {
             get => _ui;
             set {
                 _ui = value;
@@ -409,7 +409,7 @@ namespace taskmaker_wpf.ViewModels
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext) {
-            UI = navigationContext.Parameters["ui"] as ControlUI;
+            UI = navigationContext.Parameters["ui"] as ControlUi;
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext) {

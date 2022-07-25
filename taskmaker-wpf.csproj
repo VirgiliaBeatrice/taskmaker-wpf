@@ -172,7 +172,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Data\DataSource.cs" />
     <Compile Include="Data\Repository.cs" />
+    <Compile Include="Domain\Enity.cs" />
+    <Compile Include="Domain\UseCase.cs" />
     <Compile Include="Models\Bary.cs" />
     <Compile Include="Models\ControlUI.cs" />
     <Compile Include="Models\ControlUI\Core.cs" />
@@ -396,7 +399,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Domain\" />
     <Folder Include="Views\Elements\" />
     <Folder Include="Views\Widget\Container\" />
     <Folder Include="Views\Widget\Node\" />

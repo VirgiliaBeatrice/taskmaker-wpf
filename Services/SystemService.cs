@@ -17,8 +17,8 @@ namespace taskmaker_wpf.Services {
             set => SetProperty(ref _motors, value);
         }
 
-        private ObservableCollection<ControlUI> _UIs = new ObservableCollection<ControlUI>();
-        public ObservableCollection<ControlUI> UIs {
+        private ObservableCollection<ControlUi> _UIs = new ObservableCollection<ControlUi>();
+        public ObservableCollection<ControlUi> UIs {
             get => _UIs;
             set => SetProperty(ref _UIs, value);
         }

@@ -56,8 +56,8 @@ namespace taskmaker_wpf.ViewModels {
             }
         }
 
-        private ControlUI _ui;
-        public ControlUI UI {
+        private ControlUi _ui;
+        public ControlUi UI {
             get => _ui;
             set {
                 SetProperty(ref _ui, value);

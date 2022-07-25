@@ -10,7 +10,7 @@ using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Model.SimplicialMapping;
 
 namespace taskmaker_wpf.Models {
-    public class ControlUI : BindableBase, ITarget {
+    public class ControlUi : BindableBase, ITarget {
         public NLinearMap Map { get; private set; } = new NLinearMap();
         public ComplexM Complex { get; private set; } = new ComplexM();
 
@@ -18,7 +18,7 @@ namespace taskmaker_wpf.Models {
         public double Value { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public bool IsSelected { get; set; } = false;
 
-        public ControlUI() { }
+        public ControlUi() { }
 
         public NodeM AddNode(NDarray<float> pt) {
             var node = new NodeM {

@@ -169,7 +169,7 @@ namespace taskmaker_wpf.Model.Data {
             Nodes.RemoveAll(e => e.Uid == uid);
         }
 
-        public void CreateComplex() {
+        public void Build() {
             var nodes = np.array(
                 Nodes.Select(e => e.Location)
                 .ToArray());
