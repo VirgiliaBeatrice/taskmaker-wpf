@@ -8,59 +8,102 @@ using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Models;
 
 namespace taskmaker_wpf.Data {
-    internal interface IRepository {
+    internal interface IRepository<T> {
         IDataSource DataSource { get; }
-        void SaveChanges();
+        void Add(T item);
+        void Update(T item);
+        void Delete(T item);
+        T Find(string name);
+        IEnumerable<T> FindAll();
 
     }
 
-    public class MotorRepository : IRepository {
+    public class MotorRepository : IRepository<MotorEntity> {
         public IDataSource DataSource {
             get;
             private set;
         }
 
-        public Motor[] GetMotors() {
-            return DataSource.Find<Motor>(null);
+        public void Add(MotorEntity item) {
+            throw new NotImplementedException();
         }
 
-        public async void SaveChanges() {
+        public void Delete(MotorEntity item) {
+            throw new NotImplementedException();
+        }
 
+        public MotorEntity Find(string name) {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<MotorEntity> FindAll() {
+            throw new NotImplementedException();
+        }
+
+        public void Update(MotorEntity item) {
+            throw new NotImplementedException();
         }
     }
 
-    public class ControlUiRepository {
+    public class ControlUiRepository : IRepository<ControlUiEnity> {
         public IDataSource DataSource {
             get;
             private set;
         }
 
-        public ControlUi[] GetControlUis() {
-            return DataSource.Find<ControlUi>(null); 
-        }
-
-        public void AddNode(NodeM node) {
+        public void AddNode(NodeEntity node) {
 
         }
 
-        public void Build(IEnumerable<IRegion> regions) {
+        public void AddSimplices(SimplexRegionEntity[] simplices) { }
 
+        public void AddVoronois(VoronoiRegionEntity[] voronois) { }
+
+        public void Add(ControlUiEnity item) {
+            throw new NotImplementedException();
         }
 
-        public ControlUiEnity FindByName() {
-            return new ControlUiEnity();
+        public void Update(ControlUiEnity item) {
+            throw new NotImplementedException();
         }
 
+        public void Delete(ControlUiEnity item) {
+            throw new NotImplementedException();
+        }
+
+        public ControlUiEnity Find(string name) {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<ControlUiEnity> FindAll() {
+            throw new NotImplementedException();
+        }
     }
 
-    public class NLinearMapRepository {
+    public class NLinearMapRepository : IRepository<NLinearMapEntity> {
         public IDataSource DataSource {
             get;
             private set;
         }
 
-        public NLinearMap[] GetMaps() {
-            return DataSource.Find<NLinearMap>(null);
+        public void Add(NLinearMapEntity item) {
+            throw new NotImplementedException();
+        }
+
+        public void Delete(NLinearMapEntity item) {
+            throw new NotImplementedException();
+        }
+
+        public NLinearMapEntity Find(string name) {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<NLinearMapEntity> FindAll() {
+            throw new NotImplementedException();
+        }
+
+        public void Update(NLinearMapEntity item) {
+            throw new NotImplementedException();
         }
     }
 }

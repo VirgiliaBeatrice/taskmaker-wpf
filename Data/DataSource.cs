@@ -6,13 +6,17 @@ using taskmaker_wpf.Models;
 
 namespace taskmaker_wpf.Data {
     public interface IDataSource {
-        T[] Find<T>(string name);
+        //T[] Find<T>(string name);
 
     }
 
-    //public class MotorDataSource : IDataSource {
-    
-    //}
+    public class MotorSerialDataSource : IDataSource {
+
+    }
+
+    public class MotorLocalDataSource : IDataSource {
+        
+    }
 
     public class FileSystemDataSource : IDataSource {
         private List<ControlUi> ControlUis { get; set; } = new List<ControlUi>();

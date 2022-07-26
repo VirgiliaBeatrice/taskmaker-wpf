@@ -69,6 +69,7 @@ namespace taskmaker_wpf.Domain {
         }
     }
 
+
     public class BuildRegionUseCase {
         private ControlUiRepository _controlUiRepository;
 
@@ -76,34 +77,39 @@ namespace taskmaker_wpf.Domain {
             _controlUiRepository = controlUiRepository;
         }
 
+        public void AddNode(ControlUiEnity ui, Point pt) {
+            _controlUiRepository.AddNode(new NodeEntity { Value = pt });
+        }
+
         // Nodes => Simplices => Voronois
         public void Build() {
             var controlUi = _controlUiRepository.FindByName();
-            var nodes = controlUi.Complex.Nodes;
+            var nodes = controlUi.Nodes;
             var nodeInput = np.array(
-                controlUi.Complex.Nodes
+                controlUi.Nodes
                     .Select(e => new[] { e.Value.X, e.Value.Y })
                     .SelectMany(e => e)
                     .ToArray());
 
-            // Nodes
+            if (nodes.Length <= 2) return;
+
+            // 
             var simplices = QhullCSharp.RunDelaunay(nodeInput)
-                .Select(indices => new SimplexRegionEntity {
-                    Nodes = indices.Select(idx => nodes.ElementAt(idx)).ToArray()
-                })
+                .Select(indices => new SimplexRegionEntity(indices.Select(idx => nodes.ElementAt(idx)).ToArray()))
                 .ToArray();
+            _controlUiRepository.AddSimplices(simplices);
+
 
             var extremes = QhullCSharp.RunConvex(nodeInput)
                 .Select(idx => nodes.ElementAt(idx))
                 .ToArray();
 
+            var voronois = BuildVoronoiRegions(extremes, simplices);
+            _controlUiRepository.AddVoronois(voronois);
 
         }
 
-        private void BuildVoronoiRegions(NodeEntity[] extremes, SimplexRegionEntity[] simplices) {
-            if (extremes.Length <= 2)
-                return;
-
+        private VoronoiRegionEntity[] BuildVoronoiRegions(NodeEntity[] extremes, SimplexRegionEntity[] simplices) {
             NodeEntity prev, it, next;
             
             var voronois = new List<VoronoiRegionEntity>();
@@ -124,11 +130,24 @@ namespace taskmaker_wpf.Domain {
                     next = extremes.First();
                 }
 
+                // Sectoral
                 var prevGov = Array.Find(simplices, e => IsVertex(e, prev) & IsVertex(e, it));
                 var nextGov = Array.Find(simplices, e => IsVertex(e, it) & IsVertex(e, next));
 
-                var sector = new 
+                var sectorVoronoi = new SectoralVoronoiRegionEntity(
+                    new[] { prev, it, next },
+                    new[] { prevGov, nextGov });
+
+                voronois.Add(sectorVoronoi);
+
+                // Rect
+                var gov = Array.Find(simplices, e => IsVertex(e, it) & IsVertex(e, next));
+                var rectVoronoi = new RectVoronoiRegionEntity(new[] { it, next }, gov);
+
+                voronois.Add(rectVoronoi);
             }
+
+            return voronois.ToArray();
         }
 
         private bool IsVertex(SimplexRegionEntity simplex, NodeEntity node) {
