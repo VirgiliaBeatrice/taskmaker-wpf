@@ -35,6 +35,10 @@ namespace taskmaker_wpf.Data {
         public static LocalDataSource Load() {
             var docPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker", "project.json");
 
+            if (!File.Exists(docPath)) {
+                return new LocalDataSource();
+            }
+
             using (var fs = File.OpenRead(docPath)) {
                 using (var r = new StreamReader(fs, System.Text.Encoding.UTF8)) {
                     var jsonStr = r.ReadToEnd();

@@ -55,7 +55,7 @@ namespace taskmaker_wpf.Data {
         public IEnumerable<T> FindAll<T>() {
             var src = DataSource as LocalDataSource;
 
-            var dto = src.FindAllOfType<MotorDTO>().First();
+            var dto = src.FindAllOfType<MotorDTO>().FirstOrDefault();
             var entity = _mapper.Map<MotorEntity>(dto);
             return src.FindAllOfType<MotorDTO>().Select(e => _mapper.Map<MotorEntity>(e)).Cast<T>();
         }

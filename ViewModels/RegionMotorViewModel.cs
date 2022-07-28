@@ -86,6 +86,11 @@ namespace taskmaker_wpf.ViewModels {
 
             Motors.Clear();
             Motors.AddRange(stateMotors);
+
+            Motors.ToList()
+                .ForEach(e => e.PropertyChanged += (s, args) => {
+                    _motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(s as MotorState));
+                });
         }
 
         private ICommand setCmd;
