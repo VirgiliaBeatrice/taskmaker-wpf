@@ -7,8 +7,6 @@ using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Models;
 
 namespace taskmaker_wpf.Data {
-
-
     public interface IDataSource {
         //T[] Find<T>(string name);
 
@@ -27,9 +25,17 @@ namespace taskmaker_wpf.Data {
             //Load();
         }
 
-        private object DB { get; set; }
-        private void Initialize() {
+        private int _counter = 0;
 
+        private void Count() {
+            if (_counter <= 10) {
+                _counter++;
+            }
+            else {
+                _counter = 0;
+
+                Save();
+            }
         }
 
         public static LocalDataSource Load() {
@@ -100,7 +106,7 @@ namespace taskmaker_wpf.Data {
 
                 Motors.Add(motor);
 
-                Save();
+                Count();
                 return (T)(object)motor;
             }
             else if (typeof(T) == typeof(ControlUiDTO)) {
@@ -109,7 +115,7 @@ namespace taskmaker_wpf.Data {
 
                 ControlUis.Add(ui);
 
-                Save();
+                Count();
 
                 return (T)(object)ui;
             }
@@ -119,7 +125,7 @@ namespace taskmaker_wpf.Data {
 
                 Maps.Add(map);
 
-                Save();
+                Count();
 
                 return (T)(object)map;
             }
@@ -136,7 +142,7 @@ namespace taskmaker_wpf.Data {
                 Motors.Remove(target);
             }
 
-            Save();
+            Count();
         }
 
         public void Update<T>(T item) {
@@ -156,7 +162,7 @@ namespace taskmaker_wpf.Data {
                 Maps[idx] = item as NLinearMapDTO;
             }
 
-            Save();
+            Count();
         }
     }
 }
