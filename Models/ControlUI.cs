@@ -11,7 +11,7 @@ using taskmaker_wpf.Model.SimplicialMapping;
 
 namespace taskmaker_wpf.Models {
     public class ControlUi : BindableBase, ITarget {
-        public NLinearMap Map { get; private set; } = new NLinearMap();
+        //public NLinearMap Map { get; private set; } = new NLinearMap();
         public ComplexM Complex { get; private set; } = new ComplexM();
 
         public string Name { get; set; } = "ControlUI";
