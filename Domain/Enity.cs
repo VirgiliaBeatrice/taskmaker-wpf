@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace taskmaker_wpf.Domain {
     public interface IEntity {
+        int Id { get; set; }
         string Name { get; set; }
-        Guid Id { get; set; }
     }
 
     public struct Bary {
@@ -35,11 +35,13 @@ namespace taskmaker_wpf.Domain {
     }
 
     public class BaseEntity : IEntity {
+        public int Id { get; set; }
         public string Name { get; set; }
-        public Guid Id { get; set; }
     }
 
     public class NLinearMapEntity : BaseEntity {
+        public NDarray Tensor { get; set; }
+        public int[] Shape { get; set; }
     }
 
     public class NodeEntity : BaseEntity {
@@ -202,8 +204,8 @@ namespace taskmaker_wpf.Domain {
     }
 
     public class ControlUiEnity : BaseEntity {
-        public NodeEntity[] Nodes { get; set; }
-        public IRegionEntity[] Regions { get; set; }
+        public ICollection<NodeEntity> Nodes { get; set; }
+        public ICollection<IRegionEntity> Regions { get; set; }
         public double[] Value { get; set; }
     }
 

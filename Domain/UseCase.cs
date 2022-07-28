@@ -11,7 +11,19 @@ using taskmaker_wpf.Models;
 using taskmaker_wpf.Qhull;
 
 namespace taskmaker_wpf.Domain {
-    internal interface IUseCase {
+    public interface IUseCase {
+    }
+
+    public class MotorUseCase : IUseCase {
+        private MotorRepository _motorRepository;
+
+        public MotorUseCase(MotorRepository motorRepository) {
+            _motorRepository = motorRepository;
+        }
+
+        public IEnumerable<MotorEntity> GetMotors() {
+            return _motorRepository.FindAll<MotorEntity>();
+        }
     }
 
     public class ListTargetUseCase {
@@ -26,11 +38,11 @@ namespace taskmaker_wpf.Domain {
             _controlUiRepo = controlUiRepo;
         }
 
-        public ITarget[] GetTargets() {
-            var motors = _motorRepo.GetMotors();
-            var controlUis = _controlUiRepo.GetControlUis();
+        public BaseEntity[] GetTargets() {
+            var motors = _motorRepo.FindAll();
+            var controlUis = _controlUiRepo.FindAll();
 
-            var targets = new List<ITarget>();
+            var targets = new List<BaseEntity>();
 
             targets.AddRange(motors);
             targets.AddRange(controlUis);
@@ -39,38 +51,8 @@ namespace taskmaker_wpf.Domain {
         }
     }
 
-    public class ControlUiUseCase {
-        private ControlUiRepository _controlUiRepo;
 
-        public ControlUiUseCase(
-            ControlUiRepository controlUiRepo) {
-            _controlUiRepo = controlUiRepo;
-        }
-
-        public void AddNode(ControlUiEnity controlUi, NDarray<float> pt) {
-            // Domain
-            var node = controlUi.AddNode(pt);
-
-            // Update repo
-            _controlUiRepo.AddNode(node);
-        }
-
-        public void Build(ControlUi controlUi) {
-            // Domain
-            controlUi.Complex.Build();
-
-            // Update repo
-            _controlUiRepo.Build(controlUi.Complex.Regions);
-        }
-
-        public void GetRegions() {
-            // fetch from repo
-
-        }
-    }
-
-
-    public class BuildRegionUseCase {
+    public class BuildRegionUseCase : IUseCase {
         private ControlUiRepository _controlUiRepository;
 
         public BuildRegionUseCase(ControlUiRepository controlUiRepository) {
@@ -78,35 +60,44 @@ namespace taskmaker_wpf.Domain {
         }
 
         public void AddNode(ControlUiEnity ui, Point pt) {
-            _controlUiRepository.AddNode(new NodeEntity { Value = pt });
+            // Domain
+            ui.Nodes.Add(new NodeEntity { Value = pt });
+
+            // Data
+            _controlUiRepository.Update(ui);
         }
 
         // Nodes => Simplices => Voronois
-        public void Build() {
-            var controlUi = _controlUiRepository.FindByName();
-            var nodes = controlUi.Nodes;
+        public void Build(ControlUiEnity ui) {
+            //var ui = _controlUiRepository.Find(ui.Name);
+            var nodes = ui.Nodes;
             var nodeInput = np.array(
-                controlUi.Nodes
-                    .Select(e => new[] { e.Value.X, e.Value.Y })
+                nodes.Select(e => new[] { e.Value.X, e.Value.Y })
                     .SelectMany(e => e)
                     .ToArray());
 
-            if (nodes.Length <= 2) return;
+            if (nodes.Count <= 2) return;
 
-            // 
+            // Domain
             var simplices = QhullCSharp.RunDelaunay(nodeInput)
                 .Select(indices => new SimplexRegionEntity(indices.Select(idx => nodes.ElementAt(idx)).ToArray()))
                 .ToArray();
-            _controlUiRepository.AddSimplices(simplices);
 
+            foreach(var item in simplices) {
+                ui.Regions.Add(item);
+            }
 
             var extremes = QhullCSharp.RunConvex(nodeInput)
                 .Select(idx => nodes.ElementAt(idx))
                 .ToArray();
-
             var voronois = BuildVoronoiRegions(extremes, simplices);
-            _controlUiRepository.AddVoronois(voronois);
 
+            foreach(var item in voronois) {
+                ui.Regions.Add(item);
+            }
+
+            // Data
+            _controlUiRepository.Update(ui);
         }
 
         private VoronoiRegionEntity[] BuildVoronoiRegions(NodeEntity[] extremes, SimplexRegionEntity[] simplices) {

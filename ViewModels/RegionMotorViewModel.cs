@@ -1,4 +1,5 @@
-﻿using Prism.Commands;
+﻿using AutoMapper;
+using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
 using Prism.Services.Dialogs;
@@ -11,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
+using taskmaker_wpf.Domain;
 using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Services;
 
@@ -155,20 +157,22 @@ namespace taskmaker_wpf.ViewModels {
         private IRegionManager _regionManager;
         private SerialService _serialSrv;
         private readonly SystemService _systemSvr;
-        private readonly MotorAgent _motorAgent;
-
+        private readonly IMapper _mapper;
         public RegionMotorViewModel(
             IRegionManager regionManager,
+            IUseCase useCase,
+            MapperConfiguration config,
             SerialService serialSrv,
-            SystemService systemSvr,
-            MotorAgent motorAgent) {
+            SystemService systemSvr) {
             _regionManager = regionManager;
             _serialSrv = serialSrv;
             _systemSvr = systemSvr;
 
-            _motorAgent = motorAgent;
+            _mapper = config.CreateMapper();
 
-            Motors.AddRange(_motorAgent.Repository.Select(e => new StatefulMotor(e)));
+            //Motors.AddRange(_motorAgent.Repository.Select(e => new StatefulMotor(e)));
+
+            Motors.AddRange();
 
             ListBoards();
             ListMotors();
