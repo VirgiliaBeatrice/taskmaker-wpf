@@ -15,7 +15,7 @@ namespace taskmaker_wpf.Data {
         void Add<T>(T item);
         void Update<T>(T item);
         void Delete<T>(T item);
-        T Find<T>(string name);
+        T Find<T>(int id);
         IEnumerable<T> FindAll<T>();
 
     }
@@ -28,6 +28,7 @@ namespace taskmaker_wpf.Data {
         private IMapper _mapper;
 
         public MotorRepository(IDataSource dataSource, MapperConfiguration config) {
+            DataSource = dataSource;
             _mapper = config.CreateMapper();
         }
 
@@ -43,22 +44,26 @@ namespace taskmaker_wpf.Data {
             src.Remove(_mapper.Map<MotorDTO>(item));
         }
 
-        public T Find<T>(string name) {
+        public T Find<T>(int id) {
             var src = DataSource as LocalDataSource;
 
-            src.Find<MotorDTO>(name);
+            src.Find<MotorDTO>(id);
 
             return default(T);
         }
 
         public IEnumerable<T> FindAll<T>() {
-            return null;
+            var src = DataSource as LocalDataSource;
+
+            var dto = src.FindAllOfType<MotorDTO>().First();
+            var entity = _mapper.Map<MotorEntity>(dto);
+            return src.FindAllOfType<MotorDTO>().Select(e => _mapper.Map<MotorEntity>(e)).Cast<T>();
         }
 
         public void Update<T>(T item) {
             var src = DataSource as LocalDataSource;
-            var motor = src.Find<MotorDTO>((item as MotorEntity).Name);
 
+            src.Update(_mapper.Map<MotorDTO>(item as MotorEntity));
         }
     }
 
@@ -68,6 +73,8 @@ namespace taskmaker_wpf.Data {
         public int Min { get; set; }
         public int Max { get; set; }
         public double Value { get; set; }
+        public int BoardId { get; set; }
+        public int MotorId { get; set; }
     }
 
     public class NodeDTO {
@@ -104,6 +111,7 @@ namespace taskmaker_wpf.Data {
         public string Name { get; set; }
         public double[] Tensor { get; set; }
         public int[] Shape { get; set; }
+        public object[] Targets { get; set; }
     }
 
     public class ControlUiRepository : IRepository {
@@ -111,55 +119,39 @@ namespace taskmaker_wpf.Data {
             get;
             private set;
         }
+        private IMapper _mapper;
 
-        public void Add(ControlUiEnity item) {
-            var src = DataSource as LocalDataSource;
-
-            src.Add(item);
-        }
-
-        public void Update(ControlUiEnity item) {
-            var src = DataSource as LocalDataSource;
-
-            src.Update(item);
-        }
-
-        public void Delete(ControlUiEnity item) {
-            var src = DataSource as LocalDataSource;
-
-            src.Remove(item);
-        }
-
-        public ControlUiEnity Find(string name) {
-            var src = DataSource as LocalDataSource;
-
-            return src.Find<ControlUiEnity>("ControlUi").First();
-        }
-
-        public IEnumerable<ControlUiEnity> FindAll() {
-            var src = DataSource as LocalDataSource;
-
-            return src.Find<ControlUiEnity>("ControlUi");
+        public ControlUiRepository(IDataSource dataSource, MapperConfiguration config) {
+            DataSource = dataSource;
+            _mapper = config.CreateMapper();
         }
 
         public void Add<T>(T item) {
-            throw new NotImplementedException();
+            var src = DataSource as LocalDataSource;
+
+            src.Add(_mapper.Map<ControlUiDTO>(item));
         }
 
         public void Update<T>(T item) {
-            throw new NotImplementedException();
+            var src = DataSource as LocalDataSource;
+
+            src.Update(_mapper.Map<ControlUiDTO>(item));
         }
 
         public void Delete<T>(T item) {
             throw new NotImplementedException();
         }
 
-        public T Find<T>(string name) {
-            throw new NotImplementedException();
+        public T Find<T>(int id) {
+            var src = DataSource as LocalDataSource;
+
+            return (T)(object)_mapper.Map<ControlUiEnity>(src.Find<ControlUiDTO>(id));
         }
 
         public IEnumerable<T> FindAll<T>() {
-            throw new NotImplementedException();
+            var src = DataSource as LocalDataSource;
+
+            return src.FindAllOfType<ControlUiDTO>().Select(e => _mapper.Map<ControlUiEnity>(e)).Cast<T>();
         }
     }
 
@@ -168,45 +160,35 @@ namespace taskmaker_wpf.Data {
             get;
             private set;
         }
+        private IMapper _mapper;
 
-        public void Add(NLinearMapEntity item) {
-            throw new NotImplementedException();
+        public NLinearMapRepository(IDataSource dataSource, MapperConfiguration config) {
+            DataSource = dataSource;
+            _mapper = config.CreateMapper();
         }
 
         public void Add<T>(T item) {
-            throw new NotImplementedException();
-        }
-
-        public void Delete(NLinearMapEntity item) {
-            throw new NotImplementedException();
+            var src = DataSource as LocalDataSource;
+            var dto = src.Add(_mapper.Map<NLinearMapDTO>(item));
         }
 
         public void Delete<T>(T item) {
             throw new NotImplementedException();
         }
 
-        public NLinearMapEntity Find(string name) {
-            throw new NotImplementedException();
-        }
-
-        public T Find<T>(string name) {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<NLinearMapEntity> FindAll() {
+        public T Find<T>(int id) {
             throw new NotImplementedException();
         }
 
         public IEnumerable<T> FindAll<T>() {
-            throw new NotImplementedException();
-        }
+            var src = DataSource as LocalDataSource;
 
-        public void Update(NLinearMapEntity item) {
-            throw new NotImplementedException();
+            return src.FindAllOfType<NLinearMapDTO>().Cast<T>();
         }
-
         public void Update<T>(T item) {
-            throw new NotImplementedException();
+            var src = DataSource as LocalDataSource;
+
+            src.Update(_mapper.Map<NLinearMapDTO>(item));
         }
     }
 }

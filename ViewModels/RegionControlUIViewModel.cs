@@ -16,16 +16,22 @@ using taskmaker_wpf.Models;
 using taskmaker_wpf.Services;
 using taskmaker_wpf.Views;
 using taskmaker_wpf.Views.Widget;
+using taskmaker_wpf.Domain;
+using AutoMapper;
 
 namespace taskmaker_wpf.ViewModels
 {
-    public class StatefulNode : BindableBase {
-        private NodeM _target;
+    public class NodeState : BindableBase {
+        private int _id;
+        public int Id {
+            get => _id;
+            set => SetProperty(ref _id, value);
+        }
 
-        private Point _location;
-        public Point Location {
-            get => _location;
-            set => SetProperty(ref _location, value);
+        private Point _value;
+        public Point Value {
+            get => _value;
+            set => SetProperty(ref _value, value);
         }
 
         private bool _isSet;
@@ -33,14 +39,6 @@ namespace taskmaker_wpf.ViewModels
             get => _isSet;
             set => SetProperty(ref _isSet, value);
         }
-
-        public StatefulNode(NodeM target) {
-            _target = target;
-            _location = _target.Location.ToPoint();
-            _isSet = _target.IsSet;
-        }
-
-        public NodeM GetNode() => _target;
     }
 
     public class StatefulSimplex : BindableBase, ITraceRegion {
@@ -156,17 +154,15 @@ namespace taskmaker_wpf.ViewModels
 
         private string _keymapInfo;
 
-        private NLinearMap _map => UI.Map;
+        //private NLinearMap _map => UI.Map;
 
         public TargetsPanelViewModel TargetsPanelVM { get; set; }
 
         private string _statusMsg;
         private string _systemInfo;
 
-        private SystemService _systemSvr;
-
-        private ObservableCollection<StatefulNode> _nodes;
-        public ObservableCollection<StatefulNode> Nodes {
+        private ObservableCollection<NodeState> _nodes = new ObservableCollection<NodeState>();
+        public ObservableCollection<NodeState> Nodes {
             get => _nodes;
             set => SetProperty(ref _nodes, value);
         }
@@ -208,17 +204,22 @@ namespace taskmaker_wpf.ViewModels
         }
 
 
-        private DelegateCommand<Point?> _addNodeCommand;
-        public DelegateCommand<Point?> AddNodeCommand =>
-            _addNodeCommand ?? (_addNodeCommand = new DelegateCommand<Point?>(ExecuteAddNodeCommand));
+        private DelegateCommand<object> _addNodeCommand;
+        public DelegateCommand<object> AddNodeCommand =>
+            _addNodeCommand ?? (_addNodeCommand = new DelegateCommand<object>(ExecuteAddNodeCommand));
 
-        void ExecuteAddNodeCommand(Point? pt) {
+        void ExecuteAddNodeCommand(object param) {
+            var pt = (Point)param;
             if (pt == null) return;
+            else {
+                _uiUseCase.AddNode(UI, pt);
 
-            var node = UI.AddNode(pt?.ToNDarray());
-            var newStatefulNode = new StatefulNode(node);
+                UI = _uiUseCase.GetControlUis().Where(e => e.Id == UI.Id).First();
 
-            _nodes.Add(newStatefulNode);
+                Nodes.Clear();
+                Nodes.AddRange(UI.Nodes.Select(e => _mapper.Map<NodeState>(e)));
+            }
+
         }
 
         private DelegateCommand _buildCommand;
@@ -226,27 +227,27 @@ namespace taskmaker_wpf.ViewModels
             _buildCommand ?? (_buildCommand = new DelegateCommand(ExecuteBuildCommand));
 
         void ExecuteBuildCommand() {
-            UI.Complex.Build();
+            //UI.Complex.Build();
 
-            if (Simplices == null)
-                Simplices = new ObservableCollection<StatefulSimplex>();
-            if (Voronois == null)
-                Voronois = new ObservableCollection<StatefulVoronoi>();
+            //if (Simplices == null)
+            //    Simplices = new ObservableCollection<StatefulSimplex>();
+            //if (Voronois == null)
+            //    Voronois = new ObservableCollection<StatefulVoronoi>();
 
-            Simplices.Clear();
-            Voronois.Clear();
+            //Simplices.Clear();
+            //Voronois.Clear();
 
-            var simplices = UI.Complex.Simplices
-                .Select(e => new StatefulSimplex(e));
-            var voronois = UI.Complex.Regions
-                .Select(e => new StatefulVoronoi(e));
+            //var simplices = UI.Complex.Simplices
+            //    .Select(e => new StatefulSimplex(e));
+            //var voronois = UI.Complex.Regions
+            //    .Select(e => new StatefulVoronoi(e));
 
-            Simplices.AddRange(simplices);
-            Voronois.AddRange(voronois);
+            //Simplices.AddRange(simplices);
+            //Voronois.AddRange(voronois);
 
-            if (UI.Complex.Targets.Count != 0) {
-                UI.SetMap();
-            }
+            //if (UI.Complex.Targets.Count != 0) {
+            //    UI.SetMap();
+            //}
         }
 
 
@@ -260,28 +261,18 @@ namespace taskmaker_wpf.ViewModels
             set => SetProperty(ref _operationMode, value);
         }
 
-        private MotorAgent _motorAgent;
+        private readonly IMapper _mapper;
+        private readonly ControlUiUseCase _uiUseCase;
 
         public RegionControlUIViewModel(
-            SystemService systemService,
-            MotorAgent motorAgent
+            MapperConfiguration config,
+            IEnumerable<IUseCase> useCases
             ) {
-            _systemSvr = systemService;
-            _motorAgent = motorAgent;
+            _mapper = config.CreateMapper();
 
-
-            TargetsPanelVM = new TargetsPanelViewModel(_systemSvr);
-            //TargetsPanelVM.UI = _ui;
+            TargetsPanelVM = new TargetsPanelViewModel(useCases);
+            _uiUseCase = useCases.OfType<ControlUiUseCase>().First();
             SystemInfo = $"{_operationMode}";
-        }
-
-
-        public ComplexM Model { get; set; }
-
-        public FrameworkElement InspectedWidget
-        {
-            get { return _inspectedWidget; }
-            set { SetProperty(ref _inspectedWidget, value); }
         }
 
         public string Debug
@@ -308,11 +299,11 @@ namespace taskmaker_wpf.ViewModels
             set => SetProperty(ref _statusMsg, value);
         }
 
-        private DelegateCommand<NodeM> _removeNodeCommand;
-        public DelegateCommand<NodeM> RemoveNodeCommand =>
-            _removeNodeCommand ?? (_removeNodeCommand = new DelegateCommand<NodeM>(ExecuteRemoveNodeCommand));
+        private DelegateCommand<NodeState> _removeNodeCommand;
+        public DelegateCommand<NodeState> RemoveNodeCommand =>
+            _removeNodeCommand ?? (_removeNodeCommand = new DelegateCommand<NodeState>(ExecuteRemoveNodeCommand));
 
-        void ExecuteRemoveNodeCommand(NodeM parameter) {
+        void ExecuteRemoveNodeCommand(NodeState parameter) {
             RemoveNode(parameter);
         }
 
@@ -323,22 +314,22 @@ namespace taskmaker_wpf.ViewModels
         void ExecuteSetValueCommand() {
             if (SelectedNodeWidget is null) return;
 
-            SetNodeValue(SelectedNodeWidget.DataContext as StatefulNode);
+            SetNodeValue(SelectedNodeWidget.DataContext as NodeState);
         }
 
-        private void SetNodeValue(StatefulNode sNode) {
-            var node = sNode.GetNode();
-            var targetValue = UI.Complex.Targets.ToNDarray();
-            //var idx = Model.Nodes.FindIndex(e => e.Uid == node.Uid);
-            var idx = UI.Complex.Nodes.FindIndex(e => e == node);
-            node.IsSet = true;
-            sNode.IsSet = true;
+        private void SetNodeValue(NodeState sNode) {
+            //var node = sNode.GetNode();
+            //var targetValue = UI.Complex.Targets.ToNDarray();
+            ////var idx = Model.Nodes.FindIndex(e => e.Uid == node.Uid);
+            //var idx = UI.Complex.Nodes.FindIndex(e => e == node);
+            //node.IsSet = true;
+            //sNode.IsSet = true;
 
-            UI.Map.SetValue(new[] { idx }, targetValue);
+            //UI.Map.SetValue(new[] { idx }, targetValue);
         }
 
-        private void RemoveNode(NodeM node) {
-            UI.Complex.Nodes.Remove(node);
+        private void RemoveNode(NodeState node) {
+            //UI.Complex.Nodes.Remove(node);
         }
 
         //private void Interpolate(object arg)
@@ -370,22 +361,22 @@ namespace taskmaker_wpf.ViewModels
 
             if (target is null) return;
             else {
-                if (target is StatefulSimplex) {
-                    var bary = (target.GetRef() as SimplexM).Bary;
-                    var lambdas = UI.Complex.Bary.GetLambdas(bary, pt.ToNDarray());
-                    var result = _map.MapTo(lambdas);
+                //if (target is StatefulSimplex) {
+                //    var bary = (target.GetRef() as SimplexM).Bary;
+                //    var lambdas = UI.Complex.Bary.GetLambdas(bary, pt.ToNDarray());
+                //    //var result = _map.MapTo(lambdas);
 
-                    UI.Complex.Targets.SetValue(result.GetData<double>());
-                }
-                else if (target is StatefulVoronoi) {
-                    var bary = (target.GetRef() as VoronoiRegionM).Bary;
-                    var lambdas = UI.Complex.Bary.GetLambdas(bary, pt.ToNDarray());
-                    var result = _map.MapTo(lambdas);
+                //    //UI.Complex.Targets.SetValue(result.GetData<double>());
+                //}
+                //else if (target is StatefulVoronoi) {
+                //    var bary = (target.GetRef() as VoronoiRegionM).Bary;
+                //    var lambdas = UI.Complex.Bary.GetLambdas(bary, pt.ToNDarray());
+                //    //var result = _map.MapTo(lambdas);
 
-                    UI.Complex.Targets.SetValue(result.GetData<double>());
-                }
+                //    //UI.Complex.Targets.SetValue(result.GetData<double>());
+                //}
 
-                Debug = UI.Complex.Targets.ToString();
+                //Debug = UI.Complex.Targets.ToString();
             }
         }
 
@@ -397,19 +388,19 @@ namespace taskmaker_wpf.ViewModels
         //    SelectedTargets = Model.Targets.ToArray();
         //}
 
-        private ControlUi _ui;
-        private ControlUi UI {
+        private ControlUiEnity _ui;
+        private ControlUiEnity UI {
             get => _ui;
             set {
                 _ui = value;
-                TargetsPanelVM.UI = _ui;
-                Nodes = new ObservableCollection<StatefulNode>(
-                    _ui.Complex.Nodes.Select(e => new StatefulNode(e)));
+
+                Nodes.Clear();
+                Nodes.AddRange(_ui.Nodes.Select(e => _mapper.Map<NodeState>(e)));
             }
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext) {
-            UI = navigationContext.Parameters["ui"] as ControlUi;
+            UI = navigationContext.Parameters["ui"] as ControlUiEnity;
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext) {

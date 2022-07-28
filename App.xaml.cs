@@ -28,13 +28,6 @@ namespace taskmaker_wpf {
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
-            // Register regions for navigation
-            containerRegistry.RegisterForNavigation<RegionHome>();
-            containerRegistry.RegisterForNavigation<RegionMotor>();
-            containerRegistry.RegisterForNavigation<RegionSettings>();
-            containerRegistry.RegisterForNavigation<RegionControlUI>();
-            containerRegistry.RegisterForNavigation<RegionControlUISelection>();
-
 
             // Register services
             containerRegistry.RegisterSingleton<SerialService>();
@@ -46,22 +39,43 @@ namespace taskmaker_wpf {
             containerRegistry.RegisterSingleton<MapperConfiguration>(() => {
                 var config = new MapperConfiguration(
                     cfg => {
-                        cfg.CreateMap<ControlUiDTO, ControlUiEnity>();
-                        cfg.CreateMap<MotorDTO, MotorEntity>();
-                        cfg.CreateMap<NLinearMapDTO, NLinearMapEntity>();
+                        cfg.CreateMap<ControlUiDTO, ControlUiEnity>().ReverseMap();
+                        cfg.CreateMap<MotorDTO, MotorEntity>().ReverseMap();
+                        cfg.CreateMap<NLinearMapDTO, NLinearMapEntity>().ReverseMap();
 
-                        cfg.CreateMap<StatefulMotor, MotorEntity>();
+                        cfg.CreateMap<MotorState, MotorEntity>().ReverseMap();
+                        cfg.CreateMap<NodeState, NodeEntity>().ReverseMap();
                     });
 
                 return config;
             });
 
+            // Register IDataSource
+            containerRegistry.RegisterSingleton<IDataSource>(() => {
+                return LocalDataSource.Load();
+            });
+
             // Register IRepository
-            containerRegistry.RegisterSingleton<IRepository, MotorRepository>("Motor");
-            //containerRegistry.Register<IRepository, ControlUiRepository>("ControlUi");
+            containerRegistry.RegisterSingleton<IRepository, MotorRepository>("1");
+            containerRegistry.Register<IRepository, ControlUiRepository>("2");
+            containerRegistry.Register<IRepository, NLinearMapRepository>("3");
+
+            // Register IUseCase
+            containerRegistry.RegisterSingleton<IUseCase, MotorUseCase>("1");
+            containerRegistry.RegisterSingleton<IUseCase, ControlUiUseCase>("2");
+            containerRegistry.RegisterSingleton<IUseCase, NLinearMapUseCase>("3");
+            containerRegistry.RegisterSingleton<IUseCase, ListTargetUseCase>("ListTargetUseCase");
 
             // Register messagebox
             containerRegistry.RegisterDialog<CMessageBox, MessageBoxViewModel>("standard");
+
+            // Register regions for navigation
+            containerRegistry.RegisterForNavigation<RegionHome>();
+            containerRegistry.RegisterForNavigation<RegionMotor>();
+            containerRegistry.RegisterForNavigation<RegionSettings>();
+            containerRegistry.RegisterForNavigation<RegionControlUI>();
+            containerRegistry.RegisterForNavigation<RegionControlUISelection>();
+
         }
 
         protected override void Initialize() {

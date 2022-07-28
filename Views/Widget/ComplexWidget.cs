@@ -1,4 +1,5 @@
-﻿using Prism.Mvvm;
+﻿using Prism.Commands;
+using Prism.Mvvm;
 using SkiaSharp;
 using SkiaSharp.Views.WPF;
 using System;
@@ -333,7 +334,7 @@ namespace taskmaker_wpf.Views {
 
         private void OnNodeCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
             if (e.Action == NotifyCollectionChangedAction.Add) {
-                foreach(StatefulNode item in e.NewItems) {
+                foreach(NodeState item in e.NewItems) {
                     var widget = new NodeWidget {
                         DataContext = item,
                         Focusable = true,
@@ -378,7 +379,7 @@ namespace taskmaker_wpf.Views {
                 }
             }
             else if (e.Action == NotifyCollectionChangedAction.Remove) {
-                foreach(StatefulNode item in e.OldItems) {
+                foreach(NodeState item in e.OldItems) {
                     var widget = Children
                         .OfType<NodeWidget>()
                         .Where(e1 => e1.DataContext == item).First();
@@ -580,7 +581,7 @@ namespace taskmaker_wpf.Views {
         // Using a DependencyProperty as the backing store for AddItemCommand.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty AddNodeCommandProperty =
             DependencyProperty.Register("AddNodeCommand", typeof(ICommand), typeof(ComplexWidget),
-                new UIPropertyMetadata(null));
+                new UIPropertyMetadata(default(DelegateCommand<Point>)));
 
 
         public ICommand InterpolateCommand {

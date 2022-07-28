@@ -36,8 +36,8 @@ namespace taskmaker_wpf.Models {
         }
 
         public void SetMap() {
-            Map.Invalidate(Complex.Targets.Dim);
-            Map.Invalidate(new ComplexBaryD[] { Complex.Bary });
+            //Map.Invalidate(Complex.Targets.Dim);
+            //Map.Invalidate(new ComplexBaryD[] { Complex.Bary });
         }
 
 

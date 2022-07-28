@@ -70,11 +70,35 @@
                     <ColumnDefinition Width="4*"/>
                     <ColumnDefinition Width="2*"/>
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                </Grid.RowDefinitions>
 
                 <Label
+                    Grid.Row="0"
                     Grid.Column="0"
+                    Content="Maps" />
+                <ComboBox
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Margin="2, 0, 2, 0"
+                    ItemsSource="{Binding Maps}" 
+                    SelectedItem="{Binding SelectedMap, Mode=OneWayToSource}" />
+                <Button
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    Content="Add"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Command="{Binding AddCommand}" />
+                
+                <Label
+                    Grid.Column="0"
+                    Grid.Row="1"
                     Content="Targets" />
                 <ComboBox
+                    Grid.Row="1"
                     Grid.Column="1"
                     VerticalAlignment="Center"
                     Margin="2, 0, 2, 0"
@@ -109,6 +133,7 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
                 <Button
+                    Grid.Row="1"
                     Grid.Column="2"
                     Content="Update"
                     VerticalAlignment="Center"

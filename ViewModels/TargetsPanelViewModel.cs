@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using taskmaker_wpf.Domain;
 using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Models;
 using taskmaker_wpf.Services;
@@ -37,11 +38,25 @@ namespace taskmaker_wpf.ViewModels {
 
     }
 
-    public class TargetsPanelViewModel : BindableBase {
-        private readonly SystemService _systemSvr;
+    public class TargetState : BindableBase {
+        private object _target;
 
-        private StatefulTarget[] _validTargets;
-        public StatefulTarget[] ValidTargets {
+        public object Target {
+            get => _target;
+            set => SetProperty(ref _target, value);
+        }
+
+        private bool _isSelected;
+
+        public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }
+    }
+
+    public class TargetsPanelViewModel : BindableBase {
+        private readonly ListTargetUseCase _useCase;
+        private readonly NLinearMapUseCase _mapUseCase;
+
+        private TargetState[] _validTargets;
+        public TargetState[] ValidTargets {
             get => _validTargets;
             set => SetProperty(ref _validTargets, value);
         }
@@ -52,37 +67,45 @@ namespace taskmaker_wpf.ViewModels {
             private set {
                 SetProperty(ref _uiTargets, value);
 
-                UI.SetTargets(_uiTargets);
+                //UI.SetTargets(_uiTargets);
             }
         }
 
-        private ControlUi _ui;
-        public ControlUi UI {
-            get => _ui;
-            set {
-                SetProperty(ref _ui, value);
+        private ObservableCollection<NLinearMapEntity> _maps = new ObservableCollection<NLinearMapEntity>();
+        public ObservableCollection<NLinearMapEntity> Maps {
+            get => _maps;
+            set => SetProperty(ref _maps, value);
+        }
 
-                UiTargets = UI.Complex.Targets.ToArray();
-            }
+        private NLinearMapEntity _selectedMap;
+        public NLinearMapEntity SelectedMap {
+            get => _selectedMap;
+            set => SetProperty(ref _selectedMap, value);
         }
 
         private DelegateCommand _updateCommand;
         public DelegateCommand UpdateCommand =>
             _updateCommand ?? (_updateCommand = new DelegateCommand(ExecuteUpdateCommand));
 
-        void ExecuteUpdateCommand() {
-            UiTargets = _validTargets
-                .Where(e => e.IsSelected)
-                .Select(e => e.GetTarget())
-                .ToArray();
+        private DelegateCommand _addCommand;
+        public DelegateCommand AddCommand => _addCommand ?? (_addCommand = new DelegateCommand(ExecuteAddCommand));
+
+        private void ExecuteAddCommand() {
+            var map = _mapUseCase.AddMap();
+
+            Maps.Add(map);
         }
 
-        public TargetsPanelViewModel(SystemService systemSvr) {
-            _systemSvr = systemSvr;
+        void ExecuteUpdateCommand() {
+            SelectedMap.Targets = ValidTargets.Where(e => e.IsSelected).ToArray();
+        }
 
-            _validTargets = _systemSvr.Targets
-                .Select(e => new StatefulTarget(e))
-                .ToArray();
+        public TargetsPanelViewModel(IEnumerable<IUseCase> useCases) {
+            _useCase = useCases.OfType<ListTargetUseCase>().First();
+            _mapUseCase = useCases.OfType<NLinearMapUseCase>().First();
+
+            ValidTargets = _useCase.GetTargets().Select(e => new TargetState() { Target = e }).ToArray();
+            Maps.AddRange(_mapUseCase.GetMaps());
         }
     }
 }

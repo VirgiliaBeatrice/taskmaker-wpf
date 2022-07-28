@@ -6,6 +6,7 @@ using Prism.Services.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -17,75 +18,24 @@ using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Services;
 
 namespace taskmaker_wpf.ViewModels {
-    public class StatefulMotor : BindableBase {
-        private Motor _ref;
-
-        private string _name;
-        public string Name {
-            get => _name;
-            set {
-                SetProperty(ref _name, value);
-                _ref.Name = _name;
-            }
-        }
-
+    public class MotorState : BindableBase {
+        private int id;
+        private string name;
         private double _value;
-        public double Value {
-            get => _value;
-            set {
-                SetProperty(ref _value, value);
-                _ref.Value = _value;
-            }
-        }
+        private int max;
+        private int min;
+        private int boardId;
+        private int motorId;
 
-        private int _min;
-        public int Min {
-            get => _min;
-            set {
-                SetProperty(ref _min, value);
-                _ref.Min = _min;
-            }
-        }
-
-        private int _max;
-        public int Max {
-            get => _max;
-            set {
-                SetProperty(ref _min, value);
-                _ref.Max = _max;
-            }
-        }
-
-        private int _boardId;
-        public int BoardId {
-            get => _boardId;
-            set {
-                SetProperty(ref _boardId, value);
-                _ref.BoardId = _boardId;
-            }
-        }
-
-        private int _motorId;
-        public int MotorId {
-            get => _motorId;
-            set {
-                SetProperty(ref _motorId, value);
-                _ref.MotorId = _motorId;
-            }
-        }
-
-        public StatefulMotor(Motor refMotor) {
-            _ref = refMotor;
-
-            Name = _ref.Name;
-            Value = _ref.Value;
-            Min = _ref.Min;
-            Max = _ref.Max;
-            BoardId = _ref.BoardId;
-            MotorId = _ref.MotorId;
-        }
-
+        public int Id { get => id; set => SetProperty(ref id, value); }
+        public string Name { get => name; set => SetProperty(ref name, value); }
+        public double Value { get => _value; set => SetProperty(ref _value, value); }
+        public int Max { get => max; set => SetProperty(ref max, value); }
+        public int Min { get => min; set => SetProperty(ref min, value); }
+        public int BoardId { get => boardId; set => SetProperty(ref boardId, value); }
+        public int MotorId { get => motorId; set => SetProperty(ref motorId, value); }
     }
+
 
     public class RegionMotorViewModel : BindableBase, INavigationAware {
         private ICommand listBoardsCmd;
@@ -102,10 +52,10 @@ namespace taskmaker_wpf.ViewModels {
             ListMotors();
         }
 
-        private DelegateCommand<StatefulMotor> connectMotorCmd;
-        public DelegateCommand<StatefulMotor> ConnectMotorCmd => connectMotorCmd ?? (connectMotorCmd = new DelegateCommand<StatefulMotor>(ConnectMotorCmdExecute));
+        private DelegateCommand<MotorState> connectMotorCmd;
+        public DelegateCommand<MotorState> ConnectMotorCmd => connectMotorCmd ?? (connectMotorCmd = new DelegateCommand<MotorState>(ConnectMotorCmdExecute));
 
-        private void ConnectMotorCmdExecute(StatefulMotor motor) {
+        private void ConnectMotorCmdExecute(MotorState motor) {
             throw new NotImplementedException();
             //var instance = _serialSrv.GetMotorInstance(motor.BoardId, motor.MotorId);
 
@@ -113,20 +63,29 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private ICommand removeMotorCmd;
-        public ICommand RemoveMotorCmd => removeMotorCmd ?? (removeMotorCmd = new DelegateCommand<StatefulMotor>(RemoveMotorCmdExecute));
+        public ICommand RemoveMotorCmd => removeMotorCmd ?? (removeMotorCmd = new DelegateCommand<MotorState>(RemoveMotorCmdExecute));
 
-        private void RemoveMotorCmdExecute(StatefulMotor bMotor) {
-            //Motors.Remove(bMotor);
+        private void RemoveMotorCmdExecute(MotorState motor) {
+            _motorUseCase.RemoveMotor(_mapper.Map<MotorEntity>(motor));
+
+            var motors = _motorUseCase.GetMotors();
+            var stateMotors = motors.Select(e => _mapper.Map<MotorState>(e));
+
+            Motors.Clear();
+            Motors.AddRange(stateMotors);
         }
 
         private ICommand addMotorCmd;
         public ICommand AddMotorCmd => addMotorCmd ?? (addMotorCmd = new DelegateCommand(AddMotorCmdExecute));
 
         private void AddMotorCmdExecute() {
-            var motor = _motorAgent.AddMotor();
-            var sMotor = new StatefulMotor(motor);
+            _motorUseCase.AddMotor();
 
-            Motors.Add(sMotor);
+            var motors = _motorUseCase.GetMotors();
+            var stateMotors = motors.Select(e => _mapper.Map<MotorState>(e));
+
+            Motors.Clear();
+            Motors.AddRange(stateMotors);
         }
 
         private ICommand setCmd;
@@ -136,20 +95,20 @@ namespace taskmaker_wpf.ViewModels {
             Console.WriteLine(text);
         }
 
-        private ObservableCollection<StatefulMotor> _motors = new ObservableCollection<StatefulMotor>();
-        public ObservableCollection<StatefulMotor> Motors {
+        private ObservableCollection<MotorState> _motors = new ObservableCollection<MotorState>();
+        public ObservableCollection<MotorState> Motors {
             get => _motors;
             set => SetProperty(ref _motors, value);
         }
 
-        private ObservableCollection<string> _boardIds = new ObservableCollection<string>();
-        public ObservableCollection<string> BoardIds {
+        private ObservableCollection<int> _boardIds = new ObservableCollection<int>();
+        public ObservableCollection<int> BoardIds {
             get => _boardIds;
             set => SetProperty(ref _boardIds, value);
         }
 
-        private ObservableCollection<string> _motorIds = new ObservableCollection<string>();
-        public ObservableCollection<string> MotorIds {
+        private ObservableCollection<int> _motorIds = new ObservableCollection<int>();
+        public ObservableCollection<int> MotorIds {
             get => _motorIds;
             set => SetProperty(ref _motorIds, value);
         }
@@ -158,9 +117,11 @@ namespace taskmaker_wpf.ViewModels {
         private SerialService _serialSrv;
         private readonly SystemService _systemSvr;
         private readonly IMapper _mapper;
+        private readonly MotorUseCase _motorUseCase;
+
         public RegionMotorViewModel(
             IRegionManager regionManager,
-            IUseCase useCase,
+            IEnumerable<IUseCase> useCases,
             MapperConfiguration config,
             SerialService serialSrv,
             SystemService systemSvr) {
@@ -170,9 +131,15 @@ namespace taskmaker_wpf.ViewModels {
 
             _mapper = config.CreateMapper();
 
+            _motorUseCase = useCases.OfType<MotorUseCase>().First();
             //Motors.AddRange(_motorAgent.Repository.Select(e => new StatefulMotor(e)));
+            Motors.AddRange(_motorUseCase.GetMotors().Select(e => _mapper.Map<MotorState>(e)));
 
-            Motors.AddRange();
+            foreach(var motor in Motors) {
+                motor.PropertyChanged += (s, args) => {
+                    _motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(s as MotorState));
+                };
+            }
 
             ListBoards();
             ListMotors();
@@ -180,8 +147,7 @@ namespace taskmaker_wpf.ViewModels {
 
         private void ListBoards() {
             var boards = Enumerable
-                .Range(0, 7)
-                .Select(e => $"Board{e}");
+                .Range(0, 7);
 
             BoardIds.Clear();
             BoardIds.AddRange(boards);
@@ -189,8 +155,7 @@ namespace taskmaker_wpf.ViewModels {
 
         private void ListMotors() {
             var motors = Enumerable
-                .Range(0, 4)
-                .Select(e => $"Motor{e}");
+                .Range(0, 4);
 
             MotorIds.Clear();
             MotorIds.AddRange(motors);

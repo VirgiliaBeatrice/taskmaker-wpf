@@ -1,7 +1,7 @@
 ﻿using Numpy;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Windows;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,9 +24,21 @@ namespace taskmaker_wpf.Domain {
         public IEnumerable<MotorEntity> GetMotors() {
             return _motorRepository.FindAll<MotorEntity>();
         }
+
+        public void AddMotor() {
+            _motorRepository.Add(new MotorEntity());
+        }
+
+        public void RemoveMotor(MotorEntity motor) {
+            _motorRepository.Delete(motor);
+        }
+
+        public void UpdateMotor(MotorEntity motor) {
+            _motorRepository.Update(motor);
+        }
     }
 
-    public class ListTargetUseCase {
+    public class ListTargetUseCase :IUseCase{
         private MotorRepository _motorRepo;
         private ControlUiRepository _controlUiRepo;
 
@@ -39,8 +51,8 @@ namespace taskmaker_wpf.Domain {
         }
 
         public BaseEntity[] GetTargets() {
-            var motors = _motorRepo.FindAll();
-            var controlUis = _controlUiRepo.FindAll();
+            var motors = _motorRepo.FindAll<MotorEntity>();
+            var controlUis = _controlUiRepo.FindAll<ControlUiEnity>();
 
             var targets = new List<BaseEntity>();
 
@@ -48,6 +60,36 @@ namespace taskmaker_wpf.Domain {
             targets.AddRange(controlUis);
 
             return targets.ToArray();
+        }
+    }
+
+    public class ControlUiUseCase : IUseCase {
+        private ControlUiRepository _repository;
+
+        public ControlUiUseCase(ControlUiRepository repository) {
+            _repository = repository;
+        }
+
+        public ControlUiEnity[] GetControlUis() {
+            var uis = _repository.FindAll<ControlUiEnity>();
+
+            return uis.ToArray();
+        }
+
+        public ControlUiEnity AddUi() {
+            var ui = new ControlUiEnity();
+            _repository.Add(ui);
+
+            return ui;
+        }
+
+        public void AddNode(ControlUiEnity ui, Point pt) {
+            var node = new NodeEntity {
+                Value = pt
+            };
+
+            ui.Nodes.Add(node);
+            _repository.Update(ui);
         }
     }
 
@@ -144,5 +186,29 @@ namespace taskmaker_wpf.Domain {
         private bool IsVertex(SimplexRegionEntity simplex, NodeEntity node) {
             return simplex.Nodes.Any(e => node == e);
         }
+    }
+
+    public class NLinearMapUseCase : IUseCase {
+        private readonly NLinearMapRepository _repository;
+
+        public NLinearMapUseCase(NLinearMapRepository repository) {
+            _repository = repository;
+        }
+
+        public NLinearMapEntity[] GetMaps() {
+            return _repository.FindAll<NLinearMapEntity>().ToArray();
+        }
+
+        public NLinearMapEntity AddMap() {
+            var map = new NLinearMapEntity();
+            _repository.Add(map);
+
+            return map;        
+        }
+
+        public void UpdateMap(NLinearMapEntity map) {
+            _repository.Update(map);
+        }
+
     }
 }

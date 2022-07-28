@@ -11,33 +11,38 @@ using Prism.Mvvm;
 using Prism.Regions;
 using taskmaker_wpf.Services;
 using taskmaker_wpf.Models;
+using taskmaker_wpf.Domain;
 
 namespace taskmaker_wpf.ViewModels {
     public class RegionControlUISelectionViewModel : BindableBase, INavigationAware {
         private readonly SystemService _systemSvr;
         private readonly IRegionManager _regionManager;
-
-        public ObservableCollection<ControlUi> UIs => _systemSvr.UIs;
+        private readonly ControlUiUseCase _useCase;
+        public ObservableCollection<ControlUiEnity> UIs { get; set; } = new ObservableCollection<ControlUiEnity>();
 
         public RegionControlUISelectionViewModel(
             IRegionManager regionManager,
+            IEnumerable<IUseCase> useCases,
             SystemService systemSvr) {
             _systemSvr = systemSvr;
             _regionManager = regionManager;
+            _useCase = useCases.OfType<ControlUiUseCase>().First();
+
+            UIs.AddRange(_useCase.GetControlUis());
         }
 
         private DelegateCommand _addCmd;
         public DelegateCommand AddCmd => _addCmd ?? (_addCmd = new DelegateCommand(ExecuteAddCmd));
 
 
-        private DelegateCommand<ControlUi> _navigateToNextCommand;
-        public DelegateCommand<ControlUi> NavigateToNextCommand =>
-            _navigateToNextCommand ?? (_navigateToNextCommand = new DelegateCommand<ControlUi>(ExecuteNavigateToNextCommand));
+        private DelegateCommand<ControlUiEnity> _navigateToNextCommand;
+        public DelegateCommand<ControlUiEnity> NavigateToNextCommand =>
+            _navigateToNextCommand ?? (_navigateToNextCommand = new DelegateCommand<ControlUiEnity>(ExecuteNavigateToNextCommand));
 
-        private void ExecuteNavigateToNextCommand(ControlUi parameter) {
-            if (parameter != null) {
+        private void ExecuteNavigateToNextCommand(ControlUiEnity ui) {
+            if (ui != null) {
                 var args = new NavigationParameters {
-                    { "ui", parameter }
+                    { "ui", ui }
                 };
 
                 _regionManager.RequestNavigate("ContentRegion", "RegionControlUI", args);
@@ -45,7 +50,11 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private void ExecuteAddCmd() {
-            _systemSvr.UIs.Add(new ControlUi());
+            //_systemSvr.UIs.Add(new ControlUi());
+            _useCase.AddUi();
+
+            UIs.Clear();
+            UIs.AddRange(_useCase.GetControlUis());
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext) {

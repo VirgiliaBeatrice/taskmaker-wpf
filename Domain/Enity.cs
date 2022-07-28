@@ -1,7 +1,7 @@
 ﻿using Numpy;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Windows;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,6 +42,7 @@ namespace taskmaker_wpf.Domain {
     public class NLinearMapEntity : BaseEntity {
         public NDarray Tensor { get; set; }
         public int[] Shape { get; set; }
+        public object[] Targets { get; set; }
     }
 
     public class NodeEntity : BaseEntity {
@@ -213,5 +214,7 @@ namespace taskmaker_wpf.Domain {
         public double Value { get; set; }
         public int Min { get; set; }
         public int Max { get; set; }
+        public int BoardId { get; set; }
+        public int MotorId { get; set; }
     }
 }
