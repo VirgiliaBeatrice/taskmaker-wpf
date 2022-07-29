@@ -36,18 +36,33 @@ namespace taskmaker_wpf {
             // Register model agent
             //containerRegistry.Register<MotorAgent>();
 
-            containerRegistry.RegisterSingleton<MapperConfiguration>(() => {
-                var config = new MapperConfiguration(
-                    cfg => {
-                        cfg.CreateMap<ControlUiDTO, ControlUiEnity>().ReverseMap();
-                        cfg.CreateMap<MotorDTO, MotorEntity>().ReverseMap();
-                        cfg.CreateMap<NLinearMapDTO, NLinearMapEntity>().ReverseMap();
 
-                        cfg.CreateMap<MotorState, MotorEntity>().ReverseMap();
-                        cfg.CreateMap<NodeState, NodeEntity>().ReverseMap();
-                    });
 
-                return config;
+            containerRegistry.RegisterSingleton<MapperConfiguration>(
+                () => {
+                    var config = new MapperConfiguration(
+                        cfg => {
+                            cfg.CreateMap<NodeEntity, NodeState>().ReverseMap();
+                            cfg.CreateMap<NodeEntity, NodeDTO>(MemberList.Destination)
+                            .ReverseMap();
+
+                            cfg.CreateMap<SimplexRegionEntity, SimplexState>().ReverseMap();
+                            cfg.CreateMap<SimplexRegionEntity, SimplexRegionDTO>().ReverseMap();
+
+                            cfg.CreateMap<VoronoiRegionEntity, VoronoiState>().ReverseMap();
+                            cfg.CreateMap<VoronoiRegionEntity, VoronoiRegionDTO>().ReverseMap();
+
+                            cfg.CreateMap<ControlUiEntity, ControlUiDTO>()
+                            .ForMember(d => d.Nodes, o => o.MapFrom(s => s.Nodes))
+                            .ReverseMap();
+                            cfg.CreateMap<MotorEntity, MotorDTO>().ReverseMap();
+                            cfg.CreateMap<NLinearMapEntity, NLinearMapDTO>().ReverseMap();
+
+                            cfg.CreateMap<MotorEntity, MotorState >().ReverseMap();
+                        });
+
+                    //config.AssertConfigurationIsValid();
+                    return config;
             });
 
             // Register IDataSource

@@ -18,7 +18,7 @@ namespace taskmaker_wpf.ViewModels {
         private readonly SystemService _systemSvr;
         private readonly IRegionManager _regionManager;
         private readonly ControlUiUseCase _useCase;
-        public ObservableCollection<ControlUiEnity> UIs { get; set; } = new ObservableCollection<ControlUiEnity>();
+        public ObservableCollection<ControlUiEntity> UIs { get; set; } = new ObservableCollection<ControlUiEntity>();
 
         public RegionControlUISelectionViewModel(
             IRegionManager regionManager,
@@ -35,11 +35,11 @@ namespace taskmaker_wpf.ViewModels {
         public DelegateCommand AddCmd => _addCmd ?? (_addCmd = new DelegateCommand(ExecuteAddCmd));
 
 
-        private DelegateCommand<ControlUiEnity> _navigateToNextCommand;
-        public DelegateCommand<ControlUiEnity> NavigateToNextCommand =>
-            _navigateToNextCommand ?? (_navigateToNextCommand = new DelegateCommand<ControlUiEnity>(ExecuteNavigateToNextCommand));
+        private DelegateCommand<ControlUiEntity> _navigateToNextCommand;
+        public DelegateCommand<ControlUiEntity> NavigateToNextCommand =>
+            _navigateToNextCommand ?? (_navigateToNextCommand = new DelegateCommand<ControlUiEntity>(ExecuteNavigateToNextCommand));
 
-        private void ExecuteNavigateToNextCommand(ControlUiEnity ui) {
+        private void ExecuteNavigateToNextCommand(ControlUiEntity ui) {
             if (ui != null) {
                 var args = new NavigationParameters {
                     { "ui", ui }

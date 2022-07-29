@@ -5,6 +5,8 @@ using System.Windows;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
+using taskmaker_wpf.Data;
 
 namespace taskmaker_wpf.Domain {
     public interface IEntity {
@@ -50,7 +52,9 @@ namespace taskmaker_wpf.Domain {
 
     }
 
-    public class SimplexRegionEntity : BaseEntity, IRegionEntity {
+    public abstract class BaseRegionEntity : BaseEntity { }
+
+    public class SimplexRegionEntity : BaseRegionEntity {
         public NodeEntity[] Nodes { get; set; }
         public Point[] Vertices => Nodes.Select(x => x.Value).ToArray();
 
@@ -73,7 +77,7 @@ namespace taskmaker_wpf.Domain {
         }
     }
 
-    public class VoronoiRegionEntity : BaseEntity, IRegionEntity {
+    public class VoronoiRegionEntity : BaseRegionEntity {
         public double Factor { get; set; } = 100.0;
         public Point[] Vertices { get; set; }
         public SimplexRegionEntity[] Governors { get; set; }
@@ -198,15 +202,10 @@ namespace taskmaker_wpf.Domain {
 
     }
 
-    public interface IRegionEntity {
-        //Point[] Vertices { get; }
 
-        //double[] GetLambdas(Point pt, NodeEntity[] collection);
-    }
-
-    public class ControlUiEnity : BaseEntity {
-        public ICollection<NodeEntity> Nodes { get; set; }
-        public ICollection<IRegionEntity> Regions { get; set; }
+    public class ControlUiEntity : BaseEntity {
+        public NodeEntity[] Nodes { get; set; }
+        public BaseRegionEntity[] Regions { get; set; }
         public double[] Value { get; set; }
     }
 

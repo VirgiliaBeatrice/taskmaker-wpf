@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Windows;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -145,13 +145,13 @@ namespace taskmaker_wpf.Data {
         public T Find<T>(int id) {
             var src = DataSource as LocalDataSource;
 
-            return (T)(object)_mapper.Map<ControlUiEnity>(src.Find<ControlUiDTO>(id));
+            return (T)(object)_mapper.Map<ControlUiEntity>(src.Find<ControlUiDTO>(id));
         }
 
         public IEnumerable<T> FindAll<T>() {
             var src = DataSource as LocalDataSource;
 
-            return src.FindAllOfType<ControlUiDTO>().Select(e => _mapper.Map<ControlUiEnity>(e)).Cast<T>();
+            return src.FindAllOfType<ControlUiDTO>().Select(e => _mapper.Map<ControlUiEntity>(e)).Cast<T>();
         }
     }
 

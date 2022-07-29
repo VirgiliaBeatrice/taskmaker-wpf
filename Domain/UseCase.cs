@@ -52,7 +52,7 @@ namespace taskmaker_wpf.Domain {
 
         public BaseEntity[] GetTargets() {
             var motors = _motorRepo.FindAll<MotorEntity>();
-            var controlUis = _controlUiRepo.FindAll<ControlUiEnity>();
+            var controlUis = _controlUiRepo.FindAll<ControlUiEntity>();
 
             var targets = new List<BaseEntity>();
 
@@ -70,25 +70,27 @@ namespace taskmaker_wpf.Domain {
             _repository = repository;
         }
 
-        public ControlUiEnity[] GetControlUis() {
-            var uis = _repository.FindAll<ControlUiEnity>();
+        public ControlUiEntity[] GetControlUis() {
+            var uis = _repository.FindAll<ControlUiEntity>();
 
             return uis.ToArray();
         }
 
-        public ControlUiEnity AddUi() {
-            var ui = new ControlUiEnity();
+        public ControlUiEntity AddUi() {
+            var ui = new ControlUiEntity();
             _repository.Add(ui);
 
             return ui;
         }
 
-        public void AddNode(ControlUiEnity ui, Point pt) {
+        public void AddNode(ControlUiEntity ui, Point pt) {
             var node = new NodeEntity {
                 Value = pt
             };
 
-            ui.Nodes.Add(node);
+            ui.Nodes = ui.Nodes.Concat(new NodeEntity[] { node }).ToArray();
+            node.Id = ui.Nodes.Length - 1;
+
             _repository.Update(ui);
         }
     }
@@ -101,16 +103,8 @@ namespace taskmaker_wpf.Domain {
             _controlUiRepository = controlUiRepository;
         }
 
-        public void AddNode(ControlUiEnity ui, Point pt) {
-            // Domain
-            ui.Nodes.Add(new NodeEntity { Value = pt });
-
-            // Data
-            _controlUiRepository.Update(ui);
-        }
-
         // Nodes => Simplices => Voronois
-        public void Build(ControlUiEnity ui) {
+        public void Build(ControlUiEntity ui) {
             //var ui = _controlUiRepository.Find(ui.Name);
             var nodes = ui.Nodes;
             var nodeInput = np.array(
@@ -118,15 +112,18 @@ namespace taskmaker_wpf.Domain {
                     .SelectMany(e => e)
                     .ToArray());
 
-            if (nodes.Count <= 2) return;
+            if (nodes.Length <= 2) return;
 
             // Domain
             var simplices = QhullCSharp.RunDelaunay(nodeInput)
                 .Select(indices => new SimplexRegionEntity(indices.Select(idx => nodes.ElementAt(idx)).ToArray()))
                 .ToArray();
 
+            var regions = new List<BaseRegionEntity>();
+
             foreach(var item in simplices) {
-                ui.Regions.Add(item);
+                regions.Add(item);
+                //ui.Regions.Add(item);
             }
 
             var extremes = QhullCSharp.RunConvex(nodeInput)
@@ -135,8 +132,11 @@ namespace taskmaker_wpf.Domain {
             var voronois = BuildVoronoiRegions(extremes, simplices);
 
             foreach(var item in voronois) {
-                ui.Regions.Add(item);
+                regions.Add(item);
+                //ui.Regions.Add(item);
             }
+
+            ui.Regions = regions.ToArray();
 
             // Data
             _controlUiRepository.Update(ui);

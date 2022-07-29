@@ -22,6 +22,7 @@ using AutoMapper;
 namespace taskmaker_wpf.ViewModels
 {
     public class NodeState : BindableBase {
+
         private int _id;
         public int Id {
             get => _id;
@@ -41,52 +42,35 @@ namespace taskmaker_wpf.ViewModels
         }
     }
 
-    public class StatefulSimplex : BindableBase, ITraceRegion {
-        private SimplexM _target;
+    public class SimplexState : BindableBase, ITraceRegion {
+        private int _id;
+        public int Id {
+            get => _id;
+            set => SetProperty(ref _id, value);
+        }
 
         private Point[] _points;
         public Point[] Points {
             get => _points;
             set => SetProperty(ref _points, value);
         }
-
-        public StatefulSimplex(SimplexM target) {
-            _target = target;
-
-            _points = _target.Nodes
-                .Select(e => e.Location.ToPoint())
-                .ToArray();
-        }
-
-        public SimplexM GetSimplex() => _target;
-
-        public object GetRef() => _target;
     }
 
-    public class StatefulVoronoi : BindableBase, ITraceRegion {
-        private VoronoiRegionM _target;
+    public class VoronoiState : BindableBase, ITraceRegion {
+        private int _id;
+        public int Id {
+            get => _id;
+            set => SetProperty(ref _id, value);
+        }
 
         private Point[] _points;
         public Point[] Points {
             get => _points;
             set => SetProperty(ref _points, value);
         }
-
-        public StatefulVoronoi(VoronoiRegionM target) {
-            _target = target;
-
-            _points = _target.Vertices
-                .Select(e => e.ToPoint())
-                .ToArray();
-        }
-
-        public VoronoiRegionM GetSimplex() => _target;
-        public object GetRef() => _target;
     }
 
-    public interface ITraceRegion {
-        object GetRef();
-    }
+    public interface ITraceRegion { }
 
 
     public static class Helper
@@ -154,8 +138,6 @@ namespace taskmaker_wpf.ViewModels
 
         private string _keymapInfo;
 
-        //private NLinearMap _map => UI.Map;
-
         public TargetsPanelViewModel TargetsPanelVM { get; set; }
 
         private string _statusMsg;
@@ -167,14 +149,14 @@ namespace taskmaker_wpf.ViewModels
             set => SetProperty(ref _nodes, value);
         }
 
-        private ObservableCollection<StatefulSimplex> _simplices;
-        public ObservableCollection<StatefulSimplex> Simplices {
+        private ObservableCollection<SimplexState> _simplices;
+        public ObservableCollection<SimplexState> Simplices {
             get => _simplices;
             set => SetProperty(ref _simplices, value);
         }
 
-        private ObservableCollection<StatefulVoronoi> _voronois;
-        public ObservableCollection<StatefulVoronoi> Voronois {
+        private ObservableCollection<VoronoiState> _voronois;
+        public ObservableCollection<VoronoiState> Voronois {
             get { return _voronois; }
             set { SetProperty(ref _voronois, value); }
         }
@@ -388,8 +370,8 @@ namespace taskmaker_wpf.ViewModels
         //    SelectedTargets = Model.Targets.ToArray();
         //}
 
-        private ControlUiEnity _ui;
-        private ControlUiEnity UI {
+        private ControlUiEntity _ui;
+        private ControlUiEntity UI {
             get => _ui;
             set {
                 _ui = value;
@@ -400,7 +382,7 @@ namespace taskmaker_wpf.ViewModels
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext) {
-            UI = navigationContext.Parameters["ui"] as ControlUiEnity;
+            UI = navigationContext.Parameters["ui"] as ControlUiEntity;
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext) {

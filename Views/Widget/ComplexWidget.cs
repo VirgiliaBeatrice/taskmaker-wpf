@@ -402,7 +402,7 @@ namespace taskmaker_wpf.Views {
 
         private void OnSimplexCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
             if (e.Action == NotifyCollectionChangedAction.Add) {
-                foreach (StatefulSimplex item in e.NewItems) {
+                foreach (SimplexState item in e.NewItems) {
                     var widget = new SimplexWidget {
                         DataContext = item,
                         Focusable = true
@@ -437,7 +437,7 @@ namespace taskmaker_wpf.Views {
                 }
             }
             else if (e.Action == NotifyCollectionChangedAction.Remove) {
-                foreach (StatefulSimplex item in e.OldItems) {
+                foreach (SimplexState item in e.OldItems) {
                     var widget = Children
                         .OfType<SimplexWidget>()
                         .Where(e1 => e1.DataContext == item).First();
@@ -460,7 +460,7 @@ namespace taskmaker_wpf.Views {
 
         private void OnVoronoiCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
             if (e.Action == NotifyCollectionChangedAction.Add) {
-                foreach (StatefulVoronoi item in e.NewItems) {
+                foreach (VoronoiState item in e.NewItems) {
                     var widget = new VoronoiWidget {
                         DataContext = item,
                         Focusable = true
@@ -495,7 +495,7 @@ namespace taskmaker_wpf.Views {
                 }
             }
             else if (e.Action == NotifyCollectionChangedAction.Remove) {
-                foreach (StatefulVoronoi item in e.OldItems) {
+                foreach (VoronoiState item in e.OldItems) {
                     var widget = Children
                         .OfType<VoronoiWidget>()
                         .Where(e1 => e1.DataContext == item).First();
