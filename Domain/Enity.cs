@@ -39,6 +39,10 @@ namespace taskmaker_wpf.Domain {
     public class BaseEntity : IEntity {
         public int Id { get; set; }
         public string Name { get; set; }
+
+        public override string ToString() {
+            return GetType().Name + "_" + Name;
+        }
     }
 
     public class NLinearMapEntity : BaseEntity {

@@ -15,16 +15,13 @@ using taskmaker_wpf.Domain;
 
 namespace taskmaker_wpf.ViewModels {
     public class RegionControlUISelectionViewModel : BindableBase, INavigationAware {
-        private readonly SystemService _systemSvr;
         private readonly IRegionManager _regionManager;
         private readonly ControlUiUseCase _useCase;
         public ObservableCollection<ControlUiEntity> UIs { get; set; } = new ObservableCollection<ControlUiEntity>();
 
         public RegionControlUISelectionViewModel(
             IRegionManager regionManager,
-            IEnumerable<IUseCase> useCases,
-            SystemService systemSvr) {
-            _systemSvr = systemSvr;
+            IEnumerable<IUseCase> useCases) {
             _regionManager = regionManager;
             _useCase = useCases.OfType<ControlUiUseCase>().First();
 

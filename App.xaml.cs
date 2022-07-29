@@ -30,13 +30,15 @@ namespace taskmaker_wpf {
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
             // Register services
             containerRegistry.RegisterSingleton<SerialService>();
-            containerRegistry.RegisterSingleton<SystemService>();
+            //containerRegistry.RegisterSingleton<SystemService>();
 
             // Register model agent
             containerRegistry.RegisterSingleton<MapperConfiguration>(
                 () => {
                     var config = new MapperConfiguration(
                         cfg => {
+                            cfg.CreateMap<NLinearMapEntity, NLinearMapState>().ReverseMap();
+
                             cfg.CreateMap<NodeEntity, NodeState>().ReverseMap();
                             cfg.CreateMap<NodeEntity, NodeDTO>(MemberList.Destination)
                             .ReverseMap();

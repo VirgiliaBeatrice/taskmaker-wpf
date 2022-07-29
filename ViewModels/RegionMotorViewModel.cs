@@ -120,7 +120,6 @@ namespace taskmaker_wpf.ViewModels {
 
         private IRegionManager _regionManager;
         private SerialService _serialSrv;
-        private readonly SystemService _systemSvr;
         private readonly IMapper _mapper;
         private readonly MotorUseCase _motorUseCase;
 
@@ -128,11 +127,9 @@ namespace taskmaker_wpf.ViewModels {
             IRegionManager regionManager,
             IEnumerable<IUseCase> useCases,
             MapperConfiguration config,
-            SerialService serialSrv,
-            SystemService systemSvr) {
+            SerialService serialSrv) {
             _regionManager = regionManager;
             _serialSrv = serialSrv;
-            _systemSvr = systemSvr;
 
             _mapper = config.CreateMapper();
 

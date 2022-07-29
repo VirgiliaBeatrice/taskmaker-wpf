@@ -20,8 +20,7 @@ namespace taskmaker_wpf.Services {
         private int _nBoard;
         private int _nMotor;
 
-        public SerialService() {
-        }
+        public SerialService() { }
 
         public string[] ListAllPorts() {
             Ports = new List<string>(SerialPort.GetPortNames());
@@ -63,6 +62,21 @@ namespace taskmaker_wpf.Services {
 
         public Motor GetMotorInstance(int board, int motor) {
             return Motors[board * _nBoard + motor];
+        }
+
+        public void Update(int boardId, int motorId, double value) {
+            if (IsConnected)
+                Motors[boardId * _nBoard + motorId].position.Value = (int)value;
+        }
+
+        public void SendToNuibot() {
+            short[] targets = new short[Boards.NMotor];
+
+            for (int i = 0; i < Motors.Count; ++i) {
+                targets[i] = (short)Motors[i].position.Value;
+            }
+
+            Boards.SendPosDirect(targets);
         }
     }
 }

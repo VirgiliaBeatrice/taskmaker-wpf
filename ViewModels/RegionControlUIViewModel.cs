@@ -267,7 +267,7 @@ namespace taskmaker_wpf.ViewModels {
             ) {
             _mapper = config.CreateMapper();
 
-            TargetsPanelVM = new TargetsPanelViewModel(useCases);
+            TargetsPanelVM = new TargetsPanelViewModel(useCases, config);
             _uiUseCase = useCases.OfType<ControlUiUseCase>().FirstOrDefault();
             _buildUseCase = useCases.OfType<BuildRegionUseCase>().FirstOrDefault();
             SystemInfo = $"{_operationMode}";

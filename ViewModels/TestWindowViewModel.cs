@@ -30,15 +30,12 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private readonly IRegionManager _regionManager;
-        private readonly SystemService _systemSvr;
 
-        public TestWindowViewModel(IRegionManager regionManager, SystemService systemSvr) {
+        public TestWindowViewModel(IRegionManager regionManager) {
             _regionManager = regionManager;
             _regionManager.RegisterViewWithRegion("NavigationRegion",
                 typeof(Views.NavigationView));
             _regionManager.RegisterViewWithRegion("ContentRegion", typeof(Views.RegionHome));
-
-            _systemSvr = systemSvr;
         }
 
         public void TestCommandExecute() {

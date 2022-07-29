@@ -11,33 +11,9 @@ using taskmaker_wpf.Domain;
 using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Models;
 using taskmaker_wpf.Services;
+using AutoMapper;
 
 namespace taskmaker_wpf.ViewModels {
-    public class StatefulTarget : BindableBase {
-        private ITarget _target;
-
-        private bool _isSelected = false;
-        public bool IsSelected {
-            get => _isSelected;
-            set => SetProperty(ref _isSelected, value);
-        }
-
-        private string _name;
-        public string Name {
-            get => _name;
-            set => SetProperty(ref _name, value);
-        }
-
-        public StatefulTarget(ITarget target) {
-            _target = target;
-
-            Name = target.Name;
-        }
-
-        public ITarget GetTarget() => _target;
-
-    }
-
     public class TargetState : BindableBase {
         private object _target;
 
@@ -49,6 +25,27 @@ namespace taskmaker_wpf.ViewModels {
         private bool _isSelected;
 
         public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }
+
+
+        public string Name => ((BaseEntity)_target).Name;
+        public override string ToString() {
+            return ((BaseEntity)_target).ToString();
+        }
+    }
+
+    public class NLinearMapState : BindableBase {
+        private string _name;
+        public string Name {
+            get => _name;
+            set => SetProperty(ref _name, value);
+        }
+
+        private object[] _targets;
+        public object[] Targets {
+            get => _targets;
+            set => SetProperty(ref _targets, value);
+        }
+
     }
 
     public class TargetsPanelViewModel : BindableBase {
@@ -61,24 +58,14 @@ namespace taskmaker_wpf.ViewModels {
             set => SetProperty(ref _validTargets, value);
         }
 
-        private ITarget[] _uiTargets;
-        public ITarget[] UiTargets {
-            get => _uiTargets;
-            private set {
-                SetProperty(ref _uiTargets, value);
-
-                //UI.SetTargets(_uiTargets);
-            }
-        }
-
-        private ObservableCollection<NLinearMapEntity> _maps = new ObservableCollection<NLinearMapEntity>();
-        public ObservableCollection<NLinearMapEntity> Maps {
+        private ObservableCollection<NLinearMapState> _maps = new ObservableCollection<NLinearMapState>();
+        public ObservableCollection<NLinearMapState> Maps {
             get => _maps;
             set => SetProperty(ref _maps, value);
         }
 
-        private NLinearMapEntity _selectedMap;
-        public NLinearMapEntity SelectedMap {
+        private NLinearMapState _selectedMap;
+        public NLinearMapState SelectedMap {
             get => _selectedMap;
             set => SetProperty(ref _selectedMap, value);
         }
@@ -90,22 +77,37 @@ namespace taskmaker_wpf.ViewModels {
         private DelegateCommand _addCommand;
         public DelegateCommand AddCommand => _addCommand ?? (_addCommand = new DelegateCommand(ExecuteAddCommand));
 
+        private readonly MotorUseCase _motorUseCase;
+        private readonly IMapper _mapper;
         private void ExecuteAddCommand() {
             var map = _mapUseCase.AddMap();
 
-            Maps.Add(map);
+            Maps.Clear();
+            Maps.AddRange(
+                _mapUseCase.GetMaps()
+                    .Select(e => _mapper.Map<NLinearMapState>(e))
+                    );
         }
 
         void ExecuteUpdateCommand() {
             SelectedMap.Targets = ValidTargets.Where(e => e.IsSelected).ToArray();
+
+            _mapUseCase.UpdateMap(_mapper.Map<NLinearMapEntity>(SelectedMap));
         }
 
-        public TargetsPanelViewModel(IEnumerable<IUseCase> useCases) {
-            _useCase = useCases.OfType<ListTargetUseCase>().First();
-            _mapUseCase = useCases.OfType<NLinearMapUseCase>().First();
+        public TargetsPanelViewModel(IEnumerable<IUseCase> useCases, MapperConfiguration config) {
+            _useCase = useCases.OfType<ListTargetUseCase>().FirstOrDefault();
+            _mapUseCase = useCases.OfType<NLinearMapUseCase>().FirstOrDefault();
+            _motorUseCase = useCases.OfType<MotorUseCase>().FirstOrDefault();
+
+            _mapper = config.CreateMapper();
 
             ValidTargets = _useCase.GetTargets().Select(e => new TargetState() { Target = e }).ToArray();
-            Maps.AddRange(_mapUseCase.GetMaps());
+
+            Maps.AddRange(
+                _mapUseCase.GetMaps()
+                    .Select(e => _mapper.Map<NLinearMapState>(e))
+                    );
         }
     }
 }

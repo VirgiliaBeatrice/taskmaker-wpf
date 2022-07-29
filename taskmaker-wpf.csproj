@@ -222,7 +222,7 @@
     <Compile Include="PCController\Pose.cs" />
     <Compile Include="PCController\PoseData.cs" />
     <Compile Include="Qhull\QhullCSharp.cs" />
-    <Compile Include="Services\SystemService.cs" />
+    <Compile Include="Services\SerialService.cs" />
     <Compile Include="ViewModels\RegionControlUISelectionViewModel.cs" />
     <Compile Include="ViewModels\TargetsPanelViewModel.cs" />
     <Compile Include="Views\DirectControlModal.xaml.cs">
@@ -252,8 +252,6 @@
     <Compile Include="Views\RegionHome.xaml.cs">
       <DependentUpon>RegionHome.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Services\SerialManagerService.cs" />
-    <Compile Include="Services\SimplexService.cs" />
     <Compile Include="Utilities\TreeElement.cs" />
     <Compile Include="ViewModels\MainPageViewModel.cs" />
     <Compile Include="ViewModels\MessageBoxViewModel.cs" />

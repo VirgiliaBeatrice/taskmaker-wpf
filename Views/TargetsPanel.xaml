@@ -5,7 +5,7 @@
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:taskmaker_wpf.Views"
-             xmlns:m="clr-namespace:taskmaker_wpf.Model.Data"
+             xmlns:domain="clr-namespace:taskmaker_wpf.Domain"
              xmlns:sys="clr-namespace:System;assembly=mscorlib" 
              xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels"
              d:DataContext="{d:DesignInstance Type=viewmodels:TargetsPanelViewModel}"
@@ -19,7 +19,7 @@
 
         <DataTemplate
             x:Key="motorControlPanel"
-            DataType="{x:Type m:Motor}">
+            DataType="{x:Type domain:MotorEntity}">
             <Grid
                 Margin="0, 4, 0, 4">
                 <Grid.ColumnDefinitions>
@@ -111,10 +111,10 @@
                     </d:ComboBox.SelectedIndex>
                     <d:ComboBox.ItemsSource>
                         <x:Array Type="{x:Type sys:Object}">
-                            <m:Motor Name="S0" Value="100" Max="10000" Min="-10000"/>
-                            <m:Motor Name="S1" Value="100" Max="10000" Min="-10000"/>
-                            <m:Motor Name="S2" Value="100" Max="10000" Min="-10000"/>
-                            <m:Motor Name="S3" Value="100" Max="10000" Min="-10000"/>
+                            <domain:MotorEntity Name="S0" Value="100" Max="10000" Min="-10000"/>
+                            <domain:MotorEntity Name="S1" Value="100" Max="10000" Min="-10000"/>
+                            <domain:MotorEntity Name="S2" Value="100" Max="10000" Min="-10000"/>
+                            <domain:MotorEntity Name="S3" Value="100" Max="10000" Min="-10000"/>
                         </x:Array>
                     </d:ComboBox.ItemsSource>
                     <ComboBox.ItemTemplate>
@@ -127,7 +127,7 @@
                                 <TextBlock
                                     Margin="10 0 0 0"
                                     VerticalAlignment="Center"
-                                    Text="{Binding Converter={StaticResource SelectableTargetConverter}, Path=Name}" />
+                                    Text="{Binding Path=Name}" />
                             </StackPanel>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
@@ -144,14 +144,14 @@
 
             <ItemsControl 
                 Margin="0, 4, 0, 4"
-                ItemsSource="{Binding UiTargets}"
+                ItemsSource="{Binding SelectedMap.Targets}"
                 ItemTemplate="{StaticResource motorControlPanel}">
                 <d:ItemsControl.ItemsSource>
                     <x:Array Type="{x:Type sys:Object}">
-                        <m:Motor Name="S0" Value="100" Max="10000" Min="-10000"/>
-                        <m:Motor Name="S1" Value="100" Max="10000" Min="-10000"/>
-                        <m:Motor Name="S2" Value="100" Max="10000" Min="-10000"/>
-                        <m:Motor Name="S3" Value="100" Max="10000" Min="-10000"/>
+                        <domain:MotorEntity Name="S0" Value="100" Max="10000" Min="-10000"/>
+                        <domain:MotorEntity Name="S1" Value="100" Max="10000" Min="-10000"/>
+                        <domain:MotorEntity Name="S2" Value="100" Max="10000" Min="-10000"/>
+                        <domain:MotorEntity Name="S3" Value="100" Max="10000" Min="-10000"/>
                     </x:Array>
                 </d:ItemsControl.ItemsSource>
             </ItemsControl>

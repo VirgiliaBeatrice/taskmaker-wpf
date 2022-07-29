@@ -8,6 +8,7 @@ using taskmaker_wpf.Domain;
 using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Models;
 using AutoMapper;
+using taskmaker_wpf.Services;
 
 namespace taskmaker_wpf.Data {
 
@@ -28,10 +29,12 @@ namespace taskmaker_wpf.Data {
             private set;
         }
         private IMapper _mapper;
+        private readonly SerialService _serial;
 
-        public MotorRepository(IDataSource dataSource, MapperConfiguration config) {
+        public MotorRepository(IDataSource dataSource, MapperConfiguration config, SerialService serial) {
             DataSource = dataSource;
             _mapper = config.CreateMapper();
+            _serial = serial;
         }
 
         public void Add<T>(T item) {
@@ -64,8 +67,13 @@ namespace taskmaker_wpf.Data {
 
         public void Update<T>(T item) {
             var src = DataSource as LocalDataSource;
+            var motor = item as MotorEntity;
 
-            src.Update(_mapper.Map<MotorDTO>(item as MotorEntity));
+            src.Update(_mapper.Map<MotorDTO>(motor));
+            _serial.Update(motor.BoardId, motor.MotorId, motor.Value);
+
+            //
+            // _serial.SendToNuibot();
         }
     }
 
