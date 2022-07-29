@@ -10,6 +10,8 @@ using taskmaker_wpf.Models;
 using AutoMapper;
 
 namespace taskmaker_wpf.Data {
+
+    // Hold DTO, depend on Entity
     internal interface IRepository {
         IDataSource DataSource { get; }
         void Add<T>(T item);
@@ -183,7 +185,8 @@ namespace taskmaker_wpf.Data {
         public IEnumerable<T> FindAll<T>() {
             var src = DataSource as LocalDataSource;
 
-            return src.FindAllOfType<NLinearMapDTO>().Cast<T>();
+            return _mapper.Map<NLinearMapEntity[]>(src.FindAllOfType<NLinearMapDTO>()).Cast<T>();
+            //return src.FindAllOfType<NLinearMapDTO>().Cast<T>();
         }
         public void Update<T>(T item) {
             var src = DataSource as LocalDataSource;

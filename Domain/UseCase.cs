@@ -76,6 +76,10 @@ namespace taskmaker_wpf.Domain {
             return uis.ToArray();
         }
 
+        public ControlUiEntity GetControlUi(int id) {
+            return _repository.Find<ControlUiEntity>(id);
+        }
+
         public ControlUiEntity AddUi() {
             var ui = new ControlUiEntity();
             _repository.Add(ui);
@@ -104,12 +108,11 @@ namespace taskmaker_wpf.Domain {
         }
 
         // Nodes => Simplices => Voronois
-        public void Build(ControlUiEntity ui) {
-            //var ui = _controlUiRepository.Find(ui.Name);
-            var nodes = ui.Nodes;
+        public void Build(int id) {
+            var ui = _controlUiRepository.Find<ControlUiEntity>(id);
+            var nodes = ui.Nodes.OrderBy(e => e.Id).ToArray();
             var nodeInput = np.array(
-                nodes.Select(e => new[] { e.Value.X, e.Value.Y })
-                    .SelectMany(e => e)
+                nodes.Select(e => np.array(new[] { e.Value.X, e.Value.Y }))
                     .ToArray());
 
             if (nodes.Length <= 2) return;
@@ -128,6 +131,7 @@ namespace taskmaker_wpf.Domain {
 
             var extremes = QhullCSharp.RunConvex(nodeInput)
                 .Select(idx => nodes.ElementAt(idx))
+                .Reverse()
                 .ToArray();
             var voronois = BuildVoronoiRegions(extremes, simplices);
 

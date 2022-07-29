@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -290,47 +291,153 @@ namespace taskmaker_wpf.Views {
                 new PropertyMetadata(null));
 
 
-        public IEnumerable NodeSource {
-            get { return (IEnumerable)GetValue(NodeSourceProperty); }
-            set { SetValue(NodeSourceProperty, value); }
+
+        public ControlUiState UiState {
+            get { return (ControlUiState)GetValue(UiStateProperty); }
+            set { SetValue(UiStateProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for NodeSource.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty NodeSourceProperty =
-            DependencyProperty.Register("NodeSource", typeof(IEnumerable), typeof(ComplexWidget),
-                new FrameworkPropertyMetadata(OnCollectionPropertyChanged));
+        // Using a DependencyProperty as the backing store for UiState.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty UiStateProperty =
+            DependencyProperty.Register("UiState", typeof(ControlUiState), typeof(ComplexWidget), new FrameworkPropertyMetadata(null, OnUiStatePropertyChanged));
 
-        private static void OnCollectionPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            if (d is ComplexWidget cw) {
-                if (e.Property == NodeSourceProperty) {
-                    if (e.OldValue is INotifyCollectionChanged oldCollection) {
-                        oldCollection.CollectionChanged -= cw.OnNodeCollectionChanged;
+        private static void OnUiStatePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
+            var complex = (ComplexWidget)d;
+            var oldValue = (ControlUiState)args.OldValue;
+            var newValue = (ControlUiState)args.NewValue;
+
+            void OnPropertyChanged(object s, PropertyChangedEventArgs args1) {
+                //var complex = (ComplexWidget)s;
+                if (args1.PropertyName == nameof(ControlUiState.Nodes)) {
+                    var oldNodeStates = complex.Children.OfType<NodeWidget>()
+                        .Select(e => e.DataContext)
+                        .Cast<NodeState>()
+                        .ToArray();
+                    var newNodeStates = complex.UiState.Nodes;
+                    var remove = oldNodeStates.Except(newNodeStates);
+                    var add = newNodeStates.Except(oldNodeStates);
+
+                    //var diff = oldNodeStates.Except(newNodeStates);
+                    foreach (var nodeState in remove) {
+                        var nodeWidget = complex.Children
+                            .OfType<NodeWidget>()
+                            .Where(e => e.DataContext == nodeState).FirstOrDefault();
+
+                        complex.Children.Remove(nodeWidget);
                     }
 
-                    if (e.NewValue is INotifyCollectionChanged newCollection) {
-                        newCollection.CollectionChanged += cw.OnNodeCollectionChanged;
+
+                    foreach (var nodeState in add) {
+                        var nodeWidget = new NodeWidget {
+                            DataContext = nodeState,
+                            Focusable = true,
+                        };
+
+                        SetLeft(nodeWidget, 0);
+                        SetTop(nodeWidget, 0);
+                        SetZIndex(nodeWidget, 5);
+
+                        complex.Children.Add(nodeWidget);
+
+                        BindingOperations.SetBinding(
+                            nodeWidget,
+                            NodeWidget.LocationProperty,
+                            new Binding {
+                                Path = new PropertyPath("Value")
+                            });
+                        BindingOperations.SetBinding(
+                            nodeWidget,
+                            WidthProperty,
+                            new Binding {
+                                ElementName = "complex",
+                                Path = new PropertyPath("ActualWidth")
+                            });
+                        BindingOperations.SetBinding(
+                            nodeWidget,
+                            HeightProperty,
+                            new Binding {
+                                ElementName = "complex",
+                                Path = new PropertyPath("ActualHeight")
+                            });
+                        BindingOperations.SetBinding(
+                            nodeWidget,
+                            NodeWidget.IsSetProperty,
+                            new Binding {
+                                Path = new PropertyPath("IsSet")
+                            });
                     }
                 }
-                else if (e.Property == SimplexSourceProperty) {
-                    if (e.OldValue is INotifyCollectionChanged oldCollection) {
-                        oldCollection.CollectionChanged -= cw.OnSimplexCollectionChanged;
-                    }
+                else if (args1.PropertyName == nameof(ControlUiState.Regions)) {
+                    var oldSimplexStates = complex.Children.OfType<SimplexWidget>()
+                        .Select(e => e.DataContext)
+                        .Cast<SimplexState>()
+                        .ToArray();
+                    var newSimplexStates = complex.UiState.Regions
+                        .OfType<SimplexState>()
+                        .ToArray();
 
-                    if (e.NewValue is INotifyCollectionChanged newCollection) {
-                        newCollection.CollectionChanged += cw.OnSimplexCollectionChanged;
-                    }
-                }
-                else if (e.Property == VoronoiSourceProperty) {
-                    if (e.OldValue is INotifyCollectionChanged oldCollection) {
-                        oldCollection.CollectionChanged -= cw.OnVoronoiCollectionChanged;
-                    }
+                    complex.OnSimplexCollectionChanged(oldSimplexStates, newSimplexStates);
 
-                    if (e.NewValue is INotifyCollectionChanged newCollection) {
-                        newCollection.CollectionChanged += cw.OnVoronoiCollectionChanged;
-                    }
+                    var oldVoronoiStates = complex.Children.OfType<VoronoiWidget>()
+                        .Select(e => e.DataContext)
+                        .Cast<VoronoiState>()
+                        .ToArray();
+                    var newVoronoiStates = complex.UiState.Regions
+                        .OfType<VoronoiState>()
+                        .ToArray();
+
+                    complex.OnVoronoiCollectionChanged(oldVoronoiStates, newVoronoiStates);
                 }
             }
+
+            if (newValue != null)
+                newValue.PropertyChanged += OnPropertyChanged;
+            if (oldValue != null)
+                oldValue.PropertyChanged -= OnPropertyChanged;
+
         }
+
+        //public IEnumerable NodeSource {
+        //    get { return (IEnumerable)GetValue(NodeSourceProperty); }
+        //    set { SetValue(NodeSourceProperty, value); }
+        //}
+
+        //// Using a DependencyProperty as the backing store for NodeSource.  This enables animation, styling, binding, etc...
+        //public static readonly DependencyProperty NodeSourceProperty =
+        //    DependencyProperty.Register("NodeSource", typeof(IEnumerable), typeof(ComplexWidget),
+        //        new FrameworkPropertyMetadata(OnCollectionPropertyChanged));
+
+        //private static void OnCollectionPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+        //    if (d is ComplexWidget cw) {
+        //        if (e.Property == NodeSourceProperty) {
+        //            if (e.OldValue is INotifyCollectionChanged oldCollection) {
+        //                oldCollection.CollectionChanged -= cw.OnNodeCollectionChanged;
+        //            }
+
+        //            if (e.NewValue is INotifyCollectionChanged newCollection) {
+        //                newCollection.CollectionChanged += cw.OnNodeCollectionChanged;
+        //            }
+        //        }
+        //        else if (e.Property == SimplexSourceProperty) {
+        //            if (e.OldValue is INotifyCollectionChanged oldCollection) {
+        //                oldCollection.CollectionChanged -= cw.OnSimplexCollectionChanged;
+        //            }
+
+        //            if (e.NewValue is INotifyCollectionChanged newCollection) {
+        //                newCollection.CollectionChanged += cw.OnSimplexCollectionChanged;
+        //            }
+        //        }
+        //        else if (e.Property == VoronoiSourceProperty) {
+        //            if (e.OldValue is INotifyCollectionChanged oldCollection) {
+        //                oldCollection.CollectionChanged -= cw.OnVoronoiCollectionChanged;
+        //            }
+
+        //            if (e.NewValue is INotifyCollectionChanged newCollection) {
+        //                newCollection.CollectionChanged += cw.OnVoronoiCollectionChanged;
+        //            }
+        //        }
+        //    }
+        //}
 
         private void OnNodeCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
             if (e.Action == NotifyCollectionChangedAction.Add) {
@@ -354,7 +461,7 @@ namespace taskmaker_wpf.Views {
                         widget,
                         NodeWidget.LocationProperty,
                         new Binding {
-                            Path = new PropertyPath("Location")
+                            Path = new PropertyPath("Value")
                         });
                     BindingOperations.SetBinding(
                         widget,
@@ -391,117 +498,106 @@ namespace taskmaker_wpf.Views {
 
 
 
-        public IEnumerable SimplexSource {
-            get { return (IEnumerable)GetValue(SimplexSourceProperty); }
-            set { SetValue(SimplexSourceProperty, value); }
+        //public IEnumerable SimplexSource {
+        //    get { return (IEnumerable)GetValue(SimplexSourceProperty); }
+        //    set { SetValue(SimplexSourceProperty, value); }
+        //}
+
+        //// Using a DependencyProperty as the backing store for SimplexSource.  This enables animation, styling, binding, etc...
+        //public static readonly DependencyProperty SimplexSourceProperty =
+        //    DependencyProperty.Register("SimplexSource", typeof(IEnumerable), typeof(ComplexWidget), new PropertyMetadata(null, OnCollectionPropertyChanged));
+
+        public void OnSimplexCollectionChanged(SimplexState[] oldStates, SimplexState[] newStates) {
+            var remove = oldStates.Except(newStates);
+            var add = newStates.Except(oldStates);
+
+            foreach (SimplexState item in remove) {
+                var widget = Children
+                    .OfType<SimplexWidget>()
+                    .Where(e1 => e1.DataContext == item).FirstOrDefault();
+
+                Children.Remove(widget);
+            }
+
+            foreach (SimplexState item in add) {
+                var widget = new SimplexWidget {
+                    DataContext = item,
+                    Focusable = true
+                };
+
+                SetLeft(widget, 0);
+                SetTop(widget, 0);
+                SetZIndex(widget, 2);
+
+                Children.Add(widget);
+
+                BindingOperations.SetBinding(
+                    widget,
+                    WidthProperty,
+                    new Binding {
+                        ElementName = "complex",
+                        Path = new PropertyPath("ActualWidth")
+                    });
+                BindingOperations.SetBinding(
+                    widget,
+                    HeightProperty,
+                    new Binding {
+                        ElementName = "complex",
+                        Path = new PropertyPath("ActualHeight")
+                    });
+                BindingOperations.SetBinding(
+                    widget,
+                    SimplexWidget.PointsProperty,
+                    new Binding {
+                        Path = new PropertyPath("Points")
+                    });
+            }
         }
 
-        // Using a DependencyProperty as the backing store for SimplexSource.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty SimplexSourceProperty =
-            DependencyProperty.Register("SimplexSource", typeof(IEnumerable), typeof(ComplexWidget), new PropertyMetadata(null, OnCollectionPropertyChanged));
+        public void OnVoronoiCollectionChanged(VoronoiState[] oldStates, VoronoiState[] newStates) {
+            var remove = oldStates.Except(newStates);
+            var add = newStates.Except(oldStates);
 
-        private void OnSimplexCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
-            if (e.Action == NotifyCollectionChangedAction.Add) {
-                foreach (SimplexState item in e.NewItems) {
-                    var widget = new SimplexWidget {
-                        DataContext = item,
-                        Focusable = true
-                    };
+            foreach (VoronoiState item in remove) {
+                var widget = Children
+                    .OfType<VoronoiWidget>()
+                    .Where(e1 => e1.DataContext == item).First();
 
-                    SetLeft(widget, 0);
-                    SetTop(widget, 0);
-                    SetZIndex(widget, 2);
-
-                    Children.Add(widget);
-
-                    BindingOperations.SetBinding(
-                        widget,
-                        WidthProperty,
-                        new Binding {
-                            ElementName = "complex",
-                            Path = new PropertyPath("ActualWidth")
-                        });
-                    BindingOperations.SetBinding(
-                        widget,
-                        HeightProperty,
-                        new Binding {
-                            ElementName = "complex",
-                            Path = new PropertyPath("ActualHeight")
-                        });
-                    BindingOperations.SetBinding(
-                        widget,
-                        SimplexWidget.PointsProperty,
-                        new Binding {
-                            Path = new PropertyPath("Points")
-                        });
-                }
+                Children.Remove(widget);
             }
-            else if (e.Action == NotifyCollectionChangedAction.Remove) {
-                foreach (SimplexState item in e.OldItems) {
-                    var widget = Children
-                        .OfType<SimplexWidget>()
-                        .Where(e1 => e1.DataContext == item).First();
 
-                    Children.Remove(widget);
-                }
-            }
-        }
+            foreach (VoronoiState item in add) {
+                var widget = new VoronoiWidget {
+                    DataContext = item,
+                    Focusable = true
+                };
 
+                SetLeft(widget, 0);
+                SetTop(widget, 0);
+                SetZIndex(widget, 2);
 
+                Children.Add(widget);
 
-        public IEnumerable VoronoiSource {
-            get { return (IEnumerable)GetValue(VoronoiSourceProperty); }
-            set { SetValue(VoronoiSourceProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for VoronoiSource.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty VoronoiSourceProperty =
-            DependencyProperty.Register("VoronoiSource", typeof(IEnumerable), typeof(ComplexWidget), new PropertyMetadata(null, OnCollectionPropertyChanged));
-
-        private void OnVoronoiCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
-            if (e.Action == NotifyCollectionChangedAction.Add) {
-                foreach (VoronoiState item in e.NewItems) {
-                    var widget = new VoronoiWidget {
-                        DataContext = item,
-                        Focusable = true
-                    };
-
-                    SetLeft(widget, 0);
-                    SetTop(widget, 0);
-                    SetZIndex(widget, 2);
-
-                    Children.Add(widget);
-
-                    BindingOperations.SetBinding(
-                        widget,
-                        WidthProperty,
-                        new Binding {
-                            ElementName = "complex",
-                            Path = new PropertyPath("ActualWidth")
-                        });
-                    BindingOperations.SetBinding(
-                        widget,
-                        HeightProperty,
-                        new Binding {
-                            ElementName = "complex",
-                            Path = new PropertyPath("ActualHeight")
-                        });
-                    BindingOperations.SetBinding(
-                        widget,
-                        VoronoiWidget.PointsProperty,
-                        new Binding {
-                            Path = new PropertyPath("Points")
-                        });
-                }
-            }
-            else if (e.Action == NotifyCollectionChangedAction.Remove) {
-                foreach (VoronoiState item in e.OldItems) {
-                    var widget = Children
-                        .OfType<VoronoiWidget>()
-                        .Where(e1 => e1.DataContext == item).First();
-
-                    Children.Remove(widget);
-                }
+                BindingOperations.SetBinding(
+                    widget,
+                    WidthProperty,
+                    new Binding {
+                        ElementName = "complex",
+                        Path = new PropertyPath("ActualWidth")
+                    });
+                BindingOperations.SetBinding(
+                    widget,
+                    HeightProperty,
+                    new Binding {
+                        ElementName = "complex",
+                        Path = new PropertyPath("ActualHeight")
+                    });
+                BindingOperations.SetBinding(
+                    widget,
+                    VoronoiWidget.PointsProperty,
+                    new Binding {
+                        Path = new PropertyPath("Points")
+                    });
             }
         }
 

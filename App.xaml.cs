@@ -28,16 +28,11 @@ namespace taskmaker_wpf {
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
-
             // Register services
             containerRegistry.RegisterSingleton<SerialService>();
             containerRegistry.RegisterSingleton<SystemService>();
 
             // Register model agent
-            //containerRegistry.Register<MotorAgent>();
-
-
-
             containerRegistry.RegisterSingleton<MapperConfiguration>(
                 () => {
                     var config = new MapperConfiguration(
@@ -46,19 +41,38 @@ namespace taskmaker_wpf {
                             cfg.CreateMap<NodeEntity, NodeDTO>(MemberList.Destination)
                             .ReverseMap();
 
-                            cfg.CreateMap<SimplexRegionEntity, SimplexState>().ReverseMap();
-                            cfg.CreateMap<SimplexRegionEntity, SimplexRegionDTO>().ReverseMap();
+                            cfg.CreateMap<BaseRegionEntity, RegionDTO>().ReverseMap();
 
-                            cfg.CreateMap<VoronoiRegionEntity, VoronoiState>().ReverseMap();
-                            cfg.CreateMap<VoronoiRegionEntity, VoronoiRegionDTO>().ReverseMap();
+                            cfg.CreateMap<BaseRegionEntity, RegionState>().ReverseMap();
+
+                            cfg.CreateMap<SimplexRegionEntity, SimplexState>()
+                            .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices))
+                            .IncludeBase<BaseRegionEntity, RegionState>()
+                            .ReverseMap();
+                            cfg.CreateMap<SimplexRegionEntity, SimplexRegionDTO>()
+                            .IncludeBase<BaseRegionEntity, RegionDTO>()
+                            .ReverseMap();
+
+                            cfg.CreateMap<VoronoiRegionEntity, VoronoiState>()
+                            .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices))
+                            .IncludeBase<BaseRegionEntity, RegionState>()
+                            .ReverseMap();
+                            cfg.CreateMap<VoronoiRegionEntity, VoronoiRegionDTO>()
+                            .IncludeBase<BaseRegionEntity, RegionDTO>()
+                            .ReverseMap();
 
                             cfg.CreateMap<ControlUiEntity, ControlUiDTO>()
                             .ForMember(d => d.Nodes, o => o.MapFrom(s => s.Nodes))
+                            .ForMember(d => d.Regions, o => o.MapFrom(s => s.Regions))
                             .ReverseMap();
+                            cfg.CreateMap<ControlUiEntity, ControlUiState>()
+                            .ForMember(d => d.Nodes, o => o.MapFrom(s => s.Nodes))
+                            .ForMember(d => d.Regions, o => o.MapFrom(s => s.Regions))
+                            .ForMember(d => d.Value, o => o.Ignore());
                             cfg.CreateMap<MotorEntity, MotorDTO>().ReverseMap();
                             cfg.CreateMap<NLinearMapEntity, NLinearMapDTO>().ReverseMap();
 
-                            cfg.CreateMap<MotorEntity, MotorState >().ReverseMap();
+                            cfg.CreateMap<MotorEntity, MotorState>().ReverseMap();
                         });
 
                     //config.AssertConfigurationIsValid();
@@ -80,6 +94,7 @@ namespace taskmaker_wpf {
             containerRegistry.RegisterSingleton<IUseCase, ControlUiUseCase>("2");
             containerRegistry.RegisterSingleton<IUseCase, NLinearMapUseCase>("3");
             containerRegistry.RegisterSingleton<IUseCase, ListTargetUseCase>("ListTargetUseCase");
+            containerRegistry.RegisterSingleton<IUseCase, BuildRegionUseCase>("BuildRegionUseCase");
 
             // Register messagebox
             containerRegistry.RegisterDialog<CMessageBox, MessageBoxViewModel>("standard");

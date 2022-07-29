@@ -72,16 +72,18 @@ namespace taskmaker_wpf.Data {
         }
 
         public T Find<T>(int id) {
-            throw new NotImplementedException();
-            //if (typeof(T) == typeof(ControlUiDTO)) {
-            //    return ControlUis.Where(e => e.Id == id).Cast<T>().ToArray();
-            //}
-            //else if (typeof(T) == typeof(MotorDTO)) {
-            //    return Motors.Where(e => e.Id == id).Cast<T>().ToArray(); ;
-            //}
-            //else {
-            //    return new T[0];
-            //}
+            if (typeof(T) == typeof(ControlUiDTO)) {
+                return (T)(object)ControlUis.Find(e => e.Id == id);
+            }
+            else if (typeof(T) == typeof(MotorDTO)) {
+                return (T)(object)Motors.Find(e => e.Id == id);
+            }
+            else if (typeof(T) == typeof(NLinearMapDTO)) {
+                return (T)(object)Maps.Find(e => e.Id == id);
+            }
+            else {
+                return default(T);
+            }
         }
 
         public T[] FindAllOfType<T>() {

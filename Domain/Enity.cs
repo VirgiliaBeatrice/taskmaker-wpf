@@ -162,8 +162,8 @@ namespace taskmaker_wpf.Domain {
         }
 
         private void Invalidate(NodeEntity[] nodes) {
-            var a = np.array(nodes[0].Value.X, nodes[0].Value.X);
-            var b = np.array(nodes[1].Value.X, nodes[1].Value.X);
+            var a = np.array(nodes[0].Value.X, nodes[0].Value.Y);
+            var b = np.array(nodes[1].Value.X, nodes[1].Value.Y);
 
             var dir = b - a;
             var dirHat = dir / np.linalg.norm(dir);

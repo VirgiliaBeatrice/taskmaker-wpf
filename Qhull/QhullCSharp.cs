@@ -92,14 +92,14 @@ namespace taskmaker_wpf.Qhull {
 
 
         static public int[] RunConvex(Numpy.NDarray nodes) {
-            var flat = nodes.flatten().GetData<float>();
-            var dFlat = flat
-                .Select(e => Convert.ToDouble(e))
-                .ToArray();
+            var flat = nodes.flatten().GetData<double>();
+            //var dFlat = flat
+            //    .Select(e => Convert.ToDouble(e))
+            //    .ToArray();
             var count = nodes.shape[0];
             var dim = nodes.shape[1];
 
-            QhullRunConvex(dim, count, ref dFlat);
+            QhullRunConvex(dim, count, ref flat);
 
             var ret = QhullGetConvexHull().ToArray();
 
@@ -109,14 +109,15 @@ namespace taskmaker_wpf.Qhull {
         }
 
         static public int[][] RunDelaunay(Numpy.NDarray nodes) {
-            var flat = nodes.flatten().GetData<float>();
-            var dFlat = flat
-                .Select(e => Convert.ToDouble(e))
-                .ToArray();
+            var flat = nodes.flatten().GetData<double>();
+            //var dFlat = flat
+            //    .Select(e => Convert.ToDouble(e))
+            //    .ToArray();
             var count = nodes.shape[0];
+            //var dim = 2;
             var dim = nodes.shape[1];
 
-            QhullRunDelaunay(dim, count, ref dFlat);
+            QhullRunDelaunay(dim, count, ref flat);
 
             var ret = QhullGetGoodFacets();
 

@@ -19,9 +19,40 @@ using taskmaker_wpf.Views.Widget;
 using taskmaker_wpf.Domain;
 using AutoMapper;
 
-namespace taskmaker_wpf.ViewModels
-{
-    public class NodeState : BindableBase {
+namespace taskmaker_wpf.ViewModels {
+    public class ControlUiState : BindableBase {
+        private int _id;
+        public int Id {
+            get => _id;
+            set => SetProperty(ref _id, value);
+        }
+
+        private string _name;
+        public string Name {
+            get => _name;
+            set => SetProperty(ref _name, value);
+        }
+
+        private double[] _value;
+        public double[] Value {
+            get => _value;
+            set => SetProperty(ref _value, value);
+        }
+
+        private NodeState[] _nodes;
+        public NodeState[] Nodes {
+            get => _nodes;
+            set => SetProperty(ref _nodes, value);
+        }
+
+        private RegionState[] _regions;
+        public RegionState[] Regions {
+            get => _regions;
+            set => SetProperty(ref _regions, value);
+        }
+    }
+
+    public class NodeState : BindableBase, IEquatable<NodeState> {
 
         private int _id;
         public int Id {
@@ -40,15 +71,27 @@ namespace taskmaker_wpf.ViewModels
             get => _isSet;
             set => SetProperty(ref _isSet, value);
         }
+
+        public bool Equals(NodeState other) {
+            return other.Id == Id;
+        }
     }
 
-    public class SimplexState : BindableBase, ITraceRegion {
+    public class RegionState: BindableBase {
         private int _id;
         public int Id {
             get => _id;
             set => SetProperty(ref _id, value);
         }
 
+        private string _name;
+        public string Name {
+            get => _name;
+            set => SetProperty(ref _name, value);
+        }
+    }
+
+    public class SimplexState : RegionState, ITraceRegion {
         private Point[] _points;
         public Point[] Points {
             get => _points;
@@ -56,13 +99,7 @@ namespace taskmaker_wpf.ViewModels
         }
     }
 
-    public class VoronoiState : BindableBase, ITraceRegion {
-        private int _id;
-        public int Id {
-            get => _id;
-            set => SetProperty(ref _id, value);
-        }
-
+    public class VoronoiState : RegionState, ITraceRegion {
         private Point[] _points;
         public Point[] Points {
             get => _points;
@@ -138,28 +175,22 @@ namespace taskmaker_wpf.ViewModels
 
         private string _keymapInfo;
 
+        private ControlUiEntity _ui;
+        public ControlUiEntity UI {
+            get => _ui;
+            set => SetProperty(ref _ui, value);
+        }
+
+        private ControlUiState _uiState;
+        public ControlUiState UiState {
+            get => _uiState;
+            set => SetProperty(ref _uiState, value);
+        }
+
         public TargetsPanelViewModel TargetsPanelVM { get; set; }
 
         private string _statusMsg;
         private string _systemInfo;
-
-        private ObservableCollection<NodeState> _nodes = new ObservableCollection<NodeState>();
-        public ObservableCollection<NodeState> Nodes {
-            get => _nodes;
-            set => SetProperty(ref _nodes, value);
-        }
-
-        private ObservableCollection<SimplexState> _simplices;
-        public ObservableCollection<SimplexState> Simplices {
-            get => _simplices;
-            set => SetProperty(ref _simplices, value);
-        }
-
-        private ObservableCollection<VoronoiState> _voronois;
-        public ObservableCollection<VoronoiState> Voronois {
-            get { return _voronois; }
-            set { SetProperty(ref _voronois, value); }
-        }
 
         private NodeWidget _selectedNodeWidget;
         public NodeWidget SelectedNodeWidget {
@@ -196,10 +227,9 @@ namespace taskmaker_wpf.ViewModels
             else {
                 _uiUseCase.AddNode(UI, pt);
 
-                UI = _uiUseCase.GetControlUis().Where(e => e.Id == UI.Id).First();
+                var uiEntity = _uiUseCase.GetControlUi(UiState.Id);
 
-                Nodes.Clear();
-                Nodes.AddRange(UI.Nodes.Select(e => _mapper.Map<NodeState>(e)));
+                _mapper.Map(uiEntity, UiState);
             }
 
         }
@@ -209,27 +239,11 @@ namespace taskmaker_wpf.ViewModels
             _buildCommand ?? (_buildCommand = new DelegateCommand(ExecuteBuildCommand));
 
         void ExecuteBuildCommand() {
-            //UI.Complex.Build();
+            _buildUseCase.Build(UiState.Id);
 
-            //if (Simplices == null)
-            //    Simplices = new ObservableCollection<StatefulSimplex>();
-            //if (Voronois == null)
-            //    Voronois = new ObservableCollection<StatefulVoronoi>();
+            var uiEntity = _uiUseCase.GetControlUi(UiState.Id);
 
-            //Simplices.Clear();
-            //Voronois.Clear();
-
-            //var simplices = UI.Complex.Simplices
-            //    .Select(e => new StatefulSimplex(e));
-            //var voronois = UI.Complex.Regions
-            //    .Select(e => new StatefulVoronoi(e));
-
-            //Simplices.AddRange(simplices);
-            //Voronois.AddRange(voronois);
-
-            //if (UI.Complex.Targets.Count != 0) {
-            //    UI.SetMap();
-            //}
+            _mapper.Map(uiEntity, UiState);
         }
 
 
@@ -245,6 +259,7 @@ namespace taskmaker_wpf.ViewModels
 
         private readonly IMapper _mapper;
         private readonly ControlUiUseCase _uiUseCase;
+        private readonly BuildRegionUseCase _buildUseCase;
 
         public RegionControlUIViewModel(
             MapperConfiguration config,
@@ -253,7 +268,8 @@ namespace taskmaker_wpf.ViewModels
             _mapper = config.CreateMapper();
 
             TargetsPanelVM = new TargetsPanelViewModel(useCases);
-            _uiUseCase = useCases.OfType<ControlUiUseCase>().First();
+            _uiUseCase = useCases.OfType<ControlUiUseCase>().FirstOrDefault();
+            _buildUseCase = useCases.OfType<BuildRegionUseCase>().FirstOrDefault();
             SystemInfo = $"{_operationMode}";
         }
 
@@ -370,19 +386,10 @@ namespace taskmaker_wpf.ViewModels
         //    SelectedTargets = Model.Targets.ToArray();
         //}
 
-        private ControlUiEntity _ui;
-        private ControlUiEntity UI {
-            get => _ui;
-            set {
-                _ui = value;
-
-                Nodes.Clear();
-                Nodes.AddRange(_ui.Nodes.Select(e => _mapper.Map<NodeState>(e)));
-            }
-        }
 
         public void OnNavigatedTo(NavigationContext navigationContext) {
             UI = navigationContext.Parameters["ui"] as ControlUiEntity;
+            UiState = _mapper.Map<ControlUiEntity ,ControlUiState>(UI);
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext) {
