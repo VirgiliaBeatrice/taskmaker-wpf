@@ -28,6 +28,63 @@ namespace taskmaker_wpf {
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
+            var config = new MapperConfiguration(
+            cfg => {
+                cfg.CreateMap<NLinearMapEntity, NLinearMapState>()
+                    .ReverseMap();
+
+                cfg.CreateMap<NodeEntity, NodeState>()
+                    .ReverseMap();
+                cfg.CreateMap<NodeEntity, NodeDTO>(MemberList.Destination)
+                    .ReverseMap();
+
+                cfg.CreateMap<BaseRegionEntity, RegionDTO>()
+                    .ReverseMap();
+
+                cfg.CreateMap<BaseRegionEntity, RegionState>()
+                    .ReverseMap();
+
+                cfg.CreateMap<SimplexRegionEntity, SimplexState>()
+                    .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices))
+                    .IncludeBase<BaseRegionEntity, RegionState>()
+                    .ReverseMap();
+                cfg.CreateMap<SimplexRegionEntity, SimplexRegionDTO>()
+                    .IncludeBase<BaseRegionEntity, RegionDTO>()
+                    .ReverseMap();
+
+                cfg.CreateMap<VoronoiRegionEntity, VoronoiState>()
+                    .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices))
+                    .IncludeBase<BaseRegionEntity, RegionState>()
+                    .ReverseMap();
+                cfg.CreateMap<VoronoiRegionEntity, VoronoiRegionDTO>()
+                    .IncludeBase<BaseRegionEntity, RegionDTO>()
+                    .ReverseMap();
+
+                cfg.CreateMap<ControlUiEntity, ControlUiDTO>()
+                    .ForMember(d => d.Nodes, o => o.MapFrom(s => s.Nodes))
+                    .ForMember(d => d.Regions, o => o.MapFrom(s => s.Regions))
+                    .ReverseMap();
+                cfg.CreateMap<ControlUiEntity, ControlUiState>()
+                    .ForMember(d => d.Nodes, o => o.MapFrom(s => s.Nodes))
+                    .ForMember(d => d.Regions, o => o.MapFrom(s => s.Regions))
+                    .ForMember(d => d.Value, o => o.Ignore());
+                cfg.CreateMap<ControlUiEntity, ControlUiTargetState>()
+                    .IncludeBase<ControlUiEntity, ControlUiState>()
+                    .ForMember(d => d.IsSelected, o => o.Ignore());
+                cfg.CreateMap<NLinearMapEntity, NLinearMapDTO>()
+                    .ReverseMap();
+
+                cfg.CreateMap<MotorEntity, MotorDTO>()
+                    .ReverseMap();
+
+                cfg.CreateMap<MotorEntity, MotorState>()
+                    .ReverseMap();
+                cfg.CreateMap<MotorEntity, MotorTargetState>()
+                    .ForMember(d => d.IsSelected, o => o.Ignore())
+                    .ReverseMap();
+            });
+
+
             // Register services
             containerRegistry.RegisterSingleton<SerialService>();
             //containerRegistry.RegisterSingleton<SystemService>();
@@ -35,48 +92,6 @@ namespace taskmaker_wpf {
             // Register model agent
             containerRegistry.RegisterSingleton<MapperConfiguration>(
                 () => {
-                    var config = new MapperConfiguration(
-                        cfg => {
-                            cfg.CreateMap<NLinearMapEntity, NLinearMapState>().ReverseMap();
-
-                            cfg.CreateMap<NodeEntity, NodeState>().ReverseMap();
-                            cfg.CreateMap<NodeEntity, NodeDTO>(MemberList.Destination)
-                            .ReverseMap();
-
-                            cfg.CreateMap<BaseRegionEntity, RegionDTO>().ReverseMap();
-
-                            cfg.CreateMap<BaseRegionEntity, RegionState>().ReverseMap();
-
-                            cfg.CreateMap<SimplexRegionEntity, SimplexState>()
-                            .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices))
-                            .IncludeBase<BaseRegionEntity, RegionState>()
-                            .ReverseMap();
-                            cfg.CreateMap<SimplexRegionEntity, SimplexRegionDTO>()
-                            .IncludeBase<BaseRegionEntity, RegionDTO>()
-                            .ReverseMap();
-
-                            cfg.CreateMap<VoronoiRegionEntity, VoronoiState>()
-                            .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices))
-                            .IncludeBase<BaseRegionEntity, RegionState>()
-                            .ReverseMap();
-                            cfg.CreateMap<VoronoiRegionEntity, VoronoiRegionDTO>()
-                            .IncludeBase<BaseRegionEntity, RegionDTO>()
-                            .ReverseMap();
-
-                            cfg.CreateMap<ControlUiEntity, ControlUiDTO>()
-                            .ForMember(d => d.Nodes, o => o.MapFrom(s => s.Nodes))
-                            .ForMember(d => d.Regions, o => o.MapFrom(s => s.Regions))
-                            .ReverseMap();
-                            cfg.CreateMap<ControlUiEntity, ControlUiState>()
-                            .ForMember(d => d.Nodes, o => o.MapFrom(s => s.Nodes))
-                            .ForMember(d => d.Regions, o => o.MapFrom(s => s.Regions))
-                            .ForMember(d => d.Value, o => o.Ignore());
-                            cfg.CreateMap<MotorEntity, MotorDTO>().ReverseMap();
-                            cfg.CreateMap<NLinearMapEntity, NLinearMapDTO>().ReverseMap();
-
-                            cfg.CreateMap<MotorEntity, MotorState>().ReverseMap();
-                        });
-
                     //config.AssertConfigurationIsValid();
                     return config;
             });

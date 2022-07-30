@@ -15,14 +15,14 @@ using AutoMapper;
 
 namespace taskmaker_wpf.ViewModels {
     public class TargetState : BindableBase {
-        private object _target;
+        protected object _target;
 
         public object Target {
             get => _target;
             set => SetProperty(ref _target, value);
         }
 
-        private bool _isSelected;
+        protected bool _isSelected;
 
         public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }
 
@@ -30,6 +30,34 @@ namespace taskmaker_wpf.ViewModels {
         public string Name => ((BaseEntity)_target).Name;
         public override string ToString() {
             return ((BaseEntity)_target).ToString();
+        }
+    }
+
+    public interface ISelectableState {
+        bool IsSelected { get; set; }
+    }
+
+    public class MotorTargetState : MotorState, ISelectableState {
+        private bool _isSelected;
+        public bool IsSelected {
+            get { return _isSelected; }
+            set { SetProperty(ref _isSelected, value); }
+        }
+
+        public override string ToString() {
+            return Name;
+        }
+    }
+
+    public class ControlUiTargetState : ControlUiState, ISelectableState {
+        private bool _isSelected;
+        public bool IsSelected {
+            get { return _isSelected; }
+            set { SetProperty(ref _isSelected, value); }
+        }
+
+        public override string ToString() {
+            return Name;
         }
     }
 
@@ -52,8 +80,8 @@ namespace taskmaker_wpf.ViewModels {
         private readonly ListTargetUseCase _useCase;
         private readonly NLinearMapUseCase _mapUseCase;
 
-        private TargetState[] _validTargets;
-        public TargetState[] ValidTargets {
+        private ISelectableState[] _validTargets;
+        public ISelectableState[] ValidTargets {
             get => _validTargets;
             set => SetProperty(ref _validTargets, value);
         }
@@ -102,7 +130,17 @@ namespace taskmaker_wpf.ViewModels {
 
             _mapper = config.CreateMapper();
 
-            ValidTargets = _useCase.GetTargets().Select(e => new TargetState() { Target = e }).ToArray();
+            ValidTargets = _useCase.GetTargets()
+                .Select(e => {
+                    if (e is MotorEntity) {
+                        return _mapper.Map<MotorTargetState>(e);
+                    }
+                    else if (e is ControlUiEntity) {
+                        return _mapper.Map<ControlUiTargetState>(e);
+                    }
+                    else
+                        return default(ISelectableState);
+                }).ToArray();
 
             Maps.AddRange(
                 _mapUseCase.GetMaps()
