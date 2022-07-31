@@ -67,9 +67,11 @@
                 Grid.Column="12" Text="MotorId" />
         </Grid>
 
-        <ItemsControl
-            x:Name="itemControl"
+        <ScrollViewer
             Grid.Row="1"
+            >
+            <ItemsControl
+            x:Name="itemControl"
             ItemsSource="{Binding Path=Motors}">
             <ItemsControl.Template>
                 <ControlTemplate TargetType="ItemsControl">
@@ -148,6 +150,7 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+        </ScrollViewer>
 
         <Button 
             Grid.Row="2"

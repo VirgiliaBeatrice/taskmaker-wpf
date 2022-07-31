@@ -55,7 +55,7 @@ namespace taskmaker_wpf.Services {
             _nBoard = Boards.Count;
 
             _nMotor = Boards.NMotor;
-            Motors.AddRange(Enumerable.Repeat(new Motor(), _nMotor));
+            Motors.AddRange(Enumerable.Range(0, _nMotor).Select(e => new Motor()));
 
             return 0;
         }
@@ -66,10 +66,12 @@ namespace taskmaker_wpf.Services {
 
         public void Update(int boardId, int motorId, double value) {
             if (IsConnected)
-                Motors[boardId * _nBoard + motorId].position.Value = (int)value;
+                Motors[boardId * 4 + motorId].position.Value = (int)value;
         }
 
         public void SendToNuibot() {
+            if (!IsConnected) return;
+
             short[] targets = new short[Boards.NMotor];
 
             for (int i = 0; i < Motors.Count; ++i) {
