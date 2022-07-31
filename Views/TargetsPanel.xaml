@@ -144,7 +144,7 @@
 
             <ItemsControl 
                 Margin="0, 4, 0, 4"
-                ItemsSource="{Binding SelectedMap.Targets}"
+                ItemsSource="{Binding TargetsOfSelectedMap}"
                 ItemTemplate="{StaticResource motorControlPanel}">
                 <d:ItemsControl.ItemsSource>
                     <x:Array Type="{x:Type sys:Object}">

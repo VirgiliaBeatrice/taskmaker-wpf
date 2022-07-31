@@ -135,7 +135,7 @@ namespace taskmaker_wpf.Data {
         public string Name { get; set; }
         public double[] Tensor { get; set; }
         public int[] Shape { get; set; }
-        //public object[] Targets { get; set; }
+        public string[] Targets { get; set; }
     }
 
     public class ControlUiRepository : IRepository {
@@ -201,7 +201,9 @@ namespace taskmaker_wpf.Data {
         }
 
         public T Find<T>(int id) {
-            throw new NotImplementedException();
+            var src = DataSource as LocalDataSource;
+
+            return (T)(object)_mapper.Map<NLinearMapEntity>(src.Find<NLinearMapDTO>(id));
         }
 
         public IEnumerable<T> FindAll<T>() {

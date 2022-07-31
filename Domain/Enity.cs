@@ -48,7 +48,7 @@ namespace taskmaker_wpf.Domain {
     public class NLinearMapEntity : BaseEntity {
         public NDarray Tensor { get; set; }
         public int[] Shape { get; set; }
-        public object[] Targets { get; set; }
+        public string[] Targets { get; set; }
     }
 
     public class NodeEntity : BaseEntity {
@@ -214,14 +214,17 @@ namespace taskmaker_wpf.Domain {
 
     }
 
+    public interface ITargetable {
+        int Id { get; }
+    }
 
-    public class ControlUiEntity : BaseEntity {
+    public class ControlUiEntity : BaseEntity, ITargetable {
         public NodeEntity[] Nodes { get; set; }
         public BaseRegionEntity[] Regions { get; set; }
         public double[] Value { get; set; }
     }
 
-    public class MotorEntity : BaseEntity {
+    public class MotorEntity : BaseEntity, ITargetable {
         public double Value { get; set; }
         public int Min { get; set; }
         public int Max { get; set; }

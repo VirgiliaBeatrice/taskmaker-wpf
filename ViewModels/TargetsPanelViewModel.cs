@@ -35,6 +35,9 @@ namespace taskmaker_wpf.ViewModels {
 
     public interface ISelectableState {
         bool IsSelected { get; set; }
+        string Name { get; }
+        int Id { get; }
+        event PropertyChangedEventHandler PropertyChanged;
     }
 
     public class MotorTargetState : MotorState, ISelectableState {
@@ -68,8 +71,8 @@ namespace taskmaker_wpf.ViewModels {
             set => SetProperty(ref _name, value);
         }
 
-        private object[] _targets;
-        public object[] Targets {
+        private string[] _targets;
+        public string[] Targets {
             get => _targets;
             set => SetProperty(ref _targets, value);
         }
@@ -82,8 +85,14 @@ namespace taskmaker_wpf.ViewModels {
 
         private ISelectableState[] _validTargets;
         public ISelectableState[] ValidTargets {
-            get => _validTargets;
+            get => _validTargets.OrderBy(e => e.Name).ToArray();
             set => SetProperty(ref _validTargets, value);
+        }
+
+        public ISelectableState[] _targetsOfSelectedMap;
+        public ISelectableState[] TargetsOfSelectedMap {
+            get => _targetsOfSelectedMap;
+            set => SetProperty(ref _targetsOfSelectedMap, value);
         }
 
         private ObservableCollection<NLinearMapState> _maps = new ObservableCollection<NLinearMapState>();
@@ -98,15 +107,8 @@ namespace taskmaker_wpf.ViewModels {
             set => SetProperty(ref _selectedMap, value);
         }
 
-        private DelegateCommand _updateCommand;
-        public DelegateCommand UpdateCommand =>
-            _updateCommand ?? (_updateCommand = new DelegateCommand(ExecuteUpdateCommand));
-
         private DelegateCommand _addCommand;
         public DelegateCommand AddCommand => _addCommand ?? (_addCommand = new DelegateCommand(ExecuteAddCommand));
-
-        private readonly MotorUseCase _motorUseCase;
-        private readonly IMapper _mapper;
         private void ExecuteAddCommand() {
             var map = _mapUseCase.AddMap();
 
@@ -117,12 +119,24 @@ namespace taskmaker_wpf.ViewModels {
                     );
         }
 
+        private DelegateCommand _updateCommand;
+        public DelegateCommand UpdateCommand =>
+            _updateCommand ?? (_updateCommand = new DelegateCommand(ExecuteUpdateCommand));
         void ExecuteUpdateCommand() {
-            SelectedMap.Targets = ValidTargets.Where(e => e.IsSelected).ToArray();
+            SelectedMap.Targets = ValidTargets.Where(e => e.IsSelected).Select(e => e.GetType().Name + "/" + e.Id).ToArray();
+            TargetsOfSelectedMap = SelectedMap.Targets.Select(
+                e => {
+                    var context = e.Split('/');
+                    var target = ValidTargets.Where(t => t.GetType().Name == context[0] & t.Id == int.Parse(context[1])).FirstOrDefault();
+
+                    return target;
+                }).ToArray();
 
             _mapUseCase.UpdateMap(_mapper.Map<NLinearMapEntity>(SelectedMap));
         }
 
+        private readonly MotorUseCase _motorUseCase;
+        private readonly IMapper _mapper;
         public TargetsPanelViewModel(IEnumerable<IUseCase> useCases, MapperConfiguration config) {
             _useCase = useCases.OfType<ListTargetUseCase>().FirstOrDefault();
             _mapUseCase = useCases.OfType<NLinearMapUseCase>().FirstOrDefault();
@@ -142,10 +156,14 @@ namespace taskmaker_wpf.ViewModels {
                         return default(ISelectableState);
                 }).ToArray();
 
+            ValidTargets.OfType<MotorTargetState>().ToList().ForEach(e => e.PropertyChanged += (s, args) => {
+                if (args.PropertyName == nameof(MotorTargetState.Value))
+                    _motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(s));
+            });
+
             Maps.AddRange(
                 _mapUseCase.GetMaps()
-                    .Select(e => _mapper.Map<NLinearMapState>(e))
-                    );
+                    .Select(e => _mapper.Map<NLinearMapState>(e)));
         }
     }
 }

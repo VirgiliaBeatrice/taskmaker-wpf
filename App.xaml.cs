@@ -32,6 +32,9 @@ namespace taskmaker_wpf {
             var config = new MapperConfiguration(
             cfg => {
                 cfg.CreateMap<NLinearMapEntity, NLinearMapState>()
+                    .ForMember(d => d.Targets, o => o.Ignore())
+                    .ReverseMap();
+                cfg.CreateMap<NLinearMapEntity, NLinearMapDTO>()
                     .ReverseMap();
 
                 cfg.CreateMap<NodeEntity, NodeState>()
@@ -78,8 +81,8 @@ namespace taskmaker_wpf {
                 cfg.CreateMap<ControlUiEntity, ControlUiTargetState>()
                     .IncludeBase<ControlUiEntity, ControlUiState>()
                     .ForMember(d => d.IsSelected, o => o.Ignore());
-                cfg.CreateMap<NLinearMapEntity, NLinearMapDTO>()
-                    .ReverseMap();
+
+
 
                 cfg.CreateMap<MotorEntity, MotorDTO>()
                     .ReverseMap();
