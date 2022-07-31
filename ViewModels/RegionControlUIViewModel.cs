@@ -179,12 +179,6 @@ namespace taskmaker_wpf.ViewModels {
 
         private string _keymapInfo;
 
-        private ControlUiEntity _ui;
-        public ControlUiEntity UI {
-            get => _ui;
-            set => SetProperty(ref _ui, value);
-        }
-
         private ControlUiState _uiState;
         public ControlUiState UiState {
             get => _uiState;
@@ -248,9 +242,6 @@ namespace taskmaker_wpf.ViewModels {
             var uiEntity = _uiUseCase.GetControlUi(UiState.Id);
 
             _mapper.Map(uiEntity, UiState);
-
-            _mapUseCase.SetBasisDim(TargetsPanelVM.SelectedMap.Id, new int[] { UiState.Nodes.Length });
-            _mapUseCase.InitializeTensor(TargetsPanelVM.SelectedMap.Id);
         }
 
 
@@ -376,22 +367,26 @@ namespace taskmaker_wpf.ViewModels {
 
             if (target is null) return;
             else {
-                //if (target is StatefulSimplex) {
-                //    var bary = (target.GetRef() as SimplexM).Bary;
-                //    var lambdas = UI.Complex.Bary.GetLambdas(bary, pt.ToNDarray());
-                //    //var result = _map.MapTo(lambdas);
+                if (target is SimplexState sState) {
+                    var lambdas =_uiUseCase.GetLambdas<SimplexRegionEntity>(UiState.Id, sState.Id, pt);
+                    //var bary = (target.GetRef() as SimplexM).Bary;
+                    //var lambdas = UI.Complex.Bary.GetLambdas(bary, pt.ToNDarray());
+                    //var result = _map.MapTo(lambdas);
 
-                //    //UI.Complex.Targets.SetValue(result.GetData<double>());
-                //}
-                //else if (target is StatefulVoronoi) {
-                //    var bary = (target.GetRef() as VoronoiRegionM).Bary;
-                //    var lambdas = UI.Complex.Bary.GetLambdas(bary, pt.ToNDarray());
-                //    //var result = _map.MapTo(lambdas);
+                    //UI.Complex.Targets.SetValue(result.GetData<double>());
+                    Debug = String.Join(",", lambdas);
 
-                //    //UI.Complex.Targets.SetValue(result.GetData<double>());
-                //}
+                }
+                else if (target is VoronoiState vState) {
+                    var lambdas =_uiUseCase.GetLambdas<VoronoiRegionEntity>(UiState.Id, vState.Id, pt);
+                    //var bary = (target.GetRef() as VoronoiRegionM).Bary;
+                    //var lambdas = UI.Complex.Bary.GetLambdas(bary, pt.ToNDarray());
+                    //var result = _map.MapTo(lambdas);
 
-                //Debug = UI.Complex.Targets.ToString();
+                    //UI.Complex.Targets.SetValue(result.GetData<double>());
+                    Debug = String.Join(", ", lambdas);
+                }
+
             }
         }
 

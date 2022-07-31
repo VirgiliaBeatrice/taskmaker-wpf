@@ -49,32 +49,74 @@ namespace taskmaker_wpf.Domain {
         public NDarray Tensor { get; set; }
         public int[] Shape { get; set; }
         public string[] Targets { get; set; }
+        public string[] Sources { get; set; }
+        public int TargetDim { get; set; }
+        public int[] BasisDims { get; set; }
 
-        private bool _isSet => !bool.Parse(np.isnan(Tensor.sum()).repr);
-        private int _targetDim;
-        private int[] _basisDims;
+        private bool _isSet = false;
 
-        public void SetTargetDim(int targetDim) {
-            _targetDim = targetDim;
+        public static IEnumerable<int[]> CartesianProduct(IEnumerable<int> shape) {
+            if (shape.Count() == 1) {
+                return Enumerable.Range(0, shape.ElementAt(0))
+                    .Select(e => new[] { e })
+                    .ToArray();
+            }
+            else if (shape.Count() == 2) {
+                var a = Enumerable.Range(0, shape.ElementAt(0));
+                var b = Enumerable.Range(0, shape.ElementAt(1));
+
+                return a.SelectMany(e0 => b.Select(e1 => new int[] { e0, e1 }))
+                    .ToArray();
+            }
+            else
+                return default;
         }
 
-        public void SetBasisDim(int[] basisDim) {
-            _basisDims = basisDim;
+        // 1
+        public void SetTargets(IEnumerable<ITargetable> targets) {
+            TargetDim = targets.Select(e => e.Value.Length).Sum();
         }
 
+        // 2
+        public void SetSources(IEnumerable<ControlUiEntity> sources) {
+            BasisDims = sources.Select(e => e.Nodes.Length).ToArray();
+        }
+
+        // 3
         public void InitializeTensor() {
             Shape = new int[] {
-                _targetDim
-            }.Concat(_basisDims).ToArray();
+                TargetDim
+            }.Concat(BasisDims).ToArray();
 
             Tensor = np.empty(Shape);
             Tensor.fill(np.nan);
+
+            //_indexEnumerator = CartesianProduct(Shape.Skip(1).ToArray());
+            //_indexEnumerator.MoveNext();
         }
 
-        public void SetValue(int[] indices, NDarray value) {
-            // only 1 bary
-            Tensor[$":,{indices[0]}"] = np.atleast_2d(value);
+        public void SetTensor(NDarray value) {
+            //var indices = _indexEnumerator.Current;
+
+            //SetTensorValue(indices, value);
+            //var result = _indexEnumerator.MoveNext();
+
+            //if (!result)
+            //    _isSet = true;
         }
+
+        public void SetTensorValue(int[] indices, NDarray value) {
+            if (value.shape[0] != TargetDim)
+                throw new InvalidOperationException();
+
+            Tensor = Tensor.reshape(Shape);
+            Tensor[$":,{string.Join(",", indices)}"] = np.atleast_2d(value);
+        }
+
+        //public void SetValue(int[] indices, NDarray value) {
+        //    // only 1 bary
+        //    Tensor[$":,{indices[0]}"] = np.atleast_2d(value);
+        //}
 
         public NDarray MapTo(NDarray lambdas) {
             if (!_isSet)
@@ -101,7 +143,9 @@ namespace taskmaker_wpf.Domain {
 
     }
 
-    public abstract class BaseRegionEntity : BaseEntity { }
+    public abstract class BaseRegionEntity : BaseEntity {
+        public abstract double[] GetLambdas(Point pt, NodeEntity[] collection);
+    }
 
     public class SimplexRegionEntity : BaseRegionEntity {
         public NodeEntity[] Nodes { get; set; }
@@ -113,10 +157,12 @@ namespace taskmaker_wpf.Domain {
             Nodes = nodes;
         }
 
-        public double[] GetLambdas(Point pt, NodeEntity[] collection) {
+        public override double[] GetLambdas(Point pt, NodeEntity[] collection) {
             var lambdas = Bary.GetLambdas(Vertices, pt);
             var indices = Nodes
-                .Select(e => collection.ToList().IndexOf(e))
+                .Select(e => {
+                    return collection.ToList().FindIndex(n => n.Id == e.Id);
+                })
                 .ToArray();
             var result = Enumerable.Repeat(0.0, collection.Length).ToArray();
 
@@ -135,7 +181,7 @@ namespace taskmaker_wpf.Domain {
 
         public VoronoiRegionEntity() { }
 
-        public virtual double[] GetLambdas(Point pt, NodeEntity[] collection) { throw new NotImplementedException(); }
+        public override double[] GetLambdas(Point pt, NodeEntity[] collection) { throw new NotImplementedException(); }
 
     }
 
@@ -188,10 +234,10 @@ namespace taskmaker_wpf.Domain {
         }
 
         private double[] GetFactors(Point pt) {
-            var a = np.array(Vertices[0].X, Vertices[0].Y);
-            var o = np.array(Vertices[1].X, Vertices[1].Y);
-            var b = np.array(Vertices[2].X, Vertices[2].Y);
-            var p = np.array(pt.X, pt.Y);
+            var a = np.array(Vertices[0].X, Vertices[0].Y).astype(np.float64);
+            var o = np.array(Vertices[1].X, Vertices[1].Y).astype(np.float64);
+            var b = np.array(Vertices[2].X, Vertices[2].Y).astype(np.float64);
+            var p = np.array(pt.X, pt.Y).astype(np.float64);
 
             var ao = a - o;
             var bo = b - o;
@@ -204,8 +250,8 @@ namespace taskmaker_wpf.Domain {
             var theta = theta0 + theta1;
 
             return new double[] {
-                (theta1 / theta).GetData<double>()[0],
-                (theta0 / theta).GetData<double>()[0]
+                (theta1 / theta).asscalar<double>(),
+                (theta0 / theta).asscalar<double>()
             }; 
         }
     }
@@ -260,6 +306,7 @@ namespace taskmaker_wpf.Domain {
     }
 
     public interface ITargetable {
+        double[] Value { get; }
         int Id { get; }
     }
 

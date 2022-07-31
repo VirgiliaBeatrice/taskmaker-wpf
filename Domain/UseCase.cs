@@ -25,6 +25,10 @@ namespace taskmaker_wpf.Domain {
             return _motorRepository.FindAll<MotorEntity>();
         }
 
+        public MotorEntity GetMotor(int id) {
+            return _motorRepository.Find<MotorEntity>(id);
+        }
+
         public void AddMotor() {
             _motorRepository.Add(new MotorEntity());
         }
@@ -102,6 +106,13 @@ namespace taskmaker_wpf.Domain {
         public void Update(ControlUiEntity ui) {
             _repository.Update(ui);
         }
+
+        public double[] GetLambdas<T>(int id, int regionId, Point pt) where T: BaseRegionEntity {
+            var ui = _repository.Find<ControlUiEntity>(id);
+            var region = ui.Regions.Where(e => e.Id == regionId).OfType<T>().FirstOrDefault();
+
+            return region.GetLambdas(pt, ui.Nodes);
+        }
     }
 
 
@@ -130,6 +141,7 @@ namespace taskmaker_wpf.Domain {
             var regions = new List<BaseRegionEntity>();
 
             foreach(var item in simplices) {
+                item.Id = regions.Count();
                 regions.Add(item);
                 //ui.Regions.Add(item);
             }
@@ -141,6 +153,7 @@ namespace taskmaker_wpf.Domain {
             var voronois = BuildVoronoiRegions(extremes, simplices);
 
             foreach(var item in voronois) {
+                item.Id = regions.Count();
                 regions.Add(item);
                 //ui.Regions.Add(item);
             }
@@ -198,50 +211,60 @@ namespace taskmaker_wpf.Domain {
     }
 
     public class NLinearMapUseCase : IUseCase {
-        private readonly NLinearMapRepository _repository;
+        private readonly NLinearMapRepository _mapRepository;
+        private readonly ControlUiRepository _uiRepository;
+        private readonly MotorRepository _motorRepository;
 
-        public NLinearMapUseCase(NLinearMapRepository repository) {
-            _repository = repository;
+        public NLinearMapUseCase(NLinearMapRepository mapRepository,
+            ControlUiRepository uiRepository,
+            MotorRepository motorRepository
+            ) {
+            _mapRepository = mapRepository;
+            _uiRepository = uiRepository;
+            _motorRepository = motorRepository;
         }
 
         public NLinearMapEntity[] GetMaps() {
-            return _repository.FindAll<NLinearMapEntity>().ToArray();
+            return _mapRepository.FindAll<NLinearMapEntity>().ToArray();
         }
 
         public NLinearMapEntity AddMap() {
             var map = new NLinearMapEntity();
-            _repository.Add(map);
+            _mapRepository.Add(map);
 
             return map;        
         }
 
         public void UpdateMap(NLinearMapEntity map) {
-            _repository.Update(map);
+            _mapRepository.Update(map);
         }
 
-        public void UpdateMapValue(int mapId, int nodeId, double[] value) {
-            var map = _repository.Find<NLinearMapEntity>(mapId);
+        public void UpdateMapValue(int mapId, int[] indices, double[] value) {
+            var map = _mapRepository.Find<NLinearMapEntity>(mapId);
 
-            map.SetValue(new int[] { nodeId }, value);
+            map.SetTensorValue(indices, np.array(value));
+
+            _mapRepository.Update(map);
         }
 
-        public void InitializeTensor(int id) {
-            var map = _repository.Find<NLinearMapEntity>(id);
+        public void InitializeMap(int mapId, int[] sourceIds, int[] targetIds) {
+            var map = _mapRepository.Find<NLinearMapEntity>(mapId);
+            var sources = sourceIds.Select(id => _uiRepository.Find<ControlUiEntity>(id)).ToArray();
 
+            // todo: now for motor only, test purpose
+            var targets = targetIds.Select(id => _motorRepository.Find<MotorEntity>(id)).ToArray();
+
+            map.SetTargets(targets);
+            map.SetSources(sources);
             map.InitializeTensor();
+
+            _mapRepository.Update(map);
         }
 
-        public void SetMapTargetDim(int id, int targetDim) {
-            var map = _repository.Find<NLinearMapEntity>(id);
+        public IEnumerable<int[]> GetTensorIndices(int mapId) {
+            var map = _mapRepository.Find<NLinearMapEntity>(mapId);
 
-            map.SetTargetDim(targetDim);
+            return NLinearMapEntity.CartesianProduct(map.Shape.Skip(1));
         }
-
-        public void SetBasisDim(int id, int[] basisDim) {
-            var map = _repository.Find<NLinearMapEntity>(id);
-
-            map.SetBasisDim(basisDim);
-        }
-
     }
 }

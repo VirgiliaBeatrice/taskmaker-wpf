@@ -52,10 +52,9 @@ namespace taskmaker_wpf.Data {
 
         public T Find<T>(int id) {
             var src = DataSource as LocalDataSource;
+            var dto = src.Find<MotorDTO>(id);
 
-            src.Find<MotorDTO>(id);
-
-            return default(T);
+            return (T)(object)_mapper.Map<MotorEntity>(dto);
         }
 
         public IEnumerable<T> FindAll<T>() {
@@ -121,6 +120,14 @@ namespace taskmaker_wpf.Data {
     }
 
     [Serializable]
+    public class SectoralVoronoiRegionDTO : VoronoiRegionDTO {
+
+    }
+
+    [Serializable]
+    public class RectVoronoiRegionDTO : VoronoiRegionDTO { }
+
+    [Serializable]
     public class ControlUiDTO {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -136,6 +143,8 @@ namespace taskmaker_wpf.Data {
         public double[] Tensor { get; set; }
         public int[] Shape { get; set; }
         public string[] Targets { get; set; }
+        public int TargetDim { get; set; }
+        public int[] BasisDims { get; set; }
     }
 
     public class ControlUiRepository : IRepository {

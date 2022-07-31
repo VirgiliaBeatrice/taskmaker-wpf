@@ -31,10 +31,11 @@ namespace taskmaker_wpf {
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
             var config = new MapperConfiguration(
             cfg => {
-                cfg.CreateMap<NLinearMapEntity, NLinearMapState>()
+                cfg.CreateMap<NLinearMapEntity, NLinearMapState>(MemberList.Destination)
                     .ForMember(d => d.Targets, o => o.Ignore())
                     .ReverseMap();
                 cfg.CreateMap<NLinearMapEntity, NLinearMapDTO>()
+                    .ForMember(d => d.Tensor, o => o.MapFrom(s => s.Tensor.GetData<double>()))
                     .ReverseMap();
 
                 cfg.CreateMap<NodeEntity, NodeState>()
@@ -59,6 +60,13 @@ namespace taskmaker_wpf {
                     .IncludeBase<BaseRegionEntity, RegionDTO>()
                     .ReverseMap();
 
+                cfg.CreateMap<SectoralVoronoiRegionEntity, SectoralVoronoiRegionDTO>()
+                    .IncludeBase<VoronoiRegionEntity, VoronoiRegionDTO>()
+                    .ReverseMap();
+                cfg.CreateMap<RectVoronoiRegionEntity, RectVoronoiRegionDTO>()
+                    .IncludeBase<VoronoiRegionEntity, VoronoiRegionDTO>()
+                    .ReverseMap();
+
                 cfg.CreateMap<VoronoiRegionEntity, VoronoiState>()
                     .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices))
                     .IncludeBase<BaseRegionEntity, RegionState>()
@@ -81,7 +89,8 @@ namespace taskmaker_wpf {
                 cfg.CreateMap<ControlUiEntity, ControlUiTargetState>()
                     .IncludeBase<ControlUiEntity, ControlUiState>()
                     .ForMember(d => d.IsSelected, o => o.Ignore());
-
+                cfg.CreateMap<ControlUiEntity, SelectableSourceState>(MemberList.Destination)
+                    .ForMember(d => d.IsSelected, o => o.Ignore());
 
 
                 cfg.CreateMap<MotorEntity, MotorDTO>()

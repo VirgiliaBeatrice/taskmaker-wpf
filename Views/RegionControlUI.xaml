@@ -133,9 +133,9 @@
             Background="DimGray"
             Grid.Row="1">
             <TextBlock 
-                x:Name="keymapInfo"
+                x:Name="Debug"
                 Margin="4 0 4 0"
-                Text="{Binding Path=KeymapInfo}"/>
+                Text="{Binding Path=Debug}"/>
             <TextBlock 
                 x:Name="statusMsg"
                 Margin="4 0 4 0"
