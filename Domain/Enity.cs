@@ -225,7 +225,7 @@ namespace taskmaker_wpf.Domain {
     }
 
     public class MotorEntity : BaseEntity, ITargetable {
-        public double Value { get; set; }
+        public double[] Value { get; set; } = new double[1] { 0 };
         public int Min { get; set; }
         public int Max { get; set; }
         public int BoardId { get; set; }

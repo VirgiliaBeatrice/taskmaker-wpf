@@ -219,5 +219,7 @@ namespace taskmaker_wpf.Domain {
             _repository.Update(map);
         }
 
+        public void UpdateMapValue(int nodeId, double[] value) { }
+
     }
 }

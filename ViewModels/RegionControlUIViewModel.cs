@@ -264,6 +264,8 @@ namespace taskmaker_wpf.ViewModels {
         private readonly IMapper _mapper;
         private readonly ControlUiUseCase _uiUseCase;
         private readonly BuildRegionUseCase _buildUseCase;
+        private readonly NLinearMapUseCase _mapUseCase;
+        private readonly MotorUseCase _motorUseCase;
 
         public RegionControlUIViewModel(
             MapperConfiguration config,
@@ -274,6 +276,8 @@ namespace taskmaker_wpf.ViewModels {
             TargetsPanelVM = new TargetsPanelViewModel(useCases, config);
             _uiUseCase = useCases.OfType<ControlUiUseCase>().FirstOrDefault();
             _buildUseCase = useCases.OfType<BuildRegionUseCase>().FirstOrDefault();
+            _mapUseCase = useCases.OfType<NLinearMapUseCase>().FirstOrDefault();
+            _motorUseCase = useCases.OfType<MotorUseCase>().FirstOrDefault();
 
             SystemInfo = $"{_operationMode}";
         }
@@ -317,7 +321,10 @@ namespace taskmaker_wpf.ViewModels {
         void ExecuteSetValueCommand() {
             if (SelectedNodeWidget is null) return;
 
-            SetNodeValue(SelectedNodeWidget.DataContext as NodeState);
+            var value = TargetsPanelVM.TargetsOfSelectedMap.Select(e => e.Value).ToArray();
+
+            _mapUseCase.UpdateMap(_mapper.Map<NLinearMapEntity>(TargetsPanelVM.SelectedMap));
+            //SetNodeValue(SelectedNodeWidget.DataContext as NodeState);
         }
 
         private void SetNodeValue(NodeState sNode) {

@@ -71,7 +71,7 @@ namespace taskmaker_wpf.Data {
             var motor = item as MotorEntity;
 
             src.Update(_mapper.Map<MotorDTO>(motor));
-            _serial.Update(motor.BoardId, motor.MotorId, motor.Value);
+            _serial.Update(motor.BoardId, motor.MotorId, motor.Value[0]);
 
             //
              _serial.SendToNuibot();
@@ -84,7 +84,7 @@ namespace taskmaker_wpf.Data {
         public string Name { get; set; }
         public int Min { get; set; }
         public int Max { get; set; }
-        public double Value { get; set; }
+        public double[] Value { get; set; }
         public int BoardId { get; set; }
         public int MotorId { get; set; }
     }

@@ -117,7 +117,7 @@
                         <Slider 
                             x:Name="slider"
                             Grid.Column="6"
-                            Value="{Binding Value, Mode=TwoWay}"
+                            Value="{Binding MotorValue, Mode=TwoWay}"
                             Minimum="{Binding Min}" Maximum="{Binding Max}" LargeChange="100" />
                         <GridSplitter Grid.Column="7" Width="2"/>
                         <TextBox Grid.Column="8" Text="{Binding Max, Mode=TwoWay}" />

@@ -19,7 +19,7 @@
 
         <DataTemplate
             x:Key="motorControlPanel"
-            DataType="{x:Type domain:MotorEntity}">
+            DataType="{x:Type viewmodels:MotorTargetState}">
             <Grid
                 Margin="0, 4, 0, 4">
                 <Grid.ColumnDefinitions>
@@ -41,7 +41,7 @@
                     LargeChange="1000"
                     SmallChange="100"
                     VerticalAlignment="Center"
-                    Value="{Binding Value}"
+                    Value="{Binding MotorValue, Mode=TwoWay}"
                     Maximum="{Binding Max}"
                     Minimum="{Binding Min}"
                     IsSnapToTickEnabled="True"
@@ -111,10 +111,10 @@
                     </d:ComboBox.SelectedIndex>
                     <d:ComboBox.ItemsSource>
                         <x:Array Type="{x:Type sys:Object}">
-                            <domain:MotorEntity Name="S0" Value="100" Max="10000" Min="-10000"/>
-                            <domain:MotorEntity Name="S1" Value="100" Max="10000" Min="-10000"/>
-                            <domain:MotorEntity Name="S2" Value="100" Max="10000" Min="-10000"/>
-                            <domain:MotorEntity Name="S3" Value="100" Max="10000" Min="-10000"/>
+                            <viewmodels:MotorTargetState Name="S0" MotorValue="100" Max="10000" Min="-10000"/>
+                            <viewmodels:MotorTargetState Name="S1" MotorValue="100" Max="10000" Min="-10000"/>
+                            <viewmodels:MotorTargetState Name="S2" MotorValue="100" Max="10000" Min="-10000"/>
+                            <viewmodels:MotorTargetState Name="S3" MotorValue="100" Max="10000" Min="-10000"/>
                         </x:Array>
                     </d:ComboBox.ItemsSource>
                     <ComboBox.ItemTemplate>
@@ -148,10 +148,10 @@
                 ItemTemplate="{StaticResource motorControlPanel}">
                 <d:ItemsControl.ItemsSource>
                     <x:Array Type="{x:Type sys:Object}">
-                        <domain:MotorEntity Name="S0" Value="100" Max="10000" Min="-10000"/>
-                        <domain:MotorEntity Name="S1" Value="100" Max="10000" Min="-10000"/>
-                        <domain:MotorEntity Name="S2" Value="100" Max="10000" Min="-10000"/>
-                        <domain:MotorEntity Name="S3" Value="100" Max="10000" Min="-10000"/>
+                        <viewmodels:MotorTargetState Name="S0" MotorValue="100" Max="10000" Min="-10000"/>
+                        <viewmodels:MotorTargetState Name="S1" MotorValue="100" Max="10000" Min="-10000"/>
+                        <viewmodels:MotorTargetState Name="S2" MotorValue="100" Max="10000" Min="-10000"/>
+                        <viewmodels:MotorTargetState Name="S3" MotorValue="100" Max="10000" Min="-10000"/>
                     </x:Array>
                 </d:ItemsControl.ItemsSource>
             </ItemsControl>

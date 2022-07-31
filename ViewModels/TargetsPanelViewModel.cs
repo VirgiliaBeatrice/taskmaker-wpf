@@ -14,29 +14,11 @@ using taskmaker_wpf.Services;
 using AutoMapper;
 
 namespace taskmaker_wpf.ViewModels {
-    public class TargetState : BindableBase {
-        protected object _target;
-
-        public object Target {
-            get => _target;
-            set => SetProperty(ref _target, value);
-        }
-
-        protected bool _isSelected;
-
-        public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }
-
-
-        public string Name => ((BaseEntity)_target).Name;
-        public override string ToString() {
-            return ((BaseEntity)_target).ToString();
-        }
-    }
-
     public interface ISelectableState {
         bool IsSelected { get; set; }
         string Name { get; }
         int Id { get; }
+        double[] Value { get; }
         event PropertyChangedEventHandler PropertyChanged;
     }
 
@@ -157,7 +139,7 @@ namespace taskmaker_wpf.ViewModels {
                 }).ToArray();
 
             ValidTargets.OfType<MotorTargetState>().ToList().ForEach(e => e.PropertyChanged += (s, args) => {
-                if (args.PropertyName == nameof(MotorTargetState.Value))
+                if (args.PropertyName == nameof(MotorTargetState.MotorValue))
                     _motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(s));
             });
 

@@ -21,7 +21,8 @@ namespace taskmaker_wpf.ViewModels {
     public class MotorState : BindableBase {
         private int id;
         private string name;
-        private double _value;
+        //private double[] _value;
+        private double _motorValue;
         private int max;
         private int min;
         private int boardId;
@@ -29,7 +30,8 @@ namespace taskmaker_wpf.ViewModels {
 
         public int Id { get => id; set => SetProperty(ref id, value); }
         public string Name { get => name; set => SetProperty(ref name, value); }
-        public double Value { get => _value; set => SetProperty(ref _value, value); }
+        public double[] Value => new double[] { MotorValue };
+        public double MotorValue { get => _motorValue; set => SetProperty(ref _motorValue, value); }
         public int Max { get => max; set => SetProperty(ref max, value); }
         public int Min { get => min; set => SetProperty(ref min, value); }
         public int BoardId { get => boardId; set => SetProperty(ref boardId, value); }
