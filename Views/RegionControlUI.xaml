@@ -103,7 +103,7 @@
                 Mode="{Binding OperationMode, Mode=OneWayToSource}"
                 TracePoint="{Binding TracePoint, Mode=OneWayToSource}"
                 HitElement="{Binding HitElement, Mode=OneWayToSource}"
-                UiState="{Binding UiState}"
+                UiState="{Binding UiState, Mode=OneWay}"
                 AddNodeCommand="{Binding AddNodeCommand}"
                 SetValueCommand="{Binding SetValueCommand}"
                 BuildCommand="{Binding BuildCommand}"

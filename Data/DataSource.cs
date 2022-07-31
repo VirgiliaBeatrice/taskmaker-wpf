@@ -16,6 +16,20 @@ namespace taskmaker_wpf.Data {
     }
 
     [Serializable]
+    public class XmlObject {
+        public List<ControlUiDTO> ControlUis { get; set; } = new List<ControlUiDTO>();
+        public List<MotorDTO> Motors { get; set; } = new List<MotorDTO>();
+        public List<NLinearMapDTO> Maps { get; set; } = new List<NLinearMapDTO>();
+
+        public XmlObject() { }
+
+        public XmlObject(IEnumerable<ControlUiDTO> controlUis, IEnumerable<MotorDTO> motors, IEnumerable<NLinearMapDTO> maps) {
+            ControlUis = controlUis.ToList();
+            Motors = motors.ToList();
+            Maps = maps.ToList();
+        }
+    }
+
     public class LocalDataSource : IDataSource {
         public List<ControlUiDTO> ControlUis { get; set; } = new List<ControlUiDTO>();
         public List<MotorDTO> Motors { get; set; } = new List<MotorDTO>();
@@ -23,8 +37,8 @@ namespace taskmaker_wpf.Data {
 
         //public RegionDTO[][] Regions => ControlUis.Select(e => e.Regions).ToArray();
 
-        //[JsonIgnore]
-        [NonSerialized]
+
+        private XmlObject _xmlObject;
         private IEventAggregator _ea;
 
         public LocalDataSource() { }
@@ -52,22 +66,43 @@ namespace taskmaker_wpf.Data {
         // TODO: better loading method by DI
         public static LocalDataSource Load(IEventAggregator ea) {
             var docPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker", "project.json");
+            var xmlPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker", "project.xml");
 
-            if (!File.Exists(docPath)) {
+            //if (!File.Exists(docPath)) {
+            //    var dataSource = new LocalDataSource();
+            //    dataSource.BindEventAggregator(ea);
+            //    return dataSource;
+            //}
+
+            //using (var fs = File.OpenRead(docPath)) {
+            //    using (var r = new StreamReader(fs, System.Text.Encoding.UTF8)) {
+            //        var jsonStr = r.ReadToEnd();
+            //        var local = JsonSerializer.Deserialize<LocalDataSource>(jsonStr);
+
+            //        local.BindEventAggregator(ea);
+
+            //        return local;
+            //    }
+
+            //}
+            var xml = new System.Xml.Serialization.XmlSerializer(typeof(XmlObject));
+
+            if (!File.Exists(xmlPath)) {
                 var dataSource = new LocalDataSource();
                 dataSource.BindEventAggregator(ea);
                 return dataSource;
             }
 
-            using (var fs = File.OpenRead(docPath)) {
-                using (var r = new StreamReader(fs, System.Text.Encoding.UTF8)) {
-                    var jsonStr = r.ReadToEnd();
-                    var local = JsonSerializer.Deserialize<LocalDataSource>(jsonStr);
+            using (var fs = File.OpenRead(xmlPath)) {
+                var xmlObject = (XmlObject)xml.Deserialize(fs);
+                var local = new LocalDataSource();
 
-                    local.BindEventAggregator(ea);
+                local.BindEventAggregator(ea);
+                local.ControlUis.AddRange(xmlObject.ControlUis);
+                local.Motors.AddRange(xmlObject.Motors);
+                local.Maps.AddRange(xmlObject.Maps);
 
-                    return local;
-                }
+                return local;
             }
         }
 
@@ -81,7 +116,7 @@ namespace taskmaker_wpf.Data {
             var docPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker", "project.json");
             var xmlFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker", "project.xml");
 
-            var xml = new System.Xml.Serialization.XmlSerializer(typeof(List<ControlUiDTO>));
+            var xml = new System.Xml.Serialization.XmlSerializer(typeof(XmlObject));
 
             //using (var fs = File.Create(docPath)) {
             //    using (var w = new StreamWriter(fs, System.Text.Encoding.UTF8)) {
@@ -91,7 +126,7 @@ namespace taskmaker_wpf.Data {
             //}
 
             using (var xmlfs = File.Create(xmlFilePath)) {
-                xml.Serialize(xmlfs, ControlUis);
+                xml.Serialize(xmlfs, new XmlObject(ControlUis, Motors, Maps));
             }
         }
 

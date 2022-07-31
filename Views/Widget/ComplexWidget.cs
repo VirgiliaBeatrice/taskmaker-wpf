@@ -390,11 +390,15 @@ namespace taskmaker_wpf.Views {
                 }
             }
 
-            if (newValue != null)
+            if (newValue != null) {
                 newValue.PropertyChanged += OnPropertyChanged;
+                OnPropertyChanged(null, new PropertyChangedEventArgs(nameof(ControlUiState.Nodes)));
+                OnPropertyChanged(null, new PropertyChangedEventArgs(nameof(ControlUiState.Regions)));
+            }
             if (oldValue != null)
                 oldValue.PropertyChanged -= OnPropertyChanged;
 
+            complex.InvalidateVisual();
         }
 
         //public IEnumerable NodeSource {

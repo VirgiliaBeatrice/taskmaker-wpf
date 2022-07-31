@@ -135,7 +135,7 @@ namespace taskmaker_wpf.Data {
         public string Name { get; set; }
         public double[] Tensor { get; set; }
         public int[] Shape { get; set; }
-        public object[] Targets { get; set; }
+        //public object[] Targets { get; set; }
     }
 
     public class ControlUiRepository : IRepository {

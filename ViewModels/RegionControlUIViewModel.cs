@@ -270,6 +270,7 @@ namespace taskmaker_wpf.ViewModels {
             TargetsPanelVM = new TargetsPanelViewModel(useCases, config);
             _uiUseCase = useCases.OfType<ControlUiUseCase>().FirstOrDefault();
             _buildUseCase = useCases.OfType<BuildRegionUseCase>().FirstOrDefault();
+
             SystemInfo = $"{_operationMode}";
         }
 
