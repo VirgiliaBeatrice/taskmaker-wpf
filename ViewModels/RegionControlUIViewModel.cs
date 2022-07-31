@@ -196,8 +196,8 @@ namespace taskmaker_wpf.ViewModels {
         private string _statusMsg;
         private string _systemInfo;
 
-        private NodeWidget _selectedNodeWidget;
-        public NodeWidget SelectedNodeWidget {
+        private FrameworkElement _selectedNodeWidget;
+        public FrameworkElement SelectedNodeWidget {
             get => _selectedNodeWidget;
             set => SetProperty(ref _selectedNodeWidget, value);
         }
@@ -248,6 +248,9 @@ namespace taskmaker_wpf.ViewModels {
             var uiEntity = _uiUseCase.GetControlUi(UiState.Id);
 
             _mapper.Map(uiEntity, UiState);
+
+            _mapUseCase.SetBasisDim(TargetsPanelVM.SelectedMap.Id, new int[] { UiState.Nodes.Length });
+            _mapUseCase.InitializeTensor(TargetsPanelVM.SelectedMap.Id);
         }
 
 
@@ -321,9 +324,11 @@ namespace taskmaker_wpf.ViewModels {
         void ExecuteSetValueCommand() {
             if (SelectedNodeWidget is null) return;
 
-            var value = TargetsPanelVM.TargetsOfSelectedMap.Select(e => e.Value).ToArray();
+            //var value = TargetsPanelVM.TargetsOfSelectedMap.Select(e => e.Value).SelectMany(e => e).ToArray();
 
-            _mapUseCase.UpdateMap(_mapper.Map<NLinearMapEntity>(TargetsPanelVM.SelectedMap));
+
+
+
             //SetNodeValue(SelectedNodeWidget.DataContext as NodeState);
         }
 

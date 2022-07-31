@@ -219,7 +219,29 @@ namespace taskmaker_wpf.Domain {
             _repository.Update(map);
         }
 
-        public void UpdateMapValue(int nodeId, double[] value) { }
+        public void UpdateMapValue(int mapId, int nodeId, double[] value) {
+            var map = _repository.Find<NLinearMapEntity>(mapId);
+
+            map.SetValue(new int[] { nodeId }, value);
+        }
+
+        public void InitializeTensor(int id) {
+            var map = _repository.Find<NLinearMapEntity>(id);
+
+            map.InitializeTensor();
+        }
+
+        public void SetMapTargetDim(int id, int targetDim) {
+            var map = _repository.Find<NLinearMapEntity>(id);
+
+            map.SetTargetDim(targetDim);
+        }
+
+        public void SetBasisDim(int id, int[] basisDim) {
+            var map = _repository.Find<NLinearMapEntity>(id);
+
+            map.SetBasisDim(basisDim);
+        }
 
     }
 }

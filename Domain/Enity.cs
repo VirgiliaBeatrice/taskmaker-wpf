@@ -49,6 +49,51 @@ namespace taskmaker_wpf.Domain {
         public NDarray Tensor { get; set; }
         public int[] Shape { get; set; }
         public string[] Targets { get; set; }
+
+        private bool _isSet => !bool.Parse(np.isnan(Tensor.sum()).repr);
+        private int _targetDim;
+        private int[] _basisDims;
+
+        public void SetTargetDim(int targetDim) {
+            _targetDim = targetDim;
+        }
+
+        public void SetBasisDim(int[] basisDim) {
+            _basisDims = basisDim;
+        }
+
+        public void InitializeTensor() {
+            Shape = new int[] {
+                _targetDim
+            }.Concat(_basisDims).ToArray();
+
+            Tensor = np.empty(Shape);
+            Tensor.fill(np.nan);
+        }
+
+        public void SetValue(int[] indices, NDarray value) {
+            // only 1 bary
+            Tensor[$":,{indices[0]}"] = np.atleast_2d(value);
+        }
+
+        public NDarray MapTo(NDarray lambdas) {
+            if (!_isSet)
+                return null;
+
+            NDarray kronProd = null;
+
+            for (var i = 0; i < lambdas.shape[0]; i++) {
+                if (i == 0)
+                    kronProd = np.array(lambdas[$"{i},:"]);
+                else
+                    kronProd = np.kron(kronProd, lambdas[$"{i},:"]);
+            }
+
+            var w = np.dot(Tensor.reshape(Shape[0], -1), kronProd);
+
+            return w;
+        }
+
     }
 
     public class NodeEntity : BaseEntity {

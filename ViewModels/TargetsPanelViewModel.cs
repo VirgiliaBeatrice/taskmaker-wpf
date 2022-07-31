@@ -47,6 +47,12 @@ namespace taskmaker_wpf.ViewModels {
     }
 
     public class NLinearMapState : BindableBase {
+        private int _id;
+        public int Id {
+            get => _id;
+            set => SetProperty(ref _id, value);
+        }
+
         private string _name;
         public string Name {
             get => _name;
@@ -115,6 +121,7 @@ namespace taskmaker_wpf.ViewModels {
                 }).ToArray();
 
             _mapUseCase.UpdateMap(_mapper.Map<NLinearMapEntity>(SelectedMap));
+            _mapUseCase.SetMapTargetDim(SelectedMap.Id, SelectedMap.Targets.Select(e => e.Length).Sum());
         }
 
         private readonly MotorUseCase _motorUseCase;
