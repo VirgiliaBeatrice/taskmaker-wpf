@@ -14,7 +14,10 @@ namespace taskmaker_wpf.ViewModels {
     public class RegionSettingsViewModel : BindableBase {
         private string _selectedPort = "";
         public ObservableCollection<string> Coms { get; private set; }
-        
+
+        private bool _isConnected = false;
+        public bool IsConnected { get => _isConnected; set => SetProperty(ref _isConnected, value); }
+
         private readonly SerialService _serialSvr;
         private readonly IDialogService _dialogService;
 
@@ -49,8 +52,10 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private void ConnectCmdExecute() {
-            if (SelectedPort != "")
+            if (SelectedPort != "") {
                 _serialSvr.Connect(SelectedPort);
+                IsConnected= true;
+            }
             else {
                 var parameters = new DialogParameters {
                     { "title", "Error" },

@@ -48,14 +48,14 @@ namespace taskmaker_wpf.Services {
 
             Motors = new Motors();
 
-            _nMotor = Boards.NMotor;
-            _nBoard = Boards.Count;
-
-            Motors.AddRange(Enumerable.Repeat(new Motor(), _nMotor));
-
             Boards.Clear();
             Motors.Clear();
+
             Boards.EnumerateBoard();
+            _nBoard = Boards.Count;
+
+            _nMotor = Boards.NMotor;
+            Motors.AddRange(Enumerable.Repeat(new Motor(), _nMotor));
 
             return 0;
         }

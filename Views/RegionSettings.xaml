@@ -22,6 +22,7 @@
                     <ColumnDefinition Width="100" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="20" />
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" >Serial Port</Label>
                 <ComboBox
@@ -41,6 +42,11 @@
                 <Button Grid.Column="2" Margin="4 0 4 0" Command="{Binding ConnectCmd}">
                     Connect
                 </Button>
+                <CheckBox
+                    Grid.Column="3"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    IsChecked="{Binding IsConnected}" />
             </Grid>
         </GroupBox>
     </Grid>

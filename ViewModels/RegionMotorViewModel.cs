@@ -56,10 +56,7 @@ namespace taskmaker_wpf.ViewModels {
         public DelegateCommand<MotorState> ConnectMotorCmd => connectMotorCmd ?? (connectMotorCmd = new DelegateCommand<MotorState>(ConnectMotorCmdExecute));
 
         private void ConnectMotorCmdExecute(MotorState motor) {
-            throw new NotImplementedException();
-            //var instance = _serialSrv.GetMotorInstance(motor.BoardId, motor.MotorId);
-
-            //motor.Parent.Link(instance, motor.BoardId, motor.MotorId);
+            _motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(motor));
         }
 
         private ICommand removeMotorCmd;
@@ -136,15 +133,21 @@ namespace taskmaker_wpf.ViewModels {
             _motorUseCase = useCases.OfType<MotorUseCase>().First();
             //Motors.AddRange(_motorAgent.Repository.Select(e => new StatefulMotor(e)));
             Motors.AddRange(_motorUseCase.GetMotors().Select(e => _mapper.Map<MotorState>(e)));
+            Motors.ToList().ForEach(e => e.PropertyChanged += Motor_PropertyChanged);
 
-            foreach(var motor in Motors) {
-                motor.PropertyChanged += (s, args) => {
-                    _motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(s as MotorState));
-                };
-            }
+
+            //foreach(var motor in Motors) {
+            //    motor.PropertyChanged += (s, args) => {
+            //        _motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(s as MotorState));
+            //    };
+            //}
 
             ListBoards();
             ListMotors();
+        }
+
+        private void Motor_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+            _motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(sender as MotorState));
         }
 
         private void ListBoards() {

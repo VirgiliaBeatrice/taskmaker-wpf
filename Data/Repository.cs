@@ -74,7 +74,7 @@ namespace taskmaker_wpf.Data {
             _serial.Update(motor.BoardId, motor.MotorId, motor.Value);
 
             //
-            // _serial.SendToNuibot();
+             _serial.SendToNuibot();
         }
     }
 
