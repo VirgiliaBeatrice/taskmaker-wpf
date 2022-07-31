@@ -62,6 +62,8 @@ namespace taskmaker_wpf.Domain {
         public NodeEntity[] Nodes { get; set; }
         public Point[] Vertices => Nodes.Select(x => x.Value).ToArray();
 
+        public SimplexRegionEntity() { }
+
         public SimplexRegionEntity(NodeEntity[] nodes) {
             Nodes = nodes;
         }
@@ -86,6 +88,8 @@ namespace taskmaker_wpf.Domain {
         public Point[] Vertices { get; set; }
         public SimplexRegionEntity[] Governors { get; set; }
 
+        public VoronoiRegionEntity() { }
+
         public virtual double[] GetLambdas(Point pt, NodeEntity[] collection) { throw new NotImplementedException(); }
 
     }
@@ -98,6 +102,8 @@ namespace taskmaker_wpf.Domain {
 
             return lambda0.Zip(lambda1, (f, s) => (f + s)).ToArray();
         }
+
+        public SectoralVoronoiRegionEntity() { }
 
         public SectoralVoronoiRegionEntity(NodeEntity[] nodes, SimplexRegionEntity[] simplices) {
             Governors = simplices;
@@ -160,6 +166,8 @@ namespace taskmaker_wpf.Domain {
     }
 
     public class RectVoronoiRegionEntity : VoronoiRegionEntity {
+        public RectVoronoiRegionEntity() { }
+
         public RectVoronoiRegionEntity(NodeEntity[] nodes, SimplexRegionEntity governor) {
             Governors = new[] { governor };
             Invalidate(nodes);

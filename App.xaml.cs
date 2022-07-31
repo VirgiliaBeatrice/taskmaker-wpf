@@ -52,6 +52,7 @@ namespace taskmaker_wpf {
                     .IncludeBase<BaseRegionEntity, RegionState>()
                     .ReverseMap();
                 cfg.CreateMap<SimplexRegionEntity, SimplexRegionDTO>()
+                    .ForMember(d => d.Vertices, o => o.MapFrom(s => s.Vertices))
                     .IncludeBase<BaseRegionEntity, RegionDTO>()
                     .ReverseMap();
 
@@ -60,6 +61,7 @@ namespace taskmaker_wpf {
                     .IncludeBase<BaseRegionEntity, RegionState>()
                     .ReverseMap();
                 cfg.CreateMap<VoronoiRegionEntity, VoronoiRegionDTO>()
+                    .ForMember(d => d.Vertices, o => o.MapFrom(s => s.Vertices))
                     .IncludeBase<BaseRegionEntity, RegionDTO>()
                     .ReverseMap();
 
@@ -68,9 +70,11 @@ namespace taskmaker_wpf {
                     .ForMember(d => d.Regions, o => o.MapFrom(s => s.Regions))
                     .ReverseMap();
                 cfg.CreateMap<ControlUiEntity, ControlUiState>()
+                    .ForMember(d => d.Name, o => o.MapFrom(s => s.Name))
                     .ForMember(d => d.Nodes, o => o.MapFrom(s => s.Nodes))
                     .ForMember(d => d.Regions, o => o.MapFrom(s => s.Regions))
-                    .ForMember(d => d.Value, o => o.Ignore());
+                    .ForMember(d => d.Value, o => o.Ignore())
+                    .ReverseMap();
                 cfg.CreateMap<ControlUiEntity, ControlUiTargetState>()
                     .IncludeBase<ControlUiEntity, ControlUiState>()
                     .ForMember(d => d.IsSelected, o => o.Ignore());

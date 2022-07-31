@@ -50,6 +50,10 @@ namespace taskmaker_wpf.ViewModels {
             get => _regions;
             set => SetProperty(ref _regions, value);
         }
+
+        public override string ToString() {
+            return $"ControlUI[{Name}]";
+        }
     }
 
     public class NodeState : BindableBase, IEquatable<NodeState> {
@@ -225,7 +229,7 @@ namespace taskmaker_wpf.ViewModels {
             var pt = (Point)param;
             if (pt == null) return;
             else {
-                _uiUseCase.AddNode(UI, pt);
+                _uiUseCase.AddNode(UiState.Id, pt);
 
                 var uiEntity = _uiUseCase.GetControlUi(UiState.Id);
 
@@ -389,8 +393,9 @@ namespace taskmaker_wpf.ViewModels {
 
 
         public void OnNavigatedTo(NavigationContext navigationContext) {
-            UI = navigationContext.Parameters["ui"] as ControlUiEntity;
-            UiState = _mapper.Map<ControlUiEntity ,ControlUiState>(UI);
+            //UI = navigationContext.Parameters["ui"] as ControlUiEntity;
+            UiState = navigationContext.Parameters["ui"] as ControlUiState;
+            //UiState = _mapper.Map<ControlUiEntity ,ControlUiState>(UI);
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext) {

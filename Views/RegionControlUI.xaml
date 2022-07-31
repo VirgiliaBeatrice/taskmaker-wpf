@@ -108,7 +108,7 @@
                 SetValueCommand="{Binding SetValueCommand}"
                 BuildCommand="{Binding BuildCommand}"
                 SelectedNodeWidget="{Binding SelectedNodeWidget, Mode=OneWayToSource}"
-                Background="LightGray" Cursor="None">
+                Background="LightGray" Cursor="Cross">
                 <!--
                 
                 SimplexSource="{Binding Simplices}"

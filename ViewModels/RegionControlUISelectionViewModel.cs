@@ -12,34 +12,57 @@ using Prism.Regions;
 using taskmaker_wpf.Services;
 using taskmaker_wpf.Models;
 using taskmaker_wpf.Domain;
+using AutoMapper;
 
 namespace taskmaker_wpf.ViewModels {
     public class RegionControlUISelectionViewModel : BindableBase, INavigationAware {
         private readonly IRegionManager _regionManager;
         private readonly ControlUiUseCase _useCase;
-        public ObservableCollection<ControlUiEntity> UIs { get; set; } = new ObservableCollection<ControlUiEntity>();
+        private readonly IMapper _mapper;
+
+        private ControlUiState _selectedUi;
+        public ControlUiState SelectedUi {
+            get { return _selectedUi; }
+            set { SetProperty(ref _selectedUi, value); }
+        }
+
+        public ObservableCollection<ControlUiState> UIs { get; set; } = new ObservableCollection<ControlUiState>();
 
         public RegionControlUISelectionViewModel(
             IRegionManager regionManager,
+            MapperConfiguration config,
             IEnumerable<IUseCase> useCases) {
             _regionManager = regionManager;
             _useCase = useCases.OfType<ControlUiUseCase>().First();
+            _mapper = config.CreateMapper();
 
-            UIs.AddRange(_useCase.GetControlUis());
+            UIs.AddRange(_useCase.GetControlUis().Select(e => _mapper.Map<ControlUiState>(e)));
+        }
+
+        private DelegateCommand _updateCommand;
+        public DelegateCommand UpdateCommand =>
+            _updateCommand ?? (_updateCommand = new DelegateCommand(ExecuteUpdateCommand));
+
+        void ExecuteUpdateCommand() {
+            _useCase.Update(_mapper.Map<ControlUiEntity>(SelectedUi));
+            var ui = _useCase.GetControlUi(SelectedUi.Id);
+
+            UIs.Clear();
+            UIs.AddRange(_useCase.GetControlUis().Select(e => _mapper.Map<ControlUiState>(e)));
         }
 
         private DelegateCommand _addCmd;
         public DelegateCommand AddCmd => _addCmd ?? (_addCmd = new DelegateCommand(ExecuteAddCmd));
 
 
-        private DelegateCommand<ControlUiEntity> _navigateToNextCommand;
-        public DelegateCommand<ControlUiEntity> NavigateToNextCommand =>
-            _navigateToNextCommand ?? (_navigateToNextCommand = new DelegateCommand<ControlUiEntity>(ExecuteNavigateToNextCommand));
+        private DelegateCommand _navigateToNextCommand;
+        public DelegateCommand NavigateToNextCommand =>
+            _navigateToNextCommand ?? (_navigateToNextCommand = new DelegateCommand(ExecuteNavigateToNextCommand));
 
-        private void ExecuteNavigateToNextCommand(ControlUiEntity ui) {
-            if (ui != null) {
+        private void ExecuteNavigateToNextCommand() {
+            if (SelectedUi != null) {
                 var args = new NavigationParameters {
-                    { "ui", ui }
+                    { "ui", SelectedUi }
                 };
 
                 _regionManager.RequestNavigate("ContentRegion", "RegionControlUI", args);
@@ -51,7 +74,7 @@ namespace taskmaker_wpf.ViewModels {
             _useCase.AddUi();
 
             UIs.Clear();
-            UIs.AddRange(_useCase.GetControlUis());
+            UIs.AddRange(_useCase.GetControlUis().Select(e => _mapper.Map<ControlUiState>(e)));
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext) {

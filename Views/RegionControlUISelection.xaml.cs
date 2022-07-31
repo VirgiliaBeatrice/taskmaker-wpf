@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using taskmaker_wpf.ViewModels;
 
 namespace taskmaker_wpf.Views {
     /// <summary>
@@ -20,6 +21,17 @@ namespace taskmaker_wpf.Views {
     public partial class RegionControlUISelection : UserControl {
         public RegionControlUISelection() {
             InitializeComponent();
+        }
+
+        private void TextBox_KeyDown(object sender, KeyEventArgs e) {
+            if (e.Key == Key.Enter) {
+                TextBox tBox = (TextBox)sender;
+                DependencyProperty prop = TextBox.TextProperty;
+
+                BindingExpression binding = BindingOperations.GetBindingExpression(tBox, prop);
+                if (binding != null) { binding.UpdateSource(); }
+                ((RegionControlUISelectionViewModel)DataContext).UpdateCommand.Execute();
+            }
         }
     }
 }

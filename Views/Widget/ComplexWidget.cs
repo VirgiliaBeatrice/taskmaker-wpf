@@ -916,22 +916,22 @@ namespace taskmaker_wpf.Views {
 
             Children.Add(indicator);
 
-            var cursor = new CursorWidget();
+            //var cursor = new CursorWidget();
 
-            cursor.Width = 10;
-            cursor.Height = 10;
+            //cursor.Width = 10;
+            //cursor.Height = 10;
 
-            cursor.IsHitTestVisible = false;
-            SetZIndex(cursor, 10);
+            //cursor.IsHitTestVisible = false;
+            //SetZIndex(cursor, 10);
 
-            Children.Add(cursor);
+            //Children.Add(cursor);
 
-            var test = MouseMoveObs
-                .Subscribe(e => {
-                    cursor.Location = e.EventArgs.GetPosition(this);
+            //var test = MouseMoveObs
+            //    .Subscribe(e => {
+            //        cursor.Location = e.EventArgs.GetPosition(this);
 
-                    InvalidateSKContext();
-                });
+            //        InvalidateSKContext();
+            //    });
 
             SizeChanged += (s, e) => {
                 var i = Children.OfType<IndicatorWidget>().First();
@@ -939,13 +939,13 @@ namespace taskmaker_wpf.Views {
                 ViewPort.CreateContext((int)ActualWidth, (int)ActualHeight);
                 //ViewPort.Clear();
 
-                InvalidateSKContext();
+                //InvalidateSKContext();
                 //foreach (var item in Children.OfType<SKFrameworkElement>()) {
                 //    item.InvalidateVisual();
                 //}
             };
 
-            Cursor = Cursors.None;
+            //Cursor = Cursors.Pen;
         }
 
         private bool _isTracing = false;

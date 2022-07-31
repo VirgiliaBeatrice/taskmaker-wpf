@@ -87,14 +87,19 @@ namespace taskmaker_wpf.Domain {
             return ui;
         }
 
-        public void AddNode(ControlUiEntity ui, Point pt) {
+        public void AddNode(int id, Point pt) {
             var node = new NodeEntity {
                 Value = pt
             };
+            var ui = _repository.Find<ControlUiEntity>(id);
 
             ui.Nodes = ui.Nodes.Concat(new NodeEntity[] { node }).ToArray();
             node.Id = ui.Nodes.Length - 1;
 
+            _repository.Update(ui);
+        }
+
+        public void Update(ControlUiEntity ui) {
             _repository.Update(ui);
         }
     }
