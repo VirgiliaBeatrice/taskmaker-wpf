@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Prism.Events;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,8 +19,21 @@ namespace taskmaker_wpf.Views {
     /// Interaction logic for TestWindow.xaml
     /// </summary>
     public partial class TestWindow : Window {
-        public TestWindow() {
+        private IEventAggregator _eventAggregator;
+        public TestWindow(IEventAggregator @event) {
+            _eventAggregator = @event;
             InitializeComponent();
         }
+
+        private void Window_PreviewKeyUp(object sender, KeyEventArgs e) {
+            if (e.Key == Key.S & Keyboard.Modifiers == ModifierKeys.Control) {
+                _eventAggregator.GetEvent<SystemSaveEvent>().Publish();
+                e.Handled = true;
+            }
+        }
+    }
+
+    public class SystemSaveEvent : PubSubEvent {
+
     }
 }

@@ -9,6 +9,7 @@ using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Models;
 using AutoMapper;
 using taskmaker_wpf.Services;
+using System.Xml.Serialization;
 
 namespace taskmaker_wpf.Data {
 
@@ -77,6 +78,7 @@ namespace taskmaker_wpf.Data {
         }
     }
 
+    [Serializable]
     public class MotorDTO {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -87,27 +89,38 @@ namespace taskmaker_wpf.Data {
         public int MotorId { get; set; }
     }
 
+    [Serializable]
     public class NodeDTO {
         public int Id { get; set; }
         public string Name { get; set; }
         public Point Value { get; set; }
     }
 
-    public class RegionDTO {
+    [XmlInclude(typeof(SimplexRegionDTO))]
+    [XmlInclude(typeof(VoronoiRegionDTO))]
+    [Serializable]
+    public abstract class RegionDTO {
         public int Id { get; set; }
         public string Name { get; set; }
+        public abstract string Type { get; }
     }
 
+    [Serializable]
     public class SimplexRegionDTO : RegionDTO {
         public NodeDTO[] Nodes { get; set; }
         public Point[] Vertices { get; set; }
+
+        public override string Type { get; } = nameof(SimplexRegionDTO);
     }
 
+    [Serializable]
     public class VoronoiRegionDTO : RegionDTO {
+        public override string Type { get; } = nameof(VoronoiRegionDTO);
         public Point[] Vertices { get; set; }
         public SimplexRegionDTO[] Governors { get; set; }
     }
 
+    [Serializable]
     public class ControlUiDTO {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -116,6 +129,7 @@ namespace taskmaker_wpf.Data {
         public RegionDTO[] Regions { get; set; }
     }
 
+    [Serializable]
     public class NLinearMapDTO {
         public int Id { get; set; }
         public string Name { get; set; }

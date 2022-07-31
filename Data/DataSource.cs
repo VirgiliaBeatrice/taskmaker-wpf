@@ -1,10 +1,13 @@
-﻿using System;
+﻿using Prism.Events;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Models;
+using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.Data {
     public interface IDataSource {
@@ -12,17 +15,25 @@ namespace taskmaker_wpf.Data {
 
     }
 
+    [Serializable]
     public class LocalDataSource : IDataSource {
         public List<ControlUiDTO> ControlUis { get; set; } = new List<ControlUiDTO>();
         public List<MotorDTO> Motors { get; set; } = new List<MotorDTO>();
         public List<NLinearMapDTO> Maps { get; set; } = new List<NLinearMapDTO>();
 
-        public LocalDataSource() {
-            //Motors.Add(new MotorDTO {
-            //    Id = 1,
-            //    Name = "S1"
-            //});
-            //Load();
+        //public RegionDTO[][] Regions => ControlUis.Select(e => e.Regions).ToArray();
+
+        //[JsonIgnore]
+        [NonSerialized]
+        private IEventAggregator _ea;
+
+        public LocalDataSource() { }
+
+        public void BindEventAggregator(IEventAggregator ea) {
+            _ea = ea;
+            _ea.GetEvent<SystemSaveEvent>().Subscribe(
+                () => Save()
+                );
         }
 
         private int _counter = 0;
@@ -38,18 +49,24 @@ namespace taskmaker_wpf.Data {
             }
         }
 
-        public static LocalDataSource Load() {
+        // TODO: better loading method by DI
+        public static LocalDataSource Load(IEventAggregator ea) {
             var docPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker", "project.json");
 
             if (!File.Exists(docPath)) {
-                return new LocalDataSource();
+                var dataSource = new LocalDataSource();
+                dataSource.BindEventAggregator(ea);
+                return dataSource;
             }
 
             using (var fs = File.OpenRead(docPath)) {
                 using (var r = new StreamReader(fs, System.Text.Encoding.UTF8)) {
                     var jsonStr = r.ReadToEnd();
+                    var local = JsonSerializer.Deserialize<LocalDataSource>(jsonStr);
 
-                    return JsonSerializer.Deserialize<LocalDataSource>(jsonStr);
+                    local.BindEventAggregator(ea);
+
+                    return local;
                 }
             }
         }
@@ -58,16 +75,23 @@ namespace taskmaker_wpf.Data {
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker"));
 
             var options = new JsonSerializerOptions {
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Create(System.Text.Unicode.UnicodeRanges.All)
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Create(System.Text.Unicode.UnicodeRanges.All),
+                WriteIndented = true,
             };
             var docPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker", "project.json");
+            var xmlFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker", "project.xml");
 
-            using (var fs = File.Create(docPath)) {
-                using (var w = new StreamWriter(fs, System.Text.Encoding.UTF8)) {
-                    var text = JsonSerializer.Serialize(this, options);
+            var xml = new System.Xml.Serialization.XmlSerializer(typeof(List<ControlUiDTO>));
 
-                    await w.WriteAsync(text);
-                }
+            //using (var fs = File.Create(docPath)) {
+            //    using (var w = new StreamWriter(fs, System.Text.Encoding.UTF8)) {
+            //        var text = JsonSerializer.Serialize(this, GetType(), options);
+            //        await w.WriteAsync(text);
+            //    }
+            //}
+
+            using (var xmlfs = File.Create(xmlFilePath)) {
+                xml.Serialize(xmlfs, ControlUis);
             }
         }
 

@@ -15,6 +15,7 @@ using CMessageBox = taskmaker_wpf.Views.MessageBox;
 using AutoMapper;
 using taskmaker_wpf.Data;
 using taskmaker_wpf.Domain;
+using Prism.Events;
 
 namespace taskmaker_wpf {
     /// <summary>
@@ -39,9 +40,11 @@ namespace taskmaker_wpf {
                     .ReverseMap();
 
                 cfg.CreateMap<BaseRegionEntity, RegionDTO>()
+                    .IncludeAllDerived()
                     .ReverseMap();
 
                 cfg.CreateMap<BaseRegionEntity, RegionState>()
+                    //.IncludeAllDerived()
                     .ReverseMap();
 
                 cfg.CreateMap<SimplexRegionEntity, SimplexState>()
@@ -98,7 +101,7 @@ namespace taskmaker_wpf {
 
             // Register IDataSource
             containerRegistry.RegisterSingleton<IDataSource>(() => {
-                return LocalDataSource.Load();
+                return LocalDataSource.Load(Container.Resolve<IEventAggregator>());
             });
 
             // Register IRepository
