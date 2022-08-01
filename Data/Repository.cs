@@ -112,6 +112,9 @@ namespace taskmaker_wpf.Data {
         public override string Type { get; } = nameof(SimplexRegionDTO);
     }
 
+
+    [XmlInclude(typeof(RectVoronoiRegionDTO))]
+    [XmlInclude(typeof(SectoralVoronoiRegionDTO))]
     [Serializable]
     public class VoronoiRegionDTO : RegionDTO {
         public override string Type { get; } = nameof(VoronoiRegionDTO);
