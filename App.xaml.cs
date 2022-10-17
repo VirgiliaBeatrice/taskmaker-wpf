@@ -115,16 +115,28 @@ namespace taskmaker_wpf {
             });
 
             // Register IRepository
-            containerRegistry.RegisterSingleton<IRepository, MotorRepository>("1");
-            containerRegistry.Register<IRepository, ControlUiRepository>("2");
-            containerRegistry.Register<IRepository, NLinearMapRepository>("3");
+            //containerRegistry.RegisterSingleton<IRepository, MotorRepository>("1");
+            //containerRegistry.Register<IRepository, ControlUiRepository>("2");
+            //containerRegistry.Register<IRepository, NLinearMapRepository>("3");
+            containerRegistry.RegisterSingleton<IRepository, ProjectRepository>();
 
             // Register IUseCase
-            containerRegistry.RegisterSingleton<IUseCase, MotorUseCase>("1");
-            containerRegistry.RegisterSingleton<IUseCase, ControlUiUseCase>("2");
-            containerRegistry.RegisterSingleton<IUseCase, NLinearMapUseCase>("3");
-            containerRegistry.RegisterSingleton<IUseCase, ListTargetUseCase>("ListTargetUseCase");
-            containerRegistry.RegisterSingleton<IUseCase, BuildRegionUseCase>("BuildRegionUseCase");
+            //containerRegistry.RegisterSingleton<IUseCase, MotorUseCase>("1");
+            //containerRegistry.RegisterSingleton<IUseCase, ControlUiUseCase>("2");
+            //containerRegistry.RegisterSingleton<IUseCase, NLinearMapUseCase>("3");
+            //containerRegistry.RegisterSingleton<IUseCase, ListTargetUseCase>("ListTargetUseCase");
+            //containerRegistry.RegisterSingleton<IUseCase, BuildRegionUseCase>("BuildRegionUseCase");
+
+
+            containerRegistry.Register<ListTargetInteractor>();
+            containerRegistry.Register<SaveInteractor>();
+            // Register Interactor Bus
+            containerRegistry.RegisterSingleton<MotorInteractorBus>();
+            containerRegistry.RegisterSingleton<ControlUiInteractorBus>();
+            containerRegistry.RegisterSingleton<NLinearMapInteractorBus>();
+
+            containerRegistry.Register<IPresenter>(() => Container.Resolve<TargetsPanelViewModel>());
+            containerRegistry.Register<IPresenter>(() => Container.Resolve<RegionControlUIViewModel>());
 
             // Register messagebox
             containerRegistry.RegisterDialog<CMessageBox, MessageBoxViewModel>("standard");

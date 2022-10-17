@@ -229,11 +229,12 @@ namespace taskmaker_wpf.ViewModels {
             var pt = (Point)param;
             if (pt == null) return;
             else {
-                _uiUseCase.AddNode(UiState.Id, pt);
+                _uiBus.Handle(new UpdateControlUiRequest(), (bool res) => { });
+                _uiBus.Handle(new ListControlUiRequest(), (ControlUiEntity[] uis) => { });
 
-                var uiEntity = _uiUseCase.GetControlUi(UiState.Id);
+                //var uiEntity = _uiUseCase.GetControlUi(UiState.Id);
 
-                _mapper.Map(uiEntity, UiState);
+                //_mapper.Map(uiEntity, UiState);
             }
 
         }
@@ -243,14 +244,14 @@ namespace taskmaker_wpf.ViewModels {
             _buildCommand ?? (_buildCommand = new DelegateCommand(ExecuteBuildCommand));
 
         void ExecuteBuildCommand() {
-            _buildUseCase.Build(UiState.Id);
+            //_buildUseCase.Build(UiState.Id);
 
-            var uiEntity = _uiUseCase.GetControlUi(UiState.Id);
+            //var uiEntity = _uiUseCase.GetControlUi(UiState.Id);
 
-            _mapper.Map(uiEntity, UiState);
+            //_mapper.Map(uiEntity, UiState);
 
-            _mapUseCase.SetBasisDim(TargetsPanelVM.SelectedMap.Id, new int[] { UiState.Nodes.Length });
-            _mapUseCase.InitializeTensor(TargetsPanelVM.SelectedMap.Id);
+            //_mapUseCase.SetBasisDim(TargetsPanelVM.SelectedMap.Id, new int[] { UiState.Nodes.Length });
+            //_mapUseCase.InitializeTensor(TargetsPanelVM.SelectedMap.Id);
         }
 
 
@@ -265,22 +266,33 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private readonly IMapper _mapper;
-        private readonly ControlUiUseCase _uiUseCase;
-        private readonly BuildRegionUseCase _buildUseCase;
-        private readonly NLinearMapUseCase _mapUseCase;
-        private readonly MotorUseCase _motorUseCase;
+        //private readonly ControlUiUseCase _uiUseCase;
+        //private readonly BuildRegionUseCase _buildUseCase;
+        //private readonly NLinearMapUseCase _mapUseCase;
+        //private readonly MotorUseCase _motorUseCase;
+        private readonly ControlUiInteractorBus _uiBus;
+        private readonly NLinearMapInteractorBus _mapBus;
+        private readonly MotorInteractorBus _motorBus;
 
         public RegionControlUIViewModel(
             MapperConfiguration config,
-            IEnumerable<IUseCase> useCases
+            ControlUiInteractorBus uiBus,
+            NLinearMapInteractorBus mapBus,
+            MotorInteractorBus motorBus,
+            ListTargetInteractor targetInteractor
+            //IEnumerable<IUseCase> useCases,
+            //NLinearMapInteractorBus mapBus
             ) {
             _mapper = config.CreateMapper();
 
-            TargetsPanelVM = new TargetsPanelViewModel(useCases, config);
-            _uiUseCase = useCases.OfType<ControlUiUseCase>().FirstOrDefault();
-            _buildUseCase = useCases.OfType<BuildRegionUseCase>().FirstOrDefault();
-            _mapUseCase = useCases.OfType<NLinearMapUseCase>().FirstOrDefault();
-            _motorUseCase = useCases.OfType<MotorUseCase>().FirstOrDefault();
+            TargetsPanelVM = new TargetsPanelViewModel(targetInteractor,motorBus,mapBus, config);
+            _uiBus = uiBus;
+            _mapBus = mapBus;
+            _motorBus = motorBus;
+            //_uiUseCase = useCases.OfType<ControlUiUseCase>().FirstOrDefault();
+            //_buildUseCase = useCases.OfType<BuildRegionUseCase>().FirstOrDefault();
+            //_mapUseCase = useCases.OfType<NLinearMapUseCase>().FirstOrDefault();
+            //_motorUseCase = useCases.OfType<MotorUseCase>().FirstOrDefault();
 
             SystemInfo = $"{_operationMode}";
         }

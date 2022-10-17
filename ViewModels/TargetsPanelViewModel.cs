@@ -67,9 +67,12 @@ namespace taskmaker_wpf.ViewModels {
 
     }
 
-    public class TargetsPanelViewModel : BindableBase {
-        private readonly ListTargetUseCase _useCase;
-        private readonly NLinearMapUseCase _mapUseCase;
+    public class TargetsPanelViewModel : BindableBase, IPresenter {
+        private readonly ListTargetInteractor _target;
+        private readonly NLinearMapInteractorBus _mapBus;
+        private readonly MotorInteractorBus _motorBus;
+        //private readonly ListTargetUseCase _useCase;
+        //private readonly NLinearMapUseCase _mapUseCase;
 
         private ISelectableState[] _validTargets;
         public ISelectableState[] ValidTargets {
@@ -98,43 +101,52 @@ namespace taskmaker_wpf.ViewModels {
         private DelegateCommand _addCommand;
         public DelegateCommand AddCommand => _addCommand ?? (_addCommand = new DelegateCommand(ExecuteAddCommand));
         private void ExecuteAddCommand() {
-            var map = _mapUseCase.AddMap();
+            _mapBus.Handle<AddNLinearMapRequest, bool>(new AddNLinearMapRequest(), (e) => { });
+            _mapBus.Handle<ListNLinearMapRequest, NLinearMapEntity[]>(new ListNLinearMapRequest(),
+                UpdateMaps);
+        }
 
+        private void UpdateMaps(NLinearMapEntity[] maps) {
             Maps.Clear();
-            Maps.AddRange(
-                _mapUseCase.GetMaps()
-                    .Select(e => _mapper.Map<NLinearMapState>(e))
-                    );
+            Maps.AddRange(maps.Select(e => _mapper.Map<NLinearMapState>(e)));
         }
 
         private DelegateCommand _updateCommand;
         public DelegateCommand UpdateCommand =>
             _updateCommand ?? (_updateCommand = new DelegateCommand(ExecuteUpdateCommand));
         void ExecuteUpdateCommand() {
-            SelectedMap.Targets = ValidTargets.Where(e => e.IsSelected).Select(e => e.GetType().Name + "/" + e.Id).ToArray();
-            TargetsOfSelectedMap = SelectedMap.Targets.Select(
-                e => {
-                    var context = e.Split('/');
-                    var target = ValidTargets.Where(t => t.GetType().Name == context[0] & t.Id == int.Parse(context[1])).FirstOrDefault();
+            //SelectedMap.Targets = ValidTargets.Where(e => e.IsSelected).Select(e => e.GetType().Name + "/" + e.Id).ToArray();
+            //TargetsOfSelectedMap = SelectedMap.Targets.Select(
+            //    e => {
+            //        var context = e.Split('/');
+            //        var target = ValidTargets.Where(t => t.GetType().Name == context[0] & t.Id == int.Parse(context[1])).FirstOrDefault();
 
-                    return target;
-                }).ToArray();
+            //        return target;
+            //    }).ToArray();
 
-            _mapUseCase.UpdateMap(_mapper.Map<NLinearMapEntity>(SelectedMap));
-            _mapUseCase.SetMapTargetDim(SelectedMap.Id, SelectedMap.Targets.Select(e => e.Length).Sum());
+            //_mapUseCase.UpdateMap(_mapper.Map<NLinearMapEntity>(SelectedMap));
+            //_mapUseCase.SetMapTargetDim(SelectedMap.Id, SelectedMap.Targets.Select(e => e.Length).Sum());
         }
 
-        private readonly MotorUseCase _motorUseCase;
+        //private readonly MotorUseCase _motorUseCase;
         private readonly IMapper _mapper;
-        public TargetsPanelViewModel(IEnumerable<IUseCase> useCases, MapperConfiguration config) {
-            _useCase = useCases.OfType<ListTargetUseCase>().FirstOrDefault();
-            _mapUseCase = useCases.OfType<NLinearMapUseCase>().FirstOrDefault();
-            _motorUseCase = useCases.OfType<MotorUseCase>().FirstOrDefault();
+        public TargetsPanelViewModel(
+            ListTargetInteractor target,
+            MotorInteractorBus motorBus,
+            NLinearMapInteractorBus mapBus,
+            //IEnumerable<IUseCase> useCases,
+            MapperConfiguration config) {
+            //_useCase = useCases.OfType<ListTargetUseCase>().FirstOrDefault();
+            //_mapUseCase = useCases.OfType<NLinearMapUseCase>().FirstOrDefault();
+            //_motorUseCase = useCases.OfType<MotorUseCase>().FirstOrDefault();
+            _target = target;
+            _motorBus = motorBus;
+            _mapBus = mapBus;
 
             _mapper = config.CreateMapper();
 
-            ValidTargets = _useCase.GetTargets()
-                .Select(e => {
+            _target.Handle<ListTargetRequest, ITargetable[]>(new ListTargetRequest(), targets => {
+                targets.Select(e => {
                     if (e is MotorEntity) {
                         return _mapper.Map<MotorTargetState>(e);
                     }
@@ -144,15 +156,14 @@ namespace taskmaker_wpf.ViewModels {
                     else
                         return default(ISelectableState);
                 }).ToArray();
-
-            ValidTargets.OfType<MotorTargetState>().ToList().ForEach(e => e.PropertyChanged += (s, args) => {
-                if (args.PropertyName == nameof(MotorTargetState.MotorValue))
-                    _motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(s));
             });
 
-            Maps.AddRange(
-                _mapUseCase.GetMaps()
-                    .Select(e => _mapper.Map<NLinearMapState>(e)));
+            _mapBus.Handle<ListNLinearMapRequest, NLinearMapEntity[]>(new ListNLinearMapRequest(), UpdateMaps);
+
+            //ValidTargets.OfType<MotorTargetState>().ToList().ForEach(e => e.PropertyChanged += (s, args) => {
+            //    if (args.PropertyName == nameof(MotorTargetState.MotorValue))
+            //        _motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(s));
+            //});
         }
     }
 }

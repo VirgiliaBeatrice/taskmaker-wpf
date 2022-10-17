@@ -12,6 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using taskmaker_wpf.Domain;
 using taskmaker_wpf.ViewModels;
 
 namespace taskmaker_wpf.Views {
@@ -20,15 +21,22 @@ namespace taskmaker_wpf.Views {
     /// </summary>
     public partial class TestWindow : Window {
         private IEventAggregator _eventAggregator;
-        public TestWindow(IEventAggregator @event) {
-            _eventAggregator = @event;
+        private SaveInteractor _save;
+
+        public TestWindow(IEventAggregator @event, SaveInteractor save) {
+            //_eventAggregator = @event;
+            _save = save;
             InitializeComponent();
         }
 
         private void Window_PreviewKeyUp(object sender, KeyEventArgs e) {
             if (e.Key == Key.S & Keyboard.Modifiers == ModifierKeys.Control) {
-                _eventAggregator.GetEvent<SystemSaveEvent>().Publish();
+                _save.Handle(new SaveRequest(), (bool res) => { });
+                //_eventAggregator.GetEvent<SystemSaveEvent>().Publish();
                 e.Handled = true;
+            }
+            else if (e.Key == Key.S & Keyboard.Modifiers == ModifierKeys.Shift & Keyboard.Modifiers == ModifierKeys.Control) {
+                //_save.Handle
             }
         }
     }

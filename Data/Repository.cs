@@ -10,21 +10,126 @@ using taskmaker_wpf.Models;
 using AutoMapper;
 using taskmaker_wpf.Services;
 using System.Xml.Serialization;
+using System.IO;
 
 namespace taskmaker_wpf.Data {
 
     // Hold DTO, depend on Entity
-    internal interface IRepository {
+    public interface IRepository {
         IDataSource DataSource { get; }
         void Add<T>(T item);
         void Update<T>(T item);
         void Delete<T>(T item);
-        T Find<T>(int id);
+        void Save();
+        void Load();
+        T Find<T>(int id); 
         IEnumerable<T> FindAll<T>();
 
     }
 
-    public class MotorRepository : IRepository {
+    public class ProjectDataObject {
+        public List<MotorEntity> Motors { get; set; } = new List<MotorEntity>();
+        public List<ControlUiEntity> Uis { get; set; } = new List<ControlUiEntity>();
+        public List<NLinearMapEntity> Entities { get; set; } = new List<NLinearMapEntity>();
+
+    }
+
+    public class ProjectRepository : IRepository {
+        public IDataSource DataSource { get; set;}
+        public ProjectDataObject Project { get; set; } = new ProjectDataObject();
+
+        private List<MotorEntity> Motors => Project.Motors;
+
+        public void Add<T>(T item) {
+            var itemType = typeof(T);
+
+            if (itemType == typeof(MotorEntity)) {
+                Project.Motors.Add(item as MotorEntity);
+            }
+        }
+
+        public void Update<T>(T item) {
+            var itemType = typeof(T);
+
+            if (itemType == typeof(MotorEntity)) {
+                var entity = item as MotorEntity;
+                var target = Project.Motors.Find(e => e.Id == entity.Id);
+
+                if (target != null)
+                    target = entity;
+            }
+        }
+
+        public void Delete<T>(T item) {
+            var itemType = typeof(T);
+
+            if (itemType == typeof(MotorEntity)) {
+                var entity = item as MotorEntity;
+
+                Project.Motors.Remove(Project.Motors.Find(e => e.Id == entity.Id));
+            }
+        }
+
+        public T Find<T>(int id){
+            var itemType = typeof(T);
+
+            if (itemType == typeof(MotorEntity)) {
+                var target = Project.Motors.Find(e => e.Id == id);
+
+                return (T)(object)target;
+            }
+
+            return default(T);
+        }
+
+        public IEnumerable<T> FindAll<T>() {
+            var itemType = typeof(T);
+
+            if (itemType == typeof(MotorEntity)) {
+                return Project.Motors.Cast<T>().ToArray();
+            }
+
+            return new[] { default(T) };
+        }
+
+        public void Save() {
+            Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker"));
+
+            var xmlFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker", "project.xml");
+            var xml = new XmlSerializer(typeof(ProjectDataObject));
+
+            using (var xmlfs = File.Create(xmlFilePath)) {
+                xml.Serialize(xmlfs, Project);
+            }
+        }
+
+        public void Load() {
+            var xmlPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker", "project.xml");
+
+            var xml = new XmlSerializer(typeof(ProjectDataObject));
+
+            if (!File.Exists(xmlPath)) {
+                //var dataSource = new LocalDataSource();
+                //dataSource.BindEventAggregator(ea);
+                //return dataSource;
+            }
+
+            using (var fs = File.OpenRead(xmlPath)) {
+                var xmlObject = (ProjectDataObject)xml.Deserialize(fs);
+                Project = xmlObject;
+                //var local = new LocalDataSource();
+
+                //local.BindEventAggregator(ea);
+                //local.ControlUis.AddRange(xmlObject.ControlUis);
+                //local.Motors.AddRange(xmlObject.Motors);
+                //local.Maps.AddRange(xmlObject.Maps);
+
+                //return local;
+            }
+        }
+    }
+
+    public class MotorRepository {
         public IDataSource DataSource {
             get;
             private set;
@@ -138,7 +243,7 @@ namespace taskmaker_wpf.Data {
         public string[] Targets { get; set; }
     }
 
-    public class ControlUiRepository : IRepository {
+    public class ControlUiRepository{
         public IDataSource DataSource {
             get;
             private set;
@@ -179,7 +284,7 @@ namespace taskmaker_wpf.Data {
         }
     }
 
-    public class NLinearMapRepository : IRepository {
+    public class NLinearMapRepository {
         public IDataSource DataSource {
             get;
             private set;

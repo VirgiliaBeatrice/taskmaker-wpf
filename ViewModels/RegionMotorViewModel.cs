@@ -58,38 +58,43 @@ namespace taskmaker_wpf.ViewModels {
         public DelegateCommand<MotorState> ConnectMotorCmd => connectMotorCmd ?? (connectMotorCmd = new DelegateCommand<MotorState>(ConnectMotorCmdExecute));
 
         private void ConnectMotorCmdExecute(MotorState motor) {
-            _motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(motor));
+            //_motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(motor));
         }
 
         private ICommand removeMotorCmd;
         public ICommand RemoveMotorCmd => removeMotorCmd ?? (removeMotorCmd = new DelegateCommand<MotorState>(RemoveMotorCmdExecute));
 
         private void RemoveMotorCmdExecute(MotorState motor) {
-            _motorUseCase.RemoveMotor(_mapper.Map<MotorEntity>(motor));
+            //_motorUseCase.RemoveMotor(_mapper.Map<MotorEntity>(motor));
 
-            var motors = _motorUseCase.GetMotors();
-            var stateMotors = motors.Select(e => _mapper.Map<MotorState>(e));
+            //var motors = _motorUseCase.GetMotors();
+            //var stateMotors = motors.Select(e => _mapper.Map<MotorState>(e));
 
-            Motors.Clear();
-            Motors.AddRange(stateMotors);
+            //Motors.Clear();
+            //Motors.AddRange(stateMotors);
         }
 
         private ICommand addMotorCmd;
         public ICommand AddMotorCmd => addMotorCmd ?? (addMotorCmd = new DelegateCommand(AddMotorCmdExecute));
 
         private void AddMotorCmdExecute() {
-            _motorUseCase.AddMotor();
+            _motorBus.Handle(new AddMotorRequest(), (bool res) => { });
+            _motorBus.Handle(new ListMotorRequest(), (MotorEntity[] motors) => {
+                Motors.Clear();
+                Motors.AddRange(motors.Select(e => _mapper.Map<MotorState>(e)));
+            });
+            //_motorUseCase.AddMotor();
 
-            var motors = _motorUseCase.GetMotors();
-            var stateMotors = motors.Select(e => _mapper.Map<MotorState>(e));
+            //var motors = _motorUseCase.GetMotors();
+            //var stateMotors = motors.Select(e => _mapper.Map<MotorState>(e));
 
-            Motors.Clear();
-            Motors.AddRange(stateMotors);
+            //Motors.Clear();
+            //Motors.AddRange(stateMotors);
 
-            Motors.ToList()
-                .ForEach(e => e.PropertyChanged += (s, args) => {
-                    _motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(s as MotorState));
-                });
+            //Motors.ToList()
+            //    .ForEach(e => e.PropertyChanged += (s, args) => {
+            //        _motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(s as MotorState));
+            //    });
         }
 
         private ICommand setCmd;
@@ -120,22 +125,29 @@ namespace taskmaker_wpf.ViewModels {
         private IRegionManager _regionManager;
         private SerialService _serialSrv;
         private readonly IMapper _mapper;
-        private readonly MotorUseCase _motorUseCase;
+        //private readonly MotorUseCase _motorUseCase;
+        private readonly MotorInteractorBus _motorBus;
 
         public RegionMotorViewModel(
             IRegionManager regionManager,
-            IEnumerable<IUseCase> useCases,
+            MotorInteractorBus motorBus,
+            //IEnumerable<IUseCase> useCases,
             MapperConfiguration config,
             SerialService serialSrv) {
             _regionManager = regionManager;
             _serialSrv = serialSrv;
 
             _mapper = config.CreateMapper();
+            _motorBus = motorBus;
 
-            _motorUseCase = useCases.OfType<MotorUseCase>().First();
-            //Motors.AddRange(_motorAgent.Repository.Select(e => new StatefulMotor(e)));
-            Motors.AddRange(_motorUseCase.GetMotors().Select(e => _mapper.Map<MotorState>(e)));
-            Motors.ToList().ForEach(e => e.PropertyChanged += Motor_PropertyChanged);
+            _motorBus.Handle(new ListMotorRequest(), (MotorEntity[] motors) => {
+                Motors.Clear();
+                Motors.AddRange(motors.Select(e => _mapper.Map<MotorState>(e)));
+            });
+            //_motorUseCase = useCases.OfType<MotorUseCase>().First();
+            ////Motors.AddRange(_motorAgent.Repository.Select(e => new StatefulMotor(e)));
+            //Motors.AddRange(_motorUseCase.GetMotors().Select(e => _mapper.Map<MotorState>(e)));
+            //Motors.ToList().ForEach(e => e.PropertyChanged += Motor_PropertyChanged);
 
 
             //foreach(var motor in Motors) {
@@ -148,8 +160,15 @@ namespace taskmaker_wpf.ViewModels {
             ListMotors();
         }
 
+        private void ListMotor() {
+            _motorBus.Handle(new ListMotorRequest(), (MotorEntity[] motors) => {
+                Motors.Clear();
+                Motors.AddRange(motors.Select(e => _mapper.Map<MotorState>(e)));
+            });
+        }
+
         private void Motor_PropertyChanged(object sender, PropertyChangedEventArgs e) {
-            _motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(sender as MotorState));
+            //_motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(sender as MotorState));
         }
 
         private void ListBoards() {

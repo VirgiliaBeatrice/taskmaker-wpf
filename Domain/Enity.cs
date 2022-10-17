@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using taskmaker_wpf.Data;
+using taskmaker_wpf.Qhull;
 
 namespace taskmaker_wpf.Domain {
     public interface IEntity {
@@ -46,6 +47,7 @@ namespace taskmaker_wpf.Domain {
     }
 
     public class NLinearMapEntity : BaseEntity {
+        [System.Xml.Serialization.XmlIgnore]
         public NDarray Tensor { get; set; }
         public int[] Shape { get; set; }
         public string[] Targets { get; set; }
@@ -126,6 +128,10 @@ namespace taskmaker_wpf.Domain {
 
             return result;
         }
+
+        public bool IsVertex(NodeEntity node) {
+            return Nodes.Any(e => node == e);
+        }
     }
 
     public class VoronoiRegionEntity : BaseRegionEntity {
@@ -137,6 +143,46 @@ namespace taskmaker_wpf.Domain {
 
         public virtual double[] GetLambdas(Point pt, NodeEntity[] collection) { throw new NotImplementedException(); }
 
+        public static VoronoiRegionEntity[] Build(NodeEntity[] extremes, SimplexRegionEntity[] simplices) {
+            NodeEntity prev, it, next;
+
+            var voronois = new List<VoronoiRegionEntity>();
+
+            for (var i = 0; i < extremes.Length; i++) {
+                it = extremes[i];
+
+                if (i <= 0) {
+                    prev = extremes.Last();
+                    next = extremes[i + 1];
+                }
+                else if (i < extremes.Length - 1) {
+                    prev = extremes[i - 1];
+                    next = extremes[i + 1];
+                }
+                else {
+                    prev = extremes[i - 1];
+                    next = extremes.First();
+                }
+
+                // Sectoral
+                var prevGov = Array.Find(simplices, e => e.IsVertex(prev) & e.IsVertex(it));
+                var nextGov = Array.Find(simplices, e => e.IsVertex(it) & e.IsVertex(next));
+
+                var sectorVoronoi = new SectoralVoronoiRegionEntity(
+                    new[] { prev, it, next },
+                    new[] { prevGov, nextGov });
+
+                voronois.Add(sectorVoronoi);
+
+                // Rect
+                var gov = Array.Find(simplices, e => e.IsVertex(it) & e.IsVertex(next));
+                var rectVoronoi = new RectVoronoiRegionEntity(new[] { it, next }, gov);
+
+                voronois.Add(rectVoronoi);
+            }
+
+            return voronois.ToArray();
+        }
     }
 
     public class SectoralVoronoiRegionEntity : VoronoiRegionEntity {
@@ -267,6 +313,37 @@ namespace taskmaker_wpf.Domain {
         public NodeEntity[] Nodes { get; set; }
         public BaseRegionEntity[] Regions { get; set; }
         public double[] Value { get; set; }
+
+        public void Build() {
+            var nodes = Nodes.OrderBy(e => e.Id).ToArray();
+            var input = np.array(
+                nodes.Select(e => np.array(new[] { e.Value.X, e.Value.Y }))
+                    .ToArray());
+
+            if (nodes.Length <= 2) return;
+
+            var regions = new List<BaseRegionEntity>();
+
+            var simplices = QhullCSharp.RunDelaunay(input)
+                .Select(indices => new SimplexRegionEntity(indices.Select(idx => nodes.ElementAt(idx)).ToArray()))
+                .ToArray();
+
+            foreach (var item in simplices) {
+                regions.Add(item);
+            }
+
+            var extremes = QhullCSharp.RunConvex(input)
+                .Select(idx => nodes.ElementAt(idx))
+                .Reverse()
+                .ToArray();
+            var voronois = VoronoiRegionEntity.Build(extremes, simplices);
+
+            foreach (var item in voronois) {
+                regions.Add(item);
+            }
+
+            Regions = regions.ToArray();
+        }
     }
 
     public class MotorEntity : BaseEntity, ITargetable {
