@@ -428,14 +428,20 @@ namespace taskmaker_wpf.Domain {
         }
     }
 
-    public class SaveRequest { }
+    public class SaveRequest : Request {
+        public string FileName { get; set; }
+    }
 
     public class SaveInteractor : BaseInteractor {
         public SaveInteractor(IRepository repository) : base(repository) {
         }
 
         public override void Handle<T, K>(T request, Action<K> callback) {
-            Repository.Save();
+            if (request is SaveRequest req) {
+                Repository.Save(req.FileName);
+
+                callback((K)(object)true);
+            }
         }
     }
 

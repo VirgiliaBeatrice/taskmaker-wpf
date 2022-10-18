@@ -20,7 +20,7 @@ namespace taskmaker_wpf.Data {
         void Add<T>(T item);
         void Update<T>(T item);
         void Delete<T>(T item);
-        void Save();
+        void Save(string filename);
         void Load(string filename);
         T Find<T>(int id); 
         IEnumerable<T> FindAll<T>();
@@ -93,10 +93,11 @@ namespace taskmaker_wpf.Data {
             return new[] { default(T) };
         }
 
-        public void Save() {
+        public void Save(string filename) {
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker"));
 
-            var xmlFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker", "project.xml");
+            //var xmlFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker", "project.xml");
+            var xmlFilePath = filename;
             var xml = new XmlSerializer(typeof(ProjectDataObject));
 
             using (var xmlfs = File.Create(xmlFilePath)) {
@@ -104,8 +105,10 @@ namespace taskmaker_wpf.Data {
             }
         }
 
+
         public void Load(string filename) {
-            var xmlPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker", "project.xml");
+            //var xmlPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker", "project.xml");
+            var xmlPath = filename;
 
             var xml = new XmlSerializer(typeof(ProjectDataObject));
 

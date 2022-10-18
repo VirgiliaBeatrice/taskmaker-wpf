@@ -31,7 +31,23 @@ namespace taskmaker_wpf.Views {
 
         private void Window_PreviewKeyUp(object sender, KeyEventArgs e) {
             if (e.Key == Key.S & Keyboard.Modifiers == ModifierKeys.Control) {
-                _systemBus.Handle(new SaveRequest(), (bool res) => { });
+                // Configure save file dialog box
+                var dlg = new Microsoft.Win32.SaveFileDialog {
+                    FileName = "Project", // Default file name
+                    DefaultExt = ".xml", // Default file extension
+                    Filter = "Xml documents (.xml)|*.xml" // Filter files by extension
+                };
+
+                // Show save file dialog box
+                bool? result = dlg.ShowDialog();
+
+                // Process save file dialog box results
+                if (result == true) {
+                    // Save document
+                    string filename = dlg.FileName;
+                    _systemBus.Handle(new SaveRequest() { FileName = filename }, (bool res) => { });
+                }
+
                 //_eventAggregator.GetEvent<SystemSaveEvent>().Publish();
                 e.Handled = true;
             }
