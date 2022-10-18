@@ -21,7 +21,7 @@ namespace taskmaker_wpf.Data {
         void Update<T>(T item);
         void Delete<T>(T item);
         void Save();
-        void Load();
+        void Load(string filename);
         T Find<T>(int id); 
         IEnumerable<T> FindAll<T>();
 
@@ -48,6 +48,7 @@ namespace taskmaker_wpf.Data {
             }
         }
 
+        // TODO: Clone
         public void Update<T>(T item) {
             var itemType = typeof(T);
 
@@ -103,7 +104,7 @@ namespace taskmaker_wpf.Data {
             }
         }
 
-        public void Load() {
+        public void Load(string filename) {
             var xmlPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TaskMaker", "project.xml");
 
             var xml = new XmlSerializer(typeof(ProjectDataObject));

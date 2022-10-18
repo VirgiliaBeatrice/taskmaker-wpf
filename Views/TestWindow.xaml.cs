@@ -21,22 +21,41 @@ namespace taskmaker_wpf.Views {
     /// </summary>
     public partial class TestWindow : Window {
         private IEventAggregator _eventAggregator;
-        private SaveInteractor _save;
+        private SystemInteractorBus _systemBus;
 
-        public TestWindow(IEventAggregator @event, SaveInteractor save) {
+        public TestWindow(IEventAggregator @event, SystemInteractorBus systemBus) {
             //_eventAggregator = @event;
-            _save = save;
+            _systemBus = systemBus;
             InitializeComponent();
         }
 
         private void Window_PreviewKeyUp(object sender, KeyEventArgs e) {
             if (e.Key == Key.S & Keyboard.Modifiers == ModifierKeys.Control) {
-                _save.Handle(new SaveRequest(), (bool res) => { });
+                _systemBus.Handle(new SaveRequest(), (bool res) => { });
                 //_eventAggregator.GetEvent<SystemSaveEvent>().Publish();
                 e.Handled = true;
             }
-            else if (e.Key == Key.S & Keyboard.Modifiers == ModifierKeys.Shift & Keyboard.Modifiers == ModifierKeys.Control) {
+            else if (e.Key == Key.O & Keyboard.Modifiers == ModifierKeys.Control) {
                 //_save.Handle
+                // Configure open file dialog box
+                var dialog = new Microsoft.Win32.OpenFileDialog {
+                    FileName = "Project", // Default file name
+                    DefaultExt = ".xml", // Default file extension
+                    Filter = "Xml files (.xml)|*.xml" // Filter files by extension
+                };
+
+                // Show open file dialog box
+                bool? result = dialog.ShowDialog();
+
+                // Process open file dialog box results
+                if (result == true) {
+                    // Open document
+                    string filename = dialog.FileName;
+                    _systemBus.Handle(new LoadRequest() { FileName = filename }, (bool res) => { });
+
+                }
+
+                e.Handled = true;
             }
         }
     }

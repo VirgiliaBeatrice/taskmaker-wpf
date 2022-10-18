@@ -129,7 +129,8 @@ namespace taskmaker_wpf {
 
 
             containerRegistry.Register<ListTargetInteractor>();
-            containerRegistry.Register<SaveInteractor>();
+            //containerRegistry.Register<SaveInteractor>();
+            containerRegistry.Register<SystemInteractorBus>();
             // Register Interactor Bus
             containerRegistry.RegisterSingleton<MotorInteractorBus>();
             containerRegistry.RegisterSingleton<ControlUiInteractorBus>();

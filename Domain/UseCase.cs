@@ -9,6 +9,8 @@ using taskmaker_wpf.Data;
 using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Models;
 using taskmaker_wpf.Qhull;
+using System.Security.RightsManagement;
+using System.Diagnostics;
 
 namespace taskmaker_wpf.Domain {
     public interface IPresenter { }
@@ -23,16 +25,37 @@ namespace taskmaker_wpf.Domain {
     public interface IRequest { }
     public interface IResponse { }
 
-    public class UpdateMotorRequest : IRequest { }
+    public class Request : IRequest {
+        static public void Spread<T, K>(T src, K dst) {
+            var srcType = typeof(T);
+            var dstType = typeof(K);
 
-    public class UpdateMotorResponse { }
+            srcType.GetProperties()
+                .ToList()
+                .ForEach(e => {
+                    var propSrc = e;
+                    var propDst = dstType.GetProperty(e.Name);
 
-    public class AddMotorRequest : IRequest {
+                    if (propSrc.GetValue(src) != null) {
+                        propDst.SetValue(dst, propSrc.GetValue(src));
+                    }
+                });
+        }
     }
-    public class DeleteMotorRequest { }
-    public class ListMotorRequest { }
 
-    public class AddMotorResponse { }
+    public class AddMotorRequest : Request { }
+    public class UpdateMotorRequest : Request {
+        public int Id { get; set; }
+        public string PropertyName { get; set; }
+        public string ValueType {get;set;}
+        public object Value { get; set; }
+    }
+
+    public class DeleteMotorRequest : Request {
+        public int Id { get; set; }
+    }
+    public class ListMotorRequest : Request { }
+
 
     public class MotorInteractorBus {
         private AddMotorInteractor _add;
@@ -86,7 +109,12 @@ namespace taskmaker_wpf.Domain {
         }
 
         public override void Handle<T, K>(T request, Action<K> callback) {
-            var motor = new MotorEntity();
+            var req = request as UpdateMotorRequest;
+            var motor = Repository.Find<MotorEntity>(req.Id);
+
+            motor.GetType().GetProperty(req.PropertyName).SetValue(motor, req.Value);
+            
+            //Request.Spread(req, motor);
 
             Repository.Update(motor);
 
@@ -128,7 +156,7 @@ namespace taskmaker_wpf.Domain {
             var motors = Repository.FindAll<MotorEntity>();
             var uis = Repository.FindAll<ControlUiEntity>();
 
-            var targets = (new List<ITargetable>()).Concat(motors).Concat(uis);
+            var targets = new List<ITargetable>().Concat(motors).Concat(uis);
 
             callback((K)(object)targets);
         }
@@ -151,10 +179,17 @@ namespace taskmaker_wpf.Domain {
     //public class DeleteNodeRequest { }
     //public class ListNodeRequest { }
 
-    public class AddControlUiRequest { }
-    public class UpdateControlUiRequest { }
-    public class DeleteControlUiRequest { }
-    public class ListControlUiRequest { }
+    public class AddControlUiRequest : Request { }
+    public class UpdateControlUiRequest : Request {
+        public int Id { get; set; }
+        public string PropertyName { get; set; }
+        public object PropertyValue { get; set; }
+
+    }
+    public class DeleteControlUiRequest : Request {
+        public int Id { get; set; }
+    }
+    public class ListControlUiRequest : Request { }
     public class BuildRegionRequest { }
 
     public class ControlUiInteractorBus {
@@ -375,6 +410,24 @@ namespace taskmaker_wpf.Domain {
         }
     }
 
+    public class SystemInteractorBus {
+        private readonly SaveInteractor _save;
+        private readonly LoadInteractor _load;
+
+        public SystemInteractorBus(IRepository repository) {
+            _save = new SaveInteractor(repository);
+            _load = new LoadInteractor(repository);
+        }
+
+        public void Handle<T, K>(T request, Action<K> callback) {
+            var fieldName = "_" + typeof(T).Name.Replace("Request", "").ToLower();
+            var interactor = (BaseInteractor)typeof(SystemInteractorBus).GetField(fieldName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(this);
+
+            // "_[name]"
+            interactor?.Handle(request, callback);
+        }
+    }
+
     public class SaveRequest { }
 
     public class SaveInteractor : BaseInteractor {
@@ -383,6 +436,23 @@ namespace taskmaker_wpf.Domain {
 
         public override void Handle<T, K>(T request, Action<K> callback) {
             Repository.Save();
+        }
+    }
+
+    public class LoadRequest : Request {
+        public string FileName { get; set; }
+    }
+
+    public class LoadInteractor : BaseInteractor {
+        public LoadInteractor(IRepository repository) : base(repository) {
+        }
+
+        public override void Handle<T, K>(T request, Action<K> callback) {
+            if (request is LoadRequest req) {
+                Repository.Load(req.FileName);
+
+                callback((K)(object)true);
+            }
         }
     }
 

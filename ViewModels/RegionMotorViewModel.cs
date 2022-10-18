@@ -36,6 +36,7 @@ namespace taskmaker_wpf.ViewModels {
         public int Min { get => min; set => SetProperty(ref min, value); }
         public int BoardId { get => boardId; set => SetProperty(ref boardId, value); }
         public int MotorId { get => motorId; set => SetProperty(ref motorId, value); }
+
     }
 
 
@@ -44,14 +45,14 @@ namespace taskmaker_wpf.ViewModels {
         public ICommand ListBoardsCmd => listBoardsCmd ?? (listBoardsCmd = new DelegateCommand(ListBoardsCmdExecute));
 
         private void ListBoardsCmdExecute() {
-            ListBoards();
+            EnumBoards();
         }
 
         private ICommand listMotorsCmd;
         public ICommand ListMotorsCmd => listMotorsCmd ?? (listMotorsCmd = new DelegateCommand(ListMotorsCmdExecute));
 
         private void ListMotorsCmdExecute() {
-            ListMotors();
+            EnumMotors();
         }
 
         private DelegateCommand<MotorState> connectMotorCmd;
@@ -78,11 +79,8 @@ namespace taskmaker_wpf.ViewModels {
         public ICommand AddMotorCmd => addMotorCmd ?? (addMotorCmd = new DelegateCommand(AddMotorCmdExecute));
 
         private void AddMotorCmdExecute() {
-            _motorBus.Handle(new AddMotorRequest(), (bool res) => { });
-            _motorBus.Handle(new ListMotorRequest(), (MotorEntity[] motors) => {
-                Motors.Clear();
-                Motors.AddRange(motors.Select(e => _mapper.Map<MotorState>(e)));
-            });
+            AddMotor();
+            RefreshMotors();
             //_motorUseCase.AddMotor();
 
             //var motors = _motorUseCase.GetMotors();
@@ -140,10 +138,11 @@ namespace taskmaker_wpf.ViewModels {
             _mapper = config.CreateMapper();
             _motorBus = motorBus;
 
-            _motorBus.Handle(new ListMotorRequest(), (MotorEntity[] motors) => {
-                Motors.Clear();
-                Motors.AddRange(motors.Select(e => _mapper.Map<MotorState>(e)));
-            });
+            RefreshMotors();
+            //_motorBus.Handle(new ListMotorRequest(), (MotorEntity[] motors) => {
+            //    Motors.Clear();
+            //    Motors.AddRange(motors.Select(e => _mapper.Map<MotorState>(e)));
+            //});
             //_motorUseCase = useCases.OfType<MotorUseCase>().First();
             ////Motors.AddRange(_motorAgent.Repository.Select(e => new StatefulMotor(e)));
             //Motors.AddRange(_motorUseCase.GetMotors().Select(e => _mapper.Map<MotorState>(e)));
@@ -156,30 +155,54 @@ namespace taskmaker_wpf.ViewModels {
             //    };
             //}
 
-            ListBoards();
-            ListMotors();
+            EnumBoards();
+            EnumMotors();
         }
 
-        private void ListMotor() {
+        private void AddMotor() {
+            _motorBus.Handle(new AddMotorRequest(), (bool res) => { });
+        }
+
+        private void RefreshMotors() {
             _motorBus.Handle(new ListMotorRequest(), (MotorEntity[] motors) => {
+                Motors.ToList()
+                    .ForEach(e => e.PropertyChanged -= Motor_PropertyChanged);
                 Motors.Clear();
+
                 Motors.AddRange(motors.Select(e => _mapper.Map<MotorState>(e)));
+                Motors.ToList()
+                    .ForEach(e => e.PropertyChanged += Motor_PropertyChanged);
             });
         }
 
         private void Motor_PropertyChanged(object sender, PropertyChangedEventArgs e) {
-            //_motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(sender as MotorState));
+            var prop = typeof(MotorState).GetProperty(e.PropertyName);
+
+            var req = new UpdateMotorRequest {
+                Id = ((MotorState)sender).Id,
+                PropertyName = e.PropertyName,
+                ValueType = prop.PropertyType.Name,
+                Value = prop.GetValue(sender)
+            };
+
+            // TODO
+            if (e.PropertyName == "MotorValue") {
+                req.PropertyName = "Value";
+                req.Value = ((MotorState)sender).Value;
+            }
+
+            _motorBus.Handle(req, (bool res) => { });
         }
 
-        private void ListBoards() {
+        private void EnumBoards() {
             var boards = Enumerable
-                .Range(0, 7);
+                .Range(0, 8);
 
             BoardIds.Clear();
             BoardIds.AddRange(boards);
         }
 
-        private void ListMotors() {
+        private void EnumMotors() {
             var motors = Enumerable
                 .Range(0, 4);
 
