@@ -229,6 +229,9 @@ namespace taskmaker_wpf.ViewModels {
             var pt = (Point)param;
             if (pt == null) return;
             else {
+                var request = new UpdateControlUiRequest {
+                    Id = UiState.Id,
+                };
                 _uiBus.Handle(new UpdateControlUiRequest(), (bool res) => { });
                 _uiBus.Handle(new ListControlUiRequest(), (ControlUiEntity[] uis) => { });
 
@@ -237,6 +240,10 @@ namespace taskmaker_wpf.ViewModels {
                 //_mapper.Map(uiEntity, UiState);
             }
 
+        }
+
+        private void InvalidateUi() {
+            //_uiBus.Handle
         }
 
         private DelegateCommand _buildCommand;
@@ -279,20 +286,13 @@ namespace taskmaker_wpf.ViewModels {
             ControlUiInteractorBus uiBus,
             NLinearMapInteractorBus mapBus,
             MotorInteractorBus motorBus,
-            ListTargetInteractor targetInteractor
-            //IEnumerable<IUseCase> useCases,
-            //NLinearMapInteractorBus mapBus
-            ) {
+            ListTargetInteractor targetInteractor) {
             _mapper = config.CreateMapper();
 
             TargetsPanelVM = new TargetsPanelViewModel(targetInteractor,motorBus,mapBus, config);
             _uiBus = uiBus;
             _mapBus = mapBus;
             _motorBus = motorBus;
-            //_uiUseCase = useCases.OfType<ControlUiUseCase>().FirstOrDefault();
-            //_buildUseCase = useCases.OfType<BuildRegionUseCase>().FirstOrDefault();
-            //_mapUseCase = useCases.OfType<NLinearMapUseCase>().FirstOrDefault();
-            //_motorUseCase = useCases.OfType<MotorUseCase>().FirstOrDefault();
 
             SystemInfo = $"{_operationMode}";
         }
@@ -335,51 +335,12 @@ namespace taskmaker_wpf.ViewModels {
 
         void ExecuteSetValueCommand() {
             if (SelectedNodeWidget is null) return;
-
-            //var value = TargetsPanelVM.TargetsOfSelectedMap.Select(e => e.Value).SelectMany(e => e).ToArray();
-
-
-
-
-            //SetNodeValue(SelectedNodeWidget.DataContext as NodeState);
         }
 
-        private void SetNodeValue(NodeState sNode) {
-            //var node = sNode.GetNode();
-            //var targetValue = UI.Complex.Targets.ToNDarray();
-            ////var idx = Model.Nodes.FindIndex(e => e.Uid == node.Uid);
-            //var idx = UI.Complex.Nodes.FindIndex(e => e == node);
-            //node.IsSet = true;
-            //sNode.IsSet = true;
-
-            //UI.Map.SetValue(new[] { idx }, targetValue);
-        }
 
         private void RemoveNode(NodeState node) {
             //UI.Complex.Nodes.Remove(node);
         }
-
-        //private void Interpolate(object arg)
-        //{
-        //    var args = (object[])arg;
-
-        //    var pt = (Point)args[0];
-        //    var targetId = (Guid?)args[1];
-
-        //    if (targetId is null) return;
-        //    else
-        //    {
-        //        var id = (Guid)targetId;
-        //        var targetBary = Model.FindRegionById(id).Bary;
-
-        //        var lambdas = Model.Bary.GetLambdas(targetBary, pt.ToNDarray());
-        //        //_map.Barys
-        //        var result = _map.MapTo(lambdas);
-        //        Model.Targets.SetValue(result.GetData<double>());
-
-        //        Debug = Model.Targets.ToString();
-        //    }
-        //}
 
         private void Interpolate() {
             var pt = TracePoint;
@@ -407,19 +368,8 @@ namespace taskmaker_wpf.ViewModels {
             }
         }
 
-        //private void PerformSelectedTargetsChanged(IList<object> param)
-        //{
-        //    Model.Targets.Clear();
-        //    Model.Targets.AddRange(param.OfType<ISelectableTarget>());
-
-        //    SelectedTargets = Model.Targets.ToArray();
-        //}
-
-
         public void OnNavigatedTo(NavigationContext navigationContext) {
-            //UI = navigationContext.Parameters["ui"] as ControlUiEntity;
             UiState = navigationContext.Parameters["ui"] as ControlUiState;
-            //UiState = _mapper.Map<ControlUiEntity ,ControlUiState>(UI);
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext) {

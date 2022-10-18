@@ -180,10 +180,17 @@ namespace taskmaker_wpf.Domain {
     //public class ListNodeRequest { }
 
     public class AddControlUiRequest : Request { }
+    public enum UpdateControlUiMode {
+        AddNode = 0,
+        RemoveNode = 1,
+
+    }
+
     public class UpdateControlUiRequest : Request {
         public int Id { get; set; }
-        public string PropertyName { get; set; }
-        public object PropertyValue { get; set; }
+
+        //public string PropertyName { get; set; }
+        //public object PropertyValue { get; set; }
 
     }
     public class DeleteControlUiRequest : Request {
@@ -276,7 +283,12 @@ namespace taskmaker_wpf.Domain {
         }
 
         public override void Handle<T, K>(T request, Action<K> callback) {
+            var idx = Repository.FindAll<ControlUiEntity>().Count();
             var ui = new ControlUiEntity {
+                Id = idx,
+                Name = $"ControlUi[{idx}]",
+                Nodes = new NodeEntity[0],
+                Regions = new BaseRegionEntity[0],
             };
 
             Repository.Add(ui);
@@ -382,17 +394,11 @@ namespace taskmaker_wpf.Domain {
 
 
     public class NLinearMapInteractorBus {
-        //public IRepository Repository { get; set; }
-        //public IPresenter Presenter { get; set; }
-
         private AddNLinearMapInteractor _add;
         private UpdateNLinearMapInteractor _update;
         private ListNLinearMapInteractor _list;
 
         public NLinearMapInteractorBus(IRepository repository) {
-            //Repository = repository;
-            //Presenter = presenter;
-
             _add = new AddNLinearMapInteractor(repository);
             _update = new UpdateNLinearMapInteractor(repository);
             _list = new ListNLinearMapInteractor(repository);
@@ -425,6 +431,19 @@ namespace taskmaker_wpf.Domain {
 
             // "_[name]"
             interactor?.Handle(request, callback);
+        }
+    }
+
+    public class BaseInteractorBus {
+        public void Handle<T, K>(T request, Action<K> callback) {
+            var fieldName = "_" + typeof(T).Name.Replace("Request", "").ToLower();
+            var interactor = (BaseInteractor)typeof(SystemInteractorBus).GetField(fieldName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(this);
+
+            if (interactor == null)
+                throw new NullReferenceException();
+            else
+                // "_[name]"
+                interactor?.Handle(request, callback);
         }
     }
 

@@ -110,9 +110,10 @@ namespace taskmaker_wpf {
             });
 
             // Register IDataSource
-            containerRegistry.RegisterSingleton<IDataSource>(() => {
-                return LocalDataSource.Load(Container.Resolve<IEventAggregator>());
-            });
+            //containerRegistry.RegisterSingleton<IDataSource>(() => {
+            //    return LocalDataSource.Load(Container.Resolve<IEventAggregator>());
+            //});
+            //containerRegistry.RegisterSingleton<IEventAggregator>();
 
             // Register IRepository
             //containerRegistry.RegisterSingleton<IRepository, MotorRepository>("1");
@@ -129,8 +130,8 @@ namespace taskmaker_wpf {
 
 
             containerRegistry.Register<ListTargetInteractor>();
-            //containerRegistry.Register<SaveInteractor>();
             containerRegistry.Register<SystemInteractorBus>();
+
             // Register Interactor Bus
             containerRegistry.RegisterSingleton<MotorInteractorBus>();
             containerRegistry.RegisterSingleton<ControlUiInteractorBus>();

@@ -11,6 +11,7 @@ using AutoMapper;
 using taskmaker_wpf.Services;
 using System.Xml.Serialization;
 using System.IO;
+using System.Diagnostics;
 
 namespace taskmaker_wpf.Data {
 
@@ -46,6 +47,9 @@ namespace taskmaker_wpf.Data {
             if (itemType == typeof(MotorEntity)) {
                 Project.Motors.Add(item as MotorEntity);
             }
+            else if (item is ControlUiEntity ui) {
+                Project.Uis.Add(ui);
+            }
         }
 
         // TODO: Clone
@@ -59,6 +63,12 @@ namespace taskmaker_wpf.Data {
                 if (target != null)
                     target = entity;
             }
+            else if (item is ControlUiEntity ui) {
+                var target = Project.Uis.Find(e => e.Id == ui.Id);
+
+                if (target != null)
+                    target = ui;
+            }
         }
 
         public void Delete<T>(T item) {
@@ -69,6 +79,9 @@ namespace taskmaker_wpf.Data {
 
                 Project.Motors.Remove(Project.Motors.Find(e => e.Id == entity.Id));
             }
+            else if (item is ControlUiEntity ui) {
+                Project.Uis.Remove(Project.Uis.Find(e => e.Id == ui.Id));
+            }
         }
 
         public T Find<T>(int id){
@@ -76,6 +89,11 @@ namespace taskmaker_wpf.Data {
 
             if (itemType == typeof(MotorEntity)) {
                 var target = Project.Motors.Find(e => e.Id == id);
+
+                return (T)(object)target;
+            }
+            else if (itemType == typeof(ControlUiEntity)) {
+                var target = Project.Uis.Find(e => e.Id == id);
 
                 return (T)(object)target;
             }
@@ -88,6 +106,9 @@ namespace taskmaker_wpf.Data {
 
             if (itemType == typeof(MotorEntity)) {
                 return Project.Motors.Cast<T>().ToArray();
+            }
+            else if (itemType == typeof(ControlUiEntity)) {
+                return Project.Uis.Cast<T>().ToArray();
             }
 
             return new[] { default(T) };
@@ -121,14 +142,6 @@ namespace taskmaker_wpf.Data {
             using (var fs = File.OpenRead(xmlPath)) {
                 var xmlObject = (ProjectDataObject)xml.Deserialize(fs);
                 Project = xmlObject;
-                //var local = new LocalDataSource();
-
-                //local.BindEventAggregator(ea);
-                //local.ControlUis.AddRange(xmlObject.ControlUis);
-                //local.Motors.AddRange(xmlObject.Motors);
-                //local.Maps.AddRange(xmlObject.Maps);
-
-                //return local;
             }
         }
     }

@@ -24,7 +24,7 @@ namespace taskmaker_wpf.Views {
         private SystemInteractorBus _systemBus;
 
         public TestWindow(IEventAggregator @event, SystemInteractorBus systemBus) {
-            //_eventAggregator = @event;
+            _eventAggregator = @event;
             _systemBus = systemBus;
             InitializeComponent();
         }
@@ -68,7 +68,7 @@ namespace taskmaker_wpf.Views {
                     // Open document
                     string filename = dialog.FileName;
                     _systemBus.Handle(new LoadRequest() { FileName = filename }, (bool res) => { });
-
+                    _eventAggregator.GetEvent<SystemLoadedEvent>().Publish();
                 }
 
                 e.Handled = true;
@@ -77,6 +77,10 @@ namespace taskmaker_wpf.Views {
     }
 
     public class SystemSaveEvent : PubSubEvent {
+
+    }
+
+    public class SystemLoadedEvent : PubSubEvent {
 
     }
 }

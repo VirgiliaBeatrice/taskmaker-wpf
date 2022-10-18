@@ -13,6 +13,8 @@ using taskmaker_wpf.Services;
 using taskmaker_wpf.Models;
 using taskmaker_wpf.Domain;
 using AutoMapper;
+using Prism.Events;
+using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.ViewModels {
     public class RegionControlUISelectionViewModel : BindableBase, INavigationAware {
@@ -20,6 +22,7 @@ namespace taskmaker_wpf.ViewModels {
         //private readonly ControlUiUseCase _useCase;
         private readonly ControlUiInteractorBus _uiBus;
         private readonly IMapper _mapper;
+        private readonly IEventAggregator _ea;
 
         private ControlUiState _selectedUi;
         public ControlUiState SelectedUi {
@@ -33,16 +36,26 @@ namespace taskmaker_wpf.ViewModels {
             IRegionManager regionManager,
             MapperConfiguration config,
             ControlUiInteractorBus uiBus,
-            IEnumerable<IUseCase> useCases) {
+            IEventAggregator ea) {
             _regionManager = regionManager;
             _uiBus = uiBus;
-            //_useCase = useCases.OfType<ControlUiUseCase>().First();
+            _ea = ea;
             _mapper = config.CreateMapper();
 
+            _ea.GetEvent<SystemLoadedEvent>().Subscribe(() => InvalidateUiList());
+
+            InvalidateUiList();
+        }
+
+        private void InvalidateUiList() {
             _uiBus.Handle(new ListControlUiRequest(), (ControlUiEntity[] uis) => {
                 UIs.Clear();
                 UIs.AddRange(uis.Select(e => _mapper.Map<ControlUiState>(e)));
             });
+        }
+
+        private void AddControlUi() {
+            _uiBus.Handle(new AddControlUiRequest(), (bool res) => { });
         }
 
         private DelegateCommand _updateCommand;
@@ -51,10 +64,7 @@ namespace taskmaker_wpf.ViewModels {
 
         void ExecuteUpdateCommand() {
             _uiBus.Handle(new UpdateControlUiRequest(), (bool res) => { });
-            _uiBus.Handle(new ListControlUiRequest(), (ControlUiEntity[] uis) => {
-                UIs.Clear();
-                UIs.AddRange(uis.Select(e => _mapper.Map<ControlUiState>(e)));
-            });
+            InvalidateUiList();
         }
 
         private DelegateCommand _addCmd;
@@ -76,11 +86,8 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private void ExecuteAddCmd() {
-            _uiBus.Handle(new AddControlUiRequest(), (bool res) => { });
-            _uiBus.Handle(new ListControlUiRequest(), (ControlUiEntity[] uis) => {
-                UIs.Clear();
-                UIs.AddRange(uis.Select(e => _mapper.Map<ControlUiState>(e)));
-            });
+            AddControlUi();
+            InvalidateUiList();
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext) {

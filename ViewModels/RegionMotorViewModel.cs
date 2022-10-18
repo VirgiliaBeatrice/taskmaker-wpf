@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Prism.Commands;
+using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using Prism.Services.Dialogs;
@@ -16,6 +17,7 @@ using System.Windows.Input;
 using taskmaker_wpf.Domain;
 using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Services;
+using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.ViewModels {
     public class MotorState : BindableBase {
@@ -125,11 +127,13 @@ namespace taskmaker_wpf.ViewModels {
         private readonly IMapper _mapper;
         //private readonly MotorUseCase _motorUseCase;
         private readonly MotorInteractorBus _motorBus;
+        private readonly IEventAggregator _ea;
 
         public RegionMotorViewModel(
             IRegionManager regionManager,
             MotorInteractorBus motorBus,
             //IEnumerable<IUseCase> useCases,
+            IEventAggregator ea,
             MapperConfiguration config,
             SerialService serialSrv) {
             _regionManager = regionManager;
@@ -137,6 +141,11 @@ namespace taskmaker_wpf.ViewModels {
 
             _mapper = config.CreateMapper();
             _motorBus = motorBus;
+            _ea = ea;
+
+            _ea.GetEvent<SystemLoadedEvent>().Subscribe(() => {
+                RefreshMotors();
+            });
 
             RefreshMotors();
             //_motorBus.Handle(new ListMotorRequest(), (MotorEntity[] motors) => {
