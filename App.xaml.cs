@@ -32,7 +32,7 @@ namespace taskmaker_wpf {
             var config = new MapperConfiguration(
             cfg => {
                 cfg.CreateMap<NLinearMapEntity, NLinearMapState>()
-                    .ForMember(d => d.Targets, o => o.Ignore())
+                    //.ForMember(d => d.Targets, o => o.Ignore())
                     .ReverseMap();
                 cfg.CreateMap<NLinearMapEntity, NLinearMapDTO>()
                     .ReverseMap();

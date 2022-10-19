@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using taskmaker_wpf.Data;
 using taskmaker_wpf.Qhull;
+using taskmaker_wpf.ViewModels;
 
 namespace taskmaker_wpf.Domain {
     public interface IEntity {
@@ -50,7 +51,8 @@ namespace taskmaker_wpf.Domain {
         [System.Xml.Serialization.XmlIgnore]
         public NDarray Tensor { get; set; }
         public int[] Shape { get; set; }
-        public string[] Targets { get; set; }
+        //public string[] Targets { get; set; }
+        public (string, int)[] Targets { get; set; }
 
         private bool _isSet => !bool.Parse(np.isnan(Tensor.sum()).repr);
         private int _targetDim;

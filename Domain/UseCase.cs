@@ -156,7 +156,7 @@ namespace taskmaker_wpf.Domain {
             var motors = Repository.FindAll<MotorEntity>();
             var uis = Repository.FindAll<ControlUiEntity>();
 
-            var targets = new List<ITargetable>().Concat(motors).Concat(uis);
+            var targets = new List<ITargetable>().Concat(motors).Concat(uis).ToArray();
 
             callback((K)(object)targets);
         }
@@ -180,11 +180,6 @@ namespace taskmaker_wpf.Domain {
     //public class ListNodeRequest { }
 
     public class AddControlUiRequest : Request { }
-    public enum UpdateControlUiMode {
-        AddNode = 0,
-        RemoveNode = 1,
-
-    }
 
     public class UpdateControlUiRequest : Request {
         public int Id { get; set; }
@@ -199,47 +194,70 @@ namespace taskmaker_wpf.Domain {
     public class ListControlUiRequest : Request { }
     public class BuildRegionRequest { }
 
-    public class ControlUiInteractorBus {
-        private AddControlUiInteractor _add;
-        private UpdateControlUiInteractor _update;
-        private DeleteControlUiInteractor _delete;
-        private ListControlUiInteractor _list;
+    public class ControlUiInteractorBus : BaseInteractorBus {
+        //private AddControlUiInteractor _add;
+        //private UpdateControlUiInteractor _update;
+        //private DeleteControlUiInteractor _delete;
+        //private ListControlUiInteractor _list;
 
-        public ControlUiInteractorBus(IRepository repository) {
-            _add = new AddControlUiInteractor(repository);
-            _update = new UpdateControlUiInteractor(repository);
-            _delete = new DeleteControlUiInteractor(repository);
-            _list = new ListControlUiInteractor(repository);
+        public ControlUiInteractorBus(IRepository repository) : base() {
+            //_add = new AddControlUiInteractor(repository);
+            //_update = new UpdateControlUiInteractor(repository);
+            //_delete = new DeleteControlUiInteractor(repository);
+            //_list = new ListControlUiInteractor(repository);
+
+            interactors = new BaseInteractor[] {
+                new AddControlUiInteractor(repository),
+                new UpdateControlUiInteractor(repository),
+                new DeleteControlUiInteractor(repository),
+                new ListControlUiInteractor(repository),
+                new AddNodeInteractor(repository),
+                new UpdateNodeInteractor(repository),
+            };
         }
 
-        public void Handle<T, K>(T request, Action<K> callback) {
-            var requestType = typeof(T);
+        //public void Handle<T, K>(T request, Action<K> callback) {
+        //    var requestType = typeof(T);
 
-            if (requestType == typeof(AddControlUiRequest))
-                _add.Handle(request, callback);
-            else if (requestType == typeof(UpdateControlUiRequest))
-                _update.Handle(request, callback);
-            else if (requestType == typeof(DeleteControlUiRequest))
-                _delete.Handle(request, callback);
-            else if (requestType == typeof(ListControlUiRequest))
-                _list.Handle(request, callback);
-        }
+        //    if (requestType == typeof(AddControlUiRequest))
+        //        _add.Handle(request, callback);
+        //    else if (requestType == typeof(UpdateControlUiRequest))
+        //        _update.Handle(request, callback);
+        //    else if (requestType == typeof(DeleteControlUiRequest))
+        //        _delete.Handle(request, callback);
+        //    else if (requestType == typeof(ListControlUiRequest))
+        //        _list.Handle(request, callback);
+        //}
+    }
+
+    public class AddNodeRequest : Request {
+        public int UiId { get; set; }
+        public Point Value { get; set; }
     }
 
     public class AddNodeInteractor : BaseInteractor {
-        public AddNodeInteractor(IRepository repository) : base(repository) {
-        }
+        public AddNodeInteractor(IRepository repository) : base(repository) { }
 
         public override void Handle<T, K>(T request, Action<K> callback) {
-            var ui = new ControlUiEntity();
-            var node = new NodeEntity { };
+            if (request is AddNodeRequest req) {
+                var ui = Repository.Find<ControlUiEntity>(req.UiId);
+                var idx = ui.Nodes.Length;
+                var node = new NodeEntity {
+                    Id = idx,
+                    Name = $"ControlUi[{req.UiId}]_Node[{idx}]",
+                    Value = req.Value,
+                };
 
-            Repository.Update(ui);
-            //Repository.Add(node);
+                ui.Nodes = ui.Nodes.Append(node).ToArray();
 
-            callback((K)(object)true);
+                Repository.Update(ui);
+                
+                callback((K)(object)true);
+            }
         }
     }
+
+    public class UpdateNodeRequest : Request { }
 
     public class UpdateNodeInteractor : BaseInteractor {
         public UpdateNodeInteractor(IRepository repository) : base(repository) {
@@ -351,16 +369,27 @@ namespace taskmaker_wpf.Domain {
     }
 
 
-    public class AddNLinearMapRequest { }
-    public class UpdateNLinearMapRequest { }
-    public class ListNLinearMapRequest { }
+    public class AddNLinearMapRequest : Request { }
+    public class UpdateNLinearMapRequest : Request {
+        public int MapId { get; set; }
+        public string RequestType { get; set; }
+        public object Value { get; set; }
+    }
+    public class ListNLinearMapRequest : Request  { }
 
     public class AddNLinearMapInteractor : BaseInteractor {
         public AddNLinearMapInteractor(IRepository repository) : base(repository) {
         }
 
         public override void Handle<T, K>(T request, Action<K> callback) {
-            var map = new NLinearMapEntity();
+            var idx = Repository.FindAll<NLinearMapEntity>().Count();
+            var map = new NLinearMapEntity {
+                Id = idx,
+                Name = $"Map[{idx}]",
+                Shape = new int[0],
+                Targets = new (string, int)[0],
+                //Tensor = Numpy.np.nan
+            };
 
             Repository.Add(map);
 
@@ -373,11 +402,19 @@ namespace taskmaker_wpf.Domain {
         }
 
         public override void Handle<T, K>(T request, Action<K> callback) {
-            var map = new NLinearMapEntity();
+            if (request is UpdateNLinearMapRequest req) {
+                if (req.MapId == -1)
+                    return;
 
-            Repository.Update(map);
+                var map = Repository.Find<NLinearMapEntity>(req.MapId);
 
-            callback((K)(object)true);
+                if (req.RequestType == "Targets") {
+                    map.Targets = ((string, int)[])req.Value;
+                }
+
+                Repository.Update(map);
+                callback((K)(object)true);
+            }
         }
     }
 
@@ -435,15 +472,16 @@ namespace taskmaker_wpf.Domain {
     }
 
     public class BaseInteractorBus {
+        protected BaseInteractor[] interactors;
+
         public void Handle<T, K>(T request, Action<K> callback) {
-            var fieldName = "_" + typeof(T).Name.Replace("Request", "").ToLower();
-            var interactor = (BaseInteractor)typeof(SystemInteractorBus).GetField(fieldName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(this);
+            var interactorName = typeof(T).Name.Replace("Request", "Interactor");
+            var interactor = interactors.Where(e => e.GetType().Name == interactorName).FirstOrDefault();
 
             if (interactor == null)
                 throw new NullReferenceException();
             else
-                // "_[name]"
-                interactor?.Handle(request, callback);
+                interactor.Handle(request, callback);
         }
     }
 

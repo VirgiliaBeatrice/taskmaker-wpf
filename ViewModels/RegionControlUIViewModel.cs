@@ -289,7 +289,7 @@ namespace taskmaker_wpf.ViewModels {
             ListTargetInteractor targetInteractor) {
             _mapper = config.CreateMapper();
 
-            TargetsPanelVM = new TargetsPanelViewModel(targetInteractor,motorBus,mapBus, config);
+            TargetsPanelVM = new TargetsPanelViewModel(targetInteractor, motorBus, uiBus, mapBus, config);
             _uiBus = uiBus;
             _mapBus = mapBus;
             _motorBus = motorBus;

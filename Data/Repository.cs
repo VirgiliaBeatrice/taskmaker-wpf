@@ -12,6 +12,8 @@ using taskmaker_wpf.Services;
 using System.Xml.Serialization;
 using System.IO;
 using System.Diagnostics;
+using SkiaSharp;
+using taskmaker_wpf.ViewModels;
 
 namespace taskmaker_wpf.Data {
 
@@ -31,7 +33,7 @@ namespace taskmaker_wpf.Data {
     public class ProjectDataObject {
         public List<MotorEntity> Motors { get; set; } = new List<MotorEntity>();
         public List<ControlUiEntity> Uis { get; set; } = new List<ControlUiEntity>();
-        public List<NLinearMapEntity> Entities { get; set; } = new List<NLinearMapEntity>();
+        public List<NLinearMapEntity> Maps { get; set; } = new List<NLinearMapEntity>();
 
     }
 
@@ -42,26 +44,24 @@ namespace taskmaker_wpf.Data {
         private List<MotorEntity> Motors => Project.Motors;
 
         public void Add<T>(T item) {
-            var itemType = typeof(T);
-
-            if (itemType == typeof(MotorEntity)) {
-                Project.Motors.Add(item as MotorEntity);
+            if (item is MotorEntity motor) {
+                Project.Motors.Add(motor);
             }
             else if (item is ControlUiEntity ui) {
                 Project.Uis.Add(ui);
+            }
+            else if (item is NLinearMapEntity map) {
+                Project.Maps.Add(map);
             }
         }
 
         // TODO: Clone
         public void Update<T>(T item) {
-            var itemType = typeof(T);
-
-            if (itemType == typeof(MotorEntity)) {
-                var entity = item as MotorEntity;
-                var target = Project.Motors.Find(e => e.Id == entity.Id);
+            if (item is MotorEntity motor) {
+                var target = Project.Motors.Find(e => e.Id == motor.Id);
 
                 if (target != null)
-                    target = entity;
+                    target = motor;
             }
             else if (item is ControlUiEntity ui) {
                 var target = Project.Uis.Find(e => e.Id == ui.Id);
@@ -69,36 +69,42 @@ namespace taskmaker_wpf.Data {
                 if (target != null)
                     target = ui;
             }
+            else if (item is NLinearMapEntity map) {
+                var target = Project.Maps.Find(e => e.Id == map.Id);
+
+                if (target != null)
+                    target = map;
+            }
         }
 
         public void Delete<T>(T item) {
-            var itemType = typeof(T);
-
-            if (itemType == typeof(MotorEntity)) {
-                var entity = item as MotorEntity;
-
-                Project.Motors.Remove(Project.Motors.Find(e => e.Id == entity.Id));
+            if (item is MotorEntity motor) {
+                Project.Motors.Remove(Project.Motors.Find(e => e.Id == motor.Id));
             }
             else if (item is ControlUiEntity ui) {
                 Project.Uis.Remove(Project.Uis.Find(e => e.Id == ui.Id));
+            }
+            else if (item is NLinearMapEntity map) {
+                Project.Maps.Remove(Project.Maps.Find(e => e.Id == map.Id));
             }
         }
 
         public T Find<T>(int id){
             var itemType = typeof(T);
+            object target = null;
 
             if (itemType == typeof(MotorEntity)) {
-                var target = Project.Motors.Find(e => e.Id == id);
-
-                return (T)(object)target;
+                target = Project.Motors.Find(e => e.Id == id);
             }
             else if (itemType == typeof(ControlUiEntity)) {
-                var target = Project.Uis.Find(e => e.Id == id);
+                target = Project.Uis.Find(e => e.Id == id);
 
-                return (T)(object)target;
             }
-
-            return default(T);
+            else if (itemType == typeof(NLinearMapEntity)) {
+                target = Project.Maps.Find(e => e.Id == id);
+            }
+            
+            return target != null ? (T)target : default;
         }
 
         public IEnumerable<T> FindAll<T>() {
@@ -109,6 +115,9 @@ namespace taskmaker_wpf.Data {
             }
             else if (itemType == typeof(ControlUiEntity)) {
                 return Project.Uis.Cast<T>().ToArray();
+            }
+            else if (itemType == typeof(NLinearMapEntity)) {
+                return Project.Maps.Cast<T>().ToArray();
             }
 
             return new[] { default(T) };
@@ -146,59 +155,59 @@ namespace taskmaker_wpf.Data {
         }
     }
 
-    public class MotorRepository {
-        public IDataSource DataSource {
-            get;
-            private set;
-        }
-        private IMapper _mapper;
-        private readonly SerialService _serial;
+    //public class MotorRepository {
+    //    public IDataSource DataSource {
+    //        get;
+    //        private set;
+    //    }
+    //    private IMapper _mapper;
+    //    private readonly SerialService _serial;
 
-        public MotorRepository(IDataSource dataSource, MapperConfiguration config, SerialService serial) {
-            DataSource = dataSource;
-            _mapper = config.CreateMapper();
-            _serial = serial;
-        }
+    //    public MotorRepository(IDataSource dataSource, MapperConfiguration config, SerialService serial) {
+    //        DataSource = dataSource;
+    //        _mapper = config.CreateMapper();
+    //        _serial = serial;
+    //    }
 
-        public void Add<T>(T item) {
-            var src = DataSource as LocalDataSource;
+    //    public void Add<T>(T item) {
+    //        var src = DataSource as LocalDataSource;
 
-            src.Add(_mapper.Map<MotorDTO>(item));
-        }
+    //        src.Add(_mapper.Map<MotorDTO>(item));
+    //    }
 
-        public void Delete<T>(T item) {
-            var src = DataSource as LocalDataSource;
+    //    public void Delete<T>(T item) {
+    //        var src = DataSource as LocalDataSource;
 
-            src.Remove(_mapper.Map<MotorDTO>(item));
-        }
+    //        src.Remove(_mapper.Map<MotorDTO>(item));
+    //    }
 
-        public T Find<T>(int id) {
-            var src = DataSource as LocalDataSource;
+    //    public T Find<T>(int id) {
+    //        var src = DataSource as LocalDataSource;
 
-            src.Find<MotorDTO>(id);
+    //        src.Find<MotorDTO>(id);
 
-            return default(T);
-        }
+    //        return default(T);
+    //    }
 
-        public IEnumerable<T> FindAll<T>() {
-            var src = DataSource as LocalDataSource;
+    //    public IEnumerable<T> FindAll<T>() {
+    //        var src = DataSource as LocalDataSource;
 
-            var dto = src.FindAllOfType<MotorDTO>().FirstOrDefault();
-            var entity = _mapper.Map<MotorEntity>(dto);
-            return src.FindAllOfType<MotorDTO>().Select(e => _mapper.Map<MotorEntity>(e)).Cast<T>();
-        }
+    //        var dto = src.FindAllOfType<MotorDTO>().FirstOrDefault();
+    //        var entity = _mapper.Map<MotorEntity>(dto);
+    //        return src.FindAllOfType<MotorDTO>().Select(e => _mapper.Map<MotorEntity>(e)).Cast<T>();
+    //    }
 
-        public void Update<T>(T item) {
-            var src = DataSource as LocalDataSource;
-            var motor = item as MotorEntity;
+    //    public void Update<T>(T item) {
+    //        var src = DataSource as LocalDataSource;
+    //        var motor = item as MotorEntity;
 
-            src.Update(_mapper.Map<MotorDTO>(motor));
-            _serial.Update(motor.BoardId, motor.MotorId, motor.Value[0]);
+    //        src.Update(_mapper.Map<MotorDTO>(motor));
+    //        _serial.Update(motor.BoardId, motor.MotorId, motor.Value[0]);
 
-            //
-             _serial.SendToNuibot();
-        }
-    }
+    //        //
+    //         _serial.SendToNuibot();
+    //    }
+    //}
 
     [Serializable]
     public class MotorDTO {
