@@ -102,6 +102,7 @@ namespace taskmaker_wpf.Domain {
 
     public class NodeEntity : BaseEntity {
         public Point Value { get; set; }
+        public double[] TargetValue { get; set; }
 
     }
 

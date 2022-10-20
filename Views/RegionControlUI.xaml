@@ -39,7 +39,35 @@
                         DataContext="{Binding TargetsPanelVM}"
                         />
                 </TabItem>
-                
+                <TabItem
+                    Header="ControlUi" >
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="75*"/>
+                                <ColumnDefinition Width="119*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <ComboBox
+                                Grid.Row="0"
+                                Margin="2,2,2,2"
+                                ItemsSource="{Binding Uis}" 
+                                SelectedItem="{Binding UiState, Mode=TwoWay}" Grid.ColumnSpan="2" />
+                        </Grid>
+                        <TextBox
+                            Margin="2"
+                            Text="{Binding UiState.Name}">
+                            <b:Interaction.Triggers>
+                                <b:EventTrigger EventName="LostFocus">
+                                </b:EventTrigger>
+                            </b:Interaction.Triggers>
+                        </TextBox>
+                    </StackPanel>
+
+                </TabItem>
+
             </TabControl>
             <!--
             <StackPanel
@@ -122,10 +150,10 @@
                 
                 -->
             </local:ComplexWidget>
-            
+
         </DockPanel>
 
-        
+
         <StackPanel
             x:Name="statusBar"
             Orientation="Horizontal"
@@ -146,5 +174,5 @@
                 Text="{Binding ElementName=complex, Path=Mode}"/>
         </StackPanel>
     </Grid>
-    
+
 </UserControl>

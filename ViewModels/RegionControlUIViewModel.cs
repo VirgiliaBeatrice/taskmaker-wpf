@@ -1,123 +1,47 @@
-﻿using Numpy;
+﻿using AutoMapper;
+using Numpy;
 using Prism.Commands;
 using Prism.Mvvm;
+using Prism.Regions;
 using SkiaSharp;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Windows;
-using System.Windows.Input;
-using Prism.Regions;
-using taskmaker_wpf.Model.Data;
-using taskmaker_wpf.Models;
-using taskmaker_wpf.Services;
-using taskmaker_wpf.Views;
-using taskmaker_wpf.Views.Widget;
 using taskmaker_wpf.Domain;
-using AutoMapper;
+using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.ViewModels {
-    public class ControlUiState : BindableBase {
-        private int _id;
-        public int Id {
-            get => _id;
-            set => SetProperty(ref _id, value);
-        }
-
-        private string _name;
-        public string Name {
-            get => _name;
-            set => SetProperty(ref _name, value);
-        }
-
-        private double[] _value;
-        public double[] Value {
-            get => _value;
-            set => SetProperty(ref _value, value);
-        }
-
-        private NodeState[] _nodes;
-        public NodeState[] Nodes {
-            get => _nodes;
-            set => SetProperty(ref _nodes, value);
-        }
-
-        private RegionState[] _regions;
-        public RegionState[] Regions {
-            get => _regions;
-            set => SetProperty(ref _regions, value);
-        }
-
-        public override string ToString() {
-            return $"ControlUI[{Name}]";
-        }
-    }
-
-    public class NodeState : BindableBase, IEquatable<NodeState> {
-
-        private int _id;
-        public int Id {
-            get => _id;
-            set => SetProperty(ref _id, value);
-        }
-
-        private Point _value;
-        public Point Value {
-            get => _value;
-            set => SetProperty(ref _value, value);
-        }
-
-        private bool _isSet;
-        public bool IsSet {
-            get => _isSet;
-            set => SetProperty(ref _isSet, value);
-        }
-
-        public bool Equals(NodeState other) {
-            return other.Id == Id;
-        }
-    }
-
-    public class RegionState: BindableBase {
-        private int _id;
-        public int Id {
-            get => _id;
-            set => SetProperty(ref _id, value);
-        }
-
-        private string _name;
-        public string Name {
-            get => _name;
-            set => SetProperty(ref _name, value);
-        }
-    }
-
-    public class SimplexState : RegionState, ITraceRegion {
-        private Point[] _points;
-        public Point[] Points {
-            get => _points;
-            set => SetProperty(ref _points, value);
-        }
-    }
-
-    public class VoronoiState : RegionState, ITraceRegion {
-        private Point[] _points;
-        public Point[] Points {
-            get => _points;
-            set => SetProperty(ref _points, value);
-        }
-    }
 
     public interface ITraceRegion { }
 
+    public static class Helper {
 
-    public static class Helper
-    {
-        public static Point ToPoint(this NDarray pt)
-        {
+        public static IObservable<TSource> Debug<TSource>(this IObservable<TSource> observable) {
+            observable.Subscribe(
+                (e) => { Console.WriteLine($"[{DateTime.Now}] OnNext({e})"); },
+                (e) => { Console.WriteLine($"[{DateTime.Now}] OnError({e})"); },
+                () => { Console.WriteLine($"[{DateTime.Now}] OnCompleted()"); });
+
+            return observable;
+        }
+
+        public static void Dump<T>(this IObservable<T> source, string name) {
+            source.Subscribe(
+                i => Console.WriteLine("{0}-->{1}", name, i),
+                ex => Console.WriteLine("{0} failed-->{1}", name, ex.Message),
+                () => Console.WriteLine("{0} completed", name));
+        }
+
+        public static NDarray<float> ToNDarray(this Point pt) {
+            return np.array((float)pt.X, (float)pt.Y);
+        }
+
+        public static NDarray<float> ToNDarray(this SKPoint pt) {
+            return np.array(pt.X, pt.Y);
+        }
+
+        public static Point ToPoint(this NDarray pt) {
             if (pt.ndim > 1)
                 throw new Exception("Invalid ndarray");
 
@@ -129,8 +53,7 @@ namespace taskmaker_wpf.ViewModels {
             return new Point { X = values[0], Y = values[1] };
         }
 
-        public static SKPoint ToSKPoint(this NDarray pt)
-        {
+        public static SKPoint ToSKPoint(this NDarray pt) {
             if (pt.ndim > 1)
                 throw new Exception("Invalid ndarray");
 
@@ -141,68 +64,179 @@ namespace taskmaker_wpf.ViewModels {
 
             return new SKPoint(values[0], values[1]);
         }
+    }
 
-        public static NDarray<float> ToNDarray(this Point pt)
-        {
-            return np.array((float)pt.X, (float)pt.Y);
+    public class ControlUiState : BindableBase {
+        private int _id;
+
+        private string _name;
+
+        private NodeState[] _nodes;
+
+        private RegionState[] _regions;
+
+        private double[] _value;
+
+        public int Id {
+            get => _id;
+            set => SetProperty(ref _id, value);
+        }
+        public string Name {
+            get => _name;
+            set => SetProperty(ref _name, value);
+        }
+        public NodeState[] Nodes {
+            get => _nodes;
+            set => SetProperty(ref _nodes, value);
         }
 
-        public static NDarray<float> ToNDarray(this SKPoint pt)
-        {
-            return np.array(pt.X, pt.Y);
+        public RegionState[] Regions {
+            get => _regions;
+            set => SetProperty(ref _regions, value);
         }
 
-        public static IObservable<TSource> Debug<TSource>(this IObservable<TSource> observable)
-        {
-            observable.Subscribe(
-                (e) => { Console.WriteLine($"[{DateTime.Now}] OnNext({e})"); },
-                (e) => { Console.WriteLine($"[{DateTime.Now}] OnError({e})"); },
-                () => { Console.WriteLine($"[{DateTime.Now}] OnCompleted()"); });
-
-            return observable;
+        public double[] Value {
+            get => _value;
+            set => SetProperty(ref _value, value);
         }
-
-        public static void Dump<T>(this IObservable<T> source, string name)
-        {
-            source.Subscribe(
-                i => Console.WriteLine("{0}-->{1}", name, i),
-                ex => Console.WriteLine("{0} failed-->{1}", name, ex.Message),
-                () => Console.WriteLine("{0} completed", name));
+        public override string ToString() {
+            return Name;
         }
     }
 
-    public class RegionControlUIViewModel : BindableBase, INavigationAware
-    {
+    public class NodeState : BindableBase {
+        private int _id;
+
+        private bool _isSet;
+
+        private double[] _targetValue;
+
+        private Point _value;
+
+        public int Id {
+            get => _id;
+            set => SetProperty(ref _id, value);
+        }
+        public bool IsSet {
+            get => _isSet;
+            set => SetProperty(ref _isSet, value);
+        }
+
+        public double[] TargetValue {
+            get => _targetValue;
+            set => SetProperty(ref _targetValue, value);
+        }
+
+        public Point Value {
+            get => _value;
+            set => SetProperty(ref _value, value);
+        }
+    }
+
+    public class RegionControlUIViewModel : BindableBase, INavigationAware {
+        private readonly NLinearMapInteractorBus _mapBus;
+
+        private readonly IMapper _mapper;
+
+        private readonly MotorInteractorBus _motorBus;
+
+        private readonly ControlUiInteractorBus _uiBus;
+
+        private DelegateCommand<object> _addNodeCommand;
+
+        private DelegateCommand _buildCommand;
+
         private string _debug;
+
+        private FrameworkElement _hitElement;
 
         private FrameworkElement _inspectedWidget;
 
+        private DelegateCommand<object> _interpolateCommand;
+
         private string _keymapInfo;
 
-        private ControlUiEntity _ui;
-        public ControlUiEntity UI {
-            get => _ui;
-            set => SetProperty(ref _ui, value);
-        }
+        private NLinearMapState[] _maps = new NLinearMapState[0];
 
-        private ControlUiState _uiState;
-        public ControlUiState UiState {
-            get => _uiState;
-            set => SetProperty(ref _uiState, value);
-        }
+        private NLinearMapState _mapState;
 
-        public TargetsPanelViewModel TargetsPanelVM { get; set; }
+        private OperationMode _operationMode = Views.OperationMode.Default;
 
-        private string _statusMsg;
-        private string _systemInfo;
+        private DelegateCommand<NodeState> _removeNodeCommand;
 
         private FrameworkElement _selectedNodeWidget;
+
+        private DelegateCommand _setValueCommand;
+
+        private string _statusMsg;
+
+        private string _systemInfo;
+
+        private Point _tracePoint = new Point();
+
+        // https://blog.csdn.net/jiuzaizuotian2014/article/details/104856673
+        private ControlUiState _ui;
+        private ControlUiState[] _uis;
+        private ControlUiState _uiState;
+        public DelegateCommand<object> AddNodeCommand =>
+            _addNodeCommand ?? (_addNodeCommand = new DelegateCommand<object>(ExecuteAddNodeCommand));
+
+        public DelegateCommand BuildCommand =>
+            _buildCommand ?? (_buildCommand = new DelegateCommand(ExecuteBuildCommand));
+
+        public string Debug {
+            get => _debug;
+            set => SetProperty(ref _debug, value);
+        }
+
+        public FrameworkElement HitElement {
+            get => _hitElement;
+            set => SetProperty(ref _hitElement, value);
+        }
+
+        public string KeymapInfo {
+            get => _keymapInfo;
+            set => SetProperty(ref _keymapInfo, value);
+        }
+
+        public NLinearMapState[] Maps {
+            get => _maps;
+            set => SetProperty(ref _maps, value);
+        }
+
+        public NLinearMapState MapState {
+            get => _mapState;
+            set => SetProperty(ref _mapState, value);
+        }
+
+        public OperationMode OperationMode {
+            get => _operationMode;
+            set => SetProperty(ref _operationMode, value);
+        }
+
+        public DelegateCommand<NodeState> RemoveNodeCommand =>
+            _removeNodeCommand ?? (_removeNodeCommand = new DelegateCommand<NodeState>(ExecuteRemoveNodeCommand));
+
         public FrameworkElement SelectedNodeWidget {
             get => _selectedNodeWidget;
             set => SetProperty(ref _selectedNodeWidget, value);
         }
 
-        private Point _tracePoint = new Point();
+        public DelegateCommand SetValueCommand =>
+            _setValueCommand ?? (_setValueCommand = new DelegateCommand(ExecuteSetValueCommand));
+
+        public string StatusMsg {
+            get => _statusMsg;
+            set => SetProperty(ref _statusMsg, value);
+        }
+
+        public string SystemInfo {
+            get => _systemInfo;
+            set => SetProperty(ref _systemInfo, value);
+        }
+
+        public TargetsPanelViewModel TargetsPanelVM { get; set; }
+
         public Point TracePoint {
             get => _tracePoint;
             set {
@@ -214,43 +248,64 @@ namespace taskmaker_wpf.ViewModels {
             }
         }
 
-        private FrameworkElement _hitElement;
-        public FrameworkElement HitElement {
-            get => _hitElement;
-            set => SetProperty(ref _hitElement, value);
+        public ControlUiState[] Uis {
+            get => _uis;
+            set => SetProperty(ref _uis, value);
+        }
+
+        public ControlUiState UiState {
+            get => _uiState;
+            set => SetProperty(ref _uiState, value);
         }
 
 
-        private DelegateCommand<object> _addNodeCommand;
-        public DelegateCommand<object> AddNodeCommand =>
-            _addNodeCommand ?? (_addNodeCommand = new DelegateCommand<object>(ExecuteAddNodeCommand));
+        public RegionControlUIViewModel(MapperConfiguration config,
+            ControlUiInteractorBus uiBus,
+            NLinearMapInteractorBus mapBus,
+            MotorInteractorBus motorBus,
+            ListTargetInteractor targetInteractor) {
+            _mapper = config.CreateMapper();
 
-        void ExecuteAddNodeCommand(object param) {
+            TargetsPanelVM = new TargetsPanelViewModel(targetInteractor, motorBus, uiBus, mapBus, config).Bind(this);
+            _uiBus = uiBus;
+            _mapBus = mapBus;
+            _motorBus = motorBus;
+
+            InvalidateUi();
+            InvalidateMap();
+
+            SystemInfo = $"{_operationMode}";
+        }
+
+        private void ExecuteAddNodeCommand(object param) {
             var pt = (Point)param;
             if (pt == null) return;
             else {
-                var request = new UpdateControlUiRequest {
-                    Id = UiState.Id,
+                var request = new AddNodeRequest {
+                    UiId = UiState.Id,
+                    Value = pt,
                 };
-                _uiBus.Handle(new UpdateControlUiRequest(), (bool res) => { });
-                _uiBus.Handle(new ListControlUiRequest(), (ControlUiEntity[] uis) => { });
+                //var request = new UpdateControlUibRequest {
+                //    Id = UiState.Id,
+                //};
+                _uiBus.Handle(request, (bool res) => {
+                    _uiBus.Handle(new ListControlUiRequest(), (ControlUiEntity[] uis) => {
+                        var entity = uis.Where(e => e.Id == UiState.Id).FirstOrDefault();
 
+                        if (entity != null) {
+                            UiState = _mapper.Map<ControlUiState>(entity);
+                        }
+                    });
+                });
+
+                //_uiBus.Handle(new UpdateControlUiRequest(), (bool res) => { });
                 //var uiEntity = _uiUseCase.GetControlUi(UiState.Id);
 
                 //_mapper.Map(uiEntity, UiState);
             }
-
         }
 
-        private void InvalidateUi() {
-            //_uiBus.Handle
-        }
-
-        private DelegateCommand _buildCommand;
-        public DelegateCommand BuildCommand =>
-            _buildCommand ?? (_buildCommand = new DelegateCommand(ExecuteBuildCommand));
-
-        void ExecuteBuildCommand() {
+        private void ExecuteBuildCommand() {
             //_buildUseCase.Build(UiState.Id);
 
             //var uiEntity = _uiUseCase.GetControlUi(UiState.Id);
@@ -261,85 +316,19 @@ namespace taskmaker_wpf.ViewModels {
             //_mapUseCase.InitializeTensor(TargetsPanelVM.SelectedMap.Id);
         }
 
-
-        // https://blog.csdn.net/jiuzaizuotian2014/article/details/104856673
-
-        private DelegateCommand<object> _interpolateCommand;
-
-        private OperationMode _operationMode = Views.OperationMode.Default;
-        public OperationMode OperationMode {
-            get => _operationMode;
-            set => SetProperty(ref _operationMode, value);
-        }
-
-        private readonly IMapper _mapper;
-        //private readonly ControlUiUseCase _uiUseCase;
-        //private readonly BuildRegionUseCase _buildUseCase;
-        //private readonly NLinearMapUseCase _mapUseCase;
-        //private readonly MotorUseCase _motorUseCase;
-        private readonly ControlUiInteractorBus _uiBus;
-        private readonly NLinearMapInteractorBus _mapBus;
-        private readonly MotorInteractorBus _motorBus;
-
-        public RegionControlUIViewModel(
-            MapperConfiguration config,
-            ControlUiInteractorBus uiBus,
-            NLinearMapInteractorBus mapBus,
-            MotorInteractorBus motorBus,
-            ListTargetInteractor targetInteractor) {
-            _mapper = config.CreateMapper();
-
-            TargetsPanelVM = new TargetsPanelViewModel(targetInteractor, motorBus, uiBus, mapBus, config);
-            _uiBus = uiBus;
-            _mapBus = mapBus;
-            _motorBus = motorBus;
-
-            SystemInfo = $"{_operationMode}";
-        }
-
-        public string Debug
-        {
-            get => _debug;
-            set => SetProperty(ref _debug, value);
-        }
-
-        public string KeymapInfo
-        {
-            get => _keymapInfo;
-            set => SetProperty(ref _keymapInfo, value);
-        }
-
-        public string SystemInfo
-        {
-            get => _systemInfo;
-            set => SetProperty(ref _systemInfo, value);
-        }
-
-        public string StatusMsg
-        {
-            get => _statusMsg;
-            set => SetProperty(ref _statusMsg, value);
-        }
-
-        private DelegateCommand<NodeState> _removeNodeCommand;
-        public DelegateCommand<NodeState> RemoveNodeCommand =>
-            _removeNodeCommand ?? (_removeNodeCommand = new DelegateCommand<NodeState>(ExecuteRemoveNodeCommand));
-
-        void ExecuteRemoveNodeCommand(NodeState parameter) {
+        private void ExecuteRemoveNodeCommand(NodeState parameter) {
             RemoveNode(parameter);
         }
 
-        private DelegateCommand _setValueCommand;
-        public DelegateCommand SetValueCommand =>
-            _setValueCommand ?? (_setValueCommand = new DelegateCommand(ExecuteSetValueCommand));
-
-        void ExecuteSetValueCommand() {
+        private void ExecuteSetValueCommand() {
             if (SelectedNodeWidget is null) return;
-        }
 
-
-        private void RemoveNode(NodeState node) {
-            //UI.Complex.Nodes.Remove(node);
+            var request = new UpdateNodeRequest {
+                UiId = UiState.Id,
+                PropertyName = "TargetValue",
+                //PropertyValue =
+            };
+            //_uiBus.Handle()
         }
 
         private void Interpolate() {
@@ -368,14 +357,68 @@ namespace taskmaker_wpf.ViewModels {
             }
         }
 
-        public void OnNavigatedTo(NavigationContext navigationContext) {
-            UiState = navigationContext.Parameters["ui"] as ControlUiState;
+        private void InvalidateMap() {
+            _mapBus.Handle(new ListNLinearMapRequest(), (NLinearMapEntity[] maps) => {
+                Maps = _mapper.Map<NLinearMapState[]>(maps);
+                MapState = Maps.First();
+            });
         }
 
+        private void InvalidateUi() {
+            _uiBus.Handle(new ListControlUiRequest(), (ControlUiEntity[] uis) => {
+                Uis = _mapper.Map<ControlUiState[]>(uis);
+                UiState = Uis.First();
+            });
+            //_uiBus.Handle
+        }
+
+        private void RemoveNode(NodeState node) {
+            //UI.Complex.Nodes.Remove(node);
+        }
         public bool IsNavigationTarget(NavigationContext navigationContext) {
             return true;
         }
 
-        public void OnNavigatedFrom(NavigationContext navigationContext) { }
+        public void OnNavigatedFrom(NavigationContext navigationContext) {
+        }
+
+        public void OnNavigatedTo(NavigationContext navigationContext) {
+            //UiState = navigationContext.Parameters["ui"] as ControlUiState;
+            InvalidateUi();
+            InvalidateMap();
+        }
+    }
+
+    public class RegionState : BindableBase {
+        private int _id;
+
+        private string _name;
+
+        public int Id {
+            get => _id;
+            set => SetProperty(ref _id, value);
+        }
+        public string Name {
+            get => _name;
+            set => SetProperty(ref _name, value);
+        }
+    }
+
+    public class SimplexState : RegionState, ITraceRegion {
+        private Point[] _points;
+
+        public Point[] Points {
+            get => _points;
+            set => SetProperty(ref _points, value);
+        }
+    }
+
+    public class VoronoiState : RegionState, ITraceRegion {
+        private Point[] _points;
+
+        public Point[] Points {
+            get => _points;
+            set => SetProperty(ref _points, value);
+        }
     }
 }

@@ -235,6 +235,10 @@ namespace taskmaker_wpf.Domain {
         public Point Value { get; set; }
     }
 
+    public class ListNodeRequest : Request { 
+        public int UiId { get; set; }
+    }
+
     public class AddNodeInteractor : BaseInteractor {
         public AddNodeInteractor(IRepository repository) : base(repository) { }
 
@@ -257,7 +261,11 @@ namespace taskmaker_wpf.Domain {
         }
     }
 
-    public class UpdateNodeRequest : Request { }
+    public class UpdateNodeRequest : Request {
+        public int UiId { get; set; }
+        public string PropertyName { get; set; }
+        public object PropertyValue { get; set; }
+    }
 
     public class UpdateNodeInteractor : BaseInteractor {
         public UpdateNodeInteractor(IRepository repository) : base(repository) {
@@ -290,9 +298,11 @@ namespace taskmaker_wpf.Domain {
         }
 
         public override void Handle<T, K>(T request, Action<K> callback) {
-            var targets = Repository.FindAll<NodeEntity>();
+            if (request is ListNodeRequest req) {
+                var ui = Repository.Find<ControlUiEntity>(req.UiId);
 
-            callback((K)(object)targets);
+                callback((K)(object)ui.Nodes);
+            }
         }
     }
 
