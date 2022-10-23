@@ -306,11 +306,13 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private void ExecuteBuildCommand() {
-            //_buildUseCase.Build(UiState.Id);
+            var request = new BuildRegionRequest() {
+                Id = UiState.Id,
+            };
 
-            //var uiEntity = _uiUseCase.GetControlUi(UiState.Id);
-
-            //_mapper.Map(uiEntity, UiState);
+            _uiBus.Handle(request, (ControlUiEntity ui) => {
+                UiState = _mapper.Map<ControlUiState>(ui);
+            });
 
             //_mapUseCase.SetBasisDim(TargetsPanelVM.SelectedMap.Id, new int[] { UiState.Nodes.Length });
             //_mapUseCase.InitializeTensor(TargetsPanelVM.SelectedMap.Id);

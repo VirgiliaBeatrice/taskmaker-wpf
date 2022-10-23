@@ -191,8 +191,12 @@ namespace taskmaker_wpf.Domain {
     public class DeleteControlUiRequest : Request {
         public int Id { get; set; }
     }
-    public class ListControlUiRequest : Request { }
-    public class BuildRegionRequest { }
+    public class ListControlUiRequest : Request {
+        public int Id { get; set; } = -1;
+    }
+    public class BuildRegionRequest {
+        public int Id { get; set; }
+    }
 
     public class ControlUiInteractorBus : BaseInteractorBus {
         //private AddControlUiInteractor _add;
@@ -213,6 +217,7 @@ namespace taskmaker_wpf.Domain {
                 new ListControlUiInteractor(repository),
                 new AddNodeInteractor(repository),
                 new UpdateNodeInteractor(repository),
+                new BuildRegionInteractor(repository)
             };
         }
 
@@ -356,9 +361,18 @@ namespace taskmaker_wpf.Domain {
         }
 
         public override void Handle<T, K>(T request, Action<K> callback) {
-            var uis = Repository.FindAll<ControlUiEntity>();
+            if (request is ListControlUiRequest req) {
+                if (req.Id == -1) {
+                    var uis = Repository.FindAll<ControlUiEntity>();
 
-            callback((K)(object)uis);
+                    callback((K)(object)uis);
+                }
+                else {
+                    var ui = Repository.Find<ControlUiEntity>(req.Id);
+
+                    callback((K)(object)ui);
+                }
+            }
         }
     }
 
@@ -368,13 +382,15 @@ namespace taskmaker_wpf.Domain {
         }
 
         public override void Handle<T, K>(T request, Action<K> callback) {
-            var ui = new ControlUiEntity();
+            if (request is BuildRegionRequest req) {
+                var ui = Repository.Find<ControlUiEntity>(req.Id);
 
-            ui.Build();
+                ui.Build();
 
-            Repository.Update(ui);
+                Repository.Update(ui);
 
-            callback((K)(object)true);
+                callback((K)(object)ui);
+            }
         }
     }
 
