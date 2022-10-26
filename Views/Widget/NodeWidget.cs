@@ -39,14 +39,14 @@ namespace taskmaker_wpf.Views {
             //Canvas.SetTop(d as NodeWidget, ((Point)e.NewValue).Y);
         }
 
-        public Guid Id {
-            get { return (Guid)GetValue(IdProperty); }
+        public int Id {
+            get { return (int)GetValue(IdProperty); }
             set { SetValue(IdProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for Id.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty IdProperty =
-            DependencyProperty.Register("Id", typeof(Guid), typeof(NodeWidget), new PropertyMetadata(Guid.Empty));
+            DependencyProperty.Register("Id", typeof(int), typeof(NodeWidget), new PropertyMetadata(-1));
 
 
         public static readonly RoutedEvent ClickEvent = EventManager.RegisterRoutedEvent("Click", RoutingStrategy.Direct, typeof(RoutedEventHandler), typeof(NodeWidget));

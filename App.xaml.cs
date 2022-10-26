@@ -38,6 +38,7 @@ namespace taskmaker_wpf {
                     .ReverseMap();
 
                 cfg.CreateMap<NodeEntity, NodeState>()
+                    .ForMember(d => d.IsSet, o => o.MapFrom(s => s.TargetValue == null ? false : true))
                     .ReverseMap();
                 cfg.CreateMap<NodeEntity, NodeDTO>(MemberList.Destination)
                     .ReverseMap();
@@ -82,7 +83,7 @@ namespace taskmaker_wpf {
                     .IncludeBase<ControlUiEntity, ControlUiState>()
                     .ForMember(d => d.IsSelected, o => o.Ignore());
 
-
+                cfg.CreateMap<TargetEntity, TargetState>().ConvertUsing(e => new TargetState { Id = e.Id, Name = e.Name });
 
                 cfg.CreateMap<MotorEntity, MotorDTO>()
                     .ReverseMap();

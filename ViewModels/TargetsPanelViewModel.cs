@@ -15,11 +15,10 @@ using AutoMapper;
 using System.Runtime.CompilerServices;
 using System.Data.SqlClient;
 using Prism.Events;
+using SkiaSharp;
 
 namespace taskmaker_wpf.ViewModels {
     public interface ISelectableState {
-        event PropertyChangedEventHandler PropertyChanged;
-
         int Id { get; }
         bool IsSelected { get; set; }
         string Name { get; }
@@ -40,8 +39,7 @@ namespace taskmaker_wpf.ViewModels {
 
     public class MotorTargetState : MotorState, ISelectableState {
         private bool _isSelected;
-        private MotorInteractorBus _motorBus;
-        protected BindableBase Parent { get; set; }
+
         public bool IsSelected {
             get { return _isSelected; }
             set { SetProperty(ref _isSelected, value); }
@@ -92,6 +90,9 @@ namespace taskmaker_wpf.ViewModels {
         private ISelectableState[] _validTargets = new ISelectableState[0];
         public ISelectableState[] _targetsOfSelectedMap = new ISelectableState[0];
 
+        private MotorTargetState[] _motorStates;
+        private ControlUiTargetState[] _uiStates;
+
         public DelegateCommand AddCommand => _addCommand ?? (_addCommand = new DelegateCommand(ExecuteAddCommand));
 
         //public NLinearMapState Map => Parent.MapState;
@@ -109,6 +110,22 @@ namespace taskmaker_wpf.ViewModels {
 
         //    }
         //}
+
+        private IOutputPort[] _outputPorts;
+        public IOutputPort[] OutputPorts {
+            get => _outputPorts;
+            set => SetProperty(ref _outputPorts, value);
+        }
+
+        private IInputPort[] _inputPorts;
+        public IInputPort[] InputPorts {
+            get { return _inputPorts; }
+            set { SetProperty(ref _inputPorts, value); }
+        }
+
+        public NLinearMapState MapState {
+            get; set;
+        }
 
         public RegionControlUIViewModel Parent { get; set; }
 
@@ -141,6 +158,7 @@ namespace taskmaker_wpf.ViewModels {
 
             InvalidateMaps();
             InvalidateTargets();
+            //InvalidateTargetsNew();
 
             //ValidTargets.OfType<MotorTargetState>().ToList().ForEach(e => e.PropertyChanged += (s, args) => {
             //    if (args.PropertyName == nameof(MotorTargetState.MotorValue))
@@ -149,40 +167,115 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private void ExecuteAddCommand() {
-            _mapBus.Handle<AddNLinearMapRequest, bool>(new AddNLinearMapRequest(), (e) => { });
-            _mapBus.Handle<ListNLinearMapRequest, NLinearMapEntity[]>(new ListNLinearMapRequest(),
-                UpdateMaps);
+            var request = new AddNLinearMapRequest {
+                Id = Parent.UiState.Id,
+            };
+
+            _mapBus.Handle(request, (bool res) => { });
+            _mapBus.Handle(new ListNLinearMapRequest(), (NLinearMapEntity[] maps) => {
+                if (Parent != null)
+                    Parent.Maps = maps.Select(e => _mapper.Map<NLinearMapState>(e)).ToArray();
+            });
         }
 
         void ExecuteUpdateCommand() {
+            //var targets = ValidTargets.Where(e => e.IsSelected)
+            //    .Select(e => (e.GetType().Name.Replace("TargetState", ""), e.Id))
+            //    .ToArray();
             var targets = ValidTargets.Where(e => e.IsSelected)
-                .Select(e => (e.GetType().Name.Replace("TargetState", ""), e.Id))
+                .Select(e => new TargetEntity { Id = e.Id, Name = e.Name })
                 .ToArray();
-            var request = new UpdateNLinearMapRequest {
-                MapId = Parent.MapState?.Id ?? -1,
-                RequestType = "Targets",
-                Value = targets,
+            //var request = new UpdateNLinearMapRequest {
+            //    MapId = Parent.MapState?.Id ?? -1,
+            //    RequestType = "Targets",
+            //    Value = targets,
+            //};
+
+            var request = new UpdateControlUiRequest {
+                Id = Parent.UiState?.Id ?? -1,
+                PropertyName = "UpdateTargets",
+                PropertyValue = targets,
             };
 
-            if (Parent.MapState != null) {
-                _mapBus.Handle(request, (bool res) => {
-                    InvalidateMaps();
+            if (Parent.UiState != null) {
+                _uiBus.Handle(request, (ControlUiEntity ui) => {
+                    Parent.UiState = _mapper.Map<ControlUiState>(ui);
 
-                    Parent.MapState = Parent.Maps.Where(e => e.Id == request.MapId).FirstOrDefault();
-
-                    TargetsOfSelectedMap = Parent.MapState.Targets.Where(e => e.Item1 == "Motor")
-                        .Select(e => e.Item2)
+                    TargetsOfSelectedMap = Parent.UiState.Targets.Where(e => e.Name.Contains("Motor"))
+                        .Select(e => e.Id)
                         .Select(e => ValidTargets
                             .Where(e1 => e1.GetType() == typeof(MotorTargetState))
                             .Where(e1 => e1.Id == e).FirstOrDefault())
                         .ToArray();
                 });
-
             }
+
+
+            //if (Parent.MapState != null) {
+            //    _mapBus.Handle(request, (bool res) => {
+            //        InvalidateMaps();
+
+            //        Parent.MapState = Parent.Maps.Where(e => e.Id == request.MapId).FirstOrDefault();
+
+            //        TargetsOfSelectedMap = Parent.MapState.Targets.Where(e => e.Item1 == "Motor")
+            //            .Select(e => e.Item2)
+            //            .Select(e => ValidTargets
+            //                .Where(e1 => e1.GetType() == typeof(MotorTargetState))
+            //                .Where(e1 => e1.Id == e).FirstOrDefault())
+            //            .ToArray();
+            //    });
+
+            //}
         }
+
+        public void InvalidateMap() {
+            var request = new CreateNLinearMapRequest {
+                Id = Parent.UiState.Id,
+            };
+
+            _mapBus.Handle(request, (NLinearMapEntity map) => {
+                if (map != null) {
+                    Parent.MapState = _mapper.Map<NLinearMapState>(map);
+                }
+            });
+        }
+
 
         private void InvalidateMaps() {
             _mapBus.Handle<ListNLinearMapRequest, NLinearMapEntity[]>(new ListNLinearMapRequest(), UpdateMaps);
+        }
+
+        private void InvalidateUis() {
+            var request = new ListControlUiRequest();
+
+            _uiBus.Handle(request, (ControlUiEntity[] uis) => {
+                _uiStates = _mapper.Map<ControlUiTargetState[]>(uis);
+            });
+        }
+
+        private void InvalidateMotors() {
+            var request = new ListMotorRequest();
+
+            _motorBus.Handle(request, (MotorEntity[] motors) => {
+                _motorStates = _mapper.Map<MotorTargetState[]>(motors);
+            });
+        }
+
+        private void InvalidateTargetsNew() {
+            InvalidateUis();
+            InvalidateMotors();
+
+            ValidTargets = new List<ISelectableState>().Concat(_uiStates).Concat(_motorStates).ToArray();
+
+            var targets = Parent.UiState.Targets;
+
+            foreach(var item in targets) {
+                var target = ValidTargets.Where(e => e.GetType().Name.Contains(item.Name) & e.Id == item.Id).FirstOrDefault();
+
+                if (target != null)
+                    target.IsSelected = true;
+            }
+
         }
 
         private void InvalidateTargets() {
@@ -236,5 +329,14 @@ namespace taskmaker_wpf.ViewModels {
 
             _motorBus.Handle(request, (bool res) => { });
         }
+    }
+
+    public interface IOutputPort {
+        bool IsSelected { get; }
+        string Name { get; }
+    }
+    public interface IInputPort {
+        bool IsSelected { get; }
+        string Name { get; }
     }
 }

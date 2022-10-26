@@ -26,7 +26,7 @@
             Grid.Row="0">
             <TabControl
                 DockPanel.Dock="Right"
-                Width="200">
+                Width="250">
                 <TabItem
                     Header="Inspector">
                     <w:Inspector

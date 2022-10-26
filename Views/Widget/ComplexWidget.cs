@@ -612,6 +612,18 @@ namespace taskmaker_wpf.Views {
             set { SetValue(SelectedNodeWidgetProperty, value); }
         }
 
+
+
+        public int SelectedNodeId {
+            get { return (int)GetValue(SelectedNodeIdProperty); }
+            set { SetValue(SelectedNodeIdProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for SelectedNodeId.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SelectedNodeIdProperty =
+            DependencyProperty.Register("SelectedNodeId", typeof(int), typeof(ComplexWidget), new PropertyMetadata(-1));
+
+
         // Using a DependencyProperty as the backing store for SelectedNodeWidget.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SelectedNodeWidgetProperty =
             DependencyProperty.Register("SelectedNodeWidget", typeof(FrameworkElement), typeof(ComplexWidget), new PropertyMetadata(null));
@@ -637,6 +649,7 @@ namespace taskmaker_wpf.Views {
             if (el != null) {
                 el.IsSelected = true;
                 SelectedNodeWidget = el;
+                SelectedNodeId = ((NodeState)el.DataContext).Id;
             }
         }
 
@@ -1097,7 +1110,7 @@ namespace taskmaker_wpf.Views {
         private void OnSetValueNew() {
             if (SelectedNodeWidget is null) return;
 
-            SetValueCommand.Execute(null);
+            SetValueCommand.Execute(SelectedNodeId);
         }
 
         protected void PrepareObservable() {

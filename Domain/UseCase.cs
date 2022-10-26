@@ -156,7 +156,7 @@ namespace taskmaker_wpf.Domain {
             var motors = Repository.FindAll<MotorEntity>();
             var uis = Repository.FindAll<ControlUiEntity>();
 
-            var targets = new List<ITargetable>().Concat(motors).Concat(uis).ToArray();
+            var targets = new List<ITargetableEntity>().Concat(motors).Concat(uis).ToArray();
 
             callback((K)(object)targets);
         }
@@ -172,6 +172,9 @@ namespace taskmaker_wpf.Domain {
 
         //public abstract void Handle<T>(T request);
         public abstract void Handle<T, K>(T request, Action<K> callback);
+        public virtual Task<K> HandleAsync<K, T>(T request) {
+            throw new NotImplementedException();
+        } 
     }
 
     //public class AddNodeRequest { }
@@ -184,8 +187,8 @@ namespace taskmaker_wpf.Domain {
     public class UpdateControlUiRequest : Request {
         public int Id { get; set; }
 
-        //public string PropertyName { get; set; }
-        //public object PropertyValue { get; set; }
+        public string PropertyName { get; set; }
+        public object PropertyValue { get; set; }
 
     }
     public class DeleteControlUiRequest : Request {
@@ -268,6 +271,7 @@ namespace taskmaker_wpf.Domain {
 
     public class UpdateNodeRequest : Request {
         public int UiId { get; set; }
+        public int NodeId { get; set; }
         public string PropertyName { get; set; }
         public object PropertyValue { get; set; }
     }
@@ -277,11 +281,17 @@ namespace taskmaker_wpf.Domain {
         }
 
         public override void Handle<T, K>(T request, Action<K> callback) {
-            var node = new NodeEntity();
+            if (request is UpdateNodeRequest req) {
+                var ui = Repository.Find<ControlUiEntity>(req.UiId);
 
-            Repository.Update(node);
-
-            callback((K)(object)true);
+                if (req.PropertyName == "TargetValue") {
+                    ui.Nodes[req.NodeId].TargetValue = (double[])req.PropertyValue;
+                }
+                
+                Repository.Update(ui);
+                
+                callback((K)(object)ui);
+            }
         }
     }
 
@@ -335,11 +345,17 @@ namespace taskmaker_wpf.Domain {
         }
 
         public override void Handle<T, K>(T request, Action<K> callback) {
-            var ui = new ControlUiEntity();
+            if (request is UpdateControlUiRequest req) {
+                var ui = Repository.Find<ControlUiEntity>(req.Id);
 
-            Repository.Update(ui);
+                if (req.PropertyName == "UpdateTargets") {
+                    ui.Targets = (TargetEntity[])req.PropertyValue;
 
-            callback((K)(object)true);
+                    Repository.Update(ui);
+
+                    callback((K)(object)ui);
+                }
+            }
         }
     }
 
@@ -394,32 +410,70 @@ namespace taskmaker_wpf.Domain {
         }
     }
 
+    public class CreateNLinearMapRequest : Request {
+        public int Id { get; set; }
+    }
 
-    public class AddNLinearMapRequest : Request { }
+
+    public class AddNLinearMapRequest : Request {
+        public int Id { get; set; }
+    }
     public class UpdateNLinearMapRequest : Request {
         public int MapId { get; set; }
-        public string RequestType { get; set; }
-        public object Value { get; set; }
+        public int UiId { get; set; }
+        //public int MapId { get; set; }
+        //public string RequestType { get; set; }
+        //public object Value { get; set; }
     }
     public class ListNLinearMapRequest : Request  { }
 
+    public class CreateNLinearMapInteractor : BaseInteractor {
+        public CreateNLinearMapInteractor(IRepository repository) : base(repository) {
+        }
+
+        public override void Handle<T, K>(T request, Action<K> callback) {
+            if (request is CreateNLinearMapRequest req) {
+                //var last = Repository.FindAll<NLinearMapEntity>().LastOrDefault() ??
+                var ui = Repository.Find<ControlUiEntity>(req.Id);
+
+                if (ui.Targets == null)
+                    callback((K)(object)null);
+                else {
+                    var map = ui.CreateMap();
+
+                    map.Name = $"Map[{ui.Name}]";
+
+                    Repository.Add(map);
+
+                    callback((K)(object)map);
+                }
+            }
+        }
+    }
+    
     public class AddNLinearMapInteractor : BaseInteractor {
         public AddNLinearMapInteractor(IRepository repository) : base(repository) {
         }
 
         public override void Handle<T, K>(T request, Action<K> callback) {
-            var idx = Repository.FindAll<NLinearMapEntity>().Count();
-            var map = new NLinearMapEntity {
-                Id = idx,
-                Name = $"Map[{idx}]",
-                Shape = new int[0],
-                Targets = new (string, int)[0],
-                //Tensor = Numpy.np.nan
-            };
+            if (request is AddNLinearMapRequest req) {
+                var idx = Repository.FindAll<NLinearMapEntity>().Count();
+                var ui = Repository.Find<ControlUiEntity>(req.Id);
 
-            Repository.Add(map);
+                if (ui.Targets == null) {
+                    callback((K)(object)false);
+                }
+                else {
+                    var map = NLinearMapEntity.Create(ui);
 
-            callback((K)(object)true);
+                    map.Id = idx;
+                    map.Name = $"Map[{idx}]";
+                
+                    Repository.Add(map);
+
+                    callback((K)(object)true);
+                }
+            }
         }
     }
 
@@ -429,17 +483,14 @@ namespace taskmaker_wpf.Domain {
 
         public override void Handle<T, K>(T request, Action<K> callback) {
             if (request is UpdateNLinearMapRequest req) {
-                if (req.MapId == -1)
-                    return;
-
                 var map = Repository.Find<NLinearMapEntity>(req.MapId);
+                var ui = Repository.Find<ControlUiEntity>(req.UiId);
 
-                if (req.RequestType == "Targets") {
-                    map.Targets = ((string, int)[])req.Value;
-                }
+                map.Initialize(ui);
 
                 Repository.Update(map);
-                callback((K)(object)true);
+
+                callback((K)(object)map);
             }
         }
     }
@@ -456,27 +507,32 @@ namespace taskmaker_wpf.Domain {
     }
 
 
-    public class NLinearMapInteractorBus {
-        private AddNLinearMapInteractor _add;
-        private UpdateNLinearMapInteractor _update;
-        private ListNLinearMapInteractor _list;
+    public class NLinearMapInteractorBus : BaseInteractorBus {
+        //private AddNLinearMapInteractor _add;
+        //private UpdateNLinearMapInteractor _update;
+        //private ListNLinearMapInteractor _list;
+
+        //private BaseInteractor[] _interactors;
 
         public NLinearMapInteractorBus(IRepository repository) {
-            _add = new AddNLinearMapInteractor(repository);
-            _update = new UpdateNLinearMapInteractor(repository);
-            _list = new ListNLinearMapInteractor(repository);
+            interactors = new BaseInteractor[] {
+                new AddNLinearMapInteractor(repository),
+                new UpdateNLinearMapInteractor(repository),
+                new ListNLinearMapInteractor(repository),
+                new CreateNLinearMapInteractor(repository)
+            };
         }
 
-        public void Handle<T, K>(T request, Action<K> callback) {
-            var requestType = typeof(T);
+        //public void Handle<T, K>(T request, Action<K> callback) {
+        //    var requestType = typeof(T);
 
-            if (requestType == typeof(AddNLinearMapRequest))
-                _add.Handle(request, callback);
-            else if (requestType == typeof(UpdateNLinearMapRequest))
-                _update.Handle(request, callback);
-            else if (requestType == typeof(ListNLinearMapRequest))
-                _list.Handle(request, callback);
-        }
+        //    if (requestType == typeof(AddNLinearMapRequest))
+        //        _add.Handle(request, callback);
+        //    else if (requestType == typeof(UpdateNLinearMapRequest))
+        //        _update.Handle(request, callback);
+        //    else if (requestType == typeof(ListNLinearMapRequest))
+        //        _list.Handle(request, callback);
+        //}
     }
 
     public class SystemInteractorBus {

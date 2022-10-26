@@ -5,6 +5,7 @@ using Prism.Mvvm;
 using Prism.Regions;
 using SkiaSharp;
 using System;
+using System.Configuration;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Windows;
@@ -77,6 +78,8 @@ namespace taskmaker_wpf.ViewModels {
 
         private double[] _value;
 
+        private TargetState[] _targets;
+
         public int Id {
             get => _id;
             set => SetProperty(ref _id, value);
@@ -98,6 +101,11 @@ namespace taskmaker_wpf.ViewModels {
         public double[] Value {
             get => _value;
             set => SetProperty(ref _value, value);
+        }
+
+        public TargetState[] Targets {
+            get => _targets;
+            set => SetProperty(ref _targets, value);
         }
         public override string ToString() {
             return Name;
@@ -166,7 +174,7 @@ namespace taskmaker_wpf.ViewModels {
 
         private FrameworkElement _selectedNodeWidget;
 
-        private DelegateCommand _setValueCommand;
+        private DelegateCommand<object> _setValueCommand;
 
         private string _statusMsg;
 
@@ -222,8 +230,8 @@ namespace taskmaker_wpf.ViewModels {
             set => SetProperty(ref _selectedNodeWidget, value);
         }
 
-        public DelegateCommand SetValueCommand =>
-            _setValueCommand ?? (_setValueCommand = new DelegateCommand(ExecuteSetValueCommand));
+        public DelegateCommand<object> SetValueCommand =>
+            _setValueCommand ?? (_setValueCommand = new DelegateCommand<object>(ExecuteSetValueCommand));
 
         public string StatusMsg {
             get => _statusMsg;
@@ -322,14 +330,24 @@ namespace taskmaker_wpf.ViewModels {
             RemoveNode(parameter);
         }
 
-        private void ExecuteSetValueCommand() {
-            if (SelectedNodeWidget is null) return;
+        private void ExecuteSetValueCommand(object param) {
+            if (param is int selectedNodeId) {
+                var targetValues = TargetsPanelVM.TargetsOfSelectedMap.SelectMany(e => e.Value).ToArray();
 
-            var request = new UpdateNodeRequest {
-                UiId = UiState.Id,
-                PropertyName = "TargetValue",
-                //PropertyValue =
-            };
+                var request = new UpdateNodeRequest {
+                    UiId = UiState.Id,
+                    NodeId = selectedNodeId,
+                    PropertyName = "TargetValue",
+                    PropertyValue = targetValues,
+                };
+
+                _uiBus.Handle(request, (ControlUiEntity ui) => {
+                    UiState = _mapper.Map<ControlUiState>(ui);
+                });
+            }
+            //if (SelectedNodeWidget is null) return;
+
+            
             //_uiBus.Handle()
         }
 
@@ -362,7 +380,7 @@ namespace taskmaker_wpf.ViewModels {
         private void InvalidateMap() {
             _mapBus.Handle(new ListNLinearMapRequest(), (NLinearMapEntity[] maps) => {
                 Maps = _mapper.Map<NLinearMapState[]>(maps);
-                MapState = Maps.First();
+                MapState = Maps.FirstOrDefault();
             });
         }
 

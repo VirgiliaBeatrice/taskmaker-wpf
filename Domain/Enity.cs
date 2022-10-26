@@ -9,6 +9,10 @@ using AutoMapper;
 using taskmaker_wpf.Data;
 using taskmaker_wpf.Qhull;
 using taskmaker_wpf.ViewModels;
+using taskmaker_wpf.Model.Data;
+using System.Dynamic;
+using Numpy.Models;
+using System.Diagnostics;
 
 namespace taskmaker_wpf.Domain {
     public interface IEntity {
@@ -52,27 +56,46 @@ namespace taskmaker_wpf.Domain {
         public NDarray Tensor { get; set; }
         public int[] Shape { get; set; }
         //public string[] Targets { get; set; }
-        public (string, int)[] Targets { get; set; }
+        //public (string, int)[] Targets { get; set; }
+        
 
-        private bool _isSet => !bool.Parse(np.isnan(Tensor.sum()).repr);
-        private int _targetDim;
-        private int[] _basisDims;
+        private bool _isSet => !Tensor.isnan().any();
+        private double[] tensor => Tensor.isnan().any() ? null : Tensor.GetData<double>();
 
-        public void SetTargetDim(int targetDim) {
-            _targetDim = targetDim;
+        public static NLinearMapEntity Create(ControlUiEntity ui) {
+            var map = new NLinearMapEntity();
+
+            map.Initialize(ui);
+
+            //var targetDim = ui.Targets.Select(e => e.Dimension).Sum();
+            //var basisDim = new int[] { ui.Nodes.Length };
+
+            //map.Shape = new int[] { targetDim }.Concat(basisDim).ToArray();
+            //map.Tensor = np.empty(map.Shape);
+
+            //map.Tensor.fill(np.nan);
+
+            //var basis = ui.Nodes;
+            //for (int idx = 0; idx < basis.Length; idx++) {
+            //    map.Tensor[$":,{string.Join(",", new int[] { idx })}"] = basis[idx].TargetValue;
+            //}
+
+            return map;
         }
 
-        public void SetBasisDim(int[] basisDim) {
-            _basisDims = basisDim;
-        }
+        public void Initialize(ControlUiEntity ui) {
+            var targetDim = ui.Targets.Select(e => e.Dimension).Sum();
+            var basisDim = new int[] { ui.Nodes.Length };
 
-        public void InitializeTensor() {
-            Shape = new int[] {
-                _targetDim
-            }.Concat(_basisDims).ToArray();
-
+            Shape = new int[] { targetDim }.Concat(basisDim).ToArray();
             Tensor = np.empty(Shape);
+
             Tensor.fill(np.nan);
+
+            var basis = ui.Nodes;
+            for (int idx = 0; idx < basis.Length; idx++) {
+                Tensor[$":,{string.Join(",", new int[] { idx })}"] = basis[idx].TargetValue;
+            }
         }
 
         public void SetValue(int[] indices, NDarray value) {
@@ -308,14 +331,18 @@ namespace taskmaker_wpf.Domain {
 
     }
 
-    public interface ITargetable {
+    public interface ITargetableEntity {
+        string TargetType { get; }
         int Id { get; }
     }
 
-    public class ControlUiEntity : BaseEntity, ITargetable {
+    public class ControlUiEntity : BaseEntity, ITargetableEntity {
         public NodeEntity[] Nodes { get; set; }
         public BaseRegionEntity[] Regions { get; set; }
         public double[] Value { get; set; }
+
+        public string TargetType => "ControlUi";
+        public TargetEntity[] Targets { get; set; }
 
         public void Build() {
             var nodes = Nodes.OrderBy(e => e.Id).ToArray();
@@ -347,13 +374,35 @@ namespace taskmaker_wpf.Domain {
 
             Regions = regions.ToArray();
         }
+
+        public NLinearMapEntity CreateMap() {
+            if (Nodes.Any(e => e.TargetValue == null)) {
+                return default;
+            }
+            else {
+                return NLinearMapEntity.Create(this);
+            }
+        }
     }
 
-    public class MotorEntity : BaseEntity, ITargetable {
+    public class MotorEntity : BaseEntity, ITargetableEntity {
         public double[] Value { get; set; } = new double[1] { 0 };
         public int Min { get; set; }
         public int Max { get; set; }
         public int BoardId { get; set; }
         public int MotorId { get; set; }
+        public string TargetType => "Motor";
+    }
+
+    public struct TargetState {
+        public string Name { get; set; }
+        public int Id { get; set; }
+        public int Dimension { get; set; }
+    }
+
+    public struct TargetEntity {
+        public string Name { get; set; }
+        public int Id { get; set; }
+        public int Dimension => Name.Contains("Motor") ? 1 : 2;
     }
 }

@@ -64,13 +64,13 @@ namespace taskmaker_wpf.Views {
         }
 
         protected override void OnMouseEnter(MouseEventArgs e) {
-            (Parent as ComplexWidget).InvalidateSKContext();
+            (Parent as ComplexWidget)?.InvalidateSKContext();
 
             base.OnMouseEnter(e);
         }
 
         protected override void OnMouseLeave(MouseEventArgs e) {
-            (Parent as ComplexWidget).InvalidateSKContext();
+            (Parent as ComplexWidget)?.InvalidateSKContext();
 
             base.OnMouseLeave(e);
         }

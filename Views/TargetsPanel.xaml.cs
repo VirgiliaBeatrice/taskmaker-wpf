@@ -35,6 +35,10 @@ namespace taskmaker_wpf.Views {
                 }
             }
         }
+
+        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+
+        }
     }
 
     public class ISelectableTargetConverter : IValueConverter {
