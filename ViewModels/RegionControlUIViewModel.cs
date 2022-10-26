@@ -186,6 +186,21 @@ namespace taskmaker_wpf.ViewModels {
         private ControlUiState _ui;
         private ControlUiState[] _uis;
         private ControlUiState _uiState;
+
+        private DelegateCommand _addUiCommand;
+        public DelegateCommand AddUiCommand =>
+            _addUiCommand ?? (_addUiCommand = new DelegateCommand(ExecuteAddUiCommand));
+
+        void ExecuteAddUiCommand() {
+            var request = new AddControlUiRequest();
+            var request1 = new ListControlUiRequest();
+
+            _uiBus.Handle(request, (bool res) => { });
+            _uiBus.Handle(request1, (ControlUiEntity[] uis) => {
+                Uis = _mapper.Map<ControlUiState[]>(uis);
+            });
+        }
+
         public DelegateCommand<object> AddNodeCommand =>
             _addNodeCommand ?? (_addNodeCommand = new DelegateCommand<object>(ExecuteAddNodeCommand));
 
@@ -214,7 +229,12 @@ namespace taskmaker_wpf.ViewModels {
 
         public NLinearMapState MapState {
             get => _mapState;
-            set => SetProperty(ref _mapState, value);
+            set {
+                SetProperty(ref _mapState, value);
+
+                if (value != null)
+                    TargetsPanelVM.InvalidateTargets();
+            }
         }
 
         public OperationMode OperationMode {
@@ -274,13 +294,13 @@ namespace taskmaker_wpf.ViewModels {
             ListTargetInteractor targetInteractor) {
             _mapper = config.CreateMapper();
 
-            TargetsPanelVM = new TargetsPanelViewModel(targetInteractor, motorBus, uiBus, mapBus, config).Bind(this);
+            TargetsPanelVM = new TargetsPanelViewModel(this, targetInteractor, motorBus, uiBus, mapBus, config);
             _uiBus = uiBus;
             _mapBus = mapBus;
             _motorBus = motorBus;
 
-            InvalidateUi();
-            InvalidateMap();
+            //InvalidateUi();
+            //InvalidateMap();
 
             SystemInfo = $"{_operationMode}";
         }
@@ -404,8 +424,8 @@ namespace taskmaker_wpf.ViewModels {
 
         public void OnNavigatedTo(NavigationContext navigationContext) {
             //UiState = navigationContext.Parameters["ui"] as ControlUiState;
-            InvalidateUi();
-            InvalidateMap();
+            //InvalidateUi();
+            //InvalidateMap();
         }
     }
 

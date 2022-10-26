@@ -57,6 +57,9 @@ namespace taskmaker_wpf.Domain {
         public int[] Shape { get; set; }
         //public string[] Targets { get; set; }
         //public (string, int)[] Targets { get; set; }
+
+        public IInputPort[] Inputs { get; set; }
+        public IOutputPort[] Outputs { get; set; }
         
 
         private bool _isSet => !Tensor.isnan().any();

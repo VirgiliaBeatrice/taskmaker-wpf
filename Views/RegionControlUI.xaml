@@ -28,33 +28,33 @@
                 DockPanel.Dock="Right"
                 Width="250">
                 <TabItem
-                    Header="Inspector">
-                    <w:Inspector
-                        InspectedWidget="{Binding InspectedWidget}"
-                        />
-                </TabItem>
-                <TabItem
-                    Header="Targets">
-                    <local:TargetsPanel
-                        DataContext="{Binding TargetsPanelVM}"
-                        />
-                </TabItem>
-                <TabItem
                     Header="ControlUi" >
                     <StackPanel>
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="75*"/>
-                                <ColumnDefinition Width="119*"/>
+                                <ColumnDefinition Width="4*"/>
+                                <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <ComboBox
                                 Grid.Row="0"
+                                Grid.Column="0"
                                 Margin="2,2,2,2"
                                 ItemsSource="{Binding Uis}" 
-                                SelectedItem="{Binding UiState, Mode=TwoWay}" Grid.ColumnSpan="2" />
+                                SelectedItem="{Binding UiState, Mode=TwoWay}" />
+                            <Button 
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Margin="2"
+                                Width="20"
+                                Height="20"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                Content="+"
+                                Command="{Binding AddUiCommand}"
+                                />
                         </Grid>
                         <TextBox
                             Margin="2"
@@ -66,6 +66,18 @@
                         </TextBox>
                     </StackPanel>
 
+                </TabItem>
+                <TabItem
+                    Header="Inspector">
+                    <w:Inspector
+                        InspectedWidget="{Binding InspectedWidget}"
+                        />
+                </TabItem>
+                <TabItem
+                    Header="Targets">
+                    <local:TargetsPanel
+                        DataContext="{Binding TargetsPanelVM}"
+                        />
                 </TabItem>
 
             </TabControl>

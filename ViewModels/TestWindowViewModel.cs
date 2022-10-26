@@ -45,7 +45,7 @@ namespace taskmaker_wpf.ViewModels {
         public void NavigateCommandExecute(string navigatePath) {
             if (navigatePath != null) {
                 if (navigatePath == "RegionControlUI") {
-                    _regionManager.RequestNavigate("ContentRegion", nameof(Views.RegionControlUISelection));
+                    _regionManager.RequestNavigate("ContentRegion", nameof(Views.RegionControlUI));
                 }
                 else {
                     _regionManager.RequestNavigate("ContentRegion", navigatePath);

@@ -11,6 +11,7 @@ using taskmaker_wpf.Models;
 using taskmaker_wpf.Qhull;
 using System.Security.RightsManagement;
 using System.Diagnostics;
+using taskmaker_wpf.ViewModels;
 
 namespace taskmaker_wpf.Domain {
     public interface IPresenter { }
@@ -419,8 +420,10 @@ namespace taskmaker_wpf.Domain {
         public int Id { get; set; }
     }
     public class UpdateNLinearMapRequest : Request {
-        public int MapId { get; set; }
-        public int UiId { get; set; }
+        public int Id { get; set; }
+
+        public string PropertyType { get; set; }
+        public object PropertyValue { get; set; }
         //public int MapId { get; set; }
         //public string RequestType { get; set; }
         //public object Value { get; set; }
@@ -458,23 +461,37 @@ namespace taskmaker_wpf.Domain {
         public override void Handle<T, K>(T request, Action<K> callback) {
             if (request is AddNLinearMapRequest req) {
                 var idx = Repository.FindAll<NLinearMapEntity>().Count();
-                var ui = Repository.Find<ControlUiEntity>(req.Id);
+                //var ui = Repository.Find<ControlUiEntity>(req.Id);
 
-                if (ui.Targets == null) {
-                    callback((K)(object)false);
-                }
-                else {
-                    var map = NLinearMapEntity.Create(ui);
+                var map = new NLinearMapEntity {
+                    Id = idx,
+                    Name = $"Map[{idx}]"
+                };
 
-                    map.Id = idx;
-                    map.Name = $"Map[{idx}]";
+                Repository.Add(map);
+
+                callback((K)(object)true);
+
+                //if (ui.Targets == null) {
+                //    callback((K)(object)false);
+                //}
+                //else {
+                //    var map = NLinearMapEntity.Create(ui);
+
+                //    map.Id = idx;
+                //    map.Name = $"Map[{idx}]";
                 
-                    Repository.Add(map);
+                //    Repository.Add(map);
 
-                    callback((K)(object)true);
-                }
+                //    callback((K)(object)true);
+                //}
             }
         }
+    }
+
+    public struct ValueContract {
+        public int[] Index { get; set; }
+        public double[] Value { get; set; }
     }
 
     public class UpdateNLinearMapInteractor : BaseInteractor {
@@ -483,10 +500,26 @@ namespace taskmaker_wpf.Domain {
 
         public override void Handle<T, K>(T request, Action<K> callback) {
             if (request is UpdateNLinearMapRequest req) {
-                var map = Repository.Find<NLinearMapEntity>(req.MapId);
-                var ui = Repository.Find<ControlUiEntity>(req.UiId);
+                var map = Repository.Find<NLinearMapEntity>(req.Id);
 
-                map.Initialize(ui);
+                if (req.PropertyType == "UpdateInputs") {
+                    map.Inputs = (IInputPort[])req.PropertyValue;
+                }
+                else if (req.PropertyType == "UpdateOutputs") {
+                    map.Outputs = (IOutputPort[])req.PropertyValue;
+                }
+                else if (req.PropertyType == "Initialize") {
+                    var ids = (int[])req.PropertyValue;
+                    var uis = Repository.FindAll<ControlUiEntity>()
+                        .Where(e => ids.Contains(e.Id))
+                        .ToArray();
+                    //map.Initialize(ui);
+                }
+                else if (req.PropertyType == "UpdateValue") {
+                    var contract = (ValueContract)req.PropertyValue;
+
+                    map.SetValue(contract.Index, contract.Value);
+                }
 
                 Repository.Update(map);
 
