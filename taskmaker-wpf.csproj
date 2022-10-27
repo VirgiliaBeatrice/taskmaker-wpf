@@ -243,6 +243,9 @@
     <Compile Include="Views\UnitWidget.xaml.cs">
       <DependentUpon>UnitWidget.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\UserControl1.xaml.cs">
+      <DependentUpon>UserControl1.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Widget\GestureRecognizer\TapGestureRecognizer.cs" />
     <Compile Include="Views\Core.cs" />
     <Compile Include="Views\Widget\IndicatorWidget.cs" />
@@ -283,6 +286,7 @@
     <Compile Include="Views\Widget\Inspector.xaml.cs">
       <DependentUpon>Inspector.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Widget\MultiView.cs" />
     <Compile Include="Views\Widget\SimplexWidget.cs" />
     <Compile Include="Views\Widget\SKFrameworkElement.cs" />
     <Compile Include="Views\Widget\VoronoiWidget.cs" />
@@ -348,6 +352,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\UnitWidget.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\UserControl1.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
