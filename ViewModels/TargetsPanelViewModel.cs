@@ -144,6 +144,12 @@ namespace taskmaker_wpf.ViewModels {
             set => SetProperty(ref _targetsOfSelectedMap, value);
         }
 
+        private MotorTargetState[] _targetMotors;
+        public MotorTargetState[] TargetMotors {
+            get => _targetMotors;
+            set => SetProperty(ref _targetMotors, value);
+        }
+
         public DelegateCommand<object> UpdateCommand =>
             _updateCommand ?? (_updateCommand = new DelegateCommand<object>(ExecuteUpdateCommand));
 
@@ -217,6 +223,11 @@ namespace taskmaker_wpf.ViewModels {
                     _mapBus.Handle(request, (NLinearMapEntity map) => {
                         Parent.MapState = _mapper.Map<NLinearMapState>(map);
                     });
+
+                    TargetMotors = Parent.MapState.Outputs
+                        .Where(e => e.GetType().Name.Contains("Motor"))
+                        .Cast<MotorTargetState>()
+                        .ToArray();
                 }
                 else if (mode == "Initialize") {
                     var request = new UpdateNLinearMapRequest {
@@ -228,6 +239,7 @@ namespace taskmaker_wpf.ViewModels {
                         Parent.MapState = _mapper.Map<NLinearMapState>(map);
                     });
                 }
+
 
                 //InvalidateTargets();
             }

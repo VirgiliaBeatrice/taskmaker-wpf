@@ -39,6 +39,10 @@ namespace taskmaker_wpf.Views {
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
 
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e) {
+            System.Windows.MessageBox.Show("Choose target node.");
+        }
     }
 
     public class ISelectableTargetConverter : IValueConverter {

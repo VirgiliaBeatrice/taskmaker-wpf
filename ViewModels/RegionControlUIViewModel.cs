@@ -353,6 +353,7 @@ namespace taskmaker_wpf.ViewModels {
         private void ExecuteSetValueCommand(object param) {
             if (param is int selectedNodeId) {
                 var targetValues = TargetsPanelVM.TargetsOfSelectedMap.SelectMany(e => e.Value).ToArray();
+                //var value = TargetsPanelVM.TargetMotors
 
                 var request = new UpdateNodeRequest {
                     UiId = UiState.Id,
