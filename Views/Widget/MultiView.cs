@@ -15,8 +15,68 @@ using System.Diagnostics;
 
 namespace taskmaker_wpf.Views.Widget {
     public class NodeRelation {
+        public object Master { get; set; }
+        public object[] Remainder { get; set; }
         public bool HasValue { get; set; } = false;
     }
+
+    public struct NodeInfo {
+        public int UiId { get; set; }
+        public int NodeId { get; set; }
+    }
+
+    public class Helper {
+        static public NodeInfo[][] a => GetCombinations(Test());
+
+        static public NodeInfo[][] Test() {
+            return new NodeInfo[][] {
+                Enumerable.Range(0, 2).Select(e => new NodeInfo() {NodeId = e, UiId = 0}).ToArray(),
+                Enumerable.Range(0, 3).Select(e => new NodeInfo() {NodeId = e, UiId = 1}).ToArray(),
+                Enumerable.Range(0, 3).Select(e => new NodeInfo() {NodeId = e, UiId = 2}).ToArray(),
+            };
+        }
+
+        static public NodeInfo[][] Calc(NodeInfo[] a, NodeInfo[] b) {
+            var result = new List<NodeInfo[]>();
+
+            for (int i = 0; i < a.Length; i++) {
+                for (int j = 0; j < b.Length; j++) {
+                    result.Add(new NodeInfo[] { a[i], b[j] });
+                }
+            }
+
+            return result.ToArray();
+        }
+
+        static public NodeInfo[][] Calc(NodeInfo[] a, NodeInfo[][] b) {
+            var result = new List<NodeInfo[]>();
+
+            for (int i = 0; i < a.Length; i++) {
+                for (int j = 0; j < b.Length; j++) {
+                    result.Add(new NodeInfo[] { a[i] }.Concat(b[j]).ToArray());
+                }
+            }
+
+            return result.ToArray();
+        }
+
+        static public NodeInfo[][] GetCombinations(IEnumerable<NodeInfo[]> nodeSets) {
+            var a = nodeSets.Take(1).First();
+            var b = nodeSets.Skip(1).ToArray();
+
+            NodeInfo[][] result;
+
+            if (b.Count() > 1) {
+                result = Calc(a, GetCombinations(b));
+            }
+            else {
+                result = Calc(a, b.First());
+            }
+
+            return result;
+        }
+    }
+
 
     public class NodeRelationViewer : ContentControl {
 
@@ -57,6 +117,7 @@ namespace taskmaker_wpf.Views.Widget {
                         Fill = items.ElementAt(i).HasValue ? Brushes.Red : withOpacity(Brushes.Red, 0.3),
                     };
 
+                    block.ToolTip = "ControlUi[x]-Node[y]";
                     block.MouseEnter += (o, ev) => {
                         Console.WriteLine("hover");
                     };
@@ -103,9 +164,13 @@ namespace taskmaker_wpf.Views.Widget {
 
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
 
-            if (DesignerProperties.GetIsInDesignMode(d) && d is MultiView control) {
+            if (d is MultiView control) {
                 control.Layout();
             }
+
+            //if (DesignerProperties.GetIsInDesignMode(d) && d is MultiView control) {
+            //    control.Layout();
+            //}
         }
 
         public MultiView() : base() {
@@ -119,17 +184,22 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public void Layout() {
-            var items = ItemsSource.Cast<object>().ToList();
-            
+            if (ItemsSource == null) return;
 
+            var items = ItemsSource.Cast<object>().ToList();
             var grid = new Grid();
 
             if (items.Count == 1) {
-                var item = new Button() {
-                    Content = $"TEST{0}"
-                };
+                var widget = new ComplexWidget { };
 
-                grid.Children.Add(item);
+                BindingOperations.SetBinding(
+                    widget,
+                    ComplexWidget.UiStateProperty,
+                    new Binding() {
+                        Source = items.First()
+                    });
+
+                grid.Children.Add(widget);
             }
             else if (items.Count == 0) {
                 var textblock = new TextBlock {
@@ -156,16 +226,44 @@ namespace taskmaker_wpf.Views.Widget {
                 for (int i = 0; i < items.Count; i++) {
                     int r, q = Math.DivRem(i, MaxColumnCount, out r);
 
-                    var item = new Button() {
-                        Content = $"TEST{q}{r}",
+                    //var item = new Button() {
+                    //    Content = $"TEST{q}{r}",
+                    //    Margin = new Thickness(2),
+
+                    //};
+                    var widget = new ComplexWidget {
                         Margin = new Thickness(2),
+                        Background = Brushes.LightGray,
+                    };
+                    var textblock = new TextBlock {
+                        Text = "Title",
+                        FontSize = 42,
+                        Foreground = Brushes.DimGray,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center,
 
                     };
 
-                    Grid.SetColumn(item, r);
-                    Grid.SetRow(item, q);
+                    widget.SetBinding(ComplexWidget.UiStateProperty,
+                        new Binding() {
+                            Source = items.First()
+                        });
 
-                    grid.Children.Add(item);
+                    //BindingOperations.SetBinding(
+                    //    widget,
+                    //    ComplexWidget.UiStateProperty,
+                    //    new Binding() {
+                    //        Source = items.First()
+                    //    });
+
+                    Grid.SetColumn(widget, r);
+                    Grid.SetRow(widget, q);
+
+                    Grid.SetColumn(textblock, r);
+                    Grid.SetRow(textblock, q);
+
+                    grid.Children.Add(widget);
+                    grid.Children.Add(textblock);
                 }
             }
 

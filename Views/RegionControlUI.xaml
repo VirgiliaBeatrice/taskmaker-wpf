@@ -135,6 +135,14 @@
 
             </StackPanel>
             -->
+            <w:MultiView 
+                DockPanel.Dock="Left"
+                Width="auto"
+                MaxColumnCount="2"
+                ItemsSource="{Binding TargetsPanelVM.SelectedInputPorts}"
+                />
+
+            <!--
             <local:ComplexWidget 
                 DockPanel.Dock="Left"
                 Width="auto"
@@ -149,7 +157,6 @@
                 BuildCommand="{Binding BuildCommand}"
                 SelectedNodeWidget="{Binding SelectedNodeWidget, Mode=OneWayToSource}"
                 Background="LightGray" Cursor="Cross">
-                <!--
                 
                 SimplexSource="{Binding Simplices}"
                 VoronoiSource="{Binding Voronois}"
@@ -160,8 +167,8 @@
                 SetValueCommand="{Binding SetValueCommand}"
                 InspectedWidget="{Binding Path=InspectedWidget, Mode=TwoWay}"
                 
+                </local:ComplexWidget>
                 -->
-            </local:ComplexWidget>
 
         </DockPanel>
 
@@ -174,7 +181,7 @@
             Grid.Row="1">
             <TextBlock 
                 x:Name="keymapInfo"
-                Margin="4 0 4 0"
+                Margin="0 0 4 0"
                 Text="{Binding Path=KeymapInfo}"/>
             <TextBlock 
                 x:Name="statusMsg"

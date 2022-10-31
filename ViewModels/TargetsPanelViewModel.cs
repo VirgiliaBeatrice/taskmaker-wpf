@@ -127,6 +127,13 @@ namespace taskmaker_wpf.ViewModels {
             set => SetProperty(ref _outputPorts, value);
         }
 
+
+        private IInputPort[] selectedInputPorts;
+        public IInputPort[] SelectedInputPorts {
+            get { return selectedInputPorts; }
+            set { SetProperty(ref selectedInputPorts, value); }
+        }
+
         private IInputPort[] _inputPorts;
         public IInputPort[] InputPorts {
             get { return _inputPorts; }
@@ -341,6 +348,8 @@ namespace taskmaker_wpf.ViewModels {
 
             InputPorts.Where(e => Parent.MapState.Inputs.Any(e1 => e.Name == e1.Name)).ToList().ForEach(e => e.IsSelected = true);
             OutputPorts.Where(e => Parent.MapState.Outputs.Any(e1 => e.Name == e1.Name)).ToList().ForEach(e => e.IsSelected = true);
+
+            SelectedInputPorts = InputPorts.Where(e => e.IsSelected).ToArray();
 
             //ValidTargets = new List<ISelectableState>().Concat(_uiStates).Concat(_motorStates).ToArray();
 
