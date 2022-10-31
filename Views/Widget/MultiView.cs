@@ -8,8 +8,75 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Shapes;
+using System.Windows.Media;
+using Rectangle = System.Windows.Shapes.Rectangle;
+using System.Diagnostics;
 
 namespace taskmaker_wpf.Views.Widget {
+    public class NodeRelation {
+        public bool HasValue { get; set; } = false;
+    }
+
+    public class NodeRelationViewer : ContentControl {
+
+        public IEnumerable NodeRelations {
+            get { return (IEnumerable)GetValue(NodeRelationsProperty); }
+            set { SetValue(NodeRelationsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty NodeRelationsProperty =
+            DependencyProperty.Register("NodeRelations", typeof(IEnumerable), typeof(NodeRelationViewer), new FrameworkPropertyMetadata(new NodeRelation[0], OnPropertyChanged));
+
+        private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
+            if (d is NodeRelationViewer viewer) {
+                var grid = new Grid();
+                //var items = viewer.NodeRelations.Cast<NodeRelation>();
+                var items = new NodeRelation[] {
+                    new NodeRelation { HasValue = false },
+                    new NodeRelation { HasValue = true },
+                    new NodeRelation { HasValue = true },
+                };
+                var color = Brushes.DarkRed;
+
+                Func<Brush, double, Brush> withOpacity = (b, o) => {
+                    var c = b.Clone();
+                    c.Opacity = o;
+                    return c;
+                };
+
+                for (int i = 0; i < items.Count(); i++) {
+                    grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+
+                    var block = new Rectangle() {
+                        Width = 10,
+                        Height = 10,
+                        //Fill = Brushes.Gray,
+                        Margin = new Thickness(1),
+                        Fill = items.ElementAt(i).HasValue ? Brushes.Red : withOpacity(Brushes.Red, 0.3),
+                    };
+
+                    block.MouseEnter += (o, ev) => {
+                        Console.WriteLine("hover");
+                    };
+
+                    Grid.SetColumn(block, i);
+
+                    grid.Children.Add(block);
+                }
+
+
+                viewer.Content = grid;
+
+            }
+        }
+
+        public NodeRelationViewer() {
+
+        }
+    }
+
     public class MultiView : ContentControl {
 
 
@@ -106,6 +173,10 @@ namespace taskmaker_wpf.Views.Widget {
             //    grid,
             //    )
             ((ScrollViewer)Content).Content = grid;
+        }
+
+        public void NotifyCombination() {
+
         }
     }
 }
