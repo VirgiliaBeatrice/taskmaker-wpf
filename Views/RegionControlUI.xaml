@@ -135,12 +135,28 @@
 
             </StackPanel>
             -->
-            <w:MultiView 
-                DockPanel.Dock="Left"
-                Width="auto"
-                MaxColumnCount="2"
-                ItemsSource="{Binding TargetsPanelVM.SelectedInputPorts}"
-                />
+            <Grid
+                DockPanel.Dock="Left">
+                <w:MultiView 
+                    Width="auto"
+                    MaxColumnCount="2"
+                    ItemsSource="{Binding TargetsPanelVM.SelectedInputPorts}"
+                    />
+                <StackPanel
+                    Opacity="0.5"
+                    Visibility="Visible"
+                    Panel.ZIndex="2"
+                    Background="LightGray"
+                    Width="auto"
+                    Height="20"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Center">
+                        <TextBlock 
+                            Text="Good"
+                        />  
+
+                </StackPanel>
+            </Grid>
 
             <!--
             <local:ComplexWidget 
@@ -171,6 +187,7 @@
                 -->
 
         </DockPanel>
+
 
 
         <StackPanel
