@@ -137,6 +137,7 @@
                     Margin="2"
                     Command="{Binding UpdateCommand}"
                     CommandParameter="UpdateInputs"
+                    Click="Button_Click"
                     >
                     <!--
                     <b:Interaction.Triggers>

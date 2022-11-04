@@ -14,13 +14,27 @@ using Rectangle = System.Windows.Shapes.Rectangle;
 using System.Diagnostics;
 
 namespace taskmaker_wpf.Views.Widget {
+    //public class NodeRelation {
+    //    public object Master { get; set; }
+    //    public object[] Remainder { get; set; }
+    //    public bool HasValue { get; set; } = false;
+    //}
+
     public class NodeRelation {
-        public object Master { get; set; }
-        public object[] Remainder { get; set; }
-        public bool HasValue { get; set; } = false;
+        public bool HasValue { get; set; }
+        private readonly NodeInfo[] _nodes;
+
+        public NodeRelation(NodeInfo[] nodes) {
+            _nodes = nodes;
+        }
+
+        public NodeInfo this[int index] {
+            get => _nodes[index];
+        }
     }
 
     public struct NodeInfo {
+        public string Color { get; set; }
         public int UiId { get; set; }
         public int NodeId { get; set; }
     }
@@ -90,13 +104,14 @@ namespace taskmaker_wpf.Views.Widget {
             DependencyProperty.Register("NodeRelations", typeof(IEnumerable), typeof(NodeRelationViewer), new FrameworkPropertyMetadata(new NodeRelation[0], OnPropertyChanged));
 
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
+            return;
             if (d is NodeRelationViewer viewer) {
                 var grid = new Grid();
                 //var items = viewer.NodeRelations.Cast<NodeRelation>();
                 var items = new NodeRelation[] {
-                    new NodeRelation { HasValue = false },
-                    new NodeRelation { HasValue = true },
-                    new NodeRelation { HasValue = true },
+                    //new NodeRelation { HasValue = false },
+                    //new NodeRelation { HasValue = true },
+                    //new NodeRelation { HasValue = true },
                 };
                 var color = Brushes.DarkRed;
 
@@ -134,8 +149,66 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public NodeRelationViewer() {
-
+            Layout();
         }
+
+        public void Layout() {
+            var a = Enumerable.Range(0, 2).Select(e => new NodeInfo { NodeId = e});
+            var b = Enumerable.Repeat(new NodeInfo[0], 10);
+
+            var grid = new Grid();
+
+            grid.ColumnDefinitions.Add(new ColumnDefinition() {
+                Width = GridLength.Auto,
+            });
+            grid.ColumnDefinitions.Add(new ColumnDefinition() {
+                Width = GridLength.Auto,
+            });
+
+            var panel0 = new StackPanel { 
+                Orientation = Orientation.Horizontal,
+            };
+            var panel1 = new StackPanel {
+                Orientation = Orientation.Horizontal,
+            };
+
+            foreach (var item in a) {
+                var circle = new Ellipse() { 
+                    Width = 20,
+                    Height = 20,
+                    Fill = Brushes.Bisque,
+                    Margin = new Thickness(1),
+                };
+
+                panel0.Children.Add(circle);
+            }
+            foreach (var item in b) {
+                var square = new Rectangle() {
+                    Width = 20,
+                    Height = 20,
+                    Fill = Brushes.Gray,
+                    Margin = new Thickness(1),
+                };
+
+                panel1.Children.Add(square);
+            }
+
+            Grid.SetColumn(panel0, 0);
+            Grid.SetColumn(panel1, 1);
+
+            grid.Children.Add(panel0);
+            grid.Children.Add(panel1);
+
+            var scroll = new ScrollViewer {
+                Width = Width,
+                Content = grid,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Disabled
+            };
+
+            Content = scroll;
+        }
+
     }
 
     public class MultiView : ContentControl {
@@ -190,16 +263,34 @@ namespace taskmaker_wpf.Views.Widget {
             var grid = new Grid();
 
             if (items.Count == 1) {
-                var widget = new ComplexWidget { };
+                var widget = new ComplexWidget {
+                    Margin = new Thickness(2),
+                    Background = Brushes.LightGray,
+                };
 
-                BindingOperations.SetBinding(
-                    widget,
-                    ComplexWidget.UiStateProperty,
-                    new Binding() {
+                var textblock = new TextBlock {
+                    Text = "Title",
+                    FontSize = 42,
+                    Foreground = Brushes.DimGray,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+
+                };
+
+                widget.SetBinding(ComplexWidget.UiStateProperty,
+                    new Binding {
                         Source = items.First()
                     });
 
+                //BindingOperations.SetBinding(
+                //    widget,
+                //    ComplexWidget.UiStateProperty,
+                //    new Binding() {
+                //        Source = items.First()
+                //    });
+
                 grid.Children.Add(widget);
+                grid.Children.Add(textblock);
             }
             else if (items.Count == 0) {
                 var textblock = new TextBlock {

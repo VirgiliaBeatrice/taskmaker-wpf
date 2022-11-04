@@ -41,7 +41,7 @@ namespace taskmaker_wpf.Views {
         }
 
         private void Button_Click(object sender, RoutedEventArgs e) {
-            System.Windows.MessageBox.Show("Choose target node.");
+            System.Windows.MessageBox.Show("Updated.", "Notification");
         }
     }
 
