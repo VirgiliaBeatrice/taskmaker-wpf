@@ -12,6 +12,7 @@ using System.Windows.Shapes;
 using System.Windows.Media;
 using Rectangle = System.Windows.Shapes.Rectangle;
 using System.Diagnostics;
+using System.Drawing.Imaging;
 
 namespace taskmaker_wpf.Views.Widget {
     //public class NodeRelation {
@@ -31,10 +32,13 @@ namespace taskmaker_wpf.Views.Widget {
         public NodeInfo this[int index] {
             get => _nodes[index];
         }
+
+        public override string ToString() {
+            return $"[{string.Join(",", _nodes.Select(e => $"{e.UiId}({e.NodeId})"))}]";
+        }
     }
 
     public struct NodeInfo {
-        public string Color { get; set; }
         public int UiId { get; set; }
         public int NodeId { get; set; }
     }
@@ -93,15 +97,35 @@ namespace taskmaker_wpf.Views.Widget {
 
 
     public class NodeRelationViewer : ContentControl {
+        static SolidColorBrush[] ColorPalette = new SolidColorBrush[] {
+            (SolidColorBrush)new BrushConverter().ConvertFrom("#A7226E"),
+            (SolidColorBrush)new BrushConverter().ConvertFrom("#EC2049"),
+            (SolidColorBrush)new BrushConverter().ConvertFrom("#F26B38"),
+            (SolidColorBrush)new BrushConverter().ConvertFrom("#F7DB4F"),
+            (SolidColorBrush)new BrushConverter().ConvertFrom("#2F9599"),
+        };
 
-        public IEnumerable NodeRelations {
-            get { return (IEnumerable)GetValue(NodeRelationsProperty); }
-            set { SetValue(NodeRelationsProperty, value); }
+
+        public IEnumerable<NodeInfo> SelectedNodes {
+            get { return (IEnumerable<NodeInfo>)GetValue(SelectedNodesProperty); }
+            set { SetValue(SelectedNodesProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty NodeRelationsProperty =
-            DependencyProperty.Register("NodeRelations", typeof(IEnumerable), typeof(NodeRelationViewer), new FrameworkPropertyMetadata(new NodeRelation[0], OnPropertyChanged));
+        // Using a DependencyProperty as the backing store for SelectedNodes.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SelectedNodesProperty =
+            DependencyProperty.Register("SelectedNodes", typeof(IEnumerable<NodeInfo>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeInfo[0]));
+
+
+
+        public IEnumerable<NodeRelation> PossiblePairs {
+            get { return (IEnumerable<NodeRelation>)GetValue(PossiblePairsProperty); }
+            set { SetValue(PossiblePairsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for PossiblePairs.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty PossiblePairsProperty =
+            DependencyProperty.Register("PossiblePairs", typeof(IEnumerable<NodeRelation>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeRelation[0]));
+
 
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
             return;
@@ -152,15 +176,39 @@ namespace taskmaker_wpf.Views.Widget {
             Layout();
         }
 
-        public void Layout() {
-            var a = Enumerable.Range(0, 2).Select(e => new NodeInfo { NodeId = e});
-            var b = Enumerable.Repeat(new NodeInfo[0], 10);
+        private (IEnumerable<NodeInfo>, IEnumerable<NodeRelation>) PrepareSampleData() {
+            var a = Enumerable.Range(0, 2).Select(e => new NodeInfo { NodeId = 0 , UiId = e });
+            var b = Enumerable.Range(0, 3).Select(e => new NodeInfo { NodeId = 0, UiId = e });
+            var c = Enumerable.Range(0, 10).Select(e => new NodeRelation(b.ToArray()) { HasValue = e % 2 == 1 });
 
-            var grid = new Grid();
+            return (a, c);
+        }
+
+        public void Layout() {
+            IEnumerable<NodeInfo> a;
+            IEnumerable<NodeRelation> b;
+
+            //if (DesignerProperties.GetIsInDesignMode(this)) {
+            //    (a, b) = PrepareSampleData();
+            //}
+            //else {
+            //    a = SelectedNodes;
+            //    b = PossiblePairs;
+            //}
+
+            (a, b) = PrepareSampleData();
+
+            //var a = Enumerable.Range(0, 2).Select(e => new NodeInfo { NodeId = e });
+            //var b = Enumerable.Range(0, 10).Select(e => new NodeRelation(new NodeInfo[3]) { HasValue = e % 2 == 1 });
+
+            var grid = new Grid() { };
 
             grid.ColumnDefinitions.Add(new ColumnDefinition() {
                 Width = GridLength.Auto,
             });
+            grid.ColumnDefinitions.Add(new ColumnDefinition() {
+                Width = GridLength.Auto,
+            }); 
             grid.ColumnDefinitions.Add(new ColumnDefinition() {
                 Width = GridLength.Auto,
             });
@@ -171,32 +219,44 @@ namespace taskmaker_wpf.Views.Widget {
             var panel1 = new StackPanel {
                 Orientation = Orientation.Horizontal,
             };
+            var split = new Line { X1 = 0, X2 = 0, Y1 = 0, Y2 = 20,
+                Stroke = new SolidColorBrush(Colors.Black),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+                Margin = new Thickness(2),
+            };
 
-            foreach (var item in a) {
-                var circle = new Ellipse() { 
+            for (int i = 0; i < a.Count(); i++) {
+                var circle = new Ellipse() {
                     Width = 20,
                     Height = 20,
-                    Fill = Brushes.Bisque,
-                    Margin = new Thickness(1),
+                    Fill = ColorPalette[i],
+                    Margin = new Thickness(2),
+                    ToolTip = $"{a.ElementAt(i).UiId}({a.ElementAt(i).NodeId})"
                 };
 
                 panel0.Children.Add(circle);
             }
+
             foreach (var item in b) {
-                var square = new Rectangle() {
+                var rect = new Rectangle() {
                     Width = 20,
                     Height = 20,
-                    Fill = Brushes.Gray,
-                    Margin = new Thickness(1),
+                    Fill = ColorPalette[4],
+                    Margin = new Thickness(2),
+                    Opacity = item.HasValue ? 1.0 : 0.6,
+                    ToolTip = item.ToString()
                 };
 
-                panel1.Children.Add(square);
+                panel1.Children.Add(rect);
             }
 
             Grid.SetColumn(panel0, 0);
-            Grid.SetColumn(panel1, 1);
+            Grid.SetColumn(split, 1);
+            Grid.SetColumn(panel1, 2);
 
             grid.Children.Add(panel0);
+            grid.Children.Add(split);
             grid.Children.Add(panel1);
 
             var scroll = new ScrollViewer {

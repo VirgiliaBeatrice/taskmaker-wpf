@@ -143,17 +143,14 @@
                     ItemsSource="{Binding TargetsPanelVM.SelectedInputPorts}"
                     />
                 <StackPanel
-                    Opacity="0.5"
                     Visibility="Visible"
                     Panel.ZIndex="2"
                     Background="LightGray"
                     Width="auto"
-                    Height="20"
+                    Height="auto"
                     VerticalAlignment="Top"
                     HorizontalAlignment="Center">
-                        <TextBlock 
-                            Text="Good"
-                        />  
+                        <w:NodeRelationViewer />  
 
                 </StackPanel>
             </Grid>
