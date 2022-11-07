@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Shapes;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using Rectangle = System.Windows.Shapes.Rectangle;
-using System.Diagnostics;
-using System.Drawing.Imaging;
 
 namespace taskmaker_wpf.Views.Widget {
     //public class NodeRelation {
@@ -457,13 +452,16 @@ namespace taskmaker_wpf.Views.Widget {
             }
 
 
-            var simplex = new SimplexWidget_v1();
 
-            SetLeft(simplex, 30);
-            SetTop(simplex, 30);
+            //SetLeft(simplex, 30);
+            //SetTop(simplex, 30);
 
-            Children.Add(new SimplexWidget_v1());
-            Children.Add(simplex);
+            //Children.Add(new SimplexWidget_v1());
+            //Children.Add(simplex);
+
+            var voronoi = new VoronoiShape();
+
+            Children.Add(voronoi);
 
         }
 
@@ -496,11 +494,24 @@ namespace taskmaker_wpf.Views.Widget {
 
     public class VoronoiShape : ContentControl {
         public VoronoiShape() {
-            var points = new Point[] {
-                new Point(200, 20),
-                new Point(100, 150),
-                new Point(300, 150)
+            Point[] points;
+
+            if (new Random().Next() % 2 == 1) {
+                points = new Point[] {
+                    new Point(200, 20),
+                    new Point(200, 150),
+                    new Point(400, 150),
+                    new Point(400, 20)
+                };
+            }
+            else {
+                points = new Point[] {
+                    new Point(200, 20),
+                    new Point(100, 150),
+                    new Point(300, 150),
+                };
             };
+            
 
             if (points.Length == 3) {
                 var radius = (points[1] - points[0]).Length;
@@ -515,18 +526,60 @@ namespace taskmaker_wpf.Views.Widget {
 
                 var midLen = (float)Math.Tan(alpha / 2.0f) * Math.Abs(p0o.Length);
 
-                var op0 = Point.Normalize(o - p0);
-                var midP0 = SKMatrix.CreateRotation((float)(Math.PI * 90.0 / 180.0)).MapVector(op0);
-                midP0.X *= midLen;
-                midP0.Y *= midLen;
+                var op0 = o - p0;
+
+                op0.Normalize();
+                //var op0 = Point.Normalize(o - p0);
+                var transform = Matrix.Identity;
+                transform.Rotate(Math.PI * 90.0 / 180.0);
+                var midP0 = transform.Transform(op0);
+                //var midP0 = SKMatrix.CreateRotation((float)(Math.PI * 90.0 / 180.0)).MapVector(op0);
+                midP0 *= midLen;
 
                 var mid = p0 + midP0;
 
-                _shape.MoveTo(o);
-                _shape.LineTo(p0);
-                _shape.ArcTo(mid, p1, radius);
-                _shape.LineTo(p1);
-                _shape.Close();
+                var pathGeo = new PathGeometry();
+                var pathFig = new PathFigure {
+                    StartPoint = o,
+                };
+
+                pathGeo.Figures.Add(pathFig);
+
+                pathFig.Segments.Add(new LineSegment { Point = p0 });
+                pathFig.Segments.Add(new ArcSegment { Point = p1, Size = new Size(radius, radius), SweepDirection = SweepDirection.Clockwise });
+                //pathFig.Segments.Add(new LineSegment { Point = o });
+
+                var path = new Path {
+                    Fill = new SolidColorBrush(Colors.LightBlue),
+                    Stroke = new SolidColorBrush(Colors.LightGreen),
+                    Stretch = Stretch.None,
+                    StrokeThickness = 1,
+                    Data = pathGeo
+                };
+
+                Content = path;
+            }
+            else {
+                var pathGeo = new PathGeometry();
+                var pathFig = new PathFigure {
+                    StartPoint = points[0],
+                };
+
+                pathGeo.Figures.Add(pathFig);
+
+                pathFig.Segments.Add(new LineSegment { Point = points[1] });
+                pathFig.Segments.Add(new LineSegment { Point = points[2] });
+                pathFig.Segments.Add(new LineSegment { Point = points[3] });
+
+                var path = new Path {
+                    Fill = new SolidColorBrush(Colors.LightBlue),
+                    Stroke = new SolidColorBrush(Colors.LightGreen),
+                    Stretch = Stretch.None,
+                    StrokeThickness = 1,
+                    Data = pathGeo
+                };
+
+                Content = path;
             }
         }
     }
