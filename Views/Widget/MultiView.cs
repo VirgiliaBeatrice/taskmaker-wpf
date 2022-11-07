@@ -41,6 +41,7 @@ namespace taskmaker_wpf.Views.Widget {
     public struct NodeInfo {
         public int UiId { get; set; }
         public int NodeId { get; set; }
+        public Point Location { get; set; }
     }
 
     public class Helper {
@@ -97,7 +98,7 @@ namespace taskmaker_wpf.Views.Widget {
 
 
     public class NodeRelationViewer : ContentControl {
-        static SolidColorBrush[] ColorPalette = new SolidColorBrush[] {
+        static public SolidColorBrush[] ColorPalette = new SolidColorBrush[] {
             (SolidColorBrush)new BrushConverter().ConvertFrom("#A7226E"),
             (SolidColorBrush)new BrushConverter().ConvertFrom("#EC2049"),
             (SolidColorBrush)new BrushConverter().ConvertFrom("#F26B38"),
@@ -426,6 +427,193 @@ namespace taskmaker_wpf.Views.Widget {
 
         public void NotifyCombination() {
 
+        }
+    }
+
+    public struct SimplexInfo {
+        public Point[] Points { get; set; }
+    }
+
+    public class UiController : Canvas {
+        public UiController() {
+            var nodes = new NodeInfo[] {
+                new NodeInfo { NodeId = 0, UiId = 0, Location = new Point(0, 0) },
+                new NodeInfo { NodeId = 1, UiId = 0, Location = new Point(10, 40) },
+                new NodeInfo { NodeId = 2, UiId = 0, Location = new Point(20, 80) },
+                new NodeInfo { NodeId = 3, UiId = 0, Location = new Point(30, 100) },
+            };
+
+            foreach (var node in nodes) {
+                var nodeWidget = new NodeWidget_v1 {
+                    Node = node,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                };
+
+                SetLeft(nodeWidget, node.Location.X - 20 / 2);
+                SetTop(nodeWidget, node.Location.Y - 20 / 2);
+
+                Children.Add(nodeWidget);
+            }
+
+
+            var simplex = new SimplexWidget_v1();
+
+            SetLeft(simplex, 30);
+            SetTop(simplex, 30);
+
+            Children.Add(new SimplexWidget_v1());
+            Children.Add(simplex);
+
+        }
+
+        private Path MakeSimplex() {
+            var simplices = new SimplexInfo[] {
+                new SimplexInfo { Points = new Point[] {new Point(200, 20), new Point(100, 150), new Point(300, 150)}},
+            };
+
+            var pathGeo = new PathGeometry();
+            var pathFig = new PathFigure {
+                StartPoint = simplices[0].Points[0],
+            };
+
+            pathGeo.Figures.Add(pathFig);
+            pathFig.Segments.Add(new LineSegment { Point = simplices[0].Points[1] });
+            pathFig.Segments.Add(new LineSegment { Point = simplices[0].Points[2] });
+
+
+            var path = new Path {
+                Fill = new SolidColorBrush(Colors.LightBlue),
+                Stroke = new SolidColorBrush(Colors.LightGreen),
+                Stretch = Stretch.None,
+                StrokeThickness = 1,
+                Data = pathGeo
+            };
+
+            return path;
+        }
+    }
+
+    public class VoronoiShape : ContentControl {
+        public VoronoiShape() {
+            var points = new Point[] {
+                new Point(200, 20),
+                new Point(100, 150),
+                new Point(300, 150)
+            };
+
+            if (points.Length == 3) {
+                var radius = (points[1] - points[0]).Length;
+                var o = points[1];
+                var p0 = points[0];
+                var p1 = points[2];
+
+                var p0o = (p0 - o);
+                var p1o = (p1 - o);
+                var dotProd = (p0o.X * p1o.X) + (p0o.Y * p1o.Y);
+                var alpha = Math.Abs(Math.Acos(dotProd / (p0o.Length * p1o.Length)));
+
+                var midLen = (float)Math.Tan(alpha / 2.0f) * Math.Abs(p0o.Length);
+
+                var op0 = Point.Normalize(o - p0);
+                var midP0 = SKMatrix.CreateRotation((float)(Math.PI * 90.0 / 180.0)).MapVector(op0);
+                midP0.X *= midLen;
+                midP0.Y *= midLen;
+
+                var mid = p0 + midP0;
+
+                _shape.MoveTo(o);
+                _shape.LineTo(p0);
+                _shape.ArcTo(mid, p1, radius);
+                _shape.LineTo(p1);
+                _shape.Close();
+            }
+        }
+    }
+
+    public class SimplexWidget_v1 : ContentControl {
+
+
+        public IEnumerable<SimplexInfo> Simplices {
+            get { return (IEnumerable<SimplexInfo>)GetValue(SimplicesProperty); }
+            set { SetValue(SimplicesProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Simplices.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SimplicesProperty =
+            DependencyProperty.Register("Simplices", typeof(IEnumerable<SimplexInfo>), typeof(SimplexWidget_v1), new PropertyMetadata(new SimplexInfo[0]));
+
+        public SimplexWidget_v1() {
+            BorderBrush = Brushes.Black;
+            BorderThickness = new Thickness(1);
+
+            var simplices = new SimplexInfo[] {
+                new SimplexInfo { Points = new Point[] {new Point(200, 20), new Point(100, 150), new Point(300, 150)}},
+            };
+
+            var pathGeo = new PathGeometry();
+            var pathFig = new PathFigure {
+                StartPoint = simplices[0].Points[0],
+            };
+
+            pathGeo.Figures.Add(pathFig);
+            pathFig.Segments.Add(new LineSegment { Point = simplices[0].Points[1] });
+            pathFig.Segments.Add(new LineSegment { Point = simplices[0].Points[2] });
+
+
+            var path = new Path {
+                Fill = new SolidColorBrush(Colors.LightBlue),
+                Stroke = new SolidColorBrush(Colors.LightGreen),
+                Stretch = Stretch.None,
+                StrokeThickness = 1,
+                Data = pathGeo
+            };
+
+            Content = path;
+        }
+    }
+
+    public class NodeWidget_v1 : ContentControl {
+
+
+        public NodeInfo Node {
+            get { return (NodeInfo)GetValue(NodeProperty); }
+            set { SetValue(NodeProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Node.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty NodeProperty =
+            DependencyProperty.Register("Node", typeof(NodeInfo), typeof(NodeWidget_v1), new PropertyMetadata(new NodeInfo(), OnPropertyChanged));
+
+
+
+        public NodeWidget_v1() {
+            Invalidate();
+        }
+
+        static public void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            if (d is NodeWidget_v1 widget) {
+                widget.Invalidate();
+            }
+        }
+
+        public void Invalidate() {
+            var node = new NodeInfo {
+                NodeId = 0,
+                UiId = 0
+            };
+
+            var circle = new Ellipse {
+                Width = 20,
+                Height = 20,
+                Stroke = Brushes.Black,
+                Fill = NodeRelationViewer.ColorPalette[node.UiId],
+                StrokeThickness = 2.0
+            };
+
+            ToolTip = $"Node[{node.NodeId}]-(x,y)";
+
+            Content = circle;
         }
     }
 }

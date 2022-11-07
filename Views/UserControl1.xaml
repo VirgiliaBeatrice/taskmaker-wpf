@@ -8,10 +8,9 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <widget:NodeRelationViewer 
-            Width="250"
-            VerticalAlignment="Top"
-            HorizontalAlignment="Left">
-        </widget:NodeRelationViewer>
+        <widget:UiController
+            ClipToBounds="True"
+            Background="AntiqueWhite"
+            />
     </Grid>
 </UserControl>
