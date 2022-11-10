@@ -33,23 +33,23 @@
                 Command="{Binding NavigateCommand}"
                 CommandParameter="RegionHome"
                 >
-                <Image Source="/icons/home.png" />
+                <Image Source="/icons/home.png" RenderOptions.BitmapScalingMode="HighQuality"/>
             </Button>
             <Button
                 Command="{Binding NavigateCommand}"
                 CommandParameter="RegionSettings"
                 >
-                <Image Source="/icons/settings.png" />
+                <Image Source="/icons/settings.png" RenderOptions.BitmapScalingMode="HighQuality"/>
             </Button>
             <Button
                 Command="{Binding NavigateCommand}"
                 CommandParameter="RegionControlUI">
-                <Image Source="/icons/triangle.png" />
+                <Image Source="/icons/triangle.png" RenderOptions.BitmapScalingMode="HighQuality"/>
             </Button>
             <Button
                 Command="{Binding NavigateCommand}"
                 CommandParameter="RegionMotor">
-                <Image Source="/icons/panel.png" />
+                <Image Source="/icons/panel.png" RenderOptions.BitmapScalingMode="HighQuality"/>
             </Button>
         </StackPanel>
     </Border>

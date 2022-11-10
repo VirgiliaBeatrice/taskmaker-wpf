@@ -9,7 +9,6 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <widget:UiController
-            ClipToBounds="True"
             Background="AntiqueWhite"
             />
     </Grid>

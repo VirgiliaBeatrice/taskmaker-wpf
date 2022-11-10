@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:widget="clr-namespace:taskmaker_wpf.Views.Widget"
         xmlns:prism="http://prismlibrary.com/"
         prism:ViewModelLocator.AutoWireViewModel="True"
         xmlns:local="clr-namespace:taskmaker_wpf.Views"
@@ -31,6 +32,8 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
+
+
         <ContentControl
             d:Width="50"
             Background="BlanchedAlmond"
@@ -44,5 +47,10 @@
             Background="Aquamarine"
             Grid.Column="1"
             prism:RegionManager.RegionName="ContentRegion" />
+
+        <widget:UiController
+            Grid.Column="1"
+            Background="AntiqueWhite"
+            />
     </Grid>
 </Window>

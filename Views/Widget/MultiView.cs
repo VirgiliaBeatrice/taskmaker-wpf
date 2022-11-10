@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using static Unity.Storage.RegistrationSet;
 using Rectangle = System.Windows.Shapes.Rectangle;
 
 namespace taskmaker_wpf.Views.Widget {
@@ -429,26 +430,63 @@ namespace taskmaker_wpf.Views.Widget {
         public Point[] Points { get; set; }
     }
 
-    public class UiController : Canvas {
+    public class UiController : ContentControl {
         public UiController() {
+            var viewbox = new Viewbox {
+                
+            };
+            var container = new Grid {
+                Background = Brushes.Azure,
+                ClipToBounds = true
+            };
+            var canvas = new Canvas() {
+                Background = Brushes.DarkKhaki,
+                SnapsToDevicePixels = true,
+                UseLayoutRounding = true,
+            };
+            container.Children.Add(canvas);
+            viewbox.Child = container;
+
+            container.SetBinding(WidthProperty, new Binding() {
+                Path = new PropertyPath("ActualWidth"),
+                RelativeSource = new RelativeSource() {
+                    AncestorType = typeof(UiController),
+                    Mode = RelativeSourceMode.FindAncestor
+                },
+
+            });
+
+            container.SetBinding(HeightProperty, new Binding() {
+                Path = new PropertyPath("ActualHeight"),
+                RelativeSource = new RelativeSource() {
+                    AncestorType = typeof(UiController),
+                    Mode = RelativeSourceMode.FindAncestor
+                },
+
+            });
+
             var nodes = new NodeInfo[] {
-                new NodeInfo { NodeId = 0, UiId = 0, Location = new Point(0, 0) },
+                new NodeInfo { NodeId = 0, UiId = 0, Location = new Point(-100, 0) },
                 new NodeInfo { NodeId = 1, UiId = 0, Location = new Point(10, 40) },
                 new NodeInfo { NodeId = 2, UiId = 0, Location = new Point(20, 80) },
                 new NodeInfo { NodeId = 3, UiId = 0, Location = new Point(30, 100) },
             };
 
+            
+            canvas.Children.OfType<NodeShape>().ToList().ForEach(e => canvas.Children.Remove(e));
+            
             foreach (var node in nodes) {
-                var nodeWidget = new NodeWidget_v1 {
+
+                var nodeWidget = new NodeShape {
                     Node = node,
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Center,
                 };
 
-                SetLeft(nodeWidget, node.Location.X - 20 / 2);
-                SetTop(nodeWidget, node.Location.Y - 20 / 2);
+                Canvas.SetLeft(nodeWidget, node.Location.X - 20 / 2);
+                Canvas.SetTop(nodeWidget, node.Location.Y - 20 / 2);
 
-                Children.Add(nodeWidget);
+                canvas.Children.Add(nodeWidget);
             }
 
 
@@ -458,12 +496,130 @@ namespace taskmaker_wpf.Views.Widget {
 
             //Children.Add(new SimplexWidget_v1());
             //Children.Add(simplex);
+            var mat = Matrix.Identity;
+
+            //mat.Scale(0.4, 0.4);
+            //mat.Translate(100, 100);
+
+            canvas.RenderTransform = new MatrixTransform() {
+                Matrix = mat,
+            };
 
             var voronoi = new VoronoiShape();
 
-            Children.Add(voronoi);
+            canvas.Children.Add(voronoi);
 
+            Content = viewbox;
+
+            // Pan
+            MouseDown += (s, e) => {
+                if (mode == 1) {
+                    mousedownLocation = e.GetPosition(canvas);
+                }
+                isDragging = true;
+                start = e.GetPosition(this);
+                startMat = canvas.RenderTransform.Value;
+            };
+
+            MouseMove += (s, e) => {
+                if (isDragging) {
+                    var curr = e.GetPosition(this);
+                    var vector = (curr - start);
+
+                    var tMat = Matrix.Parse(startMat.ToString());
+                    tMat.Translate(vector.X, vector.Y);
+
+                    offset = (Point)vector;
+
+                    translate = tMat;
+
+                    tMat.Prepend(scale);
+
+                    canvas.RenderTransform = new MatrixTransform() {
+                        Matrix = tMat,
+                    };
+
+                }
+            };
+
+            MouseUp += (s, e) => {
+                if (mode == 1) {
+                    //OnMouseClicked();
+                    //command
+                }
+
+                var curr = e.GetPosition(this);
+                var vector = (curr - start);
+
+                var tMat = Matrix.Parse(startMat.ToString());
+                tMat.Translate(vector.X, vector.Y);
+
+                translate = tMat;
+
+                tMat.Append(scale);
+
+                canvas.RenderTransform = new MatrixTransform() {
+                    Matrix = tMat,
+                };
+
+                isDragging = false;
+            };
+
+            PreviewMouseWheel += (s, e) => {
+                var pivot = e.GetPosition(canvas);
+                var center = new Point(canvas.ActualWidth / 2, canvas.ActualHeight / 2);
+
+                var scale = e.Delta > 0 ? 1.25 : 1 / 1.25;
+
+                var sMat = canvas.RenderTransform.Value;
+
+                sMat.ScaleAt(scale, scale, center.X, center.Y);
+
+                this.scale = sMat;
+
+                sMat.Prepend(translate);
+                
+
+                canvas.RenderTransform = new MatrixTransform() {
+                    Matrix = sMat,
+                };
+
+            };
+
+            KeyDown += (s, e) => {
+                if (e.Key == System.Windows.Input.Key.R) {
+                    canvas.RenderTransform = new MatrixTransform {
+                        Matrix = Matrix.Identity
+                    };
+                }
+            };
         }
+
+        private int mode = 0;
+        private Point mousedownLocation;
+
+        private Point offset = new Point(0, 0);
+        private Matrix translate = Matrix.Identity;
+        private Matrix scale = Matrix.Identity;
+        private Point prevAnchor = new Point(0, 0);
+        private double[] zoomFactors = new double[] {
+            0.125,
+            0.25,
+            0.5,
+            0.75,
+            0.875,
+            1.0,
+            1.5,
+            2.0,
+            4.0,
+            8.0
+        };
+        private int zoomIdx = 5;
+
+        private bool isDragging;
+        private Point start;
+        private Matrix startMat;
+        //private Matrix translate = Matrix.Identity;
 
         private Path MakeSimplex() {
             var simplices = new SimplexInfo[] {
@@ -626,7 +782,7 @@ namespace taskmaker_wpf.Views.Widget {
         }
     }
 
-    public class NodeWidget_v1 : ContentControl {
+    public class NodeShape : ContentControl {
 
 
         public NodeInfo Node {
@@ -636,16 +792,16 @@ namespace taskmaker_wpf.Views.Widget {
 
         // Using a DependencyProperty as the backing store for Node.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty NodeProperty =
-            DependencyProperty.Register("Node", typeof(NodeInfo), typeof(NodeWidget_v1), new PropertyMetadata(new NodeInfo(), OnPropertyChanged));
+            DependencyProperty.Register("Node", typeof(NodeInfo), typeof(NodeShape), new PropertyMetadata(new NodeInfo(), OnPropertyChanged));
 
 
 
-        public NodeWidget_v1() {
+        public NodeShape() {
             Invalidate();
         }
 
         static public void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            if (d is NodeWidget_v1 widget) {
+            if (d is NodeShape widget) {
                 widget.Invalidate();
             }
         }
@@ -661,10 +817,13 @@ namespace taskmaker_wpf.Views.Widget {
                 Height = 20,
                 Stroke = Brushes.Black,
                 Fill = NodeRelationViewer.ColorPalette[node.UiId],
-                StrokeThickness = 2.0
+                StrokeThickness = 3.0,
             };
 
             ToolTip = $"Node[{node.NodeId}]-(x,y)";
+
+            RenderOptions.SetEdgeMode(circle, EdgeMode.Unspecified);
+            RenderOptions.SetBitmapScalingMode(circle, BitmapScalingMode.HighQuality);
 
             Content = circle;
         }
