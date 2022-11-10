@@ -732,6 +732,17 @@ namespace taskmaker_wpf.Views.Widget {
             Command.Execute(param);
         }
 
+        private void OnBuild() {
+            var param = new CommandParameter() {
+                Payload = new object[] {
+                    UiState.Id
+                },
+                Type = "Build",
+            };
+            
+            Command.Execute(param);
+        }
+
         private Path MakeSimplex() {
             var simplices = new SimplexInfo[] {
                 new SimplexInfo { Points = new Point[] {new Point(200, 20), new Point(100, 150), new Point(300, 150)}},
