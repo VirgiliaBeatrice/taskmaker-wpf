@@ -711,6 +711,15 @@ namespace taskmaker_wpf.Views.Widget {
                 else if (e.Key == Key.B) {
                     OnBuild();
                 }
+                else if (e.Key == Key.D1) {
+                    mode = UiMode.Add;
+                }
+                else if (e.Key == Key.D2) {
+                    mode = UiMode.Pan;
+                }
+                else if (e.Key == Key.Escape) {
+                    mode = UiMode.Default;
+                }
             };
 
             Keyboard.AddPreviewKeyDownHandler(this, (s, e) => {
@@ -718,7 +727,7 @@ namespace taskmaker_wpf.Views.Widget {
             });
         }
 
-        private UiMode mode = UiMode.Add;
+        private UiMode mode = UiMode.Default;
         private Point mousedownLocation;
 
         private Point offset = new Point(0, 0);
@@ -922,7 +931,7 @@ namespace taskmaker_wpf.Views.Widget {
     }
 
     public class NodeShape : ContentControl {
-
+        private Shape overlay;
 
         public NodeInfo Node {
             get { return (NodeInfo)GetValue(NodeProperty); }
@@ -936,7 +945,16 @@ namespace taskmaker_wpf.Views.Widget {
 
 
         public NodeShape() {
-            Invalidate();
+            //Invalidate();
+        }
+
+        protected override void OnMouseEnter(MouseEventArgs e) {
+            base.OnMouseEnter(e);
+            overlay.Opacity = 0.04;
+        }
+        protected override void OnMouseLeave(MouseEventArgs e) {
+            base.OnMouseLeave(e);
+            overlay.Opacity = 0;
         }
 
         static public void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
@@ -956,12 +974,26 @@ namespace taskmaker_wpf.Views.Widget {
                 StrokeThickness = 1.0,
             };
 
+            overlay = new Ellipse {
+                Width = 20,
+                Height = 20,
+                Fill = new SolidColorBrush(Colors.Black),
+                Opacity = 0.0,
+            };
+
+            var container = new Grid() {
+
+            };
+
+            container.Children.Add(circle);
+            container.Children.Add(overlay);
+
             ToolTip = $"Node[{node.NodeId}]-({node.Location.X}, {node.Location.Y})";
 
             RenderOptions.SetEdgeMode(circle, EdgeMode.Unspecified);
             RenderOptions.SetBitmapScalingMode(circle, BitmapScalingMode.HighQuality);
 
-            Content = circle;
+            Content = container;
         }
     }
 }
