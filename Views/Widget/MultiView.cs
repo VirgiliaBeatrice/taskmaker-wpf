@@ -461,6 +461,9 @@ namespace taskmaker_wpf.Views.Widget {
             var state = (ControlUiState)args.NewValue;
 
             ui.InvalidateNode();
+
+            if (state.Regions != null)
+                ui.InvalidateRegion();
         }
 
         public ICommand Command {
@@ -492,6 +495,7 @@ namespace taskmaker_wpf.Views.Widget {
 
                 Canvas.SetLeft(nodeShape, item.Location.X - 20 / 2);
                 Canvas.SetTop(nodeShape, item.Location.Y - 20 / 2);
+                Canvas.SetZIndex(nodeShape, 10);
 
                 _canvas.Children.Add(nodeShape);
 
@@ -516,6 +520,8 @@ namespace taskmaker_wpf.Views.Widget {
                     Points = item.Points,
                 };
 
+                Canvas.SetZIndex(shape, 5);
+
                 _canvas.Children.Add(shape);
             }
 
@@ -527,6 +533,8 @@ namespace taskmaker_wpf.Views.Widget {
                 var shape = new VoronoiShape {
                     Points = item.Points,
                 };
+
+                Canvas.SetZIndex(shape, 5);
 
                 _canvas.Children.Add(shape);
             }
@@ -577,7 +585,7 @@ namespace taskmaker_wpf.Views.Widget {
                 ClipToBounds = true
             };
             _canvas = new Canvas() {
-                Background = Brushes.DarkKhaki,
+                Background = Brushes.DarkGray,
                 SnapsToDevicePixels = true,
                 UseLayoutRounding = true,
             };
@@ -700,6 +708,9 @@ namespace taskmaker_wpf.Views.Widget {
                         Matrix = Matrix.Identity
                     };
                 }
+                else if (e.Key == Key.B) {
+                    OnBuild();
+                }
             };
 
             Keyboard.AddPreviewKeyDownHandler(this, (s, e) => {
@@ -742,32 +753,6 @@ namespace taskmaker_wpf.Views.Widget {
             
             Command.Execute(param);
         }
-
-        private Path MakeSimplex() {
-            var simplices = new SimplexInfo[] {
-                new SimplexInfo { Points = new Point[] {new Point(200, 20), new Point(100, 150), new Point(300, 150)}},
-            };
-
-            var pathGeo = new PathGeometry();
-            var pathFig = new PathFigure {
-                StartPoint = simplices[0].Points[0],
-            };
-
-            pathGeo.Figures.Add(pathFig);
-            pathFig.Segments.Add(new LineSegment { Point = simplices[0].Points[1] });
-            pathFig.Segments.Add(new LineSegment { Point = simplices[0].Points[2] });
-
-
-            var path = new Path {
-                Fill = new SolidColorBrush(Colors.LightBlue),
-                Stroke = new SolidColorBrush(Colors.LightGreen),
-                Stretch = Stretch.None,
-                StrokeThickness = 1,
-                Data = pathGeo
-            };
-
-            return path;
-        }
     }
 
     public class VoronoiShape : UserControl {
@@ -788,28 +773,7 @@ namespace taskmaker_wpf.Views.Widget {
             shape.Invalidate();
         }
 
-        public VoronoiShape() {
-            Point[] points;
-
-            if (new Random().Next() % 2 == 1) {
-                points = new Point[] {
-                    new Point(200, 20),
-                    new Point(200, 150),
-                    new Point(400, 150),
-                    new Point(400, 20)
-                };
-            }
-            else {
-                points = new Point[] {
-                    new Point(200, 20),
-                    new Point(100, 150),
-                    new Point(300, 150),
-                };
-            };
-            
-
-            
-        }
+        public VoronoiShape() { }
 
         public void Invalidate() {
             var points = Points.ToArray();
@@ -847,18 +811,32 @@ namespace taskmaker_wpf.Views.Widget {
                 pathGeo.Figures.Add(pathFig);
 
                 pathFig.Segments.Add(new LineSegment { Point = p0 });
-                pathFig.Segments.Add(new ArcSegment { Point = p1, Size = new Size(radius, radius), SweepDirection = SweepDirection.Clockwise });
-                //pathFig.Segments.Add(new LineSegment { Point = o });
+                pathFig.Segments.Add(new ArcSegment { Point = p1, Size = new Size(radius, radius), SweepDirection = SweepDirection.Counterclockwise });
+                pathFig.Segments.Add(new LineSegment { Point = o });
+
+                var transparent = Brushes.Transparent;
+                var radial = new RadialGradientBrush();
+                var radialRadius = (p0 - o).Length;
+
+                radial.MappingMode = BrushMappingMode.Absolute;
+                radial.GradientOrigin = o;
+                radial.Center = o;
+                radial.RadiusX = radialRadius;
+                radial.RadiusY = radialRadius;
+                radial.GradientStops.Add(new GradientStop(Colors.Bisque, 0.0));
+                radial.GradientStops.Add(new GradientStop(Colors.Transparent, 1.0));
+                radial.Freeze();
 
                 var path = new Path {
-                    Fill = new SolidColorBrush(Colors.LightBlue),
-                    Stroke = new SolidColorBrush(Colors.LightGreen),
+                    Fill = radial,
+                    Stroke = new SolidColorBrush(Colors.Violet),
                     Stretch = Stretch.None,
-                    StrokeThickness = 1,
+                    StrokeThickness = 2,
                     Data = pathGeo
                 };
 
                 Content = path;
+
             }
             else {
                 var pathGeo = new PathGeometry();
@@ -871,12 +849,22 @@ namespace taskmaker_wpf.Views.Widget {
                 pathFig.Segments.Add(new LineSegment { Point = points[1] });
                 pathFig.Segments.Add(new LineSegment { Point = points[2] });
                 pathFig.Segments.Add(new LineSegment { Point = points[3] });
+                pathFig.Segments.Add(new LineSegment { Point = points[0] });
+
+                var linear = new LinearGradientBrush();
+
+                linear.MappingMode = BrushMappingMode.Absolute;
+                linear.StartPoint = points[1];
+                linear.EndPoint = points[2];
+                linear.GradientStops.Add(new GradientStop(Colors.Bisque, 0.0));
+                linear.GradientStops.Add(new GradientStop(Colors.Transparent, 1.0));
+                linear.Freeze();
 
                 var path = new Path {
-                    Fill = new SolidColorBrush(Colors.LightBlue),
-                    Stroke = new SolidColorBrush(Colors.LightGreen),
+                    Fill = linear,
+                    Stroke = new SolidColorBrush(Colors.Violet),
                     Stretch = Stretch.None,
-                    StrokeThickness = 1,
+                    StrokeThickness = 2,
                     Data = pathGeo
                 };
 
@@ -905,10 +893,7 @@ namespace taskmaker_wpf.Views.Widget {
 
         }
 
-        public SimplexShape() {
-            BorderBrush = Brushes.Black;
-            BorderThickness = new Thickness(1);
-        }
+        public SimplexShape() { }
 
         public void Invalidate() {
             var points = Points.ToArray();
@@ -921,13 +906,14 @@ namespace taskmaker_wpf.Views.Widget {
             pathGeo.Figures.Add(pathFig);
             pathFig.Segments.Add(new LineSegment { Point = points[1] });
             pathFig.Segments.Add(new LineSegment { Point = points[2] });
+            pathFig.Segments.Add(new LineSegment { Point = points[0] });
 
 
             var path = new Path {
-                Fill = new SolidColorBrush(Colors.LightBlue),
-                Stroke = new SolidColorBrush(Colors.LightGreen),
+                Fill = new SolidColorBrush(Colors.Bisque),
+                Stroke = new SolidColorBrush(Colors.Violet),
                 Stretch = Stretch.None,
-                StrokeThickness = 1,
+                StrokeThickness = 2.0,
                 Data = pathGeo
             };
 
@@ -960,20 +946,17 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public void Invalidate() {
-            var node = new NodeInfo {
-                NodeId = 0,
-                UiId = 0
-            };
+            var node = Node;
 
             var circle = new Ellipse {
                 Width = 20,
                 Height = 20,
                 Stroke = Brushes.Black,
                 Fill = NodeRelationViewer.ColorPalette[node.UiId],
-                StrokeThickness = 3.0,
+                StrokeThickness = 1.0,
             };
 
-            ToolTip = $"Node[{node.NodeId}]-(x,y)";
+            ToolTip = $"Node[{node.NodeId}]-({node.Location.X}, {node.Location.Y})";
 
             RenderOptions.SetEdgeMode(circle, EdgeMode.Unspecified);
             RenderOptions.SetBitmapScalingMode(circle, BitmapScalingMode.HighQuality);

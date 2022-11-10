@@ -210,6 +210,19 @@ namespace taskmaker_wpf.ViewModels {
                     });
                 });
             }
+            else if (parameter.Type == "Build") {
+                var request = new BuildRegionRequest() {
+                    Id = (int)parameter.Payload[0],
+                };
+
+                _uiBus.Handle(request, (ControlUiEntity ui) => {
+                    _uiBus.Handle(new ListControlUiRequest(), (ControlUiEntity[] uis) => {
+                        Uis = _mapper.Map<ControlUiState[]>(uis);
+
+                        TargetsPanelVM.InvalidateTargets();
+                    });
+                });
+            }
         }
 
         private DelegateCommand _addUiCommand;
