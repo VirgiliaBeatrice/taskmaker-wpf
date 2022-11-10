@@ -137,7 +137,8 @@
             -->
             <Grid
                 DockPanel.Dock="Left">
-                <w:MultiView 
+                <w:MultiView
+                    Focusable="True"
                     Width="auto"
                     MaxColumnCount="2"
                     ItemsSource="{Binding TargetsPanelVM.SelectedInputPorts}"

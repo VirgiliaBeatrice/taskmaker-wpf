@@ -253,7 +253,7 @@ namespace taskmaker_wpf.Views {
         }
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e) {
-            Focus();
+            //Focus();
             base.OnMouseLeftButtonDown(e);
         }
 

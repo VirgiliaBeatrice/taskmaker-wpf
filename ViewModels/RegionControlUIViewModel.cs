@@ -11,6 +11,10 @@ using System.Reactive.Linq;
 using System.Windows;
 using taskmaker_wpf.Domain;
 using taskmaker_wpf.Views;
+using CommunityToolkit.Mvvm;
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
+using taskmaker_wpf.Views.Widget;
 
 namespace taskmaker_wpf.ViewModels {
 
@@ -142,6 +146,7 @@ namespace taskmaker_wpf.ViewModels {
     }
 
     public class RegionControlUIViewModel : BindableBase, INavigationAware {
+
         private readonly NLinearMapInteractorBus _mapBus;
 
         private readonly IMapper _mapper;
@@ -186,6 +191,26 @@ namespace taskmaker_wpf.ViewModels {
         private ControlUiState _ui;
         private ControlUiState[] _uis;
         private ControlUiState _uiState;
+
+        private ICommand _uiCommand;
+        public ICommand UiCommand => _uiCommand ?? (_uiCommand = new RelayCommand<CommandParameter>(ExecuteUiCommand));
+
+        private void ExecuteUiCommand(CommandParameter parameter) {
+            if (parameter.Type == "AddNode") {
+                var request = new AddNodeRequest {
+                    Value = (Point)parameter.Payload[0],
+                    UiId = (int)parameter.Payload[1],
+                };
+
+                _uiBus.Handle(request, (bool res) => {
+                    _uiBus.Handle(new ListControlUiRequest(), (ControlUiEntity[] uis) => {
+                        Uis = _mapper.Map<ControlUiState[]>(uis);
+
+                        TargetsPanelVM.InvalidateTargets(); 
+                    });
+                });
+            }
+        }
 
         private DelegateCommand _addUiCommand;
         public DelegateCommand AddUiCommand =>

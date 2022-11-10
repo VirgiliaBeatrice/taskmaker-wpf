@@ -48,9 +48,11 @@
             Grid.Column="1"
             prism:RegionManager.RegionName="ContentRegion" />
 
+        <!--
         <widget:UiController
             Grid.Column="1"
             Background="AntiqueWhite"
             />
+        -->
     </Grid>
 </Window>
