@@ -996,4 +996,14 @@ namespace taskmaker_wpf.Views.Widget {
             Content = container;
         }
     }
+
+    public enum UiElementState {
+        Default = 0,
+        Hover,
+        Focus,
+        Selected,
+        Activated,
+        Pressed,
+        Dragged
+    }
 }
