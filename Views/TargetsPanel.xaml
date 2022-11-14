@@ -109,6 +109,7 @@
                     </Button.Content>
                 </Button>
                 <Popup
+                    StaysOpen="False"
                     PlacementTarget="{Binding ElementName=btn0}"
                     x:Name="popup0"
                     Placement="Bottom"

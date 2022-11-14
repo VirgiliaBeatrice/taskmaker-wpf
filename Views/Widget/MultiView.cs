@@ -448,6 +448,10 @@ namespace taskmaker_wpf.Views.Widget {
 
     public class UiController : UserControl {
 
+        internal static readonly DependencyPropertyKey SelectedNodePropertyKey = DependencyProperty.RegisterReadOnly("SelectedNode", typeof(NodeShape), typeof(UiController), new PropertyMetadata(null));
+
+        public NodeShape SelectedNode => (NodeShape)GetValue(SelectedNodePropertyKey.DependencyProperty);
+
         public ControlUiState UiState {
             get { return (ControlUiState)GetValue(UiStateProperty); }
             set { SetValue(UiStateProperty, value); }
@@ -492,6 +496,16 @@ namespace taskmaker_wpf.Views.Widget {
                     //Node = item,
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Center,
+                };
+
+                nodeShape.Clicked += (s, ev) => {
+                    SetValue(SelectedNodePropertyKey, s);
+
+                    foreach(var node in _canvas.Children.OfType<NodeShape>().Where(e => e != s)) {
+                        node.Reset();
+                    }
+
+                    Command.Execute(SelectedNode.Node);
                 };
 
                 Canvas.SetLeft(nodeShape, item.Location.X - 20 / 2);
@@ -932,11 +946,20 @@ namespace taskmaker_wpf.Views.Widget {
     }
 
     public class NodeShape : ContentControl {
-        private UIElement overlay;
+        public UIElement overlay;
         private Ellipse circle;
         private UiElementState state = UiElementState.Default;
         private SolidColorBrush fill;
-        private Image checkIcon;
+        public Image checkIcon;
+
+        public static readonly RoutedEvent ClickedEvent = EventManager.RegisterRoutedEvent("Clicked", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(NodeShape));
+
+        public event RoutedEventHandler Clicked {
+            add { AddHandler(ClickedEvent, value); }
+            remove { RemoveHandler(ClickedEvent, value);}
+        }
+
+        public bool IsSelected { get; set; } = false;
 
         public NodeInfo Node {
             get { return (NodeInfo)GetValue(NodeProperty); }
@@ -963,20 +986,23 @@ namespace taskmaker_wpf.Views.Widget {
                 Source = image,
                 Opacity = 0,
             };
+
+            _state = new DefaultNodeState(this);
             //Invalidate();
         }
 
         protected override void OnMouseEnter(MouseEventArgs e) {
             base.OnMouseEnter(e);
 
-            if (state == UiElementState.Default)
-                InvalidateOverlay(UiElementState.Hover);
+            if (_state is DefaultNodeState) {
+                GoToState(UiElementState.Hover);
+            }
         }
         protected override void OnMouseLeave(MouseEventArgs e) {
             base.OnMouseLeave(e);
 
-            if (state != UiElementState.Selected) {
-                InvalidateOverlay(UiElementState.Default);
+            if (_state is HoverNodeState) {
+                GoToState(UiElementState.Default);
             }
         }
 
@@ -987,10 +1013,14 @@ namespace taskmaker_wpf.Views.Widget {
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e) {
             base.OnMouseLeftButtonUp(e);
 
-            if (state == UiElementState.Selected)
-                InvalidateOverlay(UiElementState.Default);
-            else
-                InvalidateOverlay(UiElementState.Selected);
+            if (_state is HoverNodeState && !IsSelected) {
+                GoToState(UiElementState.Selected);
+            }
+            else if (_state is SelectedNodeState && IsSelected) {
+                GoToState(UiElementState.Default);
+            }
+
+            RaiseEvent(new RoutedEventArgs(ClickedEvent));
         }
 
         static public void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
@@ -999,37 +1029,36 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
-        private void InvalidateOverlay(UiElementState state) {
+        private INodeState _state;
+
+        public void Reset() {
+            GoToState(UiElementState.Default);
+        }
+
+        public void GoToState(UiElementState state) {
             switch (state) {
                 case UiElementState.Default:
-                    overlay.Opacity = 0;
-                    checkIcon.Opacity = 0;
+                    _state = new DefaultNodeState(this);
                     break;
                 case UiElementState.Hover:
-                    overlay.Opacity = 0.08;
+                    _state = new HoverNodeState(this);
                     break;
                 case UiElementState.Focus:
-                    overlay.Opacity = 0.12;
                     break;
                 case UiElementState.Selected:
-                    overlay.Opacity = 0.12;
-                    checkIcon.Opacity = 0.9;
+                    _state = new SelectedNodeState(this);
                     break;
                 case UiElementState.Activated:
-                    overlay.Opacity = 0.12;
                     break;
                 case UiElementState.Pressed:
-                    overlay.Opacity = 0.12;
                     break;
                 case UiElementState.Dragged:
-                    overlay.Opacity = 0.08;
                     break;
-                default:
-                    break;
-
             }
 
-            this.state = state;
+            _state.SetOverlay();
+            _state.SetContainer();
+            _state.SetFlag();
         }
 
         public void Invalidate() {
@@ -1066,6 +1095,73 @@ namespace taskmaker_wpf.Views.Widget {
             RenderOptions.SetBitmapScalingMode(circle, BitmapScalingMode.HighQuality);
 
             Content = container;
+        }
+    }
+
+    internal interface INodeState {
+        void SetOverlay();
+        void SetContainer();
+        void SetFlag();
+    }
+
+    public abstract class BaseNodeState : INodeState {
+        protected NodeShape _node;
+
+        public BaseNodeState(NodeShape node) {
+            _node = node;
+        }
+
+        public virtual void SetContainer() { }
+
+        public virtual void SetOverlay() { }
+
+        public virtual void SetFlag() { }
+    }
+
+    public class DefaultNodeState : BaseNodeState {
+        public DefaultNodeState(NodeShape node) : base(node) { }
+
+        public override void SetOverlay() {
+            var shape = (_node.overlay as Shape);
+
+            shape.Opacity = 0;
+        }
+
+        public override void SetFlag() {
+            base.SetFlag();
+            _node.IsSelected = false;
+        }
+    }
+
+    public class SelectedNodeState : BaseNodeState {
+        public SelectedNodeState(NodeShape node) : base(node) {
+        }
+
+        public override void SetOverlay() {
+            base.SetOverlay();
+
+            var shape = (_node.overlay as Shape);
+            shape.Opacity = 0.12;
+        }
+
+        public override void SetContainer() {
+            base.SetContainer();
+        }
+
+        public override void SetFlag() {
+            _node.IsSelected = true;
+        }
+    }
+
+    public class HoverNodeState : BaseNodeState {
+        public HoverNodeState(NodeShape node) : base(node) {
+        }
+
+        public override void SetOverlay() {
+            base.SetOverlay();
+
+            var shape = (_node.overlay as Shape);
+            shape.Opacity = 0.08;
         }
     }
 

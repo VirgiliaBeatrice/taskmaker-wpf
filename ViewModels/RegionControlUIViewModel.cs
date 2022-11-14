@@ -192,6 +192,14 @@ namespace taskmaker_wpf.ViewModels {
         private ControlUiState[] _uis;
         private ControlUiState _uiState;
 
+        private ICommand _updateCommand;
+        public ICommand UpdateCommand =>
+            _updateCommand ?? (_updateCommand = new RelayCommand<NodeInfo>(ExecuteUpdateCommand));
+
+        void ExecuteUpdateCommand(NodeInfo info) {
+            
+        }
+
         private ICommand _uiCommand;
         public ICommand UiCommand => _uiCommand ?? (_uiCommand = new RelayCommand<CommandParameter>(ExecuteUiCommand));
 
