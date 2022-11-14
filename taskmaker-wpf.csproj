@@ -403,6 +403,9 @@
     <Resource Include="icons\settings.png" />
     <Resource Include="icons\triangle.png" />
     <Resource Include="icons\panel.png" />
+    <Resource Include="icons\expand_more_FILL0_wght400_GRAD0_opsz48.png" />
+    <Resource Include="icons\add_FILL0_wght400_GRAD0_opsz48.png" />
+    <Resource Include="icons\check_FILL0_wght400_GRAD0_opsz48.png" />
     <Content Include="libs\libSkiaSharp.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

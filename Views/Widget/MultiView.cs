@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Xml.XPath;
 using taskmaker_wpf.ViewModels;
@@ -931,7 +932,11 @@ namespace taskmaker_wpf.Views.Widget {
     }
 
     public class NodeShape : ContentControl {
-        private Shape overlay;
+        private UIElement overlay;
+        private Ellipse circle;
+        private UiElementState state = UiElementState.Default;
+        private SolidColorBrush fill;
+        private Image checkIcon;
 
         public NodeInfo Node {
             get { return (NodeInfo)GetValue(NodeProperty); }
@@ -945,16 +950,47 @@ namespace taskmaker_wpf.Views.Widget {
 
 
         public NodeShape() {
+            var image = new BitmapImage();
+
+            image.BeginInit();
+            image.UriSource = new Uri(@"C:\Users\Haoyan.Li\Documents\Repositories\taskmaker-wpf\icons\check_FILL0_wght400_GRAD0_opsz48.png"); 
+            image.DecodePixelWidth = 20;
+            image.EndInit();
+
+            checkIcon = new Image() {
+                Width = 20,
+                Height = 20,
+                Source = image,
+                Opacity = 0,
+            };
             //Invalidate();
         }
 
         protected override void OnMouseEnter(MouseEventArgs e) {
             base.OnMouseEnter(e);
-            overlay.Opacity = 0.04;
+
+            if (state == UiElementState.Default)
+                InvalidateOverlay(UiElementState.Hover);
         }
         protected override void OnMouseLeave(MouseEventArgs e) {
             base.OnMouseLeave(e);
-            overlay.Opacity = 0;
+
+            if (state != UiElementState.Selected) {
+                InvalidateOverlay(UiElementState.Default);
+            }
+        }
+
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e) {
+            base.OnMouseLeftButtonDown(e);
+        }
+
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e) {
+            base.OnMouseLeftButtonUp(e);
+
+            if (state == UiElementState.Selected)
+                InvalidateOverlay(UiElementState.Default);
+            else
+                InvalidateOverlay(UiElementState.Selected);
         }
 
         static public void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
@@ -963,16 +999,41 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
+        private void InvalidateOverlay(UiElementState state) {
+            switch (state) {
+                case UiElementState.Default:
+                    overlay.Opacity = 0;
+                    checkIcon.Opacity = 0;
+                    break;
+                case UiElementState.Hover:
+                    overlay.Opacity = 0.08;
+                    break;
+                case UiElementState.Focus:
+                    overlay.Opacity = 0.12;
+                    break;
+                case UiElementState.Selected:
+                    overlay.Opacity = 0.12;
+                    checkIcon.Opacity = 0.9;
+                    break;
+                case UiElementState.Activated:
+                    overlay.Opacity = 0.12;
+                    break;
+                case UiElementState.Pressed:
+                    overlay.Opacity = 0.12;
+                    break;
+                case UiElementState.Dragged:
+                    overlay.Opacity = 0.08;
+                    break;
+                default:
+                    break;
+
+            }
+
+            this.state = state;
+        }
+
         public void Invalidate() {
             var node = Node;
-
-            var circle = new Ellipse {
-                Width = 20,
-                Height = 20,
-                Stroke = Brushes.Black,
-                Fill = NodeRelationViewer.ColorPalette[node.UiId],
-                StrokeThickness = 1.0,
-            };
 
             overlay = new Ellipse {
                 Width = 20,
@@ -981,12 +1042,23 @@ namespace taskmaker_wpf.Views.Widget {
                 Opacity = 0.0,
             };
 
+
+
             var container = new Grid() {
 
             };
 
+
+            circle = new Ellipse {
+                Width = 20,
+                Height = 20,
+                Stroke = Brushes.Black,
+                Fill = NodeRelationViewer.ColorPalette[node.UiId],
+                StrokeThickness = 1.0,
+            };
             container.Children.Add(circle);
             container.Children.Add(overlay);
+            container.Children.Add(checkIcon);
 
             ToolTip = $"Node[{node.NodeId}]-({node.Location.X}, {node.Location.Y})";
 

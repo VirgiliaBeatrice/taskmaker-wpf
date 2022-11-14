@@ -206,46 +206,74 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         void ExecuteUpdateCommand(object param) {
-            if (param is string mode) {
-                if (mode == "UpdateInputs") {
-                    var inputs = InputPorts.Where(e => e.IsSelected).ToArray();
-                    var request = new UpdateNLinearMapRequest {
-                        Id = Parent.MapState.Id,
-                        PropertyType = "UpdateInputs",
-                        PropertyValue = inputs
-                    };
+            var inputs = InputPorts.Where(e => e.IsSelected).ToArray();
+            var request = new UpdateNLinearMapRequest {
+                Id = Parent.MapState.Id,
+                PropertyType = "UpdateInputs",
+                PropertyValue = inputs
+            };
 
-                    _mapBus.Handle(request, (NLinearMapEntity map) => {
-                        Parent.MapState = _mapper.Map<NLinearMapState>(map);
-                    });
-                }
-                else if (mode == "UpdateOutputs") {
-                    var outputs = OutputPorts.Where(e => e.IsSelected).ToArray();
-                    var request = new UpdateNLinearMapRequest {
-                        Id = Parent.MapState.Id,
-                        PropertyType = "UpdateOutputs",
-                        PropertyValue = outputs
-                    };
+            _mapBus.Handle(request, (NLinearMapEntity map) => {
+                Parent.MapState = _mapper.Map<NLinearMapState>(map);
+            });
 
-                    _mapBus.Handle(request, (NLinearMapEntity map) => {
-                        Parent.MapState = _mapper.Map<NLinearMapState>(map);
-                    });
+            var outputs = OutputPorts.Where(e => e.IsSelected).ToArray();
+            request = new UpdateNLinearMapRequest {
+                Id = Parent.MapState.Id,
+                PropertyType = "UpdateOutputs",
+                PropertyValue = outputs
+            };
 
-                    TargetMotors = Parent.MapState.Outputs
-                        .Where(e => e.GetType().Name.Contains("Motor"))
-                        .Cast<MotorTargetState>()
-                        .ToArray();
-                }
-                else if (mode == "Initialize") {
-                    var request = new UpdateNLinearMapRequest {
-                        Id = Parent.MapState.Id,
-                        PropertyType = "Initialize",
-                    };
+            _mapBus.Handle(request, (NLinearMapEntity map) => {
+                Parent.MapState = _mapper.Map<NLinearMapState>(map);
+            });
 
-                    _mapBus.Handle(request, (NLinearMapEntity map) => {
-                        Parent.MapState = _mapper.Map<NLinearMapState>(map);
-                    });
-                }
+            TargetMotors = Parent.MapState.Outputs
+                .Where(e => e.GetType().Name.Contains("Motor"))
+                .Cast<MotorTargetState>()
+                .ToArray();
+
+
+            //if (param is string mode) {
+            //    if (mode == "UpdateInputs") {
+            //        var inputs = InputPorts.Where(e => e.IsSelected).ToArray();
+            //        var request = new UpdateNLinearMapRequest {
+            //            Id = Parent.MapState.Id,
+            //            PropertyType = "UpdateInputs",
+            //            PropertyValue = inputs
+            //        };
+
+            //        _mapBus.Handle(request, (NLinearMapEntity map) => {
+            //            Parent.MapState = _mapper.Map<NLinearMapState>(map);
+            //        });
+            //    }
+            //    else if (mode == "UpdateOutputs") {
+            //        var outputs = OutputPorts.Where(e => e.IsSelected).ToArray();
+            //        var request = new UpdateNLinearMapRequest {
+            //            Id = Parent.MapState.Id,
+            //            PropertyType = "UpdateOutputs",
+            //            PropertyValue = outputs
+            //        };
+
+            //        _mapBus.Handle(request, (NLinearMapEntity map) => {
+            //            Parent.MapState = _mapper.Map<NLinearMapState>(map);
+            //        });
+
+            //        TargetMotors = Parent.MapState.Outputs
+            //            .Where(e => e.GetType().Name.Contains("Motor"))
+            //            .Cast<MotorTargetState>()
+            //            .ToArray();
+            //    }
+            //    else if (mode == "Initialize") {
+            //        var request = new UpdateNLinearMapRequest {
+            //            Id = Parent.MapState.Id,
+            //            PropertyType = "Initialize",
+            //        };
+
+            //        _mapBus.Handle(request, (NLinearMapEntity map) => {
+            //            Parent.MapState = _mapper.Map<NLinearMapState>(map);
+            //        });
+            //    }
 
 
                 //InvalidateTargets();
@@ -297,7 +325,7 @@ namespace taskmaker_wpf.ViewModels {
             //    });
 
             //}
-        }
+        //}
 
         public void InvalidateMap() {
             var request = new CreateNLinearMapRequest {

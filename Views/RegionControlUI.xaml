@@ -29,41 +29,33 @@
                 Width="250">
                 <TabItem
                     Header="ControlUi" >
-                    <StackPanel>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="4*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            <ComboBox
-                                Grid.Row="0"
-                                Grid.Column="0"
-                                Margin="2,2,2,2"
-                                ItemsSource="{Binding Uis}" 
-                                SelectedItem="{Binding UiState, Mode=TwoWay}" />
-                            <Button 
-                                Grid.Row="0"
-                                Grid.Column="1"
-                                Margin="2"
-                                Width="20"
-                                Height="20"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                Content="+"
-                                Command="{Binding AddUiCommand}"
-                                />
-                        </Grid>
-                        <TextBox
-                            Margin="2"
-                            Text="{Binding UiState.Name}">
-                            <b:Interaction.Triggers>
-                                <b:EventTrigger EventName="LostFocus">
-                                </b:EventTrigger>
-                            </b:Interaction.Triggers>
-                        </TextBox>
+                    
+                    <StackPanel
+                        Margin="10"
+                        Orientation="Vertical">
+                        <Expander
+                            BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
+                            BorderThickness="1"
+                            Header="Maps"
+                            >
+                            <StackPanel
+                                Orientation="Vertical"
+                                >
+                                <ListBox
+                                    Margin="4"
+                                    ItemsSource="{Binding Uis}"
+                                    />
+                                <Button
+                                    Margin="4"
+                                    Command="{Binding AddUiCommand}">
+                                    <Button.Content>
+                                        <Image Source="/icons/add_FILL0_wght400_GRAD0_opsz48.png" Width="16" Height="16"/>
+                                    </Button.Content>
+                                </Button>
+                            </StackPanel>
+
+                        </Expander>
+                        
                     </StackPanel>
 
                 </TabItem>
@@ -74,7 +66,7 @@
                         />
                 </TabItem>
                 <TabItem
-                    Header="Targets">
+                    Header="Map">
                     <local:TargetsPanel
                         DataContext="{Binding TargetsPanelVM}"
                         />

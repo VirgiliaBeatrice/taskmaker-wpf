@@ -17,6 +17,7 @@ using System.Windows.Threading;
 using taskmaker_wpf.ViewModels;
 using Numpy;
 using taskmaker_wpf.Model.Data;
+using System.Windows.Controls.Primitives;
 
 namespace taskmaker_wpf.Views {
     /// <summary>
@@ -41,6 +42,14 @@ namespace taskmaker_wpf.Views {
             //Console.WriteLine(skElement.Focusable);
             //Keyboard.Focus(skElement);
             //Console.WriteLine(Keyboard.FocusedElement);
+        }
+
+        private void ToggleButton_Click(object sender, RoutedEventArgs e) {
+            var popup = FindName("popup0") as Popup;
+
+            if (popup != null) {
+                popup.IsOpen = !popup.IsOpen;
+            }
         }
     }
 }

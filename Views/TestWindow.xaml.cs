@@ -1,7 +1,9 @@
 ﻿using Prism.Events;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,6 +24,29 @@ namespace taskmaker_wpf.Views {
     public partial class TestWindow : Window {
         private IEventAggregator _eventAggregator;
         private SystemInteractorBus _systemBus;
+        private static readonly FieldInfo _menuDropAlignmentField;
+
+        static TestWindow() {
+            //フィールド情報を取得  
+            _menuDropAlignmentField = typeof(SystemParameters).GetField("_menuDropAlignment", BindingFlags.NonPublic | BindingFlags.Static);
+
+            //アサーション（なくても良い）  
+            System.Diagnostics.Debug.Assert(_menuDropAlignmentField != null);
+
+            EnsureStandardPopupAlignment();
+            SystemParameters.StaticPropertyChanged += SystemParameters_StaticPropertyChanged;
+        }
+
+        private static void SystemParameters_StaticPropertyChanged(object sender, PropertyChangedEventArgs e) {
+            EnsureStandardPopupAlignment();
+        }
+
+        private static void EnsureStandardPopupAlignment() {
+            //MenuDropAlignmentがTrueならFalseに書き換える  
+            if (SystemParameters.MenuDropAlignment && _menuDropAlignmentField != null) {
+                //_menuDropAlignmentField.SetValue(null, false);
+            }
+        }
 
         public TestWindow(IEventAggregator @event, SystemInteractorBus systemBus) {
             _eventAggregator = @event;
