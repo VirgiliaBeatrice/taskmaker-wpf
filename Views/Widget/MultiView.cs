@@ -505,7 +505,10 @@ namespace taskmaker_wpf.Views.Widget {
                         node.Reset();
                     }
 
-                    Command.Execute(SelectedNode.Node);
+                    Command.Execute(new CommandParameter {
+                        Type = "Select",
+                        Payload = new object[] { SelectedNode.Node },
+                    });
                 };
 
                 Canvas.SetLeft(nodeShape, item.Location.X - 20 / 2);

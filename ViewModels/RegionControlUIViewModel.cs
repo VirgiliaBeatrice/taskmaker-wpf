@@ -146,6 +146,7 @@ namespace taskmaker_wpf.ViewModels {
     }
 
     public class RegionControlUIViewModel : BindableBase, INavigationAware {
+        public NodeInfo[] SelectedNodes { get; set; } = new NodeInfo[0];
 
         private readonly NLinearMapInteractorBus _mapBus;
 
@@ -192,14 +193,6 @@ namespace taskmaker_wpf.ViewModels {
         private ControlUiState[] _uis;
         private ControlUiState _uiState;
 
-        private ICommand _updateCommand;
-        public ICommand UpdateCommand =>
-            _updateCommand ?? (_updateCommand = new RelayCommand<NodeInfo>(ExecuteUpdateCommand));
-
-        void ExecuteUpdateCommand(NodeInfo info) {
-            
-        }
-
         private ICommand _uiCommand;
         public ICommand UiCommand => _uiCommand ?? (_uiCommand = new RelayCommand<CommandParameter>(ExecuteUiCommand));
 
@@ -230,6 +223,11 @@ namespace taskmaker_wpf.ViewModels {
                         TargetsPanelVM.InvalidateTargets();
                     });
                 });
+            }
+            else if (parameter.Type == "Select") {
+                var selectedNode = (NodeInfo)parameter.Payload[0];
+
+
             }
         }
 
