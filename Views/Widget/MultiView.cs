@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Windows;
@@ -38,6 +39,7 @@ namespace taskmaker_wpf.Views.Widget {
             return $"[{string.Join(",", _nodes.Select(e => $"{e.UiId}({e.NodeId})"))}]";
         }
     }
+
 
     public struct NodeInfo {
         public int UiId { get; set; }
@@ -108,6 +110,31 @@ namespace taskmaker_wpf.Views.Widget {
         };
 
 
+
+        public IEnumerable<NodeInfo> Locked {
+            get { return (IEnumerable<NodeInfo>)GetValue(LockedProperty); }
+            set { SetValue(LockedProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Locked.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty LockedProperty =
+            DependencyProperty.Register("Locked", typeof(IEnumerable<NodeInfo>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeInfo[0], OnPropertyChanged));
+
+
+
+
+        public IEnumerable<NodeInfo[]> Combinations {
+            get { return (IEnumerable<NodeInfo[]>)GetValue(CombinationsProperty); }
+            set { SetValue(CombinationsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Combinations.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CombinationsProperty =
+            DependencyProperty.Register("Combinations", typeof(IEnumerable<NodeInfo[]>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeInfo[0][], OnPropertyChanged));
+
+
+
+
         public IEnumerable<NodeInfo> SelectedNodes {
             get { return (IEnumerable<NodeInfo>)GetValue(SelectedNodesProperty); }
             set { SetValue(SelectedNodesProperty, value); }
@@ -130,47 +157,8 @@ namespace taskmaker_wpf.Views.Widget {
 
 
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
-            return;
             if (d is NodeRelationViewer viewer) {
-                var grid = new Grid();
-                //var items = viewer.NodeRelations.Cast<NodeRelation>();
-                var items = new NodeRelation[] {
-                    //new NodeRelation { HasValue = false },
-                    //new NodeRelation { HasValue = true },
-                    //new NodeRelation { HasValue = true },
-                };
-                var color = Brushes.DarkRed;
-
-                Func<Brush, double, Brush> withOpacity = (b, o) => {
-                    var c = b.Clone();
-                    c.Opacity = o;
-                    return c;
-                };
-
-                for (int i = 0; i < items.Count(); i++) {
-                    grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
-
-                    var block = new Rectangle() {
-                        Width = 10,
-                        Height = 10,
-                        //Fill = Brushes.Gray,
-                        Margin = new Thickness(1),
-                        Fill = items.ElementAt(i).HasValue ? Brushes.Red : withOpacity(Brushes.Red, 0.3),
-                    };
-
-                    block.ToolTip = "ControlUi[x]-Node[y]";
-                    block.MouseEnter += (o, ev) => {
-                        Console.WriteLine("hover");
-                    };
-
-                    Grid.SetColumn(block, i);
-
-                    grid.Children.Add(block);
-                }
-
-
-                viewer.Content = grid;
-
+                viewer.Layout();
             }
         }
 
@@ -187,8 +175,11 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public void Layout() {
-            IEnumerable<NodeInfo> a;
-            IEnumerable<NodeRelation> b;
+            //IEnumerable<NodeInfo> a;
+            //IEnumerable<NodeRelation> b;
+
+            var a = Locked;
+            var b = Combinations;
 
             //if (DesignerProperties.GetIsInDesignMode(this)) {
             //    (a, b) = PrepareSampleData();
@@ -198,7 +189,7 @@ namespace taskmaker_wpf.Views.Widget {
             //    b = PossiblePairs;
             //}
 
-            (a, b) = PrepareSampleData();
+            //(a, b) = PrepareSampleData();
 
             //var a = Enumerable.Range(0, 2).Select(e => new NodeInfo { NodeId = e });
             //var b = Enumerable.Range(0, 10).Select(e => new NodeRelation(new NodeInfo[3]) { HasValue = e % 2 == 1 });
@@ -246,7 +237,7 @@ namespace taskmaker_wpf.Views.Widget {
                     Height = 20,
                     Fill = ColorPalette[4],
                     Margin = new Thickness(2),
-                    Opacity = item.HasValue ? 1.0 : 0.6,
+                    //Opacity = item.HasValue ? 1.0 : 0.6,
                     ToolTip = item.ToString()
                 };
 
@@ -295,15 +286,46 @@ namespace taskmaker_wpf.Views.Widget {
             DependencyProperty.Register("MaxColumnCount", typeof(int), typeof(MultiView), new FrameworkPropertyMetadata(2));
 
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
+            if (d is MultiView view) {
 
-            if (d is MultiView control) {
-                control.Layout();
+                view.Layout();
+
+                view.InvalidateViewer();
+
+
+                //if (DesignerProperties.GetIsInDesignMode(d) && d is MultiView control) {
+                //    control.Layout();
+                //}
+            }
+        }
+
+        public void InvalidateViewer() {
+            var locked = new List<NodeInfo>();
+            var unlocked = new List<NodeInfo[]>();
+
+            foreach (var c in Controllers) {
+                if (c.SelectedNode == null)
+                    unlocked.Add(c.NodeInfos);
+                //view.Candidates.Add(c.UiState.Id, c.UiState.Nodes.Select(e => new NodeInfo { Location = e.Value, NodeId = e.Id, UiId = c.UiState.Id }).ToArray());
+                else
+                    locked.Add(c.SelectedNode.Node);
+                //view.Candidates.Add(c.UiState.Id, new NodeInfo[] { c.SelectedNode.Node });
             }
 
-            //if (DesignerProperties.GetIsInDesignMode(d) && d is MultiView control) {
-            //    control.Layout();
-            //}
+            if (locked.Count > 0) {
+                var temp = locked.Select(e => new NodeInfo[] { e }).Concat(unlocked).ToArray();
+                var combinations = Helper.GetCombinations(temp);
+
+                Viewer.Locked = locked;
+                Viewer.Combinations = combinations;
+            }
         }
+
+        //public Dictionary<int, NodeInfo[]> Candidates { get; set; } = new Dictionary<int, NodeInfo[]>();
+
+        public List<UiController> Controllers = new List<UiController>();
+
+        public NodeRelationViewer Viewer { get; set; }
 
         public MultiView() : base() {
             var scroll = new ScrollViewer() {
@@ -325,6 +347,8 @@ namespace taskmaker_wpf.Views.Widget {
             };
 
             var vm = DataContext as RegionControlUIViewModel;
+
+            Controllers.Clear();
 
             if (items.Count == 1) {
                 var ui = new UiController {
@@ -354,6 +378,8 @@ namespace taskmaker_wpf.Views.Widget {
 
                 grid.Children.Add(ui);
                 grid.Children.Add(textblock);
+
+                Controllers.Add(ui);
             }
             else if (items.Count == 0) {
                 var textblock = new TextBlock {
@@ -413,6 +439,8 @@ namespace taskmaker_wpf.Views.Widget {
 
                     grid.Children.Add(ui);
                     grid.Children.Add(textblock);
+                    
+                    Controllers.Add(ui);
                 }
             }
 
@@ -420,6 +448,15 @@ namespace taskmaker_wpf.Views.Widget {
             //    grid,
             //    )
             ((ScrollViewer)Content).Content = grid;
+
+            Viewer = new NodeRelationViewer() {
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Center,
+            };
+
+            Panel.SetZIndex(Viewer, 10);
+
+            grid.Children.Add(Viewer);
         }
 
         public void NotifyCombination() {
@@ -448,9 +485,28 @@ namespace taskmaker_wpf.Views.Widget {
 
     public class UiController : UserControl {
 
-        internal static readonly DependencyPropertyKey SelectedNodePropertyKey = DependencyProperty.RegisterReadOnly("SelectedNode", typeof(NodeShape), typeof(UiController), new PropertyMetadata(null));
+        internal static readonly DependencyPropertyKey SelectedNodePropertyKey = DependencyProperty.RegisterReadOnly("SelectedNode", typeof(NodeShape), typeof(UiController), new FrameworkPropertyMetadata(null, (PropertyChangedCallback)OnSelectedNodePropertyChanged));
+
+        private static void OnSelectedNodePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            var parent = VisualTreeHelper.GetParent(d as Visual);
+
+            while (parent != null && !typeof(MultiView).IsInstanceOfType(parent)) {
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+
+            if (parent is MultiView v) {
+                v.InvalidateViewer();
+                Console.WriteLine("Some property changed.");
+            }
+        }
 
         public NodeShape SelectedNode => (NodeShape)GetValue(SelectedNodePropertyKey.DependencyProperty);
+
+        public NodeInfo[] NodeInfos => UiState.Nodes.Select(e => new NodeInfo {
+            Location = e.Value,
+            NodeId = e.Id,
+            UiId = UiState.Id
+        }).ToArray();
 
         public ControlUiState UiState {
             get { return (ControlUiState)GetValue(UiStateProperty); }
@@ -499,16 +555,22 @@ namespace taskmaker_wpf.Views.Widget {
                 };
 
                 nodeShape.Clicked += (s, ev) => {
-                    SetValue(SelectedNodePropertyKey, s);
+                    if (s is NodeShape n) {
+                        if (n.state == UiElementState.Selected)
+                            SetValue(SelectedNodePropertyKey, n);
+                        else
+                            SetValue(SelectedNodePropertyKey, null);
 
-                    foreach(var node in _canvas.Children.OfType<NodeShape>().Where(e => e != s)) {
-                        node.Reset();
+                        foreach(var node in _canvas.Children.OfType<NodeShape>().Where(e => e != s)) {
+                            node.Reset();
+                        }
+
+                        //Command.Execute(new CommandParameter {
+                        //    Type = "Select",
+                        //    Payload = new object[] { SelectedNode.Node },
+                        //});
+
                     }
-
-                    Command.Execute(new CommandParameter {
-                        Type = "Select",
-                        Payload = new object[] { SelectedNode.Node },
-                    });
                 };
 
                 Canvas.SetLeft(nodeShape, item.Location.X - 20 / 2);
@@ -951,7 +1013,7 @@ namespace taskmaker_wpf.Views.Widget {
     public class NodeShape : ContentControl {
         public UIElement overlay;
         private Ellipse circle;
-        private UiElementState state = UiElementState.Default;
+        public  UiElementState state = UiElementState.Default;
         private SolidColorBrush fill;
         public Image checkIcon;
 
@@ -1062,6 +1124,8 @@ namespace taskmaker_wpf.Views.Widget {
             _state.SetOverlay();
             _state.SetContainer();
             _state.SetFlag();
+
+            this.state = state;
         }
 
         public void Invalidate() {

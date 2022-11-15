@@ -135,17 +135,6 @@
                     MaxColumnCount="2"
                     ItemsSource="{Binding TargetsPanelVM.SelectedInputPorts}"
                     />
-                <StackPanel
-                    Visibility="Visible"
-                    Panel.ZIndex="2"
-                    Background="LightGray"
-                    Width="auto"
-                    Height="auto"
-                    VerticalAlignment="Top"
-                    HorizontalAlignment="Center">
-                        <w:NodeRelationViewer />  
-
-                </StackPanel>
             </Grid>
 
             <!--
