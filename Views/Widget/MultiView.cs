@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -121,39 +122,14 @@ namespace taskmaker_wpf.Views.Widget {
             DependencyProperty.Register("Locked", typeof(IEnumerable<NodeInfo>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeInfo[0], OnPropertyChanged));
 
 
-
-
-        public IEnumerable<NodeInfo[]> Combinations {
-            get { return (IEnumerable<NodeInfo[]>)GetValue(CombinationsProperty); }
+        public IEnumerable<NodeRelation> Combinations {
+            get { return (IEnumerable<NodeRelation>)GetValue(CombinationsProperty); }
             set { SetValue(CombinationsProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for Combinations.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty CombinationsProperty =
-            DependencyProperty.Register("Combinations", typeof(IEnumerable<NodeInfo[]>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeInfo[0][], OnPropertyChanged));
-
-
-
-
-        public IEnumerable<NodeInfo> SelectedNodes {
-            get { return (IEnumerable<NodeInfo>)GetValue(SelectedNodesProperty); }
-            set { SetValue(SelectedNodesProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for SelectedNodes.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty SelectedNodesProperty =
-            DependencyProperty.Register("SelectedNodes", typeof(IEnumerable<NodeInfo>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeInfo[0]));
-
-
-
-        public IEnumerable<NodeRelation> PossiblePairs {
-            get { return (IEnumerable<NodeRelation>)GetValue(PossiblePairsProperty); }
-            set { SetValue(PossiblePairsProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for PossiblePairs.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty PossiblePairsProperty =
-            DependencyProperty.Register("PossiblePairs", typeof(IEnumerable<NodeRelation>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeRelation[0]));
+            DependencyProperty.Register("Combinations", typeof(IEnumerable<NodeRelation>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeRelation[0], OnPropertyChanged));
 
 
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
@@ -162,37 +138,13 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
-        public NodeRelationViewer() {
+        public NodeRelationViewer(UIElement target) {
             Layout();
         }
 
-        private (IEnumerable<NodeInfo>, IEnumerable<NodeRelation>) PrepareSampleData() {
-            var a = Enumerable.Range(0, 2).Select(e => new NodeInfo { NodeId = 0, UiId = e });
-            var b = Enumerable.Range(0, 3).Select(e => new NodeInfo { NodeId = 0, UiId = e });
-            var c = Enumerable.Range(0, 10).Select(e => new NodeRelation(b.ToArray()) { HasValue = e % 2 == 1 });
-
-            return (a, c);
-        }
-
         public void Layout() {
-            //IEnumerable<NodeInfo> a;
-            //IEnumerable<NodeRelation> b;
-
             var a = Locked;
             var b = Combinations;
-
-            //if (DesignerProperties.GetIsInDesignMode(this)) {
-            //    (a, b) = PrepareSampleData();
-            //}
-            //else {
-            //    a = SelectedNodes;
-            //    b = PossiblePairs;
-            //}
-
-            //(a, b) = PrepareSampleData();
-
-            //var a = Enumerable.Range(0, 2).Select(e => new NodeInfo { NodeId = e });
-            //var b = Enumerable.Range(0, 10).Select(e => new NodeRelation(new NodeInfo[3]) { HasValue = e % 2 == 1 });
 
             var grid = new Grid() { };
 
@@ -223,7 +175,7 @@ namespace taskmaker_wpf.Views.Widget {
                 var circle = new Ellipse() {
                     Width = 20,
                     Height = 20,
-                    Fill = ColorPalette[i],
+                    Fill = ColorPalette[a.ElementAt(i).UiId],
                     Margin = new Thickness(2),
                     ToolTip = $"{a.ElementAt(i).UiId}({a.ElementAt(i).NodeId})"
                 };
@@ -258,6 +210,7 @@ namespace taskmaker_wpf.Views.Widget {
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
                 VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
                 Focusable = false,
+                HorizontalAlignment= HorizontalAlignment.Stretch,
             };
 
             Content = scroll;
@@ -317,7 +270,7 @@ namespace taskmaker_wpf.Views.Widget {
                 var combinations = Helper.GetCombinations(temp);
 
                 Viewer.Locked = locked;
-                Viewer.Combinations = combinations;
+                Viewer.Combinations = combinations.Select(e => new NodeRelation(e));
             }
         }
 
@@ -328,13 +281,17 @@ namespace taskmaker_wpf.Views.Widget {
         public NodeRelationViewer Viewer { get; set; }
 
         public MultiView() : base() {
+            var grid = new Grid();
+
             var scroll = new ScrollViewer() {
                 Focusable= false,
                 VerticalAlignment = VerticalAlignment.Stretch,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
             };
 
-            Content = scroll;
+            grid.Children.Add(scroll);
+
+            Content = grid;
             //AddLogicalChild(scroll);
         }
 
@@ -447,16 +404,16 @@ namespace taskmaker_wpf.Views.Widget {
             //BindingOperations.SetBinding(
             //    grid,
             //    )
-            ((ScrollViewer)Content).Content = grid;
 
-            Viewer = new NodeRelationViewer() {
+            Viewer = new NodeRelationViewer(this) {
                 VerticalAlignment = VerticalAlignment.Top,
                 HorizontalAlignment = HorizontalAlignment.Center,
             };
 
             Panel.SetZIndex(Viewer, 10);
 
-            grid.Children.Add(Viewer);
+            ((Grid)Content).Children.Add(grid);
+            ((Grid)Content).Children.Add(Viewer);
         }
 
         public void NotifyCombination() {
