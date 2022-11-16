@@ -1,7 +1,11 @@
-﻿using System;
+﻿using SharpVectors.Converters;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
+using System.Drawing.Design;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Windows;
@@ -10,10 +14,12 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Xml.XPath;
 using taskmaker_wpf.ViewModels;
+using taskmaker_wpf.Views.Widgets;
 using static Unity.Storage.RegistrationSet;
 using Rectangle = System.Windows.Shapes.Rectangle;
 
@@ -100,28 +106,279 @@ namespace taskmaker_wpf.Views.Widget {
         }
     }
 
+    public interface IState {
+        void SetOverlay();
+        void SetContainer();
+        void SetFlag();
+    }
 
-    public class NodeRelationViewer : UserControl {
-        static public SolidColorBrush[] ColorPalette = new SolidColorBrush[] {
-            (SolidColorBrush)new BrushConverter().ConvertFrom("#A7226E"),
-            (SolidColorBrush)new BrushConverter().ConvertFrom("#EC2049"),
-            (SolidColorBrush)new BrushConverter().ConvertFrom("#F26B38"),
-            (SolidColorBrush)new BrushConverter().ConvertFrom("#F7DB4F"),
-            (SolidColorBrush)new BrushConverter().ConvertFrom("#2F9599"),
-        };
+    public abstract class StatefulWidget : ContentControl {
+        public UiElementState State { get; set; }
+        protected IState _state;
 
+        public UIElement Container { get; set; }
+        public UIElement Overlay { get; set; }
 
+        public virtual void GoToState(UiElementState state) {
+            State = state;
 
-        public bool IsOpen {
-            get { return (bool)GetValue(IsOpenProperty); }
-            set { SetValue(IsOpenProperty, value); }
+            InvalidateCustomVisual();
         }
 
-        // Using a DependencyProperty as the backing store for IsOpen.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty IsOpenProperty =
-            DependencyProperty.Register("IsOpen", typeof(bool), typeof(NodeRelationViewer), new FrameworkPropertyMetadata(false, OnPropertyChanged));
+        protected void InvalidateCustomVisual() {
+            _state.SetOverlay();
+            _state.SetContainer();
+            _state.SetFlag();
+        }
+    }
+
+    public abstract class BaseState : IState {
+        public StatefulWidget Parent { get; set; }
+
+        public BaseState(StatefulWidget parent) {
+            Parent = parent;
+        }
+
+        public abstract void SetContainer();
+        public abstract void SetOverlay();
+        public abstract void SetFlag();
+    }
+
+    public class DefaultState : BaseState {
+        public DefaultState(StatefulWidget parent) : base(parent) { }
+
+        public override void SetContainer() {
+            var grid = Parent.Container as Grid;
+
+            // Set background color
+            //grid.Background
+        }
+
+        public override void SetFlag() {
+        }
+
+        public override void SetOverlay() {
+            var border = Parent.Overlay as Border;
+
+            // Set color
+            border.Background = Brushes.Black;
+            // Set opacity
+            border.Opacity = 0;
+        }
+    }
+
+    public class HoverState : BaseState {
+        public HoverState(StatefulWidget parent) : base(parent) { }
+
+        public override void SetContainer() {
+            var grid = Parent.Container as Grid;
+
+            // Set color
+            //grid.Background
+
+            // Set opacity
+        }
+
+        public override void SetFlag() {
+        }
+
+        public override void SetOverlay() {
+            var border = Parent.Overlay as Border;
+
+            // Set color
+            border.Background = Brushes.Black;
+            // Set opacity
+            border.Opacity = 0.08;
+        }
+    }
+
+    public class PressedState : BaseState {
+        public PressedState(StatefulWidget parent) : base(parent) { }
+
+        public override void SetContainer() {
+            var grid = Parent.Container as Grid;
+
+            // Set color
+            //grid.Background
+
+            // Set opacity
+        }
+
+        public override void SetFlag() {
+        }
+
+        public override void SetOverlay() {
+            var border = Parent.Overlay as Border;
+
+            // Set color
+            border.Background = Brushes.Tomato;
+            // Set opacity
+            border.Opacity = 0.12;
+        }
+    }
 
 
+    public class RelationWidget : StatefulWidget {
+        public RelationWidget() {
+            var content = new Rectangle {
+                Width = 20,
+                Height = 20,
+                Fill = new SolidColorBrush(ColorManager.Palette.Last()),
+            };
+
+            Container = new Grid { };
+            Overlay = new Border { };
+
+            (Container as Grid).Children.Add(content);
+            (Container as Grid).Children.Add(Overlay);
+
+            Content = Container;
+
+            MouseEnter += (s, e) => {
+                var widget = s as RelationWidget;
+
+                if (widget.State == UiElementState.Default) {
+                    GoToState(UiElementState.Hover);
+                }
+            };
+
+            MouseLeave += (s, e) => {
+                var widget = s as RelationWidget;
+
+                if (widget.State == UiElementState.Hover) {
+                    GoToState(UiElementState.Default);
+                }
+            };
+
+            MouseLeftButtonDown += (s, e) => {
+                var widget = s as RelationWidget;
+
+                GoToState(UiElementState.Pressed);
+            };
+
+            MouseLeftButtonUp += (s, e) => {
+                var widget = s as RelationWidget;
+
+                if (widget.State == UiElementState.Pressed) {
+                    GoToState(UiElementState.Default);
+                }
+            };
+        }
+
+        public override void GoToState(UiElementState state) {
+            switch (state) {
+                case UiElementState.Default:
+                    _state = new DefaultState(this);
+                    break;
+                case UiElementState.Hover:
+                    _state = new HoverState(this);
+                    break;
+                case UiElementState.Focus:
+                    break;
+                case UiElementState.Selected:
+                    break;
+                case UiElementState.Activated:
+                    break;
+                case UiElementState.Pressed:
+                    _state = new PressedState(this);
+                    break;
+                case UiElementState.Dragged:
+                    break;
+                default:
+                    break;
+            }
+
+            base.GoToState(state);
+        }
+
+
+    }
+
+    public class ColorManager {
+        // https://abierre.com/article/5c18da1189599b92b890ecc1
+        static public double TintFactor = 0.25;
+
+        static public Color[] Palette = {
+            Colors.Red,
+            Colors.Pink,
+            Colors.Purple,
+            Colors.Indigo,
+            Colors.Blue,
+            Colors.LightBlue,
+            Colors.Cyan,
+            Colors.Teal,
+            Colors.Green,
+            Colors.LightGreen,
+            Colors.Lime,
+            Colors.Yellow,
+            Colors.Orange,
+            Colors.Brown,
+            Colors.Gray,
+        };
+
+        static public Color GetTintedColor(Color color, int level) {
+            return new Color {
+                R = (byte)(color.R + (255 - color.R) * (TintFactor * level)),
+                G = (byte)(color.G + (255 - color.G) * (TintFactor * level)),
+                B = (byte)(color.B + (255 - color.B) * (TintFactor * level)),
+                A = 255
+            };
+        }
+
+        public static double GetRelativeLuminance(Color color) {
+            var r = (double)color.R / 255.0;
+            var g = (double)color.G / 255.0;
+            var b = (double)color.B / 255.0;
+
+            double R, G, B;
+
+            if (r <= 0.03928)
+                R = r / 12.92;
+            else
+                R = Math.Pow(((r + 0.055) / 1.055), 2.4);
+
+            if (g <= 0.03928)
+                G = g / 12.92;
+            else
+                G = Math.Pow(((g + 0.055) / 1.055), 2.4);
+
+            if (b <= 0.03928)
+                B = b / 12.92;
+            else
+                B = Math.Pow(((b + 0.055) / 1.055), 2.4);
+
+            return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+        }
+
+        public static double GetConstrastRatio(Color color0, Color color1) {
+            var l0 = GetRelativeLuminance(color0);
+            var l1 = GetRelativeLuminance(color1);
+
+            var luminH = l0 > l1 ? l0 : l1;
+            var luminL = l0 > l1 ? l1 : l0;
+
+            return (luminH + 0.05) / (luminL + 0.05);
+        }
+
+        public static Color GetComplemetaryColor(Color color) {
+            return new Color() {
+                R = (byte)(255 - color.R),
+                G = (byte)(255 - color.G),
+                B = (byte)(255 - color.B),
+                A = 255
+            };
+        }
+    }
+
+
+    public class NodeRelationViewer : UserControl {
+        //static public SolidColorBrush[] ColorPalette = new SolidColorBrush[] {
+        //    (SolidColorBrush)new BrushConverter().ConvertFrom("#A7226E"),
+        //    (SolidColorBrush)new BrushConverter().ConvertFrom("#EC2049"),
+        //    (SolidColorBrush)new BrushConverter().ConvertFrom("#F26B38"),
+        //    (SolidColorBrush)new BrushConverter().ConvertFrom("#F7DB4F"),
+        //    (SolidColorBrush)new BrushConverter().ConvertFrom("#2F9599"),
+        //};
 
         public IEnumerable<NodeInfo> Locked {
             get { return (IEnumerable<NodeInfo>)GetValue(LockedProperty); }
@@ -176,6 +433,7 @@ namespace taskmaker_wpf.Views.Widget {
             });
             grid.ColumnDefinitions.Add(new ColumnDefinition() {
                 Width = GridLength.Auto,
+                MinWidth = 20
             });
 
             var panel0 = new StackPanel {
@@ -191,11 +449,15 @@ namespace taskmaker_wpf.Views.Widget {
                 Margin = new Thickness(2),
             };
 
+
+
             for (int i = 0; i < a.Count(); i++) {
+                var fill = ColorManager.GetTintedColor(ColorManager.Palette[a.ElementAt(i).UiId], 2);
+
                 var circle = new Ellipse() {
                     Width = 20,
                     Height = 20,
-                    Fill = ColorPalette[a.ElementAt(i).UiId],
+                    Fill = new SolidColorBrush(fill),
                     Margin = new Thickness(2),
                     ToolTip = $"{a.ElementAt(i).UiId}({a.ElementAt(i).NodeId})"
                 };
@@ -204,14 +466,18 @@ namespace taskmaker_wpf.Views.Widget {
             }
 
             foreach (var item in b) {
-                var rect = new Rectangle() {
-                    Width = 20,
-                    Height = 20,
-                    Fill = ColorPalette[4],
+                var rect = new RelationWidget {
                     Margin = new Thickness(2),
-                    //Opacity = item.HasValue ? 1.0 : 0.6,
-                    ToolTip = item.ToString()
+                    ToolTip = item.ToString(),
                 };
+                //var rect = new Rectangle() {
+                //    Width = 20,
+                //    Height = 20,
+                //    Fill = ColorPalette[4],
+                //    Margin = new Thickness(2),
+                //    //Opacity = item.HasValue ? 1.0 : 0.6,
+                //    ToolTip = item.ToString()
+                //};
 
                 panel1.Children.Add(rect);
             }
@@ -309,6 +575,11 @@ namespace taskmaker_wpf.Views.Widget {
 
         public MultiView() : base() {
             var grid = new Grid();
+            //var icon = new SvgIcon() {
+            //    Width = 200,
+            //    Height = 200,
+            //    UriSource = new Uri(@"icons/done.svg", UriKind.Relative),
+            //};
 
             var scroll = new ScrollViewer() {
                 Focusable= false,
@@ -317,6 +588,7 @@ namespace taskmaker_wpf.Views.Widget {
             };
 
             grid.Children.Add(scroll);
+            //grid.Children.Add(icon);
 
             Content = grid;
             //AddLogicalChild(scroll);
@@ -339,6 +611,7 @@ namespace taskmaker_wpf.Views.Widget {
 
             var vm = DataContext as RegionControlUIViewModel;
 
+            ((Grid)Content).Children.Clear();
             Controllers.Clear();
 
             if (items.Count == 1) {
@@ -538,7 +811,7 @@ namespace taskmaker_wpf.Views.Widget {
 
                 nodeShape.Clicked += (s, ev) => {
                     if (s is NodeShape n) {
-                        if (n.state == UiElementState.Selected)
+                        if (n.State == UiElementState.Selected)
                             SetValue(SelectedNodePropertyKey, n);
                         else
                             SetValue(SelectedNodePropertyKey, null);
@@ -578,7 +851,7 @@ namespace taskmaker_wpf.Views.Widget {
             }
 
             foreach (var item in simplices) {
-                var shape = new SimplexShape {
+                var shape = new SimplexShape(UiState.Id) {
                     Points = item.Points,
                 };
 
@@ -592,7 +865,7 @@ namespace taskmaker_wpf.Views.Widget {
             }
 
             foreach (var item in voronois) {
-                var shape = new VoronoiShape {
+                var shape = new VoronoiShape(UiState.Id) {
                     Points = item.Points,
                 };
 
@@ -827,7 +1100,7 @@ namespace taskmaker_wpf.Views.Widget {
     }
 
     public class VoronoiShape : UserControl {
-
+        public int UiId { get; set; }
 
         public IEnumerable<Point> Points {
             get { return (IEnumerable<Point>)GetValue(PointsProperty); }
@@ -844,7 +1117,23 @@ namespace taskmaker_wpf.Views.Widget {
             shape.Invalidate();
         }
 
-        public VoronoiShape() { }
+        public VoronoiShape(int uiId) {
+            UiId = uiId;
+
+            MouseEnter += (s, e) => {
+                var v = s as VoronoiShape;
+                var path = v.Content as Path;
+
+                path.Opacity = 0.1;
+            };
+
+            MouseLeave += (s, e) => {
+                var v = s as VoronoiShape;
+                var path = v.Content as Path;
+
+                path.Opacity = 1;
+            };
+        }
 
         public void Invalidate() {
             var points = Points.ToArray();
@@ -885,7 +1174,7 @@ namespace taskmaker_wpf.Views.Widget {
                 pathFig.Segments.Add(new ArcSegment { Point = p1, Size = new Size(radius, radius), SweepDirection = SweepDirection.Counterclockwise });
                 pathFig.Segments.Add(new LineSegment { Point = o });
 
-                var transparent = Brushes.Transparent;
+                var fill = ColorManager.GetTintedColor(ColorManager.Palette[UiId], 2);
                 var radial = new RadialGradientBrush();
                 var radialRadius = (p0 - o).Length;
 
@@ -894,15 +1183,15 @@ namespace taskmaker_wpf.Views.Widget {
                 radial.Center = o;
                 radial.RadiusX = radialRadius;
                 radial.RadiusY = radialRadius;
-                radial.GradientStops.Add(new GradientStop(Colors.Bisque, 0.0));
+                radial.GradientStops.Add(new GradientStop(fill, 0.0));
                 radial.GradientStops.Add(new GradientStop(Colors.Transparent, 1.0));
                 radial.Freeze();
 
                 var path = new Path {
                     Fill = radial,
-                    Stroke = new SolidColorBrush(Colors.Violet),
+                    Stroke = new SolidColorBrush(Colors.DarkGray),
                     Stretch = Stretch.None,
-                    StrokeThickness = 2,
+                    StrokeThickness = 1.0,
                     Data = pathGeo
                 };
 
@@ -922,20 +1211,21 @@ namespace taskmaker_wpf.Views.Widget {
                 pathFig.Segments.Add(new LineSegment { Point = points[3] });
                 pathFig.Segments.Add(new LineSegment { Point = points[0] });
 
+                var fill = ColorManager.GetTintedColor(ColorManager.Palette[UiId], 2);
                 var linear = new LinearGradientBrush();
 
                 linear.MappingMode = BrushMappingMode.Absolute;
                 linear.StartPoint = points[1];
                 linear.EndPoint = points[2];
-                linear.GradientStops.Add(new GradientStop(Colors.Bisque, 0.0));
+                linear.GradientStops.Add(new GradientStop(fill, 0.0));
                 linear.GradientStops.Add(new GradientStop(Colors.Transparent, 1.0));
                 linear.Freeze();
 
                 var path = new Path {
                     Fill = linear,
-                    Stroke = new SolidColorBrush(Colors.Violet),
+                    Stroke = new SolidColorBrush(Colors.DarkGray),
                     Stretch = Stretch.None,
-                    StrokeThickness = 2,
+                    StrokeThickness = 1.0,
                     Data = pathGeo
                 };
 
@@ -945,7 +1235,7 @@ namespace taskmaker_wpf.Views.Widget {
     }
 
     public class SimplexShape : UserControl {
-
+        public int UiId { get; set; }
 
 
         public IEnumerable<Point> Points {
@@ -964,7 +1254,23 @@ namespace taskmaker_wpf.Views.Widget {
 
         }
 
-        public SimplexShape() { }
+        public SimplexShape(int uiId) {
+            UiId = uiId;
+
+            MouseEnter += (s, e) => {
+                var v = s as SimplexShape;
+                var path = v.Content as Path;
+
+                path.Opacity = 0.1;
+            };
+
+            MouseLeave += (s, e) => {
+                var v = s as SimplexShape;
+                var path = v.Content as Path;
+
+                path.Opacity = 1;
+            };
+        }
 
         public void Invalidate() {
             var points = Points.ToArray();
@@ -979,12 +1285,13 @@ namespace taskmaker_wpf.Views.Widget {
             pathFig.Segments.Add(new LineSegment { Point = points[2] });
             pathFig.Segments.Add(new LineSegment { Point = points[0] });
 
+            var fill = ColorManager.GetTintedColor(ColorManager.Palette[UiId], 2);
 
             var path = new Path {
-                Fill = new SolidColorBrush(Colors.Bisque),
-                Stroke = new SolidColorBrush(Colors.Violet),
+                Fill = new SolidColorBrush(fill),
+                Stroke = new SolidColorBrush(Colors.DarkGray),
                 Stretch = Stretch.None,
-                StrokeThickness = 2.0,
+                StrokeThickness = 1.0,
                 Data = pathGeo
             };
 
@@ -992,11 +1299,11 @@ namespace taskmaker_wpf.Views.Widget {
         }
     }
 
-    public class NodeShape : ContentControl {
+    public class NodeShape : StatefulWidget {
         public UIElement overlay;
-        private Ellipse circle;
-        public  UiElementState state = UiElementState.Default;
-        private SolidColorBrush fill;
+        public UiElementState state = UiElementState.Default;
+        public Color PrimaryColor;
+
         public Image checkIcon;
 
         public static readonly RoutedEvent ClickedEvent = EventManager.RegisterRoutedEvent("Clicked", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(NodeShape));
@@ -1017,25 +1324,58 @@ namespace taskmaker_wpf.Views.Widget {
         public static readonly DependencyProperty NodeProperty =
             DependencyProperty.Register("Node", typeof(NodeInfo), typeof(NodeShape), new PropertyMetadata(new NodeInfo(), OnPropertyChanged));
 
+        public void InvalidateOverlay() {
+            var overlay = new Grid();
+
+            var shape = new Ellipse {
+                Width = 20,
+                Height = 20,
+                Fill = new SolidColorBrush(Colors.Black),
+                Opacity = 0.0,
+            };
+
+            var icon = new SvgIcon {
+                Width = 12,
+                Height = 12,
+                Fill = new SolidColorBrush(Colors.Black),
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                UriSource = new Uri(@"/icons/done.svg", UriKind.Relative),
+                Visibility = Visibility.Hidden
+            };
+
+            overlay.Children.Add(shape);
+            overlay.Children.Add(icon);
+
+            Overlay = overlay;
+        }
+
+        public void InvalidateContent() {
+            PrimaryColor = ColorManager.GetTintedColor(ColorManager.Palette[Node.UiId], 2);
+
+            var container = new Grid();
+            var content = new Ellipse {
+                Width = 20,
+                Height = 20,
+                Stroke = Brushes.Black,
+                Fill = new SolidColorBrush(PrimaryColor),
+                StrokeThickness = 1.0,
+            };
+
+            container.Children.Add(content);
+            container.Children.Add(Overlay);
+
+            ToolTip = $"Node[{Node.NodeId}]-({Node.Location.X}, {Node.Location.Y})";
+
+            RenderOptions.SetEdgeMode(content, EdgeMode.Unspecified);
+            RenderOptions.SetBitmapScalingMode(content, BitmapScalingMode.HighQuality);
+
+            Container = container;
+        }
 
 
         public NodeShape() {
-            var image = new BitmapImage();
-
-            image.BeginInit();
-            image.UriSource = new Uri(@"C:\Users\Haoyan.Li\Documents\Repositories\taskmaker-wpf\icons\check_FILL0_wght400_GRAD0_opsz48.png"); 
-            image.DecodePixelWidth = 20;
-            image.EndInit();
-
-            checkIcon = new Image() {
-                Width = 20,
-                Height = 20,
-                Source = image,
-                Opacity = 0,
-            };
-
             _state = new DefaultNodeState(this);
-            //Invalidate();
         }
 
         protected override void OnMouseEnter(MouseEventArgs e) {
@@ -1076,13 +1416,11 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
-        private INodeState _state;
-
         public void Reset() {
             GoToState(UiElementState.Default);
         }
 
-        public void GoToState(UiElementState state) {
+        public override void GoToState(UiElementState state) {
             switch (state) {
                 case UiElementState.Default:
                     _state = new DefaultNodeState(this);
@@ -1103,113 +1441,78 @@ namespace taskmaker_wpf.Views.Widget {
                     break;
             }
 
-            _state.SetOverlay();
-            _state.SetContainer();
-            _state.SetFlag();
-
-            this.state = state;
+            base.GoToState(state);
         }
 
         public void Invalidate() {
-            var node = Node;
+            InvalidateOverlay();
+            InvalidateContent();
 
-            overlay = new Ellipse {
-                Width = 20,
-                Height = 20,
-                Fill = new SolidColorBrush(Colors.Black),
-                Opacity = 0.0,
-            };
-
-
-
-            var container = new Grid() {
-
-            };
-
-
-            circle = new Ellipse {
-                Width = 20,
-                Height = 20,
-                Stroke = Brushes.Black,
-                Fill = NodeRelationViewer.ColorPalette[node.UiId],
-                StrokeThickness = 1.0,
-            };
-            container.Children.Add(circle);
-            container.Children.Add(overlay);
-            container.Children.Add(checkIcon);
-
-            ToolTip = $"Node[{node.NodeId}]-({node.Location.X}, {node.Location.Y})";
-
-            RenderOptions.SetEdgeMode(circle, EdgeMode.Unspecified);
-            RenderOptions.SetBitmapScalingMode(circle, BitmapScalingMode.HighQuality);
-
-            Content = container;
+            Content = Container;
         }
     }
 
-    internal interface INodeState {
-        void SetOverlay();
-        void SetContainer();
-        void SetFlag();
-    }
 
-    public abstract class BaseNodeState : INodeState {
-        protected NodeShape _node;
-
-        public BaseNodeState(NodeShape node) {
-            _node = node;
-        }
-
-        public virtual void SetContainer() { }
-
-        public virtual void SetOverlay() { }
-
-        public virtual void SetFlag() { }
-    }
-
-    public class DefaultNodeState : BaseNodeState {
-        public DefaultNodeState(NodeShape node) : base(node) { }
+    public class DefaultNodeState : BaseState {
+        public DefaultNodeState(StatefulWidget widget) : base(widget) { }
 
         public override void SetOverlay() {
-            var shape = (_node.overlay as Shape);
+            var node = Parent as NodeShape;
+            var overlay = node.Overlay as Grid;
+            var shape = overlay.Children.OfType<Ellipse>().First();
+            var icon = overlay.Children.OfType<SvgIcon>().First();
 
+            icon.Visibility = Visibility.Hidden;
             shape.Opacity = 0;
         }
 
         public override void SetFlag() {
-            base.SetFlag();
-            _node.IsSelected = false;
+            var node = Parent as NodeShape;
+
+            node.IsSelected = false;
         }
+
+        public override void SetContainer() { }
     }
 
-    public class SelectedNodeState : BaseNodeState {
+    public class SelectedNodeState : BaseState {
         public SelectedNodeState(NodeShape node) : base(node) {
         }
 
         public override void SetOverlay() {
-            base.SetOverlay();
+            var node = Parent as NodeShape;
+            var overlay = node.Overlay as Grid;
+            var shape = overlay.Children.OfType<Ellipse>().First();
+            var icon = overlay.Children.OfType<SvgIcon>().First();
 
-            var shape = (_node.overlay as Shape);
+            icon.Visibility = Visibility.Visible;
             shape.Opacity = 0.12;
         }
 
-        public override void SetContainer() {
-            base.SetContainer();
-        }
+        public override void SetContainer() { }
 
         public override void SetFlag() {
-            _node.IsSelected = true;
+            var node = Parent as NodeShape;
+
+            node.IsSelected = true;
         }
     }
 
-    public class HoverNodeState : BaseNodeState {
+    public class HoverNodeState : BaseState {
         public HoverNodeState(NodeShape node) : base(node) {
         }
 
-        public override void SetOverlay() {
-            base.SetOverlay();
+        public override void SetContainer() { }
 
-            var shape = (_node.overlay as Shape);
+        public override void SetFlag() { }
+
+        public override void SetOverlay() {
+            var node = Parent as NodeShape;
+            var overlay = node.Overlay as Grid;
+            var shape = overlay.Children.OfType<Ellipse>().First();
+            var icon = overlay.Children.OfType<SvgIcon>().First();
+
+            icon.Visibility = Visibility.Hidden;
             shape.Opacity = 0.08;
         }
     }
