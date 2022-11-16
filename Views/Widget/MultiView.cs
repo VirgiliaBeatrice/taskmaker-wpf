@@ -112,6 +112,17 @@ namespace taskmaker_wpf.Views.Widget {
 
 
 
+        public bool IsOpen {
+            get { return (bool)GetValue(IsOpenProperty); }
+            set { SetValue(IsOpenProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsOpen.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsOpenProperty =
+            DependencyProperty.Register("IsOpen", typeof(bool), typeof(NodeRelationViewer), new FrameworkPropertyMetadata(false, OnPropertyChanged));
+
+
+
         public IEnumerable<NodeInfo> Locked {
             get { return (IEnumerable<NodeInfo>)GetValue(LockedProperty); }
             set { SetValue(LockedProperty, value); }
@@ -119,7 +130,7 @@ namespace taskmaker_wpf.Views.Widget {
 
         // Using a DependencyProperty as the backing store for Locked.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty LockedProperty =
-            DependencyProperty.Register("Locked", typeof(IEnumerable<NodeInfo>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeInfo[0], OnPropertyChanged));
+            DependencyProperty.Register("Locked", typeof(IEnumerable<NodeInfo>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeInfo[0]));
 
 
         public IEnumerable<NodeRelation> Combinations {
@@ -129,16 +140,25 @@ namespace taskmaker_wpf.Views.Widget {
 
         // Using a DependencyProperty as the backing store for Combinations.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty CombinationsProperty =
-            DependencyProperty.Register("Combinations", typeof(IEnumerable<NodeRelation>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeRelation[0], OnPropertyChanged));
+            DependencyProperty.Register("Combinations", typeof(IEnumerable<NodeRelation>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeRelation[0]));
 
 
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
             if (d is NodeRelationViewer viewer) {
-                viewer.Layout();
+                //viewer.Layout();
+
+                if ((bool)args.NewValue == true)
+                    viewer.Visibility= Visibility.Visible;
+                else
+                    viewer.Visibility= Visibility.Collapsed;
             }
         }
 
         public NodeRelationViewer(UIElement target) {
+            Layout();
+        }
+
+        public void InvalidateState() {
             Layout();
         }
 
@@ -271,6 +291,13 @@ namespace taskmaker_wpf.Views.Widget {
 
                 Viewer.Locked = locked;
                 Viewer.Combinations = combinations.Select(e => new NodeRelation(e));
+
+                Viewer.Visibility = Visibility.Visible;
+                Viewer.InvalidateState();
+            }
+            else {
+                Viewer.Visibility = Visibility.Collapsed;
+                Viewer.InvalidateState();
             }
         }
 
@@ -296,6 +323,13 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public void Layout() {
+            Viewer = new NodeRelationViewer(this) {
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Center,
+            };
+
+            Panel.SetZIndex(Viewer, 10);
+
             if (ItemsSource == null) return;
 
             var items = ItemsSource.Cast<object>().ToList();
@@ -405,19 +439,10 @@ namespace taskmaker_wpf.Views.Widget {
             //    grid,
             //    )
 
-            Viewer = new NodeRelationViewer(this) {
-                VerticalAlignment = VerticalAlignment.Top,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
 
-            Panel.SetZIndex(Viewer, 10);
 
             ((Grid)Content).Children.Add(grid);
             ((Grid)Content).Children.Add(Viewer);
-        }
-
-        public void NotifyCombination() {
-
         }
     }
 
