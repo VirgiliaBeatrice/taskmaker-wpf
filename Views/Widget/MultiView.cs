@@ -155,15 +155,22 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public override void SetFlag() {
+            var widget = Parent as RelationWidget;
+
+            widget.IsSelected = !widget.IsSelected;
         }
 
         public override void SetOverlay() {
-            var border = Parent.Overlay as Border;
+            var grid = Parent.Overlay as Grid;
+            var overlay = grid.Children.OfType<Rectangle>().First();
+            var icon = grid.Children.OfType<SvgIcon>().First();
 
             // Set color
-            border.Background = Brushes.Black;
+            overlay.Fill = Brushes.White;
             // Set opacity
-            border.Opacity = 0;
+            overlay.Opacity = 0.0;
+
+            icon.Visibility = Visibility.Hidden;
         }
     }
 
@@ -180,15 +187,47 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public override void SetFlag() {
+
         }
 
         public override void SetOverlay() {
-            var border = Parent.Overlay as Border;
+            var grid = Parent.Overlay as Grid;
+            var overlay = grid.Children.OfType<Rectangle>().First();
+            var icon = grid.Children.OfType<SvgIcon>().First();
 
             // Set color
-            border.Background = Brushes.Black;
+            overlay.Fill = Brushes.White;
             // Set opacity
-            border.Opacity = 0.08;
+            overlay.Opacity = 0.08;
+
+            icon.Visibility = Visibility.Hidden;
+        }
+    }
+
+    public class SelectedState : BaseState {
+        public SelectedState(StatefulWidget parent) : base(parent) {
+        }
+
+        public override void SetContainer() {
+        }
+
+        public override void SetFlag() {
+            var widget = Parent as RelationWidget;
+
+            widget.IsSelected = !widget.IsSelected;
+        }
+
+        public override void SetOverlay() {
+            var grid = Parent.Overlay as Grid;
+            var overlay = grid.Children.OfType<Rectangle>().First();
+            var icon = grid.Children.OfType<SvgIcon>().First();
+
+            // Set color
+            overlay.Fill = Brushes.Red;
+            // Set opacity
+            overlay.Opacity = 0.12;
+
+            icon.Visibility = Visibility.Visible;
         }
     }
 
@@ -208,17 +247,24 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public override void SetOverlay() {
-            var border = Parent.Overlay as Border;
+            var grid = Parent.Overlay as Grid;
+            var overlay = grid.Children.OfType<Rectangle>().First();
+            var icon = grid.Children.OfType<SvgIcon>().First();
 
             // Set color
-            border.Background = Brushes.Tomato;
+            overlay.Fill = Brushes.DarkRed;
             // Set opacity
-            border.Opacity = 0.12;
+            overlay.Opacity = 0.12;
+            
+            icon.Visibility = Visibility.Hidden;
+
         }
     }
 
 
     public class RelationWidget : StatefulWidget {
+        public bool IsSelected { get; set; } = false; 
+
         public RelationWidget() {
             var content = new Rectangle {
                 Width = 20,
@@ -227,7 +273,30 @@ namespace taskmaker_wpf.Views.Widget {
             };
 
             Container = new Grid { };
-            Overlay = new Border { };
+            //Overlay = new Border { };
+
+            var overlayContainer = new Grid();
+
+            var overlay = new Rectangle {
+                Width = 20,
+                Height = 20,
+                Fill = new SolidColorBrush(Colors.White),
+                Opacity = 0.0
+            };
+            var icon = new SvgIcon {
+                Width = 12,
+                Height = 12,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                UriSource = new Uri(@"icons/done.svg", UriKind.Relative),
+                Fill = new SolidColorBrush(Colors.White),
+                Visibility = Visibility.Hidden,
+            };
+
+            overlayContainer.Children.Add(overlay);
+            overlayContainer.Children.Add(icon);
+
+            Overlay = overlayContainer;
 
             (Container as Grid).Children.Add(content);
             (Container as Grid).Children.Add(Overlay);
@@ -260,6 +329,14 @@ namespace taskmaker_wpf.Views.Widget {
                 var widget = s as RelationWidget;
 
                 if (widget.State == UiElementState.Pressed) {
+                    if (widget.IsSelected) {
+                        GoToState(UiElementState.Default);
+                    }
+                    else {
+                        GoToState(UiElementState.Selected);
+                    }
+                }
+                else if (widget.State == UiElementState.Selected) {
                     GoToState(UiElementState.Default);
                 }
             };
@@ -276,6 +353,7 @@ namespace taskmaker_wpf.Views.Widget {
                 case UiElementState.Focus:
                     break;
                 case UiElementState.Selected:
+                    _state = new SelectedState(this);
                     break;
                 case UiElementState.Activated:
                     break;
