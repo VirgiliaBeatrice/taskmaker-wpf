@@ -986,7 +986,7 @@ namespace taskmaker_wpf.Views.Widget {
             MouseEnter += (s, e) => {
                 var el = Keyboard.Focus(s as IInputElement);
 
-                Console.WriteLine(el);
+                //Console.WriteLine(el);
             };
 
 
@@ -1095,24 +1095,13 @@ namespace taskmaker_wpf.Views.Widget {
                 if (!(Keyboard.Modifiers == ModifierKeys.Control)) {
                     return;
                 }
-                var pivot = e.GetPosition(_canvas);
-                var center = new Point(_canvas.ActualWidth / 2, _canvas.ActualHeight / 2);
 
+                var pivot = e.GetPosition(_canvas);
                 var scale = e.Delta > 0 ? 1.25 : 1 / 1.25;
 
-                var sMat = _canvas.RenderTransform.Value;
+                Transform.ScaleAt(scale, scale, pivot.X, pivot.Y);
 
-                sMat.ScaleAt(scale, scale, center.X, center.Y);
-
-                this.scale = sMat;
-
-                sMat.Prepend(translate);
-                
-
-                _canvas.RenderTransform = new MatrixTransform() {
-                    Matrix = sMat,
-                };
-
+                InvalidateTransform();
             };
 
             PreviewKeyDown += (s, e) => {
@@ -1136,9 +1125,11 @@ namespace taskmaker_wpf.Views.Widget {
             };
 
             Keyboard.AddPreviewKeyDownHandler(this, (s, e) => {
-                Console.WriteLine($"Keydown, {e.Key}");
+                //Console.WriteLine($"Keydown, {e.Key}");
             });
         }
+
+        private Matrix Transform = Matrix.Identity;
 
         private UiMode mode = UiMode.Default;
         private Point mousedownLocation;
@@ -1174,6 +1165,16 @@ namespace taskmaker_wpf.Views.Widget {
             };
             
             Command.Execute(param);
+        }
+
+        private void InvalidateTransform() {
+            foreach(var node in _canvas.Children.OfType<NodeShape>()) {
+                var point = node.Node.Location;
+                var tPoint = Transform.Transform(point);
+
+                Canvas.SetLeft(node, tPoint.X);
+                Canvas.SetTop(node, tPoint.Y);
+            }
         }
     }
 
@@ -1383,6 +1384,8 @@ namespace taskmaker_wpf.Views.Widget {
         public Color PrimaryColor;
 
         public Image checkIcon;
+        public Matrix Transform { get; set; } = Matrix.Identity;
+
 
         public static readonly RoutedEvent ClickedEvent = EventManager.RegisterRoutedEvent("Clicked", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(NodeShape));
 
