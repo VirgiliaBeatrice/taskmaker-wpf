@@ -7,6 +7,7 @@ using System.Data;
 using System.Drawing.Design;
 using System.Drawing.Imaging;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,6 +19,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Xml.XPath;
+using taskmaker_wpf.Model.SimplicialMapping;
 using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Views.Widgets;
 using static Unity.Storage.RegistrationSet;
@@ -90,19 +92,24 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         static public NodeInfo[][] GetCombinations(IEnumerable<NodeInfo[]> nodeSets) {
-            var a = nodeSets.Take(1).First();
-            var b = nodeSets.Skip(1).ToArray();
-
-            NodeInfo[][] result;
-
-            if (b.Count() > 1) {
-                result = Calc(a, GetCombinations(b));
-            }
+            if (nodeSets.Count() == 1)
+                return nodeSets.ToArray();
             else {
-                result = Calc(a, b.First());
+                var a = nodeSets.Take(1).First();
+                var b = nodeSets.Skip(1).ToArray();
+
+                NodeInfo[][] result;
+
+                if (b.Count() > 1) {
+                    result = Calc(a, GetCombinations(b));
+                }
+                else {
+                    result = Calc(a, b.First());
+                }
+
+                return result;
             }
 
-            return result;
         }
     }
 
@@ -693,11 +700,18 @@ namespace taskmaker_wpf.Views.Widget {
             Controllers.Clear();
 
             if (items.Count == 1) {
+                var box = new Viewbox {
+                    Stretch = Stretch.None,
+                };
+
                 var ui = new UiController {
+                    VerticalAlignment= VerticalAlignment.Stretch,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
                     Margin = new Thickness(2),
                     Command = vm.UiCommand,
                 };
 
+                //box.Child = ui;
                 //var widget = new ComplexWidget {
                 //    Margin = new Thickness(2),
                 //    Background = Brushes.LightGray,
@@ -757,6 +771,8 @@ namespace taskmaker_wpf.Views.Widget {
                     var ui = new UiController {
                         Margin = new Thickness(2),
                         Command = vm.UiCommand,
+                        VerticalAlignment = VerticalAlignment.Stretch,
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
                     };
                     var textblock = new TextBlock {
                         Text = "Title",
@@ -858,6 +874,8 @@ namespace taskmaker_wpf.Views.Widget {
 
             if (state.Regions != null)
                 ui.InvalidateRegion();
+
+            ui.InvalidateTransform();
         }
 
         public ICommand Command {
@@ -883,8 +901,8 @@ namespace taskmaker_wpf.Views.Widget {
             foreach (var item in nodes) {
                 var nodeShape = new NodeShape() {
                     //Node = item,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
                 };
 
                 nodeShape.Clicked += (s, ev) => {
@@ -906,8 +924,8 @@ namespace taskmaker_wpf.Views.Widget {
                     }
                 };
 
-                Canvas.SetLeft(nodeShape, item.Location.X - 20 / 2);
-                Canvas.SetTop(nodeShape, item.Location.Y - 20 / 2);
+                //Canvas.SetLeft(nodeShape, item.Location.X - 20 / 2);
+                //Canvas.SetTop(nodeShape, item.Location.Y - 20 / 2);
                 Canvas.SetZIndex(nodeShape, 10);
 
                 _canvas.Children.Add(nodeShape);
@@ -953,8 +971,6 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
-
-
         public UiController() {
             Focusable = true;
             Visibility = Visibility.Visible;
@@ -990,12 +1006,11 @@ namespace taskmaker_wpf.Views.Widget {
             };
 
 
-            var viewbox = new Viewbox {
-                
-            };
             var container = new Grid {
                 Background = Brushes.Azure,
-                ClipToBounds = true
+                ClipToBounds = true,
+                //Width = 400,
+                //Height = 400,
             };
             _canvas = new Canvas() {
                 Background = Brushes.DarkGray,
@@ -1003,12 +1018,11 @@ namespace taskmaker_wpf.Views.Widget {
                 UseLayoutRounding = true,
             };
             container.Children.Add(_canvas);
-            viewbox.Child = container;
 
             container.SetBinding(WidthProperty, new Binding() {
                 Path = new PropertyPath("ActualWidth"),
                 RelativeSource = new RelativeSource() {
-                    AncestorType = typeof(UiController),
+                    AncestorType = typeof(Grid),
                     Mode = RelativeSourceMode.FindAncestor
                 },
 
@@ -1017,13 +1031,24 @@ namespace taskmaker_wpf.Views.Widget {
             container.SetBinding(HeightProperty, new Binding() {
                 Path = new PropertyPath("ActualHeight"),
                 RelativeSource = new RelativeSource() {
-                    AncestorType = typeof(UiController),
+                    AncestorType = typeof(Grid),
                     Mode = RelativeSourceMode.FindAncestor
                 },
 
             });
 
-            Content = viewbox;
+            Content = container;
+
+            //container.SizeChanged += (s, e) => {
+            //    var cCenter = new Point(e.NewSize.Width / 2.0, e.NewSize.Height / 2.0);
+            //    var pCenter = new Point(e.PreviousSize.Width / 2.0, e.PreviousSize.Height / 2.0);
+
+            //    var diff = cCenter - pCenter;
+
+            //    Translate.TranslatePrepend(diff.X, diff.Y);
+
+            //    InvalidateTransform();
+            //};
 
             // Pan
             MouseDown += (s, e) => {
@@ -1032,57 +1057,48 @@ namespace taskmaker_wpf.Views.Widget {
                 
 
                 if (mode == UiMode.Add) {
-                    mousedownLocation = e.GetPosition(_canvas);
+                    var point = e.GetPosition(_canvas);
+                    
+                    mousedownLocation = point;
                 }
                 else if (mode == UiMode.Pan) {
                     isDragging = true;
-                    start = e.GetPosition(this);
-                    startMat = _canvas.RenderTransform.Value;
+                    start = e.GetPosition(_canvas);
+                    startMat = Translate;
                 }
             };
 
             MouseMove += (s, e) => {
                 if (mode == UiMode.Pan) {
                     if (isDragging) {
-                        var curr = e.GetPosition(this);
+                        var curr = e.GetPosition(_canvas);
                         var vector = (curr - start);
 
                         var tMat = Matrix.Parse(startMat.ToString());
                         tMat.Translate(vector.X, vector.Y);
 
-                        offset = (Point)vector;
+                        Translate = tMat;
 
-                        translate = tMat;
-
-                        tMat.Prepend(scale);
-
-                        _canvas.RenderTransform = new MatrixTransform() {
-                            Matrix = tMat,
-                        };
-
+                        InvalidateTransform();
                     }
                 }
             };
 
             MouseUp += (s, e) => {
                 if (mode == UiMode.Add) {
-                    OnMouseClicked(mousedownLocation);
+                    var tP = Transform.Transform(mousedownLocation);
+                    OnMouseClicked(tP);
                 }
                 else if (mode == UiMode.Pan) {
-                    var curr = e.GetPosition(this);
+                    var curr = e.GetPosition(_canvas);
                     var vector = (curr - start);
 
                     var tMat = Matrix.Parse(startMat.ToString());
                     tMat.Translate(vector.X, vector.Y);
 
-                    translate = tMat;
+                    Translate = tMat;
 
-                    tMat.Append(scale);
-
-                    _canvas.RenderTransform = new MatrixTransform() {
-                        Matrix = tMat,
-                    };
-
+                    InvalidateTransform();
                     isDragging = false;
                 }
 
@@ -1099,16 +1115,17 @@ namespace taskmaker_wpf.Views.Widget {
                 var pivot = e.GetPosition(_canvas);
                 var scale = e.Delta > 0 ? 1.25 : 1 / 1.25;
 
-                Transform.ScaleAt(scale, scale, pivot.X, pivot.Y);
+                Scale.ScaleAt(scale, scale, pivot.X, pivot.Y);
 
                 InvalidateTransform();
             };
 
             PreviewKeyDown += (s, e) => {
                 if (e.Key == Key.R) {
-                    _canvas.RenderTransform = new MatrixTransform {
-                        Matrix = Matrix.Identity
-                    };
+                    Translate = Matrix.Identity;
+                    Scale = Matrix.Identity;
+
+                    InvalidateTransform();
                 }
                 else if (e.Key == Key.B) {
                     OnBuild();
@@ -1130,14 +1147,13 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         private Matrix Transform = Matrix.Identity;
+        private Matrix Translate = Matrix.Identity;
+        private Matrix Scale = Matrix.Identity;
 
         private UiMode mode = UiMode.Default;
         private Point mousedownLocation;
 
-        private Point offset = new Point(0, 0);
-        private Matrix translate = Matrix.Identity;
         private Matrix scale = Matrix.Identity;
-        private Point prevAnchor = new Point(0, 0);
 
         private bool isDragging;
         private Point start;
@@ -1168,18 +1184,34 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         private void InvalidateTransform() {
-            foreach(var node in _canvas.Children.OfType<NodeShape>()) {
+            Transform = Scale * Translate;
+
+            // Invalidate all nodes transformation
+            foreach (var node in _canvas.Children.OfType<NodeShape>()) {
                 var point = node.Node.Location;
                 var tPoint = Transform.Transform(point);
 
-                Canvas.SetLeft(node, tPoint.X);
-                Canvas.SetTop(node, tPoint.Y);
+                Canvas.SetLeft(node, tPoint.X - 20 / 2);
+                Canvas.SetTop(node, tPoint.Y - 20 / 2);
+            }
+
+            foreach(var simplex in _canvas.Children.OfType<SimplexShape>()) {
+                simplex.Transform = Transform;
+
+                simplex.Invalidate();
+            }
+
+            foreach(var voronoi in _canvas.Children.OfType<VoronoiShape>()) {
+                voronoi.Transform = Transform;
+
+                voronoi.Invalidate();
             }
         }
     }
 
     public class VoronoiShape : UserControl {
         public int UiId { get; set; }
+        public Matrix Transform { get; set; } = Matrix.Identity;
 
         public IEnumerable<Point> Points {
             get { return (IEnumerable<Point>)GetValue(PointsProperty); }
@@ -1215,7 +1247,7 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public void Invalidate() {
-            var points = Points.ToArray();
+            var points = Points.Select(e => Transform.Transform(e)).ToArray();
 
             if (points.Length == 3) {
                 var radius = (points[1] - points[0]).Length;
@@ -1316,6 +1348,7 @@ namespace taskmaker_wpf.Views.Widget {
     public class SimplexShape : UserControl {
         public int UiId { get; set; }
 
+        public Matrix Transform { get; set; } = Matrix.Identity;
 
         public IEnumerable<Point> Points {
             get { return (IEnumerable<Point>)GetValue(PointsProperty); }
@@ -1352,7 +1385,7 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public void Invalidate() {
-            var points = Points.ToArray();
+            var points = Points.Select(e => Transform.Transform(e)).ToArray();
 
             var pathGeo = new PathGeometry();
             var pathFig = new PathFigure {
