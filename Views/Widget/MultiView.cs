@@ -26,12 +26,6 @@ using static Unity.Storage.RegistrationSet;
 using Rectangle = System.Windows.Shapes.Rectangle;
 
 namespace taskmaker_wpf.Views.Widget {
-    //public class NodeRelation {
-    //    public object Master { get; set; }
-    //    public object[] Remainder { get; set; }
-    //    public bool HasValue { get; set; } = false;
-    //}
-
     public class NodeRelation {
         public bool HasValue { get; set; }
         private readonly NodeInfo[] _nodes;
@@ -57,16 +51,6 @@ namespace taskmaker_wpf.Views.Widget {
     }
 
     public class Helper {
-        static public NodeInfo[][] a => GetCombinations(Test());
-
-        static public NodeInfo[][] Test() {
-            return new NodeInfo[][] {
-                Enumerable.Range(0, 2).Select(e => new NodeInfo() {NodeId = e, UiId = 0}).ToArray(),
-                Enumerable.Range(0, 3).Select(e => new NodeInfo() {NodeId = e, UiId = 1}).ToArray(),
-                Enumerable.Range(0, 3).Select(e => new NodeInfo() {NodeId = e, UiId = 2}).ToArray(),
-            };
-        }
-
         static public NodeInfo[][] Calc(NodeInfo[] a, NodeInfo[] b) {
             var result = new List<NodeInfo[]>();
 
@@ -379,92 +363,7 @@ namespace taskmaker_wpf.Views.Widget {
 
     }
 
-    public class ColorManager {
-        // https://abierre.com/article/5c18da1189599b92b890ecc1
-        static public double TintFactor = 0.25;
-
-        static public Color[] Palette = {
-            Colors.Red,
-            Colors.Pink,
-            Colors.Purple,
-            Colors.Indigo,
-            Colors.Blue,
-            Colors.LightBlue,
-            Colors.Cyan,
-            Colors.Teal,
-            Colors.Green,
-            Colors.LightGreen,
-            Colors.Lime,
-            Colors.Yellow,
-            Colors.Orange,
-            Colors.Brown,
-            Colors.Gray,
-        };
-
-        static public Color GetTintedColor(Color color, int level) {
-            return new Color {
-                R = (byte)(color.R + (255 - color.R) * (TintFactor * level)),
-                G = (byte)(color.G + (255 - color.G) * (TintFactor * level)),
-                B = (byte)(color.B + (255 - color.B) * (TintFactor * level)),
-                A = 255
-            };
-        }
-
-        public static double GetRelativeLuminance(Color color) {
-            var r = (double)color.R / 255.0;
-            var g = (double)color.G / 255.0;
-            var b = (double)color.B / 255.0;
-
-            double R, G, B;
-
-            if (r <= 0.03928)
-                R = r / 12.92;
-            else
-                R = Math.Pow(((r + 0.055) / 1.055), 2.4);
-
-            if (g <= 0.03928)
-                G = g / 12.92;
-            else
-                G = Math.Pow(((g + 0.055) / 1.055), 2.4);
-
-            if (b <= 0.03928)
-                B = b / 12.92;
-            else
-                B = Math.Pow(((b + 0.055) / 1.055), 2.4);
-
-            return 0.2126 * R + 0.7152 * G + 0.0722 * B;
-        }
-
-        public static double GetConstrastRatio(Color color0, Color color1) {
-            var l0 = GetRelativeLuminance(color0);
-            var l1 = GetRelativeLuminance(color1);
-
-            var luminH = l0 > l1 ? l0 : l1;
-            var luminL = l0 > l1 ? l1 : l0;
-
-            return (luminH + 0.05) / (luminL + 0.05);
-        }
-
-        public static Color GetComplemetaryColor(Color color) {
-            return new Color() {
-                R = (byte)(255 - color.R),
-                G = (byte)(255 - color.G),
-                B = (byte)(255 - color.B),
-                A = 255
-            };
-        }
-    }
-
-
     public class NodeRelationViewer : UserControl {
-        //static public SolidColorBrush[] ColorPalette = new SolidColorBrush[] {
-        //    (SolidColorBrush)new BrushConverter().ConvertFrom("#A7226E"),
-        //    (SolidColorBrush)new BrushConverter().ConvertFrom("#EC2049"),
-        //    (SolidColorBrush)new BrushConverter().ConvertFrom("#F26B38"),
-        //    (SolidColorBrush)new BrushConverter().ConvertFrom("#F7DB4F"),
-        //    (SolidColorBrush)new BrushConverter().ConvertFrom("#2F9599"),
-        //};
-
         public IEnumerable<NodeInfo> Locked {
             get { return (IEnumerable<NodeInfo>)GetValue(LockedProperty); }
             set { SetValue(LockedProperty, value); }
@@ -597,7 +496,7 @@ namespace taskmaker_wpf.Views.Widget {
 
         // Using a DependencyProperty as the backing store for ItemsSource.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ItemsSourceProperty =
-            DependencyProperty.Register("ItemsSource", typeof(IEnumerable), typeof(MultiView), new FrameworkPropertyMetadata(new object[0], OnPropertyChanged));
+            DependencyProperty.Register("ItemsSource", typeof(IEnumerable), typeof(MultiView), new FrameworkPropertyMetadata(new IInputPort[0], OnPropertyChanged));
 
 
         public int MaxColumnCount {
@@ -611,10 +510,21 @@ namespace taskmaker_wpf.Views.Widget {
 
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
             if (d is MultiView view) {
+                var newUis = (args.NewValue as IInputPort[]).Select(e => e.Name);
+                var oldUis = (args.OldValue as IInputPort[]).Select(e => e.Name);
+                
 
-                view.Layout();
+                if (Enumerable.SequenceEqual(oldUis, newUis)) {
+                    for (int i = 0; i < view.Controllers.Count; i++) {
+                        view.Controllers[i].UiState = (ControlUiState)(args.NewValue as IInputPort[])[i];
+                    }
+                }
+                else {
+                    view.Layout();
 
-                view.InvalidateViewer();
+                    view.InvalidateViewer();
+                }
+
 
 
                 //if (DesignerProperties.GetIsInDesignMode(d) && d is MultiView control) {
@@ -834,7 +744,7 @@ namespace taskmaker_wpf.Views.Widget {
 
     public class UiController : UserControl {
 
-        internal static readonly DependencyPropertyKey SelectedNodePropertyKey = DependencyProperty.RegisterReadOnly("SelectedNode", typeof(NodeShape), typeof(UiController), new FrameworkPropertyMetadata(null, (PropertyChangedCallback)OnSelectedNodePropertyChanged));
+        internal static readonly DependencyPropertyKey SelectedNodePropertyKey = DependencyProperty.RegisterReadOnly("SelectedNode", typeof(NodeShape), typeof(UiController), new FrameworkPropertyMetadata(null, OnSelectedNodePropertyChanged));
 
         private static void OnSelectedNodePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
             var parent = VisualTreeHelper.GetParent(d as Visual);
@@ -890,15 +800,17 @@ namespace taskmaker_wpf.Views.Widget {
         private Canvas _canvas;
 
         public void InvalidateNode() {
-            var nodes = UiState.Nodes.Select(e => new NodeInfo() { Location = e.Value, NodeId = e.Id, UiId = UiState.Id }).ToArray();
+            var nodeInfos = UiState.Nodes.Select(e => new NodeInfo() { Location = e.Value, NodeId = e.Id, UiId = UiState.Id }).ToArray();
 
             // Clear nodes
-            foreach (var shape in _canvas.Children.OfType<NodeShape>()) {
+            var nodes = _canvas.Children.OfType<NodeShape>().ToArray();
+
+            foreach (var shape in nodes) {
                 _canvas.Children.Remove(shape);
             }
 
 
-            foreach (var item in nodes) {
+            foreach (var item in nodeInfos) {
                 var nodeShape = new NodeShape() {
                     //Node = item,
                     VerticalAlignment = VerticalAlignment.Stretch,
@@ -939,14 +851,15 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public void InvalidateRegion() {
-            var simplices = UiState.Regions.OfType<SimplexState>();
-            var voronois = UiState.Regions.OfType<VoronoiState>();
+            var simplexStates = UiState.Regions.OfType<SimplexState>();
+            var voronoiStates = UiState.Regions.OfType<VoronoiState>();
 
-            foreach (var shape in _canvas.Children.OfType<SimplexShape>()) {
+            var simplices = _canvas.Children.OfType<SimplexShape>().ToArray();
+            foreach (var shape in simplices) {
                 _canvas.Children.Remove(shape);
             }
 
-            foreach (var item in simplices) {
+            foreach (var item in simplexStates) {
                 var shape = new SimplexShape(UiState.Id) {
                     Points = item.Points,
                 };
@@ -956,11 +869,12 @@ namespace taskmaker_wpf.Views.Widget {
                 _canvas.Children.Add(shape);
             }
 
-            foreach (var shape in _canvas.Children.OfType<VoronoiShape>()) {
+            var voronois = _canvas.Children.OfType<VoronoiShape>().ToArray();
+            foreach (var shape in voronois) {
                 _canvas.Children.Remove(shape);
             }
 
-            foreach (var item in voronois) {
+            foreach (var item in voronoiStates) {
                 var shape = new VoronoiShape(UiState.Id) {
                     Points = item.Points,
                 };
@@ -1017,6 +931,32 @@ namespace taskmaker_wpf.Views.Widget {
                 SnapsToDevicePixels = true,
                 UseLayoutRounding = true,
             };
+
+            var axisX = new Arrow {
+                Name = "AxisX",
+                Start = new Point(0, 0),
+                End = new Point(100, 0),
+                Stroke = Brushes.Red
+            };
+
+            var axisY = new Arrow {
+                Name = "AxisY",
+                Start = new Point(0, 0),
+                End = new Point(0, 100),
+                Stroke = Brushes.Green
+            };
+
+            //var origin = new Ellipse {
+            //    Fill = new SolidColorBrush(Colors.Black),
+            //    Width = 2,
+            //    Height = 2,
+            //};
+
+            //Canvas.SetTop(origin, -2 / 2);
+            //Canvas.SetLeft(origin, -2 / 2);
+
+            _canvas.Children.Add(axisX);
+            _canvas.Children.Add(axisY);
             container.Children.Add(_canvas);
 
             container.SetBinding(WidthProperty, new Binding() {
@@ -1039,16 +979,23 @@ namespace taskmaker_wpf.Views.Widget {
 
             Content = container;
 
-            //container.SizeChanged += (s, e) => {
-            //    var cCenter = new Point(e.NewSize.Width / 2.0, e.NewSize.Height / 2.0);
-            //    var pCenter = new Point(e.PreviousSize.Width / 2.0, e.PreviousSize.Height / 2.0);
+            container.SizeChanged += (s, e) => {
 
-            //    var diff = cCenter - pCenter;
+                var cCenter = new Point(e.NewSize.Width / 2.0, e.NewSize.Height / 2.0);
 
-            //    Translate.TranslatePrepend(diff.X, diff.Y);
+                Normalized.SetIdentity();
+                Normalized.Scale(1, -1);
 
-            //    InvalidateTransform();
-            //};
+                Normalized.Translate(cCenter.X, cCenter.Y);
+                //var pCenter = new Point(e.PreviousSize.Width / 2.0, e.PreviousSize.Height / 2.0);
+
+                //var diff = cCenter - pCenter;
+
+                //Offset = Matrix.Identity;
+                //Offset.Translate(diff.X, diff.Y);
+
+                InvalidateTransform();
+            };
 
             // Pan
             MouseDown += (s, e) => {
@@ -1058,8 +1005,10 @@ namespace taskmaker_wpf.Views.Widget {
 
                 if (mode == UiMode.Add) {
                     var point = e.GetPosition(_canvas);
-                    
-                    mousedownLocation = point;
+                    var invMat = Transform;
+
+                    invMat.Invert();
+                    mousePosition = invMat.Transform(point);
                 }
                 else if (mode == UiMode.Pan) {
                     isDragging = true;
@@ -1086,8 +1035,7 @@ namespace taskmaker_wpf.Views.Widget {
 
             MouseUp += (s, e) => {
                 if (mode == UiMode.Add) {
-                    var tP = Transform.Transform(mousedownLocation);
-                    OnMouseClicked(tP);
+                    OnMouseClicked(mousePosition);
                 }
                 else if (mode == UiMode.Pan) {
                     var curr = e.GetPosition(_canvas);
@@ -1146,19 +1094,19 @@ namespace taskmaker_wpf.Views.Widget {
             });
         }
 
+        private Matrix Normalized = Matrix.Identity;
+
         private Matrix Transform = Matrix.Identity;
+        private Matrix Offset = Matrix.Identity;
         private Matrix Translate = Matrix.Identity;
         private Matrix Scale = Matrix.Identity;
 
         private UiMode mode = UiMode.Default;
-        private Point mousedownLocation;
-
-        private Matrix scale = Matrix.Identity;
+        private Point mousePosition;
 
         private bool isDragging;
         private Point start;
         private Matrix startMat;
-        //private Matrix translate = Matrix.Identity;
 
         private void OnMouseClicked(Point point) {
             var param = new CommandParameter();
@@ -1184,7 +1132,20 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         private void InvalidateTransform() {
-            Transform = Scale * Translate;
+
+            Transform.SetIdentity();
+            Transform.Append(Normalized);
+            Transform.Append(Translate);
+            Transform.Append(Scale);
+
+            //Transform.
+            //Transform = Offset * Translate * Scale;
+
+            var x = _canvas.Children.OfType<Arrow>().Where(e => e.Name == "AxisX").First();
+            var y = _canvas.Children.OfType<Arrow>().Where(e => e.Name == "AxisY").First();
+
+            x.Transform = Transform;
+            y.Transform = Transform;
 
             // Invalidate all nodes transformation
             foreach (var node in _canvas.Children.OfType<NodeShape>()) {
@@ -1281,8 +1242,8 @@ namespace taskmaker_wpf.Views.Widget {
 
                 pathGeo.Figures.Add(pathFig);
 
-                pathFig.Segments.Add(new LineSegment { Point = p0 });
-                pathFig.Segments.Add(new ArcSegment { Point = p1, Size = new Size(radius, radius), SweepDirection = SweepDirection.Counterclockwise });
+                pathFig.Segments.Add(new LineSegment { Point = p1 });
+                pathFig.Segments.Add(new ArcSegment { Point = p0, Size = new Size(radius, radius), SweepDirection = SweepDirection.Counterclockwise });
                 pathFig.Segments.Add(new LineSegment { Point = o });
 
                 var fill = ColorManager.GetTintedColor(ColorManager.Palette[UiId], 2);
@@ -1639,5 +1600,97 @@ namespace taskmaker_wpf.Views.Widget {
         Activated,
         Pressed,
         Dragged
+    }
+
+    public class Arrow : Shape {
+
+
+
+        public Matrix Transform {
+            get { return (Matrix)GetValue(TransformProperty); }
+            set { SetValue(TransformProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Transform.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TransformProperty =
+            DependencyProperty.Register("Transform", typeof(Matrix), typeof(Arrow), new PropertyMetadata(Matrix.Identity, OnPropertyChanged));
+
+
+
+        public Point Start {
+            get { return (Point)GetValue(StartProperty); }
+            set { SetValue(StartProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Start.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty StartProperty =
+            DependencyProperty.Register("Start", typeof(Point), typeof(Arrow), new PropertyMetadata(new Point(), (PropertyChangedCallback)OnPropertyChanged));
+
+        static public void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            (d as Arrow).InvalidateVisual();
+        }
+
+
+        public Point End {
+            get { return (Point)GetValue(EndProperty); }
+            set { SetValue(EndProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for End.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty EndProperty =
+            DependencyProperty.Register("End", typeof(Point), typeof(Arrow), new PropertyMetadata(new Point(), OnPropertyChanged));
+
+
+        public Arrow() {
+            Stroke = Brushes.Green;
+            //SnapsToDevicePixels = false;
+            //UseLayoutRounding = false;
+        }
+
+        protected override Geometry DefiningGeometry => Generate();
+
+        private Geometry Generate() {
+            var start = Transform.Transform(Start);
+            var end = Transform.Transform(End);
+
+            var arrowLine = new PathFigure();
+
+            if (start == end)
+                return new LineGeometry();
+
+            arrowLine.StartPoint = start;
+
+            arrowLine.Segments.Add(new LineSegment(end, true));
+
+            var vector = (start - end);
+
+            vector.Normalize();
+
+            var rotate = Matrix.Identity;
+
+            rotate.Rotate(15);
+
+            var e0 = rotate.Transform(vector * 10.0) + end;
+
+            rotate.SetIdentity();
+            rotate.Rotate(-15);
+
+            var e1 = rotate.Transform(vector * 10.0) + end;
+
+            var arrowTip = new PathFigure();
+
+            arrowTip.StartPoint = end;
+
+            arrowTip.Segments.Add(new LineSegment(e0, true));
+            arrowTip.Segments.Add(new LineSegment(e1, true));
+            arrowTip.Segments.Add(new LineSegment(end, true));
+
+            var geometry = new PathGeometry();
+
+            geometry.Figures.Add(arrowLine);
+            geometry.Figures.Add(arrowTip);
+
+            return geometry;
+        }
     }
 }

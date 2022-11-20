@@ -128,7 +128,7 @@ namespace taskmaker_wpf.ViewModels {
         }
 
 
-        private IInputPort[] selectedInputPorts;
+        private IInputPort[] selectedInputPorts = new IInputPort[0];
         public IInputPort[] SelectedInputPorts {
             get { return selectedInputPorts; }
             set { SetProperty(ref selectedInputPorts, value); }

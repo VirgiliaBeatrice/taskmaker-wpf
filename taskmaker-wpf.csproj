@@ -270,6 +270,7 @@
     <Compile Include="Views\UserControl1.xaml.cs">
       <DependentUpon>UserControl1.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Widget\ColorManager.cs" />
     <Compile Include="Views\Widget\GestureRecognizer\TapGestureRecognizer.cs" />
     <Compile Include="Views\Core.cs" />
     <Compile Include="Views\Widget\IndicatorWidget.cs" />

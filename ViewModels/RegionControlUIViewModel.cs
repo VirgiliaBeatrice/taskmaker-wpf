@@ -190,7 +190,7 @@ namespace taskmaker_wpf.ViewModels {
 
         // https://blog.csdn.net/jiuzaizuotian2014/article/details/104856673
         private ControlUiState _ui;
-        private ControlUiState[] _uis;
+        private ControlUiState[] _uis = new ControlUiState[0];
         private ControlUiState _uiState;
 
         private ICommand _uiCommand;
