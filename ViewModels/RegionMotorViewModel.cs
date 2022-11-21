@@ -20,7 +20,23 @@ using taskmaker_wpf.Services;
 using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.ViewModels {
-    public class MotorState : BindableBase {
+    public class MotorState_v1 : IOutputPort {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public double Value { get; set; }
+        public int Max { get; set; }
+        public int Min { get; set; }
+        public int NuibotBoardId { get; set; }
+        public int NuibotMotorId { get; set; }
+        public bool IsSelected { get; set; }
+
+        public object Clone() {
+            return (MotorState_v1)MemberwiseClone();
+        }
+    }
+
+        public class MotorState : BindableBase {
         private int id;
         private string name;
         //private double[] _value;

@@ -51,7 +51,7 @@
                                 <ListBox
                                     MinHeight="20"
                                     Margin="4"
-                                    ItemsSource="{Binding Uis}"
+                                    ItemsSource="{Binding UiStates}"
                                     />
                             </StackPanel>
 
@@ -62,110 +62,23 @@
                 </TabItem>
                 <TabItem
                     Header="Inspector">
-                    <w:Inspector
-                        InspectedWidget="{Binding InspectedWidget}"
-                        />
+                    <w:Inspector />
                 </TabItem>
                 <TabItem
                     Header="Map">
-                    <local:TargetsPanel
-                        DataContext="{Binding TargetsPanelVM}"
-                        />
+                    <local:TargetsPanel />
                 </TabItem>
 
             </TabControl>
-            <!--
-            <StackPanel
-                Width="200"
-                DockPanel.Dock="Right">
-                <TextBlock
-                    Height="40"
-                    TextWrapping="Wrap"
-                    Text="{Binding Debug}" />
-                <ListBox
-                    x:Name="lbTargets"
-                    ItemsSource="{Binding ValidTargets}"
-                    Height="60"
-                    SelectionMode="Multiple">
-                    <b:Interaction.Triggers>
-                        <b:EventTrigger EventName="SelectionChanged">
-                            <b:InvokeCommandAction
-                                Command="{Binding SelectedTargetsChanged}"
-                                CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox}, Path=SelectedItems}" />
-                        </b:EventTrigger>
-
-                    </b:Interaction.Triggers>
-                </ListBox>
-                <ItemsControl
-                    ItemsSource="{Binding ElementName=lbTargets, Path=SelectedItems}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type data:Motor}">
-                            <StackPanel
-                                Orientation="Vertical">
-                                <Label
-                                    VerticalAlignment="Center"
-                                    Content="{Binding Alias}"
-                                    Width="auto" />
-                                <Slider 
-                                    LargeChange="100"
-                                    SmallChange="10"
-                                    VerticalAlignment="Center"
-                                    Value="{Binding Value}"
-                                    Maximum="{Binding Max}"
-                                    Minimum="{Binding Min}"
-                                    Width="auto"
-                                    IsSnapToTickEnabled="True"
-                                    TickFrequency="1"
-                                    />
-                                <TextBlock
-                                    Width="auto"
-                                    VerticalAlignment="Center"
-                                    Text="{Binding Value}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-            </StackPanel>
-            -->
             <Grid
                 DockPanel.Dock="Left">
                 <w:MultiView
                     Focusable="True"
                     Width="auto"
                     MaxColumnCount="2"
-                    ItemsSource="{Binding TargetsPanelVM.SelectedInputPorts}"
+                    ItemsSource="{Binding SelectedInputPorts}"
                     />
             </Grid>
-
-            <!--
-            <local:ComplexWidget 
-                DockPanel.Dock="Left"
-                Width="auto"
-                x:Name="complex"
-                Focusable="True"
-                Mode="{Binding OperationMode, Mode=OneWayToSource}"
-                TracePoint="{Binding TracePoint, Mode=OneWayToSource}"
-                HitElement="{Binding HitElement, Mode=OneWayToSource}"
-                UiState="{Binding UiState, Mode=OneWay}"
-                AddNodeCommand="{Binding AddNodeCommand}"
-                SetValueCommand="{Binding SetValueCommand}"
-                BuildCommand="{Binding BuildCommand}"
-                SelectedNodeWidget="{Binding SelectedNodeWidget, Mode=OneWayToSource}"
-                Background="LightGray" Cursor="Cross">
-                
-                SimplexSource="{Binding Simplices}"
-                VoronoiSource="{Binding Voronois}"
-                AddItemCommand="{Binding AddItemCommand}"
-                RemoveItemCommand="{Binding RemoveItemCommand}"
-                InteriorCommand="{Binding BuildInteriorCommand}"
-                InterpolateCommand="{Binding InterpolateCommand}"
-                SetValueCommand="{Binding SetValueCommand}"
-                InspectedWidget="{Binding Path=InspectedWidget, Mode=TwoWay}"
-                
-                </local:ComplexWidget>
-                -->
-
         </DockPanel>
 
 

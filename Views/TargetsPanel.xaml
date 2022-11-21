@@ -8,7 +8,7 @@
              xmlns:domain="clr-namespace:taskmaker_wpf.Domain"
              xmlns:sys="clr-namespace:System;assembly=mscorlib" 
              xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels"
-             d:DataContext="{d:DesignInstance Type=viewmodels:TargetsPanelViewModel}"
+             d:DataContext="{d:DesignInstance Type=viewmodels:RegionControlUIViewModel}"
              mc:Ignorable="d" 
              xmlns:prism="http://prismlibrary.com/"
              d:DesignHeight="450" d:DesignWidth="300">
@@ -35,7 +35,7 @@
         <Style x:Key ="ButtonStyle" TargetType="{x:Type Button}">
             <Setter Property="IsEnabled" Value="True" />
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Parent.MapState}" Value="{x:Null}">
+                <DataTrigger Binding="{Binding MapState}" Value="{x:Null}">
                     <Setter Property="IsEnabled" Value="False" />
                 </DataTrigger>
             </Style.Triggers>
@@ -43,7 +43,7 @@
 
         <DataTemplate
             x:Key="motorControlPanel"
-            DataType="{x:Type viewmodels:MotorTargetState}">
+            DataType="{x:Type viewmodels:MotorState_v1}">
             <Grid
                 Margin="0, 4, 0, 4">
                 <Grid.ColumnDefinitions>
@@ -65,7 +65,7 @@
                     LargeChange="1000"
                     SmallChange="100"
                     VerticalAlignment="Center"
-                    Value="{Binding MotorValue, Mode=TwoWay}"
+                    Value="{Binding Value, Mode=TwoWay}"
                     Maximum="{Binding Max}"
                     Minimum="{Binding Min}"
                     IsSnapToTickEnabled="True"
@@ -126,15 +126,17 @@
                         </Border.Effect>
                         <ListBox 
                             x:Name="lbMaps"
-                            ItemsSource="{Binding Parent.Maps}"
-                            SelectedItem="{Binding Parent.MapState, Mode=TwoWay}" />
+                            ItemsSource="{Binding MapStates}"
+                            SelectionChanged="lbMaps_SelectionChanged"/>
                     </Border>
                 </Popup>
 
                 <Button
                     Style="{x:Null}"
                     DockPanel.Dock="Right"
-                    Command="{Binding AddCommand}" >
+                    Command="{Binding UiCommand}"
+                    CommandParameter="AddMap"
+                    >
                     <Button.Content>
                         <Image Source="/icons/add_FILL0_wght400_GRAD0_opsz48.png" Width="16" Height="16"/>
                     </Button.Content>
@@ -142,7 +144,8 @@
 
                 <Button
                     DockPanel.Dock="Right"
-                    Command="{Binding UpdateCommand}">
+                    Click="Button_Click_1"
+                    >
                     <Button.Content>
                         <Image Source="/icons/check_FILL0_wght400_GRAD0_opsz48.png" Width="16" />
                     </Button.Content>
@@ -161,7 +164,7 @@
                 Header="Inputs">
                 <ItemsControl
                     Margin="2"
-                    ItemsSource="{Binding InputPorts}">
+                    ItemsSource="{Binding ValidInputPorts}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel
@@ -189,7 +192,7 @@
                 >
                 <ItemsControl
                     Margin="2"
-                    ItemsSource="{Binding OutputPorts}">
+                    ItemsSource="{Binding ValidOutputPorts}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel

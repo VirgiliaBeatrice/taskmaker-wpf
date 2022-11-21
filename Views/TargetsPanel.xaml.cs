@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using taskmaker_wpf.ViewModels;
 
 namespace taskmaker_wpf.Views {
     /// <summary>
@@ -51,6 +52,13 @@ namespace taskmaker_wpf.Views {
             if (popup != null) {
                 popup.IsOpen = !popup.IsOpen;
             }
+        }
+
+        private void lbMaps_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            var selectedMap = e.AddedItems[0] as NLinearMapState_v1;
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e) {
         }
     }
 
