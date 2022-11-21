@@ -7,86 +7,17 @@
              xmlns:local="clr-namespace:taskmaker_wpf.Views"
              xmlns:domain="clr-namespace:taskmaker_wpf.Domain"
              xmlns:sys="clr-namespace:System;assembly=mscorlib" 
-             xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels"
-             d:DataContext="{d:DesignInstance Type=viewmodels:RegionControlUIViewModel}"
+             xmlns:vm="clr-namespace:taskmaker_wpf.ViewModels"
+             xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+             d:DataContext="{d:DesignInstance Type=vm:RegionControlUIViewModel}"
              mc:Ignorable="d" 
              xmlns:prism="http://prismlibrary.com/"
              d:DesignHeight="450" d:DesignWidth="300">
     <UserControl.Resources>
-        <LinearGradientBrush x:Key="MenuPopupBrush"
-                     EndPoint="0.5,1"
-                     StartPoint="0.5,0">
-            <GradientStop Color="{DynamicResource ControlLightColor}"
-                Offset="0" />
-            <GradientStop Color="{DynamicResource ControlMediumColor}"
-                Offset="0.5" />
-            <GradientStop Color="{DynamicResource ControlLightColor}"
-                Offset="1" />
-        </LinearGradientBrush>
-
         <Style TargetType="{x:Type Image}">
             <Setter Property="Width" Value="16" />
             <Setter Property="Height" Value="16" />
         </Style>
-        
-        <local:ISelectableTargetConverter
-            x:Key="SelectableTargetConverter" />
-
-        <Style x:Key ="ButtonStyle" TargetType="{x:Type Button}">
-            <Setter Property="IsEnabled" Value="True" />
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding MapState}" Value="{x:Null}">
-                    <Setter Property="IsEnabled" Value="False" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <DataTemplate
-            x:Key="motorControlPanel"
-            DataType="{x:Type viewmodels:MotorState_v1}">
-            <Grid
-                Margin="0, 4, 0, 4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.5*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <Label
-                    Grid.Column="0"
-                    Content="{Binding Name}"
-                    />
-                <Slider
-                    x:Name="slider"
-                    Grid.Column="1"
-                    Grid.ColumnSpan="3"
-                    LargeChange="1000"
-                    SmallChange="100"
-                    VerticalAlignment="Center"
-                    Value="{Binding Value, Mode=TwoWay}"
-                    Maximum="{Binding Max}"
-                    Minimum="{Binding Min}"
-                    IsSnapToTickEnabled="True"
-                    TickFrequency="1"
-                    >
-                    <b:Interaction.Triggers>
-                        <b:EventTrigger EventName="ValueChanged">
-                            <b:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:TargetsPanel}}, Path=DataContext.UpdateMotorCommand}" CommandParameter="{Binding Id}"/>
-                        </b:EventTrigger>
-                    </b:Interaction.Triggers>
-                </Slider>
-                <TextBox
-                    Grid.Column="4"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Center"
-                    Width="40"
-                    Text="{Binding ElementName=slider, Path=Value, Mode=TwoWay}"
-                    KeyDown="OnKeyDown">
-                </TextBox>
-            </Grid>
-        </DataTemplate>
     </UserControl.Resources>
     <Grid>
         <StackPanel
@@ -132,19 +63,33 @@
                 </Popup>
 
                 <Button
-                    Style="{x:Null}"
                     DockPanel.Dock="Right"
-                    Command="{Binding UiCommand}"
-                    CommandParameter="AddMap"
+                    Width="20"
+                    Height="20"
+                    Click="Button_Click_2"
                     >
                     <Button.Content>
-                        <Image Source="/icons/add_FILL0_wght400_GRAD0_opsz48.png" Width="16" Height="16"/>
+                        <Image 
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"
+                            Width="12"
+                            Height="12"
+                            Source="{svgc:SvgImage Source=../icons/refresh.svg}" />
+                    </Button.Content>
+                </Button>
+                
+                <Button
+                    DockPanel.Dock="Right"
+                    Command="{Binding AddMapCommand}" Width="20" Height="20"
+                    >
+                    <Button.Content>
+                        <Image Source="/icons/add_FILL0_wght400_GRAD0_opsz48.png" Width="12" Height="12"/>
                     </Button.Content>
                 </Button>
 
                 <Button
                     DockPanel.Dock="Right"
-                    Click="Button_Click_1"
+                    Click="Button_Click_1" Width="20" Height="20"
                     >
                     <Button.Content>
                         <Image Source="/icons/check_FILL0_wght400_GRAD0_opsz48.png" Width="16" />
@@ -156,15 +101,42 @@
 
 
             </DockPanel>
+
+            <Expander
+                BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
+                BorderThickness="1"
+                Margin="0 5 0 5"
+                Header="SelectedInputs">
+                <ItemsControl
+                    Margin="2"
+                    ItemsSource="{Binding SelectedMap.InputPorts}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel
+                                HorizontalAlignment="Right"
+                                Margin="4"
+                                Orientation="Horizontal">
+                                <CheckBox 
+                                    VerticalAlignment="Center"
+                                    IsChecked="{Binding Path=IsSelected, Mode=TwoWay}"/>
+                                <TextBlock
+                                    Margin="4 0 0 0"
+                                    VerticalAlignment="Center"
+                                    Text="{Binding Path=Name}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Expander>
             
             <Expander
                 BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
                 BorderThickness="1"
                 Margin="0 5 0 5"
-                Header="Inputs">
+                Header="SelectedOutputs">
                 <ItemsControl
                     Margin="2"
-                    ItemsSource="{Binding ValidInputPorts}">
+                    ItemsSource="{Binding SelectedMap.OutputPorts}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel
@@ -188,7 +160,35 @@
                 BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
                 BorderThickness="1"
                 Margin="0 5 0 5"
-                Header="Outputs"
+                Header="Valid Inputs">
+                <ItemsControl
+                    Margin="2"
+                    ItemsSource="{Binding ValidInputPorts}"
+                    >
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel
+                                HorizontalAlignment="Right"
+                                Margin="4"
+                                Orientation="Horizontal">
+                                <CheckBox 
+                                    VerticalAlignment="Center"
+                                    IsChecked="{Binding Path=IsSelected, Mode=TwoWay}"/>
+                                <TextBlock
+                                    Margin="4 0 0 0"
+                                    VerticalAlignment="Center"
+                                    Text="{Binding Path=Name}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Expander>
+
+            <Expander
+                BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
+                BorderThickness="1"
+                Margin="0 5 0 5"
+                Header="ValidOutputs"
                 >
                 <ItemsControl
                     Margin="2"
@@ -212,16 +212,53 @@
                 </ItemsControl>
             </Expander>
                 
-            <ItemsControl 
+            <ItemsControl
                 Margin="0, 4, 0, 4"
                 ItemsSource="{Binding TargetMotors}"
-                ItemTemplate="{StaticResource motorControlPanel}">
+                >
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:MotorState_v1}">
+                        <Expander
+                            BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
+                            BorderThickness="1"
+                            Margin="0 4 0 4"
+                            IsExpanded="True"
+                            Header="{Binding Name}"
+                            >
+                            <Grid
+                                Margin="4"
+                                >
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Slider
+                                    Grid.Column="0"
+                                    
+                                    x:Name="slider"
+                                    Value="{Binding Value}"
+                                    Maximum="{Binding Max}"
+                                    Minimum="{Binding Min}"
+                                    LargeChange="1000"
+                                    SmallChange="100"
+                                    IsSnapToTickEnabled="True"
+                                    />
+                                <TextBox 
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    Grid.Column="1"
+                                    Text="{Binding ElementName=slider, Path=Value}"/>
+                            </Grid>
+                        </Expander>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
                 <d:ItemsControl.ItemsSource>
                     <x:Array Type="{x:Type sys:Object}">
-                        <viewmodels:MotorTargetState Name="S0" MotorValue="100" Max="10000" Min="-10000"/>
-                        <viewmodels:MotorTargetState Name="S1" MotorValue="100" Max="10000" Min="-10000"/>
-                        <viewmodels:MotorTargetState Name="S2" MotorValue="100" Max="10000" Min="-10000"/>
-                        <viewmodels:MotorTargetState Name="S3" MotorValue="100" Max="10000" Min="-10000"/>
+                        <vm:MotorState_v1 Name="S0" Value="100" Max="10000" Min="-10000"/>
+                        <vm:MotorState_v1 Name="S1" Value="100" Max="10000" Min="-10000"/>
+                        <vm:MotorState_v1 Name="S2" Value="100" Max="10000" Min="-10000"/>
+                        <vm:MotorState_v1 Name="S3" Value="100" Max="10000" Min="-10000"/>
                     </x:Array>
                 </d:ItemsControl.ItemsSource>
             </ItemsControl>

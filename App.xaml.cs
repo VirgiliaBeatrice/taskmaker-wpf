@@ -145,7 +145,7 @@ namespace taskmaker_wpf {
             containerRegistry.RegisterSingleton<ControlUiInteractorBus>();
             containerRegistry.RegisterSingleton<NLinearMapInteractorBus>();
 
-            containerRegistry.Register<IPresenter>(() => Container.Resolve<TargetsPanelViewModel>());
+            //containerRegistry.Register<IPresenter>(() => Container.Resolve<TargetsPanelViewModel>());
             containerRegistry.Register<IPresenter>(() => Container.Resolve<RegionControlUIViewModel>());
 
             // Register messagebox

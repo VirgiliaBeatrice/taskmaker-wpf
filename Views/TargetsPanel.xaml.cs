@@ -55,10 +55,30 @@ namespace taskmaker_wpf.Views {
         }
 
         private void lbMaps_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            var selectedMap = e.AddedItems[0] as NLinearMapState_v1;
+            if (e.AddedItems.Count != 0) {
+                var selectedMap = e.AddedItems[0] as NLinearMapState_v1;
+                var listbox = sender as ListBox;
+                var vm = listbox.DataContext as RegionControlUIViewModel;
+
+                vm.SelectedMap = selectedMap;
+            }
+
+            if (e.RemovedItems.Count != 0) {
+                var selectedMap = e.RemovedItems[0] as NLinearMapState_v1;
+                var listbox = sender as ListBox;
+                var vm = listbox.DataContext as RegionControlUIViewModel;
+
+                vm.SelectedMap = null; ;
+            }
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e) {
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e) {
+            var vm = (sender as Button).DataContext as RegionControlUIViewModel;
+
+            vm.InvalidateValidPorts();
         }
     }
 

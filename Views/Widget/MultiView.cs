@@ -510,6 +510,9 @@ namespace taskmaker_wpf.Views.Widget {
 
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
             if (d is MultiView view) {
+                if (args.NewValue == null | args.OldValue == null)
+                    return;
+
                 var newUis = (args.NewValue as IInputPort[]).Select(e => e.Name);
                 var oldUis = (args.OldValue as IInputPort[]).Select(e => e.Name);
                 

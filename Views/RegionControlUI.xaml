@@ -61,10 +61,6 @@
 
                 </TabItem>
                 <TabItem
-                    Header="Inspector">
-                    <w:Inspector />
-                </TabItem>
-                <TabItem
                     Header="Map">
                     <local:TargetsPanel />
                 </TabItem>
@@ -76,7 +72,7 @@
                     Focusable="True"
                     Width="auto"
                     MaxColumnCount="2"
-                    ItemsSource="{Binding SelectedInputPorts}"
+                    ItemsSource="{Binding SelectedMap.InputPorts}"
                     />
             </Grid>
         </DockPanel>
