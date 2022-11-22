@@ -78,20 +78,20 @@ namespace taskmaker_wpf.ViewModels {
     public class NLinearMapState_v1 {
         public int Id { get; set; }
         public string Name { get; set; }
-        public IInputPort[] InputPorts { get; set; }
-        public IOutputPort[] OutputPorts { get; set; }
-        public bool IsSelected { get; set; }
+        public InputPort[] InputPorts { get; set; } = new InputPort[0];
+        public OutputPort[] OutputPorts { get; set; } = new OutputPort[0];
+        public bool IsSelected { get; set; } = false;
         public override string ToString() {
             return Name;
         }
     }
 
-    public class ControlUiState_v1 : IInputPort, IOutputPort {
+    public class ControlUiState_v1 : BindableBase, IInputPort, IOutputPort {
         public int Id { get; set; }
         public string Name { get; set; }
-        public NodeState_v1[] Nodes { get; set; }
-        public IRegionState[] Regions { get; set; }
-        public bool IsSelected { get; set; }
+        public NodeState_v1[] Nodes { get; set; } = new NodeState_v1[0];
+        public IRegionState[] Regions { get; set; } = new IRegionState[0];
+        public bool IsSelected { get; set; } = false;
 
         public object Clone() {
             return (ControlUiState_v1)MemberwiseClone();
@@ -177,7 +177,7 @@ namespace taskmaker_wpf.ViewModels {
 
     public class NodeState_v1 {
         public int Id { get; set; }
-        public Point Value { get; set; }
+        public Point Value { get; set; } = new Point();
 
         public NodeState_v1(int id, Point value) {
             Id = id;
@@ -255,10 +255,22 @@ namespace taskmaker_wpf.ViewModels {
             set { SetProperty(ref _validOutputPorts, value); }
         }
 
+        private OutputPort[] _selectedOutputPorts;
+        public OutputPort[] SelectedOutputPorts {
+            get { return _selectedOutputPorts; }
+            set { SetProperty(ref _selectedOutputPorts, value); }
+        }
+
         private InputPort[] _validInputPorts;
         public InputPort[] ValidInputPorts {
             get { return _validInputPorts; }
             set { SetProperty(ref _validInputPorts, value); }
+        }
+
+        private ControlUiState_v1[] _selectedUiStates = new ControlUiState_v1[0];
+        public ControlUiState_v1[] SelectedUiStates {
+            get { return _selectedUiStates; }
+            set { SetProperty(ref _selectedUiStates, value); }
         }
 
         private NLinearMapState_v1 _selectedMap;
@@ -279,10 +291,10 @@ namespace taskmaker_wpf.ViewModels {
 
                 _uiBus.Handle(request, (bool res) => {
                     _uiBus.Handle(new ListControlUiRequest(), (ControlUiEntity[] uis) => {
-                        UiStates = _mapper.Map<ControlUiState_v1[]>(uis);
-                        //Uis = _mapper.Map<ControlUiState[]>(uis);
+                        for (int i = 0; i < uis.Length; i++) {
+                            _mapper.Map(uis[i], UiStates[i]);
+                        }
 
-                        //TargetsPanelVM.InvalidateTargets(); 
                     });
                 });
             }
@@ -293,11 +305,9 @@ namespace taskmaker_wpf.ViewModels {
 
                 _uiBus.Handle(request, (ControlUiEntity ui) => {
                     _uiBus.Handle(new ListControlUiRequest(), (ControlUiEntity[] uis) => {
-
-                        UiStates = _mapper.Map<ControlUiState_v1[]>(uis);
-                        //Uis = _mapper.Map<ControlUiState[]>(uis);
-
-                        //TargetsPanelVM.InvalidateTargets();
+                        for (int i = 0; i < uis.Length; i++) {
+                            _mapper.Map(uis[i], UiStates[i]);
+                        }
                     });
                 });
             }
@@ -373,6 +383,47 @@ namespace taskmaker_wpf.ViewModels {
             _uiBus.Handle(request1, (ControlUiEntity[] uis) => {
                 UiStates = _mapper.Map<ControlUiState_v1[]>(uis);
             });
+        }
+
+        private DelegateCommand _updateMapCommand;
+        public DelegateCommand UpdateMapCommand =>
+            _updateMapCommand ?? (_updateMapCommand = new DelegateCommand(ExecuteUpdateMapCommand));
+
+        void ExecuteUpdateMapCommand() {
+            if (SelectedMap == null) return;
+
+            var selectedMap = SelectedMap;
+
+            var inputs = ValidInputPorts.Where(e => e.IsSelected).ToArray();
+            var request = new UpdateNLinearMapRequest {
+                Id = selectedMap.Id,
+                PropertyType = "UpdateInputs",
+                PropertyValue = inputs
+            };
+
+            _mapBus.Handle(request, (NLinearMapEntity map) => {
+                _mapper.Map(map, SelectedMap);
+            });
+
+            var outputs = ValidOutputPorts.Where(e => e.IsSelected).ToArray();
+            request = new UpdateNLinearMapRequest {
+                Id = selectedMap.Id,
+                PropertyType = "UpdateOutputs",
+                PropertyValue = outputs
+            };
+
+            _mapBus.Handle(request, (NLinearMapEntity map) => {
+                _mapper.Map(map, SelectedMap);
+            });
+
+            SelectedUiStates = UiStates
+                .Where(e => SelectedMap.InputPorts.Any(e1 => e1.Name == e.Name))
+                .ToArray();
+
+            //TargetMotors = Parent.MapState.Outputs
+            //    .Where(e => e.GetType().Name.Contains("Motor"))
+            //    .Cast<MotorTargetState>()
+            //    .ToArray();
         }
 
         public string Debug {
@@ -580,7 +631,7 @@ namespace taskmaker_wpf.ViewModels {
     public class SimplexState_v1 : IRegionState {
         public int Id { get; set; }
         public string Name { get; set; }
-        public Point[] Points { get; set; }
+        public Point[] Points { get; set; } = new Point[0];
 
         public override string ToString() {
             return Name;
@@ -591,7 +642,7 @@ namespace taskmaker_wpf.ViewModels {
     public class VoronoiState_v1 : IRegionState {
         public int Id { get; set; }
         public string Name { get; set; }
-        public Point[] Points { get; set; }
+        public Point[] Points { get; set; } = new Point[0];
         public override string ToString() {
             return Name;
         }

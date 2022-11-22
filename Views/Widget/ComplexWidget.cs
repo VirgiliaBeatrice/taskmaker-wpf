@@ -367,7 +367,7 @@ namespace taskmaker_wpf.Views {
                             });
                     }
                 }
-                else if (args1.PropertyName == nameof(ControlUiState.Regions)) {
+                else if (args1.PropertyName == nameof(ControlUiState_v1.Regions)) {
                     var oldSimplexStates = complex.Children.OfType<SimplexWidget>()
                         .Select(e => e.DataContext)
                         .Cast<SimplexState>()
@@ -392,8 +392,8 @@ namespace taskmaker_wpf.Views {
 
             if (newValue != null) {
                 newValue.PropertyChanged += OnPropertyChanged;
-                OnPropertyChanged(null, new PropertyChangedEventArgs(nameof(ControlUiState.Nodes)));
-                OnPropertyChanged(null, new PropertyChangedEventArgs(nameof(ControlUiState.Regions)));
+                OnPropertyChanged(null, new PropertyChangedEventArgs(nameof(ControlUiState_v1.Nodes)));
+                OnPropertyChanged(null, new PropertyChangedEventArgs(nameof(ControlUiState_v1.Regions)));
             }
             if (oldValue != null)
                 oldValue.PropertyChanged -= OnPropertyChanged;

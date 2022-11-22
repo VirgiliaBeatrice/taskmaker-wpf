@@ -503,10 +503,10 @@ namespace taskmaker_wpf.Domain {
                 var map = Repository.Find<NLinearMapEntity>(req.Id);
 
                 if (req.PropertyType == "UpdateInputs") {
-                    map.Inputs = (IInputPort[])req.PropertyValue;
+                    map.InputPorts = (InputPort[])req.PropertyValue;
                 }
                 else if (req.PropertyType == "UpdateOutputs") {
-                    map.Outputs = (IOutputPort[])req.PropertyValue;
+                    map.OutputPorts = (OutputPort[])req.PropertyValue;
                 }
                 else if (req.PropertyType == "Initialize") {
                     var ids = (int[])req.PropertyValue;

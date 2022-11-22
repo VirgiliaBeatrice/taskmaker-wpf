@@ -79,6 +79,7 @@
                 </Button>
                 
                 <Button
+                    x:Name="btnAdd"
                     DockPanel.Dock="Right"
                     Command="{Binding AddMapCommand}" Width="20" Height="20"
                     >
@@ -88,8 +89,10 @@
                 </Button>
 
                 <Button
+                    x:Name="btnUpdate"
                     DockPanel.Dock="Right"
-                    Click="Button_Click_1" Width="20" Height="20"
+                    Command="{Binding UpdateMapCommand}"
+                    Width="20" Height="20"
                     >
                     <Button.Content>
                         <Image Source="/icons/check_FILL0_wght400_GRAD0_opsz48.png" Width="16" />

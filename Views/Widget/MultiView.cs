@@ -496,7 +496,7 @@ namespace taskmaker_wpf.Views.Widget {
 
         // Using a DependencyProperty as the backing store for ItemsSource.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ItemsSourceProperty =
-            DependencyProperty.Register("ItemsSource", typeof(IEnumerable), typeof(MultiView), new FrameworkPropertyMetadata(new IInputPort[0], OnPropertyChanged));
+            DependencyProperty.Register("ItemsSource", typeof(IEnumerable), typeof(MultiView), new FrameworkPropertyMetadata(new ControlUiState_v1[0], OnPropertyChanged));
 
 
         public int MaxColumnCount {
@@ -510,16 +510,13 @@ namespace taskmaker_wpf.Views.Widget {
 
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
             if (d is MultiView view) {
-                if (args.NewValue == null | args.OldValue == null)
-                    return;
-
-                var newUis = (args.NewValue as IInputPort[]).Select(e => e.Name);
-                var oldUis = (args.OldValue as IInputPort[]).Select(e => e.Name);
+                var newUis = (args.NewValue as ControlUiState_v1[]).Select(e => e.Name);
+                var oldUis = (args.OldValue as ControlUiState_v1[]).Select(e => e.Name);
                 
 
                 if (Enumerable.SequenceEqual(oldUis, newUis)) {
                     for (int i = 0; i < view.Controllers.Count; i++) {
-                        view.Controllers[i].UiState = (ControlUiState)(args.NewValue as IInputPort[])[i];
+                        view.Controllers[i].UiState = (args.NewValue as ControlUiState_v1[])[i];
                     }
                 }
                 else {
@@ -586,10 +583,8 @@ namespace taskmaker_wpf.Views.Widget {
             };
 
             grid.Children.Add(scroll);
-            //grid.Children.Add(icon);
 
             Content = grid;
-            //AddLogicalChild(scroll);
         }
 
         public void Layout() {
@@ -613,22 +608,12 @@ namespace taskmaker_wpf.Views.Widget {
             Controllers.Clear();
 
             if (items.Count == 1) {
-                var box = new Viewbox {
-                    Stretch = Stretch.None,
-                };
-
                 var ui = new UiController {
                     VerticalAlignment= VerticalAlignment.Stretch,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     Margin = new Thickness(2),
                     Command = vm.UiCommand,
                 };
-
-                //box.Child = ui;
-                //var widget = new ComplexWidget {
-                //    Margin = new Thickness(2),
-                //    Background = Brushes.LightGray,
-                //};
 
                 var textblock = new TextBlock {
                     Text = "Title",
@@ -770,18 +755,18 @@ namespace taskmaker_wpf.Views.Widget {
             UiId = UiState.Id
         }).ToArray();
 
-        public ControlUiState UiState {
-            get { return (ControlUiState)GetValue(UiStateProperty); }
+        public ControlUiState_v1 UiState {
+            get { return (ControlUiState_v1)GetValue(UiStateProperty); }
             set { SetValue(UiStateProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty UiStateProperty =
-            DependencyProperty.Register("UiState", typeof(ControlUiState), typeof(UiController), new FrameworkPropertyMetadata(default(ControlUiState), OnUiStatePropertyChanged));
+            DependencyProperty.Register("UiState", typeof(ControlUiState_v1), typeof(UiController), new FrameworkPropertyMetadata(default(ControlUiState_v1), OnUiStatePropertyChanged));
 
         private static void OnUiStatePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
             var ui = (UiController)d;
-            var state = (ControlUiState)args.NewValue;
+            var state = (ControlUiState_v1)args.NewValue;
 
             ui.InvalidateNode();
 
@@ -926,6 +911,8 @@ namespace taskmaker_wpf.Views.Widget {
             var container = new Grid {
                 Background = Brushes.Azure,
                 ClipToBounds = true,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
                 //Width = 400,
                 //Height = 400,
             };
@@ -949,36 +936,9 @@ namespace taskmaker_wpf.Views.Widget {
                 Stroke = Brushes.Green
             };
 
-            //var origin = new Ellipse {
-            //    Fill = new SolidColorBrush(Colors.Black),
-            //    Width = 2,
-            //    Height = 2,
-            //};
-
-            //Canvas.SetTop(origin, -2 / 2);
-            //Canvas.SetLeft(origin, -2 / 2);
-
             _canvas.Children.Add(axisX);
             _canvas.Children.Add(axisY);
             container.Children.Add(_canvas);
-
-            container.SetBinding(WidthProperty, new Binding() {
-                Path = new PropertyPath("ActualWidth"),
-                RelativeSource = new RelativeSource() {
-                    AncestorType = typeof(Grid),
-                    Mode = RelativeSourceMode.FindAncestor
-                },
-
-            });
-
-            container.SetBinding(HeightProperty, new Binding() {
-                Path = new PropertyPath("ActualHeight"),
-                RelativeSource = new RelativeSource() {
-                    AncestorType = typeof(Grid),
-                    Mode = RelativeSourceMode.FindAncestor
-                },
-
-            });
 
             Content = container;
 

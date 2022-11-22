@@ -72,7 +72,8 @@
                     Focusable="True"
                     Width="auto"
                     MaxColumnCount="2"
-                    ItemsSource="{Binding SelectedMap.InputPorts}"
+                    ItemsSource="{Binding SelectedUiStates}"
+                    
                     />
             </Grid>
         </DockPanel>

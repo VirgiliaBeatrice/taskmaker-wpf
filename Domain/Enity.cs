@@ -58,8 +58,8 @@ namespace taskmaker_wpf.Domain {
         //public string[] Targets { get; set; }
         //public (string, int)[] Targets { get; set; }
 
-        public IInputPort[] Inputs { get; set; }
-        public IOutputPort[] Outputs { get; set; }
+        public InputPort[] InputPorts { get; set; }
+        public OutputPort[] OutputPorts { get; set; }
         
 
         private bool _isSet => !Tensor.isnan().any();
@@ -342,7 +342,6 @@ namespace taskmaker_wpf.Domain {
     public class ControlUiEntity : BaseEntity, ITargetableEntity {
         public NodeEntity[] Nodes { get; set; }
         public BaseRegionEntity[] Regions { get; set; }
-        public double[] Value { get; set; }
 
         public string TargetType => "ControlUi";
         public TargetEntity[] Targets { get; set; }
