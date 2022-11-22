@@ -516,7 +516,12 @@ namespace taskmaker_wpf.Views.Widget {
 
                 if (Enumerable.SequenceEqual(oldUis, newUis)) {
                     for (int i = 0; i < view.Controllers.Count; i++) {
-                        view.Controllers[i].UiState = (args.NewValue as ControlUiState_v1[])[i];
+                        view.Controllers[i].SetBinding(
+                            UiController.UiStateProperty,
+                            new Binding() {
+                                Source = (args.NewValue as ControlUiState_v1[])[i]
+                            });
+                        //view.Controllers[i].UiState =];
                     }
                 }
                 else {
@@ -768,10 +773,19 @@ namespace taskmaker_wpf.Views.Widget {
             var ui = (UiController)d;
             var state = (ControlUiState_v1)args.NewValue;
 
-            ui.InvalidateNode();
+            state.PropertyChanged += (s, e) => {
+                if (e.PropertyName == "Nodes") {
+                    ui.InvalidateNode();
+                }
+                else if (e.PropertyName == "Regions") {
+                    ui.InvalidateRegion();
+                }
 
-            if (state.Regions != null)
-                ui.InvalidateRegion();
+                ui.InvalidateTransform();
+            };
+
+            ui.InvalidateNode();
+            ui.InvalidateRegion();
 
             ui.InvalidateTransform();
         }
@@ -800,7 +814,6 @@ namespace taskmaker_wpf.Views.Widget {
 
             foreach (var item in nodeInfos) {
                 var nodeShape = new NodeShape() {
-                    //Node = item,
                     VerticalAlignment = VerticalAlignment.Stretch,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                 };
@@ -815,18 +828,13 @@ namespace taskmaker_wpf.Views.Widget {
                         foreach(var node in _canvas.Children.OfType<NodeShape>().Where(e => e != s)) {
                             node.Reset();
                         }
-
-                        //Command.Execute(new CommandParameter {
-                        //    Type = "Select",
-                        //    Payload = new object[] { SelectedNode.Node },
-                        //});
-
                     }
                 };
 
                 //Canvas.SetLeft(nodeShape, item.Location.X - 20 / 2);
                 //Canvas.SetTop(nodeShape, item.Location.Y - 20 / 2);
-                Canvas.SetZIndex(nodeShape, 10);
+                nodeShape.Transform = Transform;
+                Panel.SetZIndex(nodeShape, 10);
 
                 _canvas.Children.Add(nodeShape);
 
@@ -839,8 +847,8 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public void InvalidateRegion() {
-            var simplexStates = UiState.Regions.OfType<SimplexState>();
-            var voronoiStates = UiState.Regions.OfType<VoronoiState>();
+            var simplexStates = UiState.Regions.OfType<SimplexState_v1>();
+            var voronoiStates = UiState.Regions.OfType<VoronoiState_v1>();
 
             var simplices = _canvas.Children.OfType<SimplexShape>().ToArray();
             foreach (var shape in simplices) {
@@ -852,7 +860,7 @@ namespace taskmaker_wpf.Views.Widget {
                     Points = item.Points,
                 };
 
-                Canvas.SetZIndex(shape, 5);
+                Panel.SetZIndex(shape, 5);
 
                 _canvas.Children.Add(shape);
             }
@@ -867,7 +875,7 @@ namespace taskmaker_wpf.Views.Widget {
                     Points = item.Points,
                 };
 
-                Canvas.SetZIndex(shape, 5);
+                Panel.SetZIndex(shape, 5);
 
                 _canvas.Children.Add(shape);
             }
@@ -876,30 +884,6 @@ namespace taskmaker_wpf.Views.Widget {
         public UiController() {
             Focusable = true;
             Visibility = Visibility.Visible;
-
-            Loaded += (se, ev) => {
-
-                //Keyboard.AddPreviewGotKeyboardFocusHandler(
-                //    this,
-                //    (s, e) => {
-                //        var ui = s as UiController;
-
-                //        Console.WriteLine("{0}, {1}, {2}", Keyboard.FocusedElement, ui.IsFocused, ui.IsVisible);
-
-                //        ui.BorderThickness = new Thickness(10);
-
-                //    });
-
-                //Keyboard.AddLostKeyboardFocusHandler(
-                //    this,
-                //    (s, e) => {
-                //        var ui = s as UiController;
-
-                //        ui.BorderThickness = new Thickness(0);
-
-                //        ;
-                //    });
-            };
 
             MouseEnter += (s, e) => {
                 var el = Keyboard.Focus(s as IInputElement);
@@ -1112,31 +1096,43 @@ namespace taskmaker_wpf.Views.Widget {
 
             // Invalidate all nodes transformation
             foreach (var node in _canvas.Children.OfType<NodeShape>()) {
-                var point = node.Node.Location;
-                var tPoint = Transform.Transform(point);
+                node.Transform = Transform;
+                //var point = node.Node.Location;
+                //var tPoint = Transform.Transform(point);
 
-                Canvas.SetLeft(node, tPoint.X - 20 / 2);
-                Canvas.SetTop(node, tPoint.Y - 20 / 2);
+                //Canvas.SetLeft(node, tPoint.X - 20 / 2);
+                //Canvas.SetTop(node, tPoint.Y - 20 / 2);
             }
 
             foreach(var simplex in _canvas.Children.OfType<SimplexShape>()) {
                 simplex.Transform = Transform;
 
-                simplex.Invalidate();
+                //simplex.Invalidate();
             }
 
             foreach(var voronoi in _canvas.Children.OfType<VoronoiShape>()) {
                 voronoi.Transform = Transform;
 
-                voronoi.Invalidate();
+                //voronoi.Invalidate();
             }
         }
     }
 
     public class VoronoiShape : UserControl {
         public int UiId { get; set; }
-        public Matrix Transform { get; set; } = Matrix.Identity;
 
+        private Matrix _transform = Matrix.Identity;
+        public Matrix Transform {
+            get => _transform;
+            set {
+                var prevT = _transform;
+                _transform = value;
+
+                if (prevT != _transform) {
+                    Invalidate();
+                }
+            }
+        }
         public IEnumerable<Point> Points {
             get { return (IEnumerable<Point>)GetValue(PointsProperty); }
             set { SetValue(PointsProperty, value); }
@@ -1272,8 +1268,18 @@ namespace taskmaker_wpf.Views.Widget {
     public class SimplexShape : UserControl {
         public int UiId { get; set; }
 
-        public Matrix Transform { get; set; } = Matrix.Identity;
+        private Matrix _transform = Matrix.Identity;
+        public Matrix Transform { 
+            get => _transform;
+            set {
+                var prevT = _transform;
+                _transform = value;
 
+                if (prevT != _transform) {
+                    Invalidate();
+                }
+            }
+        }
         public IEnumerable<Point> Points {
             get { return (IEnumerable<Point>)GetValue(PointsProperty); }
             set { SetValue(PointsProperty, value); }
@@ -1341,14 +1347,27 @@ namespace taskmaker_wpf.Views.Widget {
         public Color PrimaryColor;
 
         public Image checkIcon;
-        public Matrix Transform { get; set; } = Matrix.Identity;
+        
+        private Matrix _transform = Matrix.Identity;
 
+        public Matrix Transform { 
+            get => _transform; 
+            set {
+                var prevT = _transform;
+                _transform = value;
+
+                if (prevT != _transform) {
+                    Invalidate();
+                }
+
+            }
+        }
 
         public static readonly RoutedEvent ClickedEvent = EventManager.RegisterRoutedEvent("Clicked", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(NodeShape));
 
         public event RoutedEventHandler Clicked {
             add { AddHandler(ClickedEvent, value); }
-            remove { RemoveHandler(ClickedEvent, value);}
+            remove { RemoveHandler(ClickedEvent, value); }
         }
 
         public bool IsSelected { get; set; } = false;
@@ -1362,7 +1381,44 @@ namespace taskmaker_wpf.Views.Widget {
         public static readonly DependencyProperty NodeProperty =
             DependencyProperty.Register("Node", typeof(NodeInfo), typeof(NodeShape), new PropertyMetadata(new NodeInfo(), OnPropertyChanged));
 
-        public void InvalidateOverlay() {
+
+        public NodeShape() {
+            InitializeComponents();
+            Invalidate();
+        }
+
+        private void InitializeComponents() {
+            _state = new DefaultNodeState(this);
+
+            InitializeOverlay();
+            InitializeContent();
+
+            Content = Container;
+        }
+
+        public void Invalidate() {
+            InvalidateContent();
+            InvalidateTransform();
+        }
+
+        private void InvalidateContent() {
+            PrimaryColor = ColorManager.GetTintedColor(ColorManager.Palette[Node.UiId], 2);
+            ToolTip = $"Node[{Node.NodeId}]-({Node.Location.X}, {Node.Location.Y})";
+            
+            var shape = (Container as Grid).Children.OfType<Ellipse>().First();
+
+            shape.Fill = new SolidColorBrush(PrimaryColor);
+        }
+
+        private void InvalidateTransform() {
+            var p = Node.Location;
+            var tP = Transform.Transform(p);
+
+            Canvas.SetLeft(this, tP.X - 20 / 2);
+            Canvas.SetTop(this, tP.Y - 20 / 2);
+        }
+
+        private void InitializeOverlay() {
             var overlay = new Grid();
 
             var shape = new Ellipse {
@@ -1388,7 +1444,7 @@ namespace taskmaker_wpf.Views.Widget {
             Overlay = overlay;
         }
 
-        public void InvalidateContent() {
+        private void InitializeContent() {
             PrimaryColor = ColorManager.GetTintedColor(ColorManager.Palette[Node.UiId], 2);
 
             var container = new Grid();
@@ -1409,11 +1465,6 @@ namespace taskmaker_wpf.Views.Widget {
             RenderOptions.SetBitmapScalingMode(content, BitmapScalingMode.HighQuality);
 
             Container = container;
-        }
-
-
-        public NodeShape() {
-            _state = new DefaultNodeState(this);
         }
 
         protected override void OnMouseEnter(MouseEventArgs e) {
@@ -1480,13 +1531,6 @@ namespace taskmaker_wpf.Views.Widget {
             }
 
             base.GoToState(state);
-        }
-
-        public void Invalidate() {
-            InvalidateOverlay();
-            InvalidateContent();
-
-            Content = Container;
         }
     }
 

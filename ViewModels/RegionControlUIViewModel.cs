@@ -86,11 +86,27 @@ namespace taskmaker_wpf.ViewModels {
         }
     }
 
-    public class ControlUiState_v1 : BindableBase, IInputPort, IOutputPort {
-        public int Id { get; set; }
+    public class ControlUiState_v1 : ObservableObject, IInputPort, IOutputPort {
+        private int _id;
+        public int Id {
+            get { return _id; }
+            set { SetProperty(ref _id, value); }
+        }
+
         public string Name { get; set; }
-        public NodeState_v1[] Nodes { get; set; } = new NodeState_v1[0];
-        public IRegionState[] Regions { get; set; } = new IRegionState[0];
+
+        private NodeState_v1[] _nodes = new NodeState_v1[0];
+        public NodeState_v1[] Nodes {
+            get { return _nodes; }
+            set { SetProperty(ref _nodes, value); }
+        }
+
+        private BaseRegionState[] _regions;
+        public BaseRegionState[] Regions {
+            get { return _regions; }
+            set { SetProperty(ref _regions, value); }
+        }
+
         public bool IsSelected { get; set; } = false;
 
         public object Clone() {
@@ -175,9 +191,18 @@ namespace taskmaker_wpf.ViewModels {
         }
     }
 
-    public class NodeState_v1 {
-        public int Id { get; set; }
-        public Point Value { get; set; } = new Point();
+    public class NodeState_v1 : ObservableObject {
+        private int _id;
+        public int Id {
+            get { return _id; }
+            set { SetProperty(ref _id, value); }
+        }
+
+        private Point _value = new Point();
+        public Point Value {
+            get { return _value; }
+            set { SetProperty(ref _value, value); }
+        }
 
         public NodeState_v1(int id, Point value) {
             Id = id;
@@ -628,9 +653,12 @@ namespace taskmaker_wpf.ViewModels {
         string Name { get; set; }
     }
 
-    public class SimplexState_v1 : IRegionState {
+    public class BaseRegionState : IRegionState {
         public int Id { get; set; }
         public string Name { get; set; }
+    }
+
+    public class SimplexState_v1 : BaseRegionState {
         public Point[] Points { get; set; } = new Point[0];
 
         public override string ToString() {
@@ -639,9 +667,7 @@ namespace taskmaker_wpf.ViewModels {
     }
 
 
-    public class VoronoiState_v1 : IRegionState {
-        public int Id { get; set; }
-        public string Name { get; set; }
+    public class VoronoiState_v1 : BaseRegionState {
         public Point[] Points { get; set; } = new Point[0];
         public override string ToString() {
             return Name;

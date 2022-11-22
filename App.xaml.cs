@@ -100,9 +100,20 @@ namespace taskmaker_wpf {
                 cfg.CreateMap<NLinearMapEntity, NLinearMapState_v1>();
                 cfg.CreateMap<MotorEntity, MotorState_v1>();
                 cfg.CreateMap<ControlUiEntity, ControlUiState_v1>();
-                cfg.CreateMap<SimplexRegionEntity, SimplexState_v1>();
-                cfg.CreateMap<VoronoiRegionEntity, VoronoiState_v1>();
+                
                 cfg.CreateMap<NodeEntity, NodeState_v1>();
+
+                cfg.CreateMap<BaseRegionEntity, BaseRegionState>();
+                cfg.CreateMap<SimplexRegionEntity, SimplexState_v1>()
+                    .IncludeBase<BaseRegionEntity, BaseRegionState>()
+                    //.ForMember(d => d.Id, o => o.MapFrom(s => s.Id))
+                    //.ForMember(d => d.Name, o => o.MapFrom(s => s.Name))
+                    .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices));
+                cfg.CreateMap<VoronoiRegionEntity, VoronoiState_v1>()
+                    .IncludeBase<BaseRegionEntity, BaseRegionState>()
+                    //.ForMember(d => d.Id, o => o.MapFrom(s => s.Id))
+                    //.ForMember(d => d.Name, o => o.MapFrom(s => s.Name))
+                    .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices));
             });
 
 
