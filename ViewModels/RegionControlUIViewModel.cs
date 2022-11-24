@@ -304,6 +304,32 @@ namespace taskmaker_wpf.ViewModels {
             set { SetProperty(ref _selectedMap, value); }
         }
 
+        private DelegateCommand _bindCommand;
+        public DelegateCommand BindCommand =>
+            _bindCommand ?? (_bindCommand = new DelegateCommand(ExecuteBindCommand));
+
+        void ExecuteBindCommand() {
+            //if (param is int selectedNodeId) {
+            //    var targetValues = TargetsPanelVM.TargetsOfSelectedMap.SelectMany(e => e.Value).ToArray();
+            //    //var value = TargetsPanelVM.TargetMotors
+
+            //    var request = new UpdateNodeRequest {
+            //        UiId = UiState.Id,
+            //        NodeId = selectedNodeId,
+            //        PropertyName = "TargetValue",
+            //        PropertyValue = targetValues,
+            //    };
+
+            //    _uiBus.Handle(request, (ControlUiEntity ui) => {
+            //        UiState = _mapper.Map<ControlUiState>(ui);
+            //    });
+            //}
+            //if (SelectedNodeWidget is null) return;
+
+
+            //_uiBus.Handle()
+        }
+
         private ICommand _uiCommand;
         public ICommand UiCommand => _uiCommand ?? (_uiCommand = new RelayCommand<CommandParameter>(ExecuteUiCommand));
 

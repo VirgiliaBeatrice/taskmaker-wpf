@@ -13,6 +13,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -395,7 +396,11 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
-        public NodeRelationViewer(UIElement target) {
+        public MultiView View { get; set; }
+
+        public NodeRelationViewer(MultiView parent) {
+            View = parent;
+
             Layout();
         }
 
@@ -499,6 +504,19 @@ namespace taskmaker_wpf.Views.Widget {
             DependencyProperty.Register("ItemsSource", typeof(IEnumerable), typeof(MultiView), new FrameworkPropertyMetadata(new ControlUiState_v1[0], OnPropertyChanged));
 
 
+
+        public ICommand BindCommand {
+            get { return (ICommand)GetValue(BindCommandProperty); }
+            set { SetValue(BindCommandProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for BindCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty BindCommandProperty =
+            DependencyProperty.Register("BindCommand", typeof(ICommand), typeof(MultiView), new PropertyMetadata(default));
+
+
+
+
         public int MaxColumnCount {
             get { return (int)GetValue(MaxColumnCountProperty); }
             set { SetValue(MaxColumnCountProperty, value); }
@@ -572,6 +590,7 @@ namespace taskmaker_wpf.Views.Widget {
         public List<UiController> Controllers = new List<UiController>();
 
         public NodeRelationViewer Viewer { get; set; }
+        public ScrollViewer Scroll { get; set; }
 
         public MultiView() : base() {
             var grid = new Grid();
@@ -581,13 +600,13 @@ namespace taskmaker_wpf.Views.Widget {
             //    UriSource = new Uri(@"icons/done.svg", UriKind.Relative),
             //};
 
-            var scroll = new ScrollViewer() {
+            Scroll = new ScrollViewer() {
                 Focusable= false,
                 VerticalAlignment = VerticalAlignment.Stretch,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
             };
 
-            grid.Children.Add(scroll);
+            grid.Children.Add(Scroll);
 
             Content = grid;
         }
@@ -620,12 +639,14 @@ namespace taskmaker_wpf.Views.Widget {
                     Command = vm.UiCommand,
                 };
 
+                ui.NotifyStatus += Ui_NotifyStatus;
+
                 var textblock = new TextBlock {
-                    Text = "Title",
+                    Text = items[0].ToString(),
                     FontSize = 42,
                     Foreground = Brushes.DimGray,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Bottom,
+                    HorizontalAlignment = HorizontalAlignment.Right,
 
                 };
 
@@ -678,13 +699,15 @@ namespace taskmaker_wpf.Views.Widget {
                         HorizontalAlignment = HorizontalAlignment.Stretch,
                     };
                     var textblock = new TextBlock {
-                        Text = "Title",
+                        Text = items[i].ToString(),
                         FontSize = 42,
                         Foreground = Brushes.DimGray,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Bottom,
+                        HorizontalAlignment = HorizontalAlignment.Right,
 
                     };
+
+                    ui.NotifyStatus += Ui_NotifyStatus;
 
                     ui.SetBinding(
                         UiController.UiStateProperty,
@@ -705,19 +728,22 @@ namespace taskmaker_wpf.Views.Widget {
                 }
             }
 
-            //BindingOperations.SetBinding(
-            //    grid,
-            //    )
-
-
-
-            ((Grid)Content).Children.Add(grid);
+            Scroll.Content = grid;
+            ((Grid)Content).Children.Add(Scroll);
             ((Grid)Content).Children.Add(Viewer);
         }
-    }
 
-    public struct SimplexInfo {
-        public Point[] Points { get; set; }
+        private void Ui_NotifyStatus(object sender, NotifyStatusEventArgs e) {
+        }
+
+        public void Bind() {
+            var isSelectedAll = Controllers.All(e => e.SelectedNode != null);
+
+            if (isSelectedAll) {
+
+                BindCommand.Execute(null);
+            }
+        }
     }
 
     public enum UiMode {
@@ -730,12 +756,41 @@ namespace taskmaker_wpf.Views.Widget {
         Zoom
     }
 
+    public class BaseUiState {
+        public UiController Parent { get; set; }
+
+        public BaseUiState(UiController parent) {
+            Parent = parent;
+        }
+
+    }
+
+    public class DefaultUiState : BaseUiState {
+        public DefaultUiState(UiController parent) : base(parent) {
+        }
+    }
+
     public class CommandParameter {
         public string Type { get; set; }
         public object[] Payload { get; set; }
     }
 
+    public class NotifyStatusEventArgs : EventArgs {
+        public string Status { get; set; }
+
+        
+        public NotifyStatusEventArgs(string status) {
+            Status = status;
+        }
+
+        public NotifyStatusEventArgs() {
+        }
+    }
+
     public class UiController : UserControl {
+        public BaseUiState State { get; set; }
+
+        public event EventHandler<NotifyStatusEventArgs> NotifyStatus;
 
         internal static readonly DependencyPropertyKey SelectedNodePropertyKey = DependencyProperty.RegisterReadOnly("SelectedNode", typeof(NodeShape), typeof(UiController), new FrameworkPropertyMetadata(null, OnSelectedNodePropertyChanged));
 
@@ -800,6 +855,7 @@ namespace taskmaker_wpf.Views.Widget {
             DependencyProperty.Register("Command", typeof(ICommand), typeof(UiController), new PropertyMetadata((ICommand)null));
 
         private Canvas _canvas;
+        private Label _status;
 
         public void InvalidateNode() {
             var nodeInfos = UiState.Nodes.Select(e => new NodeInfo() { Location = e.Value, NodeId = e.Id, UiId = UiState.Id }).ToArray();
@@ -882,6 +938,7 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public UiController() {
+            State = new DefaultUiState(this);
             Focusable = true;
             Visibility = Visibility.Visible;
 
@@ -899,6 +956,10 @@ namespace taskmaker_wpf.Views.Widget {
                 VerticalAlignment = VerticalAlignment.Stretch,
                 //Width = 400,
                 //Height = 400,
+            };
+
+            _status = new Label() {
+                Content = mode.ToString()
             };
             _canvas = new Canvas() {
                 Background = Brushes.DarkGray,
@@ -922,6 +983,7 @@ namespace taskmaker_wpf.Views.Widget {
 
             _canvas.Children.Add(axisX);
             _canvas.Children.Add(axisY);
+            _canvas.Children.Add(_status);
             container.Children.Add(_canvas);
 
             Content = container;
@@ -947,10 +1009,9 @@ namespace taskmaker_wpf.Views.Widget {
             // Pan
             MouseDown += (s, e) => {
 
-                //Keyboard.Focus(this);
-                
-
                 if (mode == UiMode.Add) {
+                    CaptureMouse();
+
                     var point = e.GetPosition(_canvas);
                     var invMat = Transform;
 
@@ -958,6 +1019,8 @@ namespace taskmaker_wpf.Views.Widget {
                     mousePosition = invMat.Transform(point);
                 }
                 else if (mode == UiMode.Pan) {
+                    CaptureMouse();
+
                     isDragging = true;
                     start = e.GetPosition(_canvas);
                     startMat = Translate;
@@ -983,6 +1046,9 @@ namespace taskmaker_wpf.Views.Widget {
             MouseUp += (s, e) => {
                 if (mode == UiMode.Add) {
                     OnMouseClicked(mousePosition);
+                    GoToState(UiMode.Default);
+
+                    ReleaseMouseCapture();
                 }
                 else if (mode == UiMode.Pan) {
                     var curr = e.GetPosition(_canvas);
@@ -993,13 +1059,12 @@ namespace taskmaker_wpf.Views.Widget {
 
                     Translate = tMat;
 
-                    InvalidateTransform();
                     isDragging = false;
-                }
+                    InvalidateTransform();
 
-                //var result = Keyboard.Focus(s as IInputElement);
-                //var el = Keyboard.FocusedElement;
-                //Console.WriteLine("{0}, {1}", result, el);
+                    ReleaseMouseCapture();
+                    GoToState(UiMode.Default);
+                }
             };
 
             PreviewMouseWheel += (s, e) => {
@@ -1026,19 +1091,47 @@ namespace taskmaker_wpf.Views.Widget {
                     OnBuild();
                 }
                 else if (e.Key == Key.D1) {
-                    mode = UiMode.Add;
+                    GoToState(UiMode.Add);
                 }
                 else if (e.Key == Key.D2) {
-                    mode = UiMode.Pan;
+                    GoToState(UiMode.Pan);
                 }
                 else if (e.Key == Key.Escape) {
-                    mode = UiMode.Default;
+                    GoToState(UiMode.Default);
                 }
             };
 
             Keyboard.AddPreviewKeyDownHandler(this, (s, e) => {
                 //Console.WriteLine($"Keydown, {e.Key}");
             });
+        }
+
+        public void GoToState(UiMode mode) {
+            this.mode = mode;
+
+            switch (mode) {
+                case UiMode.Default:
+                    State = new DefaultUiState(this);
+                    break;
+                case UiMode.Add:
+                    break;
+                case UiMode.Delete:
+                    break;
+                case UiMode.Build:
+                    break;
+                case UiMode.Trace:
+                    break;
+                case UiMode.Pan:
+                    break;
+                case UiMode.Zoom:
+                    break;
+                default:
+                    break;
+            }
+
+            // State operation
+            NotifyStatus(this, new NotifyStatusEventArgs(mode.ToString()));
+            _status.Content = mode.ToString();
         }
 
         private Matrix Normalized = Matrix.Identity;

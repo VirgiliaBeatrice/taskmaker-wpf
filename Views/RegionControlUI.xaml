@@ -29,40 +29,48 @@
                 Width="250">
                 <TabItem
                     Header="ControlUi" >
-                    
-                    <StackPanel
-                        Margin="10"
-                        Orientation="Vertical">
-                        <Expander
-                            BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
-                            BorderThickness="1"
-                            Header="Maps"
-                            >
-                            <StackPanel
-                                Orientation="Vertical"
+                    <ScrollViewer
+                        VerticalScrollBarVisibility="Hidden"
+                        >
+                        <StackPanel
+                            Margin="10"
+                            Orientation="Vertical">
+                            <Expander
+                                BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
+                                BorderThickness="1"
+                                Header="Maps"
                                 >
-                                <Button
-                                    Margin="4"
-                                    Command="{Binding AddUiCommand}">
-                                    <Button.Content>
-                                        <Image Source="/icons/add_FILL0_wght400_GRAD0_opsz48.png" Width="16" Height="16"/>
-                                    </Button.Content>
-                                </Button>
-                                <ListBox
-                                    MinHeight="20"
-                                    Margin="4"
-                                    ItemsSource="{Binding UiStates}"
-                                    />
-                            </StackPanel>
+                                <StackPanel
+                                    Orientation="Vertical"
+                                    >
+                                    <Button
+                                        Margin="4"
+                                        Command="{Binding AddUiCommand}">
+                                        <Button.Content>
+                                            <Image Source="/icons/add_FILL0_wght400_GRAD0_opsz48.png" Width="16" Height="16"/>
+                                        </Button.Content>
+                                    </Button>
+                                    <ListBox
+                                        MinHeight="20"
+                                        Margin="4"
+                                        ItemsSource="{Binding UiStates}"
+                                        />
+                                </StackPanel>
 
-                        </Expander>
+                            </Expander>
                         
-                    </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
 
                 </TabItem>
                 <TabItem
                     Header="Map">
-                    <local:TargetsPanel />
+                    <ScrollViewer
+                        VerticalScrollBarVisibility="Hidden"
+                        >
+                        <local:TargetsPanel />
+                        
+                    </ScrollViewer>
                 </TabItem>
 
             </TabControl>

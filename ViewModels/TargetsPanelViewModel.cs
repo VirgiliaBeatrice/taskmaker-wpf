@@ -451,18 +451,32 @@ namespace taskmaker_wpf.ViewModels {
     public class OutputPort {
         public bool IsSelected { get; set; } = false;
         public string Name { get; set; }
+        public int Dimension { get; set; }
 
         public OutputPort(IOutputPort reference) {
+            if (reference is MotorState_v1) {
+                Dimension = 1;
+            }
+            else if (reference is ControlUiState_v1) {
+                Dimension = 2;
+            }
+
             Name = reference.Name;
         }
     }
 
     public class InputPort {
+        public object Reference { get; set; }
         public string Name { get; set; }
         public bool IsSelected { get; set; } = false;
 
+        public int BasisCount { get; set; }
+
         public InputPort(IInputPort reference) {
+            Reference = reference;
+
             Name = reference.Name;
+            BasisCount = (reference as ControlUiState_v1).Nodes.Length;
         }
     }
 

@@ -90,7 +90,6 @@ namespace taskmaker_wpf {
 
                 cfg.CreateMap<MotorEntity, MotorState>()
                     .ForMember(d => d.Value, o => o.Ignore())
-                    .ForMember(d => d.MotorValue, o => o.MapFrom(s => s.Value[0]))
                     .ReverseMap();
                     //.ForMember(d => d.Value, o => o.MapFrom(s => new double[] { s.Value }));
                 //cfg.CreateMap<MotorEntity, MotorTargetState>()
@@ -106,13 +105,9 @@ namespace taskmaker_wpf {
                 cfg.CreateMap<BaseRegionEntity, BaseRegionState>();
                 cfg.CreateMap<SimplexRegionEntity, SimplexState_v1>()
                     .IncludeBase<BaseRegionEntity, BaseRegionState>()
-                    //.ForMember(d => d.Id, o => o.MapFrom(s => s.Id))
-                    //.ForMember(d => d.Name, o => o.MapFrom(s => s.Name))
                     .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices));
                 cfg.CreateMap<VoronoiRegionEntity, VoronoiState_v1>()
                     .IncludeBase<BaseRegionEntity, BaseRegionState>()
-                    //.ForMember(d => d.Id, o => o.MapFrom(s => s.Id))
-                    //.ForMember(d => d.Name, o => o.MapFrom(s => s.Name))
                     .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices));
             });
 

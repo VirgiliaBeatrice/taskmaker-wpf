@@ -442,7 +442,7 @@ namespace taskmaker_wpf.Domain {
                 if (ui.Targets == null)
                     callback((K)(object)null);
                 else {
-                    var map = ui.CreateMap();
+                    var map = new NLinearMapEntity();
 
                     map.Name = $"Map[{ui.Name}]";
 
@@ -504,16 +504,23 @@ namespace taskmaker_wpf.Domain {
 
                 if (req.PropertyType == "UpdateInputs") {
                     map.InputPorts = (InputPort[])req.PropertyValue;
+
+                    map.Initialize();
                 }
                 else if (req.PropertyType == "UpdateOutputs") {
                     map.OutputPorts = (OutputPort[])req.PropertyValue;
+
+                    map.Initialize();
                 }
                 else if (req.PropertyType == "Initialize") {
-                    var ids = (int[])req.PropertyValue;
-                    var uis = Repository.FindAll<ControlUiEntity>()
-                        .Where(e => ids.Contains(e.Id))
-                        .ToArray();
+                    //var ids = (int[])req.PropertyValue;
+                    //var uis = Repository.FindAll<ControlUiEntity>()
+                    //    .Where(e => ids.Contains(e.Id))
+                    //    .ToArray();
+
                     //map.Initialize(ui);
+
+                    //map.Initialize()
                 }
                 else if (req.PropertyType == "UpdateValue") {
                     var contract = (ValueContract)req.PropertyValue;

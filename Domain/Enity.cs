@@ -58,32 +58,52 @@ namespace taskmaker_wpf.Domain {
         //public string[] Targets { get; set; }
         //public (string, int)[] Targets { get; set; }
 
-        public InputPort[] InputPorts { get; set; }
-        public OutputPort[] OutputPorts { get; set; }
+        public InputPort[] InputPorts { get; set; } = { };
+        public OutputPort[] OutputPorts { get; set; } = { };
         
 
         private bool _isSet => !Tensor.isnan().any();
         private double[] tensor => Tensor.isnan().any() ? null : Tensor.GetData<double>();
 
-        public static NLinearMapEntity Create(ControlUiEntity ui) {
-            var map = new NLinearMapEntity();
+        //public static NLinearMapEntity Create(ControlUiEntity ui) {
+        //    var map = new NLinearMapEntity();
 
-            map.Initialize(ui);
+        //    map.Initialize(ui);
 
-            //var targetDim = ui.Targets.Select(e => e.Dimension).Sum();
-            //var basisDim = new int[] { ui.Nodes.Length };
+        //    //var targetDim = ui.Targets.Select(e => e.Dimension).Sum();
+        //    //var basisDim = new int[] { ui.Nodes.Length };
 
-            //map.Shape = new int[] { targetDim }.Concat(basisDim).ToArray();
-            //map.Tensor = np.empty(map.Shape);
+        //    //map.Shape = new int[] { targetDim }.Concat(basisDim).ToArray();
+        //    //map.Tensor = np.empty(map.Shape);
 
-            //map.Tensor.fill(np.nan);
+        //    //map.Tensor.fill(np.nan);
 
-            //var basis = ui.Nodes;
-            //for (int idx = 0; idx < basis.Length; idx++) {
-            //    map.Tensor[$":,{string.Join(",", new int[] { idx })}"] = basis[idx].TargetValue;
+        //    //var basis = ui.Nodes;
+        //    //for (int idx = 0; idx < basis.Length; idx++) {
+        //    //    map.Tensor[$":,{string.Join(",", new int[] { idx })}"] = basis[idx].TargetValue;
+        //    //}
+
+        //    return map;
+        //}
+
+        public void Initialize() {
+            if (OutputPorts.Length == 0 || InputPorts.Length == 0) return;
+
+            var targetDim = OutputPorts.Select(e => e.Dimension).Sum();
+            var basisDims = InputPorts.Select(e => e.BasisCount).ToArray();
+
+            Shape = new int[] { targetDim }.Concat(basisDims).ToArray();
+            Tensor = np.empty(Shape);
+
+            Tensor.fill(np.nan);
+
+            //foreach(var input in InputPorts) {
+            //    var basis = (input.Reference as ControlUiState_v1).Nodes;
+
+            //    for (int idx = 0; idx < basis.Length; idx++) {
+            //        Tensor[$":,{string.Join(",", new int[] { idx })}"] = basis[idx].TargetValue;
+            //    }
             //}
-
-            return map;
         }
 
         public void Initialize(ControlUiEntity ui) {
@@ -377,22 +397,23 @@ namespace taskmaker_wpf.Domain {
             Regions = regions.ToArray();
         }
 
-        public NLinearMapEntity CreateMap() {
-            if (Nodes.Any(e => e.TargetValue == null)) {
-                return default;
-            }
-            else {
-                return NLinearMapEntity.Create(this);
-            }
-        }
+        //public NLinearMapEntity CreateMap() {
+        //    if (Nodes.Any(e => e.TargetValue == null)) {
+        //        return default;
+        //    }
+        //    else {
+        //        return NLinearMapEntity.Create(this);
+        //    }
+        //}
     }
 
     public class MotorEntity : BaseEntity, ITargetableEntity {
-        public double[] Value { get; set; } = new double[1] { 0 };
+        public double Value { get; set; }
         public int Min { get; set; }
         public int Max { get; set; }
-        public int BoardId { get; set; }
-        public int MotorId { get; set; }
+        public int NuibotBoardId { get; set; }
+        public int NuibotMotorId { get; set; }
+
         public string TargetType => "Motor";
     }
 
