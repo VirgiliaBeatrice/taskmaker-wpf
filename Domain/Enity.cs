@@ -96,14 +96,6 @@ namespace taskmaker_wpf.Domain {
             Tensor = np.empty(Shape);
 
             Tensor.fill(np.nan);
-
-            //foreach(var input in InputPorts) {
-            //    var basis = (input.Reference as ControlUiState_v1).Nodes;
-
-            //    for (int idx = 0; idx < basis.Length; idx++) {
-            //        Tensor[$":,{string.Join(",", new int[] { idx })}"] = basis[idx].TargetValue;
-            //    }
-            //}
         }
 
         public void Initialize(ControlUiEntity ui) {
@@ -121,9 +113,13 @@ namespace taskmaker_wpf.Domain {
             }
         }
 
-        public void SetValue(int[] indices, NDarray value) {
+        public void SetValue(int[] indices, double[] value) {
             // only 1 bary
             Tensor[$":,{indices[0]}"] = np.atleast_2d(value);
+
+            // more than 1
+            var indexStr = $":,{string.Join(",", indices)}";
+            Tensor[indexStr] = value;
         }
 
         public NDarray MapTo(NDarray lambdas) {

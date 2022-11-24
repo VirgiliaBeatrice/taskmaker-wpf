@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing.Design;
 using System.Drawing.Imaging;
 using System.Linq;
@@ -20,6 +21,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Xml.XPath;
+using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Model.SimplicialMapping;
 using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Views.Widgets;
@@ -27,20 +29,45 @@ using static Unity.Storage.RegistrationSet;
 using Rectangle = System.Windows.Shapes.Rectangle;
 
 namespace taskmaker_wpf.Views.Widget {
+    public static class VisualTreeHelperExtensions {
+        public static T FindAncestor<T>(DependencyObject dependencyObject)
+            where T : class {
+            DependencyObject target = dependencyObject;
+            do {
+                target = VisualTreeHelper.GetParent(target);
+            }
+            while (target != null && !(target is T));
+            return target as T;
+        }
+    }
+
+    public static class LogicalTreeHelperExtensions {
+        public static T FindAncestor<T>(DependencyObject dependencyObject) where T : class {
+            var target = dependencyObject;
+
+            do {
+                target = LogicalTreeHelper.GetParent(target);
+            }
+            while (target != null && !(target is T));
+
+            return target as T;
+        }
+    }
+
     public class NodeRelation {
         public bool HasValue { get; set; }
-        private readonly NodeInfo[] _nodes;
+        public readonly NodeInfo[] Nodes;
 
         public NodeRelation(NodeInfo[] nodes) {
-            _nodes = nodes;
+            Nodes = nodes;
         }
 
         public NodeInfo this[int index] {
-            get => _nodes[index];
+            get => Nodes[index];
         }
 
         public override string ToString() {
-            return $"[{string.Join(",", _nodes.Select(e => $"{e.UiId}({e.NodeId})"))}]";
+            return $"[{string.Join(",", Nodes.Select(e => $"{e.UiId}({e.NodeId})"))}]";
         }
     }
 
@@ -149,11 +176,12 @@ namespace taskmaker_wpf.Views.Widget {
         public override void SetFlag() {
             var widget = Parent as RelationWidget;
 
-            widget.IsSelected = !widget.IsSelected;
+            widget.IsSelected = false;
         }
 
         public override void SetOverlay() {
             var grid = Parent.Overlay as Grid;
+            var widget = Parent as RelationWidget;
             var overlay = grid.Children.OfType<Rectangle>().First();
             var icon = grid.Children.OfType<SvgIcon>().First();
 
@@ -162,7 +190,9 @@ namespace taskmaker_wpf.Views.Widget {
             // Set opacity
             overlay.Opacity = 0.0;
 
-            icon.Visibility = Visibility.Hidden;
+
+            //if (widget.)
+            //icon.Visibility = Visibility.Hidden;
         }
     }
 
@@ -192,7 +222,7 @@ namespace taskmaker_wpf.Views.Widget {
             // Set opacity
             overlay.Opacity = 0.08;
 
-            icon.Visibility = Visibility.Hidden;
+            //icon.Visibility = Visibility.Hidden;
         }
     }
 
@@ -206,7 +236,7 @@ namespace taskmaker_wpf.Views.Widget {
         public override void SetFlag() {
             var widget = Parent as RelationWidget;
 
-            widget.IsSelected = !widget.IsSelected;
+            widget.IsSelected = true;
         }
 
         public override void SetOverlay() {
@@ -219,7 +249,7 @@ namespace taskmaker_wpf.Views.Widget {
             // Set opacity
             overlay.Opacity = 0.12;
 
-            icon.Visibility = Visibility.Visible;
+            //icon.Visibility = Visibility.Visible;
         }
     }
 
@@ -248,16 +278,42 @@ namespace taskmaker_wpf.Views.Widget {
             // Set opacity
             overlay.Opacity = 0.12;
             
-            icon.Visibility = Visibility.Hidden;
+            //icon.Visibility = Visibility.Hidden;
 
+        }
+    }
+
+    public class ActivedState : BaseState {
+        public ActivedState(StatefulWidget parent) : base(parent) {
+        }
+
+        public override void SetContainer() {
+        }
+
+        public override void SetFlag() {
+        }
+
+        public override void SetOverlay() {
+            var grid = Parent.Overlay as Grid;
+            var overlay = grid.Children.OfType<Rectangle>().First();
+            var icon = grid.Children.OfType<SvgIcon>().First();
+
+            // Set color
+            overlay.Fill = Brushes.DarkRed;
+            // Set opacity
+            overlay.Opacity = 0.12;
         }
     }
 
 
     public class RelationWidget : StatefulWidget {
-        public bool IsSelected { get; set; } = false; 
+        public bool IsSelected { get; set; } = false;
+        //public bool HasValue { get; set; } = false;
+        public NodeRelation Relation { get; set; }
 
-        public RelationWidget() {
+        public RelationWidget(NodeRelation relation) {
+            Relation = relation;
+
             var content = new Rectangle {
                 Width = 20,
                 Height = 20,
@@ -282,7 +338,7 @@ namespace taskmaker_wpf.Views.Widget {
                 VerticalAlignment = VerticalAlignment.Center,
                 UriSource = new Uri(@"icons/done.svg", UriKind.Relative),
                 Fill = new SolidColorBrush(Colors.White),
-                Visibility = Visibility.Hidden,
+                Visibility = Relation.HasValue ? Visibility.Visible : Visibility.Hidden,
             };
 
             overlayContainer.Children.Add(overlay);
@@ -311,26 +367,42 @@ namespace taskmaker_wpf.Views.Widget {
                 }
             };
 
-            MouseLeftButtonDown += (s, e) => {
-                var widget = s as RelationWidget;
+            //MouseLeftButtonDown += (s, e) => {
+            //    var widget = s as RelationWidget;
 
-                GoToState(UiElementState.Pressed);
-            };
+            //    CaptureMouse();
+            //    if (widget.State == UiElementState.Hover)
+            //        GoToState(UiElementState.Pressed);
+            //    else if (widget.State == UiElementState.Selected) {
+            //        GoToState(UiElementState.Activated);
+            //    }
+            //};
 
-            MouseLeftButtonUp += (s, e) => {
-                var widget = s as RelationWidget;
+            //MouseLeftButtonUp += (s, e) => {
+            //    var widget = s as RelationWidget;
 
-                if (widget.State == UiElementState.Pressed) {
-                    if (widget.IsSelected) {
-                        GoToState(UiElementState.Default);
-                    }
-                    else {
-                        GoToState(UiElementState.Selected);
-                    }
-                }
-                else if (widget.State == UiElementState.Selected) {
-                    GoToState(UiElementState.Default);
-                }
+            //    if (widget.State == UiElementState.Pressed) {
+            //        GoToState(UiElementState.Selected);
+
+            //        var parent = LogicalTreeHelperExtensions.FindAncestor<NodeRelationViewer>(this);
+
+            //        parent.Select(Relation.Nodes);
+            //        //if (!IsSelected)
+            //        //    GoToState(UiElementState.Default);
+            //    }
+            //    else if (widget.State == UiElementState.Activated) {
+            //        var parent = LogicalTreeHelperExtensions.FindAncestor<MultiView>(this);
+
+            //        parent.Bind();
+
+            //        GoToState(UiElementState.Default);
+            //    }
+
+            //    ReleaseMouseCapture();
+            //};
+
+            PreviewKeyDown += (s, e) => {
+
             };
         }
 
@@ -348,6 +420,7 @@ namespace taskmaker_wpf.Views.Widget {
                     _state = new SelectedState(this);
                     break;
                 case UiElementState.Activated:
+                    _state = new ActivedState(this);
                     break;
                 case UiElementState.Pressed:
                     _state = new PressedState(this);
@@ -360,8 +433,6 @@ namespace taskmaker_wpf.Views.Widget {
 
             base.GoToState(state);
         }
-
-
     }
 
     public class NodeRelationViewer : UserControl {
@@ -382,33 +453,49 @@ namespace taskmaker_wpf.Views.Widget {
 
         // Using a DependencyProperty as the backing store for Combinations.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty CombinationsProperty =
-            DependencyProperty.Register("Combinations", typeof(IEnumerable<NodeRelation>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeRelation[0]));
+            DependencyProperty.Register("Combinations", typeof(IEnumerable<NodeRelation>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeRelation[0], OnPropertyChanged));
 
 
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
             if (d is NodeRelationViewer viewer) {
                 //viewer.Layout();
+                var relations = args.NewValue as NodeRelation[];
 
-                if ((bool)args.NewValue == true)
-                    viewer.Visibility= Visibility.Visible;
-                else
-                    viewer.Visibility= Visibility.Collapsed;
+                if (relations.Length == 1) {
+                    viewer.IsWaitToBind = true;
+                    //viewer.View.SetSelectedNodeIndices(relations[0].Nodes.Select(e => e.NodeId).ToArray());
+                }else {
+                    viewer.IsWaitToBind = false;
+                }
+
+                //if ((bool)args.NewValue == true)
+                //    viewer.Visibility= Visibility.Visible;
+                //else
+                //    viewer.Visibility= Visibility.Collapsed;
             }
         }
 
+        public bool IsWaitToBind { get; set; } = false;
+
         public MultiView View { get; set; }
+        public List<RelationWidget> Relations { get; set; } = new List<RelationWidget>();
 
         public NodeRelationViewer(MultiView parent) {
             View = parent;
 
-            Layout();
+            InvalidateState();
         }
 
         public void InvalidateState() {
             Layout();
+
+            if (IsWaitToBind)
+                Relations[0].GoToState(UiElementState.Activated);
         }
 
         public void Layout() {
+            Relations.Clear();
+
             var a = Locked;
             var b = Combinations;
 
@@ -455,10 +542,14 @@ namespace taskmaker_wpf.Views.Widget {
             }
 
             foreach (var item in b) {
-                var rect = new RelationWidget {
+                var rect = new RelationWidget(item) {
                     Margin = new Thickness(2),
                     ToolTip = item.ToString(),
                 };
+
+                rect.MouseDoubleClick += Rect_MouseDoubleClick;
+                rect.MouseLeftButtonDown += Rect_MouseLeftButtonDown;
+                rect.MouseLeftButtonUp += Rect_MouseLeftButtonUp;
                 //var rect = new Rectangle() {
                 //    Width = 20,
                 //    Height = 20,
@@ -469,6 +560,7 @@ namespace taskmaker_wpf.Views.Widget {
                 //};
 
                 panel1.Children.Add(rect);
+                Relations.Add(rect);
             }
 
             Grid.SetColumn(panel0, 0);
@@ -491,6 +583,59 @@ namespace taskmaker_wpf.Views.Widget {
             Content = scroll;
         }
 
+        private void Rect_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+            var r = sender as RelationWidget;
+
+            r.ReleaseMouseCapture();
+
+            if (!IsWaitToBind) {
+                if (r.State == UiElementState.Pressed) {
+                    var parent = this;
+
+                    parent.Select(r.Relation.Nodes);
+
+                    r.GoToState(UiElementState.Default);
+                }
+            }
+            else {
+                if (r.State == UiElementState.Pressed) {
+                    var parent = LogicalTreeHelperExtensions.FindAncestor<MultiView>(this);
+
+                    parent.Bind();
+
+                    r.GoToState(UiElementState.Default);
+                }
+            }
+        }
+
+        private void Rect_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+            var r = sender as RelationWidget;
+
+            r.CaptureMouse();
+
+            if (!IsWaitToBind) {
+                if (r.State == UiElementState.Hover)
+                    r.GoToState(UiElementState.Pressed);
+            }
+            else {
+                if (r.State == UiElementState.Activated)
+                    r.GoToState(UiElementState.Pressed);
+            }
+        }
+
+        private void Rect_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
+            var relationWidget = sender as RelationWidget;
+
+            if (Combinations.Count() == 1) {
+                Console.WriteLine("Bind!");
+            }
+        }
+
+        public void Select(NodeInfo[] nodes) {
+            var parent = LogicalTreeHelperExtensions.FindAncestor<MultiView>(this);
+
+            parent.Select(nodes);
+        }
     }
 
     public class MultiView : UserControl {
@@ -513,8 +658,6 @@ namespace taskmaker_wpf.Views.Widget {
         // Using a DependencyProperty as the backing store for BindCommand.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty BindCommandProperty =
             DependencyProperty.Register("BindCommand", typeof(ICommand), typeof(MultiView), new PropertyMetadata(default));
-
-
 
 
         public int MaxColumnCount {
@@ -574,7 +717,7 @@ namespace taskmaker_wpf.Views.Widget {
                 var combinations = Helper.GetCombinations(temp);
 
                 Viewer.Locked = locked;
-                Viewer.Combinations = combinations.Select(e => new NodeRelation(e));
+                Viewer.Combinations = combinations.Select(e => new NodeRelation(e)).ToArray();
 
                 Viewer.Visibility = Visibility.Visible;
                 Viewer.InvalidateState();
@@ -609,6 +752,30 @@ namespace taskmaker_wpf.Views.Widget {
             grid.Children.Add(Scroll);
 
             Content = grid;
+        }
+
+        public void Bind() {
+            Console.WriteLine("A binding data has prepared.");
+        }
+
+        public void UnSelect() {
+            foreach(var c in Controllers) {
+                c.UnSelect();
+            }
+        }
+
+        public void Select(NodeInfo[] nodes) {
+            UnSelect();
+
+            foreach (var node in nodes) {
+                Select(node.UiId, node.NodeId);
+            }
+        }
+
+        public void Select(int uiId, int nodeId) {
+            var controller = Controllers.Find(e => e.UiState.Id == uiId);
+
+            controller.Select(nodeId);
         }
 
         public void Layout() {
@@ -735,15 +902,6 @@ namespace taskmaker_wpf.Views.Widget {
 
         private void Ui_NotifyStatus(object sender, NotifyStatusEventArgs e) {
         }
-
-        public void Bind() {
-            var isSelectedAll = Controllers.All(e => e.SelectedNode != null);
-
-            if (isSelectedAll) {
-
-                BindCommand.Execute(null);
-            }
-        }
     }
 
     public enum UiMode {
@@ -856,6 +1014,7 @@ namespace taskmaker_wpf.Views.Widget {
 
         private Canvas _canvas;
         private Label _status;
+        public NodeShape[] NodeVisuals { get; set; } = new NodeShape[0];
 
         public void InvalidateNode() {
             var nodeInfos = UiState.Nodes.Select(e => new NodeInfo() { Location = e.Value, NodeId = e.Id, UiId = UiState.Id }).ToArray();
@@ -869,23 +1028,26 @@ namespace taskmaker_wpf.Views.Widget {
 
 
             foreach (var item in nodeInfos) {
-                var nodeShape = new NodeShape() {
+                var nodeShape = new NodeShape(item.NodeId) {
                     VerticalAlignment = VerticalAlignment.Stretch,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                 };
 
-                nodeShape.Clicked += (s, ev) => {
-                    if (s is NodeShape n) {
-                        if (n.State == UiElementState.Selected)
-                            SetValue(SelectedNodePropertyKey, n);
-                        else
-                            SetValue(SelectedNodePropertyKey, null);
+                nodeShape.MouseLeftButtonDown += NodeShape_MouseLeftButtonDown;
+                nodeShape.MouseLeftButtonUp += NodeShape_MouseLeftButtonUp;
 
-                        foreach(var node in _canvas.Children.OfType<NodeShape>().Where(e => e != s)) {
-                            node.Reset();
-                        }
-                    }
-                };
+                //nodeShape.Clicked += (s, ev) => {
+                //    if (s is NodeShape n) {
+                //        if (n.State == UiElementState.Selected)
+                //            SetValue(SelectedNodePropertyKey, n);
+                //        else
+                //            SetValue(SelectedNodePropertyKey, null);
+
+                //        foreach(var node in _canvas.Children.OfType<NodeShape>().Where(e => e != s)) {
+                //            node.Reset();
+                //        }
+                //    }
+                //};
 
                 //Canvas.SetLeft(nodeShape, item.Location.X - 20 / 2);
                 //Canvas.SetTop(nodeShape, item.Location.Y - 20 / 2);
@@ -900,6 +1062,28 @@ namespace taskmaker_wpf.Views.Widget {
                         Source = item
                     });
             }
+
+            NodeVisuals = _canvas.Children.OfType<NodeShape>().ToArray();
+        }
+
+        private void NodeShape_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+            var nodeShape = sender as NodeShape;
+
+            nodeShape.ReleaseMouseCapture();
+
+            if (nodeShape.State == UiElementState.Hover) {
+                UnSelect();
+                Select(nodeShape.NodeId);
+            }
+            else if (nodeShape.State == UiElementState.Selected) {
+                UnSelect();
+            }
+        }
+
+        private void NodeShape_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+            var nodeShape = sender as NodeShape;
+
+            nodeShape.CaptureMouse();
         }
 
         public void InvalidateRegion() {
@@ -1132,6 +1316,18 @@ namespace taskmaker_wpf.Views.Widget {
             // State operation
             NotifyStatus(this, new NotifyStatusEventArgs(mode.ToString()));
             _status.Content = mode.ToString();
+        }
+
+        public void Select(int nodeId) {
+            var target = NodeVisuals.Where(e => e.NodeId == nodeId).First();
+
+            target.GoToState(UiElementState.Selected);
+            SetValue(SelectedNodePropertyKey, target);
+        }
+
+        public void UnSelect() {
+            NodeVisuals.ToList().ForEach(e => e.GoToState(UiElementState.Default));
+            SetValue(SelectedNodePropertyKey, null);
         }
 
         private Matrix Normalized = Matrix.Identity;
@@ -1475,7 +1671,11 @@ namespace taskmaker_wpf.Views.Widget {
             DependencyProperty.Register("Node", typeof(NodeInfo), typeof(NodeShape), new PropertyMetadata(new NodeInfo(), OnPropertyChanged));
 
 
-        public NodeShape() {
+        public int NodeId { get; set; }
+
+        public NodeShape(int nodeId) {
+            NodeId = nodeId;
+
             InitializeComponents();
             Invalidate();
         }
@@ -1575,31 +1775,30 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
-        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e) {
-            base.OnMouseLeftButtonDown(e);
-        }
+        //protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e) {
+        //    base.OnMouseLeftButtonDown(e);
+        //}
 
-        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e) {
-            base.OnMouseLeftButtonUp(e);
+        //protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e) {
+        //    base.OnMouseLeftButtonUp(e);
 
-            if (_state is HoverNodeState && !IsSelected) {
-                GoToState(UiElementState.Selected);
-            }
-            else if (_state is SelectedNodeState && IsSelected) {
-                GoToState(UiElementState.Default);
-            }
+        //    if (_state is HoverNodeState && !IsSelected) {
+        //        GoToState(UiElementState.Selected);
+        //    }
+        //    else if (_state is SelectedNodeState && IsSelected) {
+        //        GoToState(UiElementState.Default);
+        //    }
 
-            RaiseEvent(new RoutedEventArgs(ClickedEvent));
-        }
+        //    var parent = LogicalTreeHelperExtensions.FindAncestor<UiController>(this);
+
+        //    parent.Select(NodeId);
+        //    //RaiseEvent(new RoutedEventArgs(ClickedEvent));
+        //}
 
         static public void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
             if (d is NodeShape widget) {
                 widget.Invalidate();
             }
-        }
-
-        public void Reset() {
-            GoToState(UiElementState.Default);
         }
 
         public override void GoToState(UiElementState state) {
