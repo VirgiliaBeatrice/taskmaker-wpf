@@ -20,6 +20,8 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 using System.Collections.Generic;
 using System.Xml.Linq;
 using PCController;
+using System.Windows.Controls;
+using System.Xml.XPath;
 
 namespace taskmaker_wpf.ViewModels {
 
@@ -648,6 +650,66 @@ namespace taskmaker_wpf.ViewModels {
             InvalidateValidPorts();
 
             SystemInfo = $"{_operationMode}";
+        }
+
+        public void UpdateControlUiInput(ControlUiState_v1 state, Point value, BaseRegionState hitRegion) {
+            var req = new ListControlUiRequest() {
+                Id = state.Id,
+            };
+
+            _uiBus.Handle(req, out ControlUiEntity ui);
+
+            if (hitRegion != null) {
+                var lambdas = ui.Regions.Where(e => e.Id == hitRegion.Id).First().GetLambdas(value, ui.Nodes);
+
+                var req0 = new ListNLinearMapRequest() {
+                    Id = SelectedMap.Id,
+                };
+
+                _mapBus.Handle(req0, out NLinearMapEntity map);
+
+                _uiBus.Handle(new ListControlUiRequest(), out ControlUiEntity[] uis);
+                _motorBus.Handle(new ListMotorRequest(), out MotorEntity[] motors);
+
+                var result = map.MapTo(lambdas).GetData<double>();
+
+                Console.WriteLine($"{state.Name} trace a point.{value} - {string.Join(",", lambdas)} - {result}");
+
+                int idx = 0;
+                var values = SelectedMap.OutputPorts.Select(e => {
+                    var returnValue = result.Skip(idx).Take(e.Dimension).ToArray();
+
+                    idx += e.Dimension;
+
+                    return returnValue;
+                }).ToArray().GetEnumerator();
+
+                foreach(var output in SelectedMap.OutputPorts) {
+                    values.MoveNext();
+
+                    if (output.Name.Contains("Motor")) {
+                        var req1 = new UpdateMotorRequest {
+                            Id = output.Id,
+                            Value = values.Current
+                        };
+
+                        _motorBus.Handle(req1, out MotorEntity motorEntity);
+
+                        Console.WriteLine($"{output.Name}: {motorEntity.Value[0]}");
+                    }
+                    else {
+                        var req1 = new UpdateControlUiRequest {
+                            Id = output.Id,
+                            PropertyName = "Value",
+                            PropertyValue = values.Current
+                        };
+
+                        _uiBus.Handle(req1, out ControlUiEntity uiEntity);
+
+                        Console.WriteLine($"{output.Name}: {uiEntity.Value[0]} {uiEntity.Value[1]}");
+                    }
+                }
+            }
         }
 
         public void UpdateMotor(MotorState_v1 state) {

@@ -456,6 +456,22 @@ namespace taskmaker_wpf.Domain {
                 }
             }
         }
+
+        public override void Handle<T, K>(T request, out K result) {
+            result = default;
+
+            if (request is UpdateControlUiRequest req) {
+                var ui = Repository.Find<ControlUiEntity>(req.Id);
+
+                if (req.PropertyName == "Value") {
+                    //ui.Targets = (TargetEntity[])req.PropertyValue;
+
+                    Repository.Update(ui);
+
+                    result = ((K)(object)ui);
+                }
+            }
+        }
     }
 
     public class DeleteControlUiInteractor : BaseInteractor {

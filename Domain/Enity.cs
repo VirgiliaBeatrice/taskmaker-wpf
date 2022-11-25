@@ -63,7 +63,7 @@ namespace taskmaker_wpf.Domain {
         public OutputPort[] OutputPorts { get; set; } = { };
         
 
-        private bool _isSet => !Tensor.isnan().any();
+        private bool _isSet => !np.isnan(Tensor).any();
         private double[] tensor => Tensor.isnan().any() ? null : Tensor.GetData<double>();
 
         //public static NLinearMapEntity Create(ControlUiEntity ui) {
@@ -120,12 +120,17 @@ namespace taskmaker_wpf.Domain {
                 return null;
 
             NDarray kronProd = null;
+            lambdas = np.atleast_2d(lambdas);
 
             for (var i = 0; i < lambdas.shape[0]; i++) {
-                if (i == 0)
-                    kronProd = np.array(lambdas[$"{i},:"]);
-                else
-                    kronProd = np.kron(kronProd, lambdas[$"{i},:"]);
+                if (i == 0) {
+                    var indexStr = $"{i}" + (lambdas.ndim > 1 ? ",:" : "");
+                    kronProd = np.array(lambdas[indexStr]);
+                }
+                else {
+                    var indexStr = $"{i}" + (lambdas.ndim > 1 ? ",:" : "");
+                    kronProd = np.kron(kronProd, lambdas[indexStr]);
+                }
             }
 
             var w = np.dot(Tensor.reshape(Shape[0], -1), kronProd);
@@ -141,7 +146,9 @@ namespace taskmaker_wpf.Domain {
 
     }
 
-    public abstract class BaseRegionEntity : BaseEntity { }
+    public abstract class BaseRegionEntity : BaseEntity {
+        public abstract double[] GetLambdas(Point pt, NodeEntity[] collection);
+    }
 
     public class SimplexRegionEntity : BaseRegionEntity {
         public NodeEntity[] Nodes { get; set; }
@@ -153,7 +160,7 @@ namespace taskmaker_wpf.Domain {
             Nodes = nodes;
         }
 
-        public double[] GetLambdas(Point pt, NodeEntity[] collection) {
+        public override double[] GetLambdas(Point pt, NodeEntity[] collection) {
             var lambdas = Bary.GetLambdas(Vertices, pt);
             var indices = Nodes
                 .Select(e => collection.ToList().IndexOf(e))
@@ -179,7 +186,7 @@ namespace taskmaker_wpf.Domain {
 
         public VoronoiRegionEntity() { }
 
-        public virtual double[] GetLambdas(Point pt, NodeEntity[] collection) { throw new NotImplementedException(); }
+        public override double[] GetLambdas(Point pt, NodeEntity[] collection) { throw new NotImplementedException(); }
 
         public static VoronoiRegionEntity[] Build(NodeEntity[] extremes, SimplexRegionEntity[] simplices) {
             NodeEntity prev, it, next;
@@ -225,11 +232,16 @@ namespace taskmaker_wpf.Domain {
 
     public class SectoralVoronoiRegionEntity : VoronoiRegionEntity {
         public override double[] GetLambdas(Point pt, NodeEntity[] collection) {
-            var factors = GetFactors(pt);
-            var lambda0 = Governors[0].GetLambdas(pt, collection).Select(e => e * factors[0]).ToArray();
-            var lambda1 = Governors[1].GetLambdas(pt, collection).Select(e => e * factors[1]).ToArray();
+            if (Governors[0] == Governors[1]) {
+                return Governors[0].GetLambdas(pt, collection);
+            }
+            else {
+                var factors = GetFactors(pt);
+                var lambda0 = Governors[0].GetLambdas(pt, collection).Select(e => e * factors[0]).ToArray();
+                var lambda1 = Governors[1].GetLambdas(pt, collection).Select(e => e * factors[1]).ToArray();
 
-            return lambda0.Zip(lambda1, (f, s) => (f + s)).ToArray();
+                return lambda0.Zip(lambda1, (f, s) => (f + s)).ToArray();
+            }
         }
 
         public SectoralVoronoiRegionEntity() { }
@@ -362,29 +374,75 @@ namespace taskmaker_wpf.Domain {
                 nodes.Select(e => np.array(new[] { e.Value.X, e.Value.Y }))
                     .ToArray());
 
-            if (nodes.Length <= 2) return;
 
             var regions = new List<BaseRegionEntity>();
 
-            var simplices = QhullCSharp.RunDelaunay(input)
-                .Select(indices => new SimplexRegionEntity(indices.Select(idx => nodes.ElementAt(idx)).ToArray()))
-                .ToArray();
+            if (nodes.Length < 2) return;
+            else if (nodes.Length == 2) {
+                var simplex = new SimplexRegionEntity(nodes);
 
-            foreach (var item in simplices) {
-                regions.Add(item);
+                regions.Add(simplex);
+
+
+                int idx = 0;
+                foreach (var item in regions) {
+                    item.Id = ++idx;
+                    item.Name = $"{item.GetType()}-{item.Id}";
+                }
+
+                Regions = regions.ToArray();
             }
+            else if (nodes.Length == 3) {
+                var simplex = new SimplexRegionEntity(nodes);
 
-            var extremes = QhullCSharp.RunConvex(input)
-                .Select(idx => nodes.ElementAt(idx))
-                .Reverse()
-                .ToArray();
-            var voronois = VoronoiRegionEntity.Build(extremes, simplices);
+                regions.Add(simplex);
 
-            foreach (var item in voronois) {
-                regions.Add(item);
+                var extremes = QhullCSharp.RunConvex(input)
+                    .Select(idx => nodes.ElementAt(idx))
+                    .Reverse()
+                    .ToArray();
+                var voronois = VoronoiRegionEntity.Build(extremes, new SimplexRegionEntity[] { simplex });
+
+                foreach (var item in voronois) {
+                    regions.Add(item);
+                }
+
+
+                int idx0 = 0;
+                foreach (var item in regions) {
+                    item.Id = ++idx0;
+                    item.Name = $"{item.GetType()}-{item.Id}";
+                }
+
+                Regions = regions.ToArray();
             }
+            else {
+                var simplices = QhullCSharp.RunDelaunay(input)
+                    .Select(indices => new SimplexRegionEntity(indices.Select(idx => nodes.ElementAt(idx)).ToArray()))
+                    .ToArray();
 
-            Regions = regions.ToArray();
+                foreach (var item in simplices) {
+                    regions.Add(item);
+                }
+
+                var extremes = QhullCSharp.RunConvex(input)
+                    .Select(idx => nodes.ElementAt(idx))
+                    .Reverse()
+                    .ToArray();
+                var voronois = VoronoiRegionEntity.Build(extremes, simplices);
+
+                foreach (var item in voronois) {
+                    regions.Add(item);
+                }
+
+                int idx0 = 0;
+                foreach(var item in regions) {
+                    item.Id = ++idx0;
+                    item.Name = $"{item.GetType()}-{item.Id}";
+                }
+
+                Regions = regions.ToArray();
+            }
         }
 
         //public NLinearMapEntity CreateMap() {

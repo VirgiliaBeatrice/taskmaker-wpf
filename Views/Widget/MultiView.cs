@@ -923,17 +923,31 @@ namespace taskmaker_wpf.Views.Widget {
         Zoom
     }
 
-    public class BaseUiState {
+    public abstract class BaseUiState {
         public UiController Parent { get; set; }
 
         public BaseUiState(UiController parent) {
             Parent = parent;
         }
 
+        public virtual void SetFlags() { }
     }
 
     public class DefaultUiState : BaseUiState {
         public DefaultUiState(UiController parent) : base(parent) {
+        }
+
+        public override void SetFlags() {
+            Parent.Pointer.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    public class TraceUiState : BaseUiState {
+        public TraceUiState(UiController parent) : base(parent) {
+        }
+
+        public override void SetFlags() {
+            Parent.Pointer.Visibility = Visibility.Visible;
         }
     }
 
@@ -955,6 +969,8 @@ namespace taskmaker_wpf.Views.Widget {
     }
 
     public class UiController : UserControl {
+        public PointerWidget Pointer { get; set; } = new PointerWidget();
+
         public BaseUiState State { get; set; }
 
         public event EventHandler<NotifyStatusEventArgs> NotifyStatus;
@@ -1105,7 +1121,7 @@ namespace taskmaker_wpf.Views.Widget {
             }
 
             foreach (var item in simplexStates) {
-                var shape = new SimplexShape(UiState.Id) {
+                var shape = new SimplexShape(UiState.Id, item) {
                     Points = item.Points,
                 };
 
@@ -1120,7 +1136,7 @@ namespace taskmaker_wpf.Views.Widget {
             }
 
             foreach (var item in voronoiStates) {
-                var shape = new VoronoiShape(UiState.Id) {
+                var shape = new VoronoiShape(UiState.Id, item) {
                     Points = item.Points,
                 };
 
@@ -1131,6 +1147,9 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public UiController() {
+            Pointer.Visibility = Visibility.Collapsed;
+            Panel.SetZIndex(Pointer, 25);
+
             State = new DefaultUiState(this);
             Focusable = true;
             Visibility = Visibility.Visible;
@@ -1177,6 +1196,7 @@ namespace taskmaker_wpf.Views.Widget {
             _canvas.Children.Add(axisX);
             _canvas.Children.Add(axisY);
             _canvas.Children.Add(_status);
+            _canvas.Children.Add(Pointer);
             container.Children.Add(_canvas);
 
             Content = container;
@@ -1218,6 +1238,14 @@ namespace taskmaker_wpf.Views.Widget {
                     start = e.GetPosition(_canvas);
                     startMat = Translate;
                 }
+                else if (mode == UiMode.Trace) {
+                    CaptureMouse();
+
+                    var point = e.GetPosition(_canvas);
+
+                    Pointer.Location = point;
+                    isDragging = true;
+                }
             };
 
             MouseMove += (s, e) => {
@@ -1232,6 +1260,22 @@ namespace taskmaker_wpf.Views.Widget {
                         Translate = tMat;
 
                         InvalidateTransform();
+                    }
+                }
+                else if (mode == UiMode.Trace) {
+                    if (isDragging) {
+                        var curr = e.GetPosition(_canvas);
+                        var invMat = Transform;
+                        invMat.Invert();
+
+                        Pointer.Location = curr;
+
+                        var vm = DataContext as RegionControlUIViewModel;
+                        var result = VisualTreeHelper.HitTest(_canvas, curr);
+                        var state = (LogicalTreeHelperExtensions.FindAncestor<IRegionShape>(result.VisualHit))?.State;
+
+                        vm.UpdateControlUiInput(UiState, invMat.Transform(curr), state);
+
                     }
                 }
             };
@@ -1258,6 +1302,15 @@ namespace taskmaker_wpf.Views.Widget {
                     ReleaseMouseCapture();
                     GoToState(UiMode.Default);
                 }
+                else if (mode == UiMode.Trace) {
+                    var last = e.GetPosition(_canvas);
+
+                    isDragging = false;
+                    Pointer.Location = last;
+
+                    ReleaseMouseCapture();
+                }
+
             };
 
             PreviewMouseWheel += (s, e) => {
@@ -1289,6 +1342,9 @@ namespace taskmaker_wpf.Views.Widget {
                 else if (e.Key == Key.D2) {
                     GoToState(UiMode.Pan);
                 }
+                else if (e.Key == Key.D3) {
+                    GoToState(UiMode.Trace);
+                }
                 else if (e.Key == Key.Escape) {
                     GoToState(UiMode.Default);
                 }
@@ -1313,6 +1369,7 @@ namespace taskmaker_wpf.Views.Widget {
                 case UiMode.Build:
                     break;
                 case UiMode.Trace:
+                    State = new TraceUiState(this);
                     break;
                 case UiMode.Pan:
                     break;
@@ -1323,6 +1380,8 @@ namespace taskmaker_wpf.Views.Widget {
             }
 
             // State operation
+            State.SetFlags();
+
             NotifyStatus?.Invoke(this, new NotifyStatusEventArgs(mode.ToString()));
             _status.Content = mode.ToString();
         }
@@ -1392,6 +1451,9 @@ namespace taskmaker_wpf.Views.Widget {
             x.Transform = Transform;
             y.Transform = Transform;
 
+            // Invalidate widgets
+            //Pointer.Transform = Transform;
+
             // Invalidate all nodes transformation
             foreach (var node in _canvas.Children.OfType<NodeShape>()) {
                 node.Transform = Transform;
@@ -1416,8 +1478,61 @@ namespace taskmaker_wpf.Views.Widget {
         }
     }
 
-    public class VoronoiShape : UserControl {
+    public class PointerWidget : UserControl {
+        private Matrix _transform = Matrix.Identity;
+        private Point location = new Point();
+
+        public Matrix Transform {
+            get => _transform;
+            set {
+                var prevT = _transform;
+                _transform = value;
+
+                if (prevT != _transform) {
+                    Invalidate();
+                }
+            }
+        }
+
+        public Point Location {
+            get => location;
+            set {
+                location = value;
+
+                Invalidate();
+            }
+        }
+        public PointerWidget() { }
+
+        public void Invalidate() {
+            InvalidateContent();
+            InvalidateTransform();
+        }
+
+        public void InvalidateContent() {
+            var circle = new Ellipse {
+                Width = 10,
+                Height = 10,
+                Fill = new SolidColorBrush(Colors.Blue),
+                Stroke = new SolidColorBrush(Colors.Black),
+                StrokeThickness = 1,
+            };
+
+            Content = circle;
+        }
+
+        public void InvalidateTransform() {
+            var p = Location;
+            var tP = Transform.Transform(p);
+
+            Canvas.SetLeft(this, tP.X - 10 / 2);
+            Canvas.SetTop(this, tP.Y - 10 / 2);
+        }
+    }
+
+    public class VoronoiShape : UserControl, IRegionShape {
         public int UiId { get; set; }
+        public BaseRegionState State { get; set; }
 
         private Matrix _transform = Matrix.Identity;
         public Matrix Transform {
@@ -1446,8 +1561,9 @@ namespace taskmaker_wpf.Views.Widget {
             shape.Invalidate();
         }
 
-        public VoronoiShape(int uiId) {
+        public VoronoiShape(int uiId, BaseRegionState state) {
             UiId = uiId;
+            State = state;
 
             MouseEnter += (s, e) => {
                 var v = s as VoronoiShape;
@@ -1563,8 +1679,14 @@ namespace taskmaker_wpf.Views.Widget {
         }
     }
 
-    public class SimplexShape : UserControl {
+    public interface IRegionShape {
+        BaseRegionState State { get; set; }
+    }
+
+    public class SimplexShape : UserControl, IRegionShape {
         public int UiId { get; set; }
+        public BaseRegionState State { get; set; }
+
 
         private Matrix _transform = Matrix.Identity;
         public Matrix Transform { 
@@ -1594,8 +1716,9 @@ namespace taskmaker_wpf.Views.Widget {
 
         }
 
-        public SimplexShape(int uiId) {
+        public SimplexShape(int uiId, BaseRegionState state) {
             UiId = uiId;
+            State = state;
 
             MouseEnter += (s, e) => {
                 var v = s as SimplexShape;
@@ -1615,27 +1738,52 @@ namespace taskmaker_wpf.Views.Widget {
         public void Invalidate() {
             var points = Points.Select(e => Transform.Transform(e)).ToArray();
 
-            var pathGeo = new PathGeometry();
-            var pathFig = new PathFigure {
-                StartPoint = points[0],
-            };
+            // 3-simplex
+            if (points.Length == 3) {
+                var pathGeo = new PathGeometry();
+                var pathFig = new PathFigure {
+                    StartPoint = points[0],
+                };
 
-            pathGeo.Figures.Add(pathFig);
-            pathFig.Segments.Add(new LineSegment { Point = points[1] });
-            pathFig.Segments.Add(new LineSegment { Point = points[2] });
-            pathFig.Segments.Add(new LineSegment { Point = points[0] });
+                pathGeo.Figures.Add(pathFig);
+                pathFig.Segments.Add(new LineSegment { Point = points[1] });
+                pathFig.Segments.Add(new LineSegment { Point = points[2] });
+                pathFig.Segments.Add(new LineSegment { Point = points[0] });
 
-            var fill = ColorManager.GetTintedColor(ColorManager.Palette[UiId], 2);
+                var fill = ColorManager.GetTintedColor(ColorManager.Palette[UiId], 2);
 
-            var path = new Path {
-                Fill = new SolidColorBrush(fill),
-                Stroke = new SolidColorBrush(Colors.DarkGray),
-                Stretch = Stretch.None,
-                StrokeThickness = 1.0,
-                Data = pathGeo
-            };
+                var path = new Path {
+                    Fill = new SolidColorBrush(fill),
+                    Stroke = new SolidColorBrush(Colors.DarkGray),
+                    Stretch = Stretch.None,
+                    StrokeThickness = 1.0,
+                    Data = pathGeo
+                };
 
-            Content = path;
+                Content = path;
+
+            }
+            // 2-simplex
+            else if (points.Length == 2){
+                var pathGeo = new PathGeometry();
+                var pathFig = new PathFigure {
+                    StartPoint = points[0],
+                };
+
+                pathGeo.Figures.Add(pathFig);
+                pathFig.Segments.Add(new LineSegment { Point = points[1] });
+                pathFig.Segments.Add(new LineSegment { Point = points[0] });
+
+
+                var path = new Path {
+                    Stroke = new SolidColorBrush(Colors.White),
+                    Stretch = Stretch.None,
+                    StrokeThickness = 2.0,
+                    Data = pathGeo
+                };
+
+                Content = path;
+            }
         }
     }
 
