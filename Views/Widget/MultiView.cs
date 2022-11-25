@@ -714,11 +714,16 @@ namespace taskmaker_wpf.Views.Widget {
             }
 
             if (locked.Count > 0) {
-                var temp = locked.Select(e => new NodeInfo[] { e }).Concat(unlocked).ToArray();
+                var temp = locked.Select(e => new NodeInfo[] { e }).Concat(unlocked).OrderBy(e => e.First().UiId).ToArray();
                 var combinations = Helper.GetCombinations(temp);
+                var vm = (RegionControlUIViewModel)DataContext;
+
+                var combinationStatus = vm.GetTensorStatus(
+                    combinations.Select(e => e.Select(e1 => e1.NodeId).ToArray()).ToArray());
 
                 Viewer.Locked = locked;
-                Viewer.Combinations = combinations.Select(e => new NodeRelation(e)).ToArray();
+                Viewer.Combinations = combinations.Zip(combinationStatus, (combination, status) => new NodeRelation(combination) { HasValue = status }).ToArray();
+
 
                 Viewer.Visibility = Visibility.Visible;
                 Viewer.InvalidateState();
@@ -757,6 +762,8 @@ namespace taskmaker_wpf.Views.Widget {
 
         public void Bind(int[] index) {
             BindCommand.Execute(index);
+
+            InvalidateViewer();
             //Console.WriteLine("A binding data has prepared.");
         }
 
@@ -1316,7 +1323,7 @@ namespace taskmaker_wpf.Views.Widget {
             }
 
             // State operation
-            NotifyStatus(this, new NotifyStatusEventArgs(mode.ToString()));
+            NotifyStatus?.Invoke(this, new NotifyStatusEventArgs(mode.ToString()));
             _status.Content = mode.ToString();
         }
 

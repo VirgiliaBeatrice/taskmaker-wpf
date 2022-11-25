@@ -145,6 +145,23 @@ namespace taskmaker_wpf.Domain {
 
             callback((K)(object)true);
         }
+
+        public override void Handle<T, K>(T request, out K result) {
+            result = default;
+
+            if (request is UpdateMotorRequest req) {
+                var motor = Repository.Find<MotorEntity>(req.Id);
+
+                //motor.GetType().GetProperty(req.PropertyName).SetValue(motor, req.Value);
+                motor.Value = (double[])req.Value;
+                //Request.Spread(req, motor);
+
+                Repository.Update(motor);
+
+                result = ((K)(object)motor);
+            }
+
+        }
     }
 
     public class DeleteMotorInteractor : BaseInteractor {
@@ -261,17 +278,7 @@ namespace taskmaker_wpf.Domain {
     }
 
     public class ControlUiInteractorBus : BaseInteractorBus {
-        //private AddControlUiInteractor _add;
-        //private UpdateControlUiInteractor _update;
-        //private DeleteControlUiInteractor _delete;
-        //private ListControlUiInteractor _list;
-
         public ControlUiInteractorBus(IRepository repository) : base() {
-            //_add = new AddControlUiInteractor(repository);
-            //_update = new UpdateControlUiInteractor(repository);
-            //_delete = new DeleteControlUiInteractor(repository);
-            //_list = new ListControlUiInteractor(repository);
-
             interactors = new BaseInteractor[] {
                 new AddControlUiInteractor(repository),
                 new UpdateControlUiInteractor(repository),
@@ -282,19 +289,6 @@ namespace taskmaker_wpf.Domain {
                 new BuildRegionInteractor(repository)
             };
         }
-
-        //public void Handle<T, K>(T request, Action<K> callback) {
-        //    var requestType = typeof(T);
-
-        //    if (requestType == typeof(AddControlUiRequest))
-        //        _add.Handle(request, callback);
-        //    else if (requestType == typeof(UpdateControlUiRequest))
-        //        _update.Handle(request, callback);
-        //    else if (requestType == typeof(DeleteControlUiRequest))
-        //        _delete.Handle(request, callback);
-        //    else if (requestType == typeof(ListControlUiRequest))
-        //        _list.Handle(request, callback);
-        //}
     }
 
     public class AddNodeRequest : Request {
@@ -326,6 +320,26 @@ namespace taskmaker_wpf.Domain {
                 callback((K)(object)true);
             }
         }
+
+        public override void Handle<T, K>(T request, out K result) {
+            result = (K)(object)false;
+
+            if (request is AddNodeRequest req) {
+                var ui = Repository.Find<ControlUiEntity>(req.UiId);
+                var idx = ui.Nodes.Length;
+                var node = new NodeEntity {
+                    Id = idx,
+                    Name = $"ControlUi[{req.UiId}]_Node[{idx}]",
+                    Value = req.Value,
+                };
+
+                ui.Nodes = ui.Nodes.Append(node).ToArray();
+
+                Repository.Update(ui);
+
+                result = (K)(object)true;
+            }
+        }
     }
 
     public class UpdateNodeRequest : Request {
@@ -352,6 +366,22 @@ namespace taskmaker_wpf.Domain {
                 callback((K)(object)ui);
             }
         }
+
+        public override void Handle<T, K>(T request, out K result) {
+            result = default;
+
+            if (request is UpdateNodeRequest req) {
+                var ui = Repository.Find<ControlUiEntity>(req.UiId);
+
+                if (req.PropertyName == "TargetValue") {
+                    ui.Nodes[req.NodeId].TargetValue = (double[])req.PropertyValue;
+                }
+
+                Repository.Update(ui);
+
+                result = (K)(object)ui;
+            }
+        }
     }
 
     public class DeleteNodeInteractor : BaseInteractor {
@@ -376,6 +406,16 @@ namespace taskmaker_wpf.Domain {
                 var ui = Repository.Find<ControlUiEntity>(req.UiId);
 
                 callback((K)(object)ui.Nodes);
+            }
+        }
+
+        public override void Handle<T, K>(T request, out K result) {
+            result = default;
+
+            if (request is ListNodeRequest req) {
+                var ui = Repository.Find<ControlUiEntity>(req.UiId);
+
+                result = (K)(object)ui.Nodes;
             }
         }
     }
@@ -485,6 +525,20 @@ namespace taskmaker_wpf.Domain {
                 callback((K)(object)ui);
             }
         }
+
+        public override void Handle<T, K>(T request, out K result) {
+            result = default;
+
+            if (request is BuildRegionRequest req) {
+                var ui = Repository.Find<ControlUiEntity>(req.Id);
+
+                ui.Build();
+
+                Repository.Update(ui);
+
+                result = (K)(object)ui;
+            }
+        }
     }
 
     public class CreateNLinearMapRequest : Request {
@@ -504,7 +558,9 @@ namespace taskmaker_wpf.Domain {
         //public string RequestType { get; set; }
         //public object Value { get; set; }
     }
-    public class ListNLinearMapRequest : Request  { }
+    public class ListNLinearMapRequest : Request {
+        public int Id { get; set; } = -1;
+    }
 
     public class CreateNLinearMapInteractor : BaseInteractor {
         public CreateNLinearMapInteractor(IRepository repository) : base(repository) {
@@ -580,18 +636,18 @@ namespace taskmaker_wpf.Domain {
 
                 if (req.PropertyType == "UpdateInputs") {
                     map.InputPorts = (InputPort[])req.PropertyValue;
-
-                    map.Initialize();
                 }
                 else if (req.PropertyType == "UpdateOutputs") {
                     map.OutputPorts = (OutputPort[])req.PropertyValue;
 
-                    map.Initialize();
                 }
                 else if (req.PropertyType == "SetValue") {
                     var contract = (ValueContract)req.PropertyValue;
 
                     map.SetValue(contract.Index, contract.Value);
+                }
+                else if (req.PropertyType == "Init") {
+                    map.Initialize();
                 }
 
                 Repository.Update(map);
@@ -609,17 +665,20 @@ namespace taskmaker_wpf.Domain {
                 if (req.PropertyType == "UpdateInputs") {
                     map.InputPorts = (InputPort[])req.PropertyValue;
 
-                    map.Initialize();
+                    //map.Initialize();
                 }
                 else if (req.PropertyType == "UpdateOutputs") {
                     map.OutputPorts = (OutputPort[])req.PropertyValue;
 
-                    map.Initialize();
+                    //map.Initialize();
                 }
                 else if (req.PropertyType == "SetValue") {
                     var contract = (ValueContract)req.PropertyValue;
 
                     map.SetValue(contract.Index, contract.Value);
+                }
+                else if (req.PropertyType == "Init") {
+                    map.Initialize();
                 }
 
                 Repository.Update(map);
@@ -637,6 +696,24 @@ namespace taskmaker_wpf.Domain {
             var targets = Repository.FindAll<NLinearMapEntity>();
 
             callback((K)(object)targets);
+        }
+
+        public override void Handle<T, K>(T request, out K result) {
+            result = default;
+            
+            if (request is ListNLinearMapRequest req) {
+                if (req.Id != -1) {
+                    var target = Repository.Find<NLinearMapEntity>(req.Id);
+
+                    result = ((K)(object)target);
+                }
+                else {
+                    var targets = Repository.FindAll<NLinearMapEntity>();
+
+                    result = ((K)(object)targets);
+                }
+            }
+
         }
     }
 

@@ -481,6 +481,11 @@
     <Resource Include="icons\check_FILL0_wght400_GRAD0_opsz48.png" />
     <Resource Include="icons\done.svg" />
     <Resource Include="icons\refresh.svg" />
+    <Resource Include="icons\bolt.svg" />
+    <Resource Include="icons\start.svg" />
+    <Resource Include="icons\add.svg" />
+    <Resource Include="icons\check.svg" />
+    <Resource Include="icons\dataset.svg" />
     <Content Include="libs\libSkiaSharp.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

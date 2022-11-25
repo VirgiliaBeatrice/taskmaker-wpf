@@ -81,48 +81,79 @@ namespace taskmaker_wpf.ViewModels {
         public override string ToString() => Name;
     }
 
-    public interface IOutputPort : ICloneable {
+    public interface IOutputPort {
         int Id { get; set; }
         string Name { get; set; }
     }
-    public interface IInputPort : ICloneable {
+    public interface IInputPort {
+        int Id { get; set; }
         string Name { get; set; }
     }
 
-    public class OutputPort {
+    public class DisplayInputPort {
+        public string Name { get; set; }
         public bool IsSelected { get; set; } = false;
+
+        public DisplayInputPort(IInputPort input) {
+            Name = input.Name;
+        }
+    }
+
+    public class DisplayOutputPort {
+        public string Name { get; set; }
+        public bool IsSelected { get; set; } = false;
+
+        public DisplayOutputPort(IOutputPort output) {
+            Name = output.Name;
+        }
+    }
+
+
+    public class OutputPort {
         public string Name { get; set; }
         public int Dimension { get; set; }
-        public Type PortType { get; set; }
-        public int PortId { get; set; }
+        public int Id { get; set; }
 
-        public OutputPort(IOutputPort reference) {
-            if (reference is MotorState_v1) {
-                Dimension = 1;
+        public static OutputPort Create(MotorEntity entity) {
+            return new OutputPort {
+                Name = entity.Name,
+                Dimension = 1,
+                Id = entity.Id
+            };
+        }
+
+        public static OutputPort Create(ControlUiEntity entity) {
+            return new OutputPort {
+                Name = entity.Name,
+                Dimension = 2,
+                Id = entity.Id
+            };
+        }
+
+        public static OutputPort Create(IOutputPort entity) {
+            if (entity is MotorEntity motor) {
+                return Create(motor);
             }
-            else if (reference is ControlUiState_v1) {
-                Dimension = 2;
+            else if (entity is ControlUiEntity control) {
+                return Create(control);
             }
-
-            Name = reference.Name;
-
-            PortType = reference.GetType();
-            PortId = reference.Id;
+            else {
+                return default;
+            }
         }
     }
 
     public class InputPort {
-        public object Reference { get; set; }
         public string Name { get; set; }
-        public bool IsSelected { get; set; } = false;
-
         public int BasisCount { get; set; }
 
-        public InputPort(IInputPort reference) {
-            Reference = reference;
 
-            Name = reference.Name;
-            BasisCount = (reference as ControlUiState_v1).Nodes.Length;
+        public static InputPort Create(IInputPort entity) {
+
+            return new InputPort {
+                Name = entity.Name,
+                BasisCount = (entity as ControlUiEntity).Nodes.Length
+            };
         }
     }
 

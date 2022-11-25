@@ -91,12 +91,13 @@ namespace taskmaker_wpf {
                 cfg.CreateMap<MotorEntity, MotorState>()
                     .ForMember(d => d.Value, o => o.Ignore())
                     .ReverseMap();
-                    //.ForMember(d => d.Value, o => o.MapFrom(s => new double[] { s.Value }));
+                //.ForMember(d => d.Value, o => o.MapFrom(s => new double[] { s.Value }));
                 //cfg.CreateMap<MotorEntity, MotorTargetState>()
                 //    .ForMember(d => d.IsSelected, o => o.Ignore())
                 //    .ReverseMap();
 
-                cfg.CreateMap<NLinearMapEntity, NLinearMapState_v1>();
+                cfg.CreateMap<NLinearMapEntity, NLinearMapState_v1>()
+                    .ForMember(d => d.Value, o => o.MapFrom(s => s.Tensor.GetData<double>()));
                 cfg.CreateMap<MotorEntity, MotorState_v1>();
                 cfg.CreateMap<ControlUiEntity, ControlUiState_v1>();
                 

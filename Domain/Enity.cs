@@ -55,6 +55,7 @@ namespace taskmaker_wpf.Domain {
         [System.Xml.Serialization.XmlIgnore]
         public NDarray Tensor { get; set; }
         public int[] Shape { get; set; }
+        public bool IsFullySet => !Tensor.isnan().any();
         //public string[] Targets { get; set; }
         //public (string, int)[] Targets { get; set; }
 
@@ -98,21 +99,6 @@ namespace taskmaker_wpf.Domain {
             Tensor.fill(np.nan);
         }
 
-        public void Initialize(ControlUiEntity ui) {
-            var targetDim = ui.Targets.Select(e => e.Dimension).Sum();
-            var basisDim = new int[] { ui.Nodes.Length };
-
-            Shape = new int[] { targetDim }.Concat(basisDim).ToArray();
-            Tensor = np.empty(Shape);
-
-            Tensor.fill(np.nan);
-
-            var basis = ui.Nodes;
-            for (int idx = 0; idx < basis.Length; idx++) {
-                Tensor[$":,{string.Join(",", new int[] { idx })}"] = basis[idx].TargetValue;
-            }
-        }
-
         public void SetValue(int[] indices, double[] value) {
             // only 1 bary
             //Tensor[$":,{indices[0]}"] = np.atleast_2d(value);
@@ -120,6 +106,13 @@ namespace taskmaker_wpf.Domain {
             // more than 1
             var indexStr = $":,{string.Join(",", indices)}";
             Tensor[indexStr] = value;
+        }
+
+        public bool HasSet(int[] indices) {
+            var indexStr = $":,{string.Join(",", indices)}";
+
+            return !np.isnan(Tensor[indexStr]).any();
+            //return Tensor[indexStr].GetData<double>().All(e => !double.IsNaN(e));
         }
 
         public NDarray MapTo(NDarray lambdas) {
@@ -355,13 +348,13 @@ namespace taskmaker_wpf.Domain {
         int Id { get; }
     }
 
-    public class ControlUiEntity : BaseEntity, ITargetableEntity {
+    public class ControlUiEntity : BaseEntity, ITargetableEntity, IInputPort, IOutputPort {
         public NodeEntity[] Nodes { get; set; }
         public BaseRegionEntity[] Regions { get; set; }
 
         public string TargetType => "ControlUi";
         public TargetEntity[] Targets { get; set; }
-        public double[] Value { get; set; }
+        public double[] Value { get; set; } = new double[2];
 
         public void Build() {
             var nodes = Nodes.OrderBy(e => e.Id).ToArray();
@@ -404,10 +397,10 @@ namespace taskmaker_wpf.Domain {
         //}
     }
 
-    public class MotorEntity : BaseEntity, ITargetableEntity {
-        public double[] Value { get; set; }
-        public int Min { get; set; }
-        public int Max { get; set; }
+    public class MotorEntity : BaseEntity, ITargetableEntity, IOutputPort {
+        public double[] Value { get; set; } = new double[1];
+        public int Min { get; set; } = -10000;
+        public int Max { get; set; } = 10000;
         public int NuibotBoardId { get; set; }
         public int NuibotMotorId { get; set; }
 

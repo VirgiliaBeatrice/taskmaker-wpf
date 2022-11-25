@@ -32,9 +32,7 @@ namespace taskmaker_wpf.Views {
             if (e.Key == Key.Enter) {
                 var binding = BindingOperations.GetBindingExpression(tb, TextBox.TextProperty);
 
-                if (binding != null) {
-                    binding.UpdateSource();
-                }
+                binding?.UpdateSource();
             }
         }
 
@@ -80,6 +78,28 @@ namespace taskmaker_wpf.Views {
 
             vm.InvalidateValidPorts();
         }
+
+        private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            var state = (sender as Slider).DataContext as MotorState_v1;
+            var vm = DataContext as RegionControlUIViewModel;
+
+            vm.UpdateMotor(state);
+        }
+
+        private void btnOpenCompactUi_Click(object sender, RoutedEventArgs e) {
+            var parent = (StackPanel)VisualTreeHelper.GetParent(sender as UIElement);
+            var popup = parent.Children.OfType<Popup>().First();
+
+            if (popup != null) {
+                popup.IsOpen = !popup.IsOpen;
+
+                popup.Focus();
+            }
+        }
+
+        //private void Button_Click_3(object sender, RoutedEventArgs e) {
+        //    var vm = (sender as Button).DataContext as RegionControlUIViewModel;
+        //}
     }
 
     public class ISelectableTargetConverter : IValueConverter {
