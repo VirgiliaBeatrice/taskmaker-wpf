@@ -24,7 +24,7 @@ namespace taskmaker_wpf.ViewModels {
         public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public double Value { get; set; }
+        public double[] Value { get; set; }
         public int Max { get; set; }
         public int Min { get; set; }
         public int NuibotBoardId { get; set; }

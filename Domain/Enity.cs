@@ -115,7 +115,7 @@ namespace taskmaker_wpf.Domain {
 
         public void SetValue(int[] indices, double[] value) {
             // only 1 bary
-            Tensor[$":,{indices[0]}"] = np.atleast_2d(value);
+            //Tensor[$":,{indices[0]}"] = np.atleast_2d(value);
 
             // more than 1
             var indexStr = $":,{string.Join(",", indices)}";
@@ -361,6 +361,7 @@ namespace taskmaker_wpf.Domain {
 
         public string TargetType => "ControlUi";
         public TargetEntity[] Targets { get; set; }
+        public double[] Value { get; set; }
 
         public void Build() {
             var nodes = Nodes.OrderBy(e => e.Id).ToArray();
@@ -404,7 +405,7 @@ namespace taskmaker_wpf.Domain {
     }
 
     public class MotorEntity : BaseEntity, ITargetableEntity {
-        public double Value { get; set; }
+        public double[] Value { get; set; }
         public int Min { get; set; }
         public int Max { get; set; }
         public int NuibotBoardId { get; set; }

@@ -81,7 +81,7 @@
                     Width="auto"
                     MaxColumnCount="2"
                     ItemsSource="{Binding SelectedUiStates}"
-                    
+                    BindCommand="{Binding BindCommand}"
                     />
             </Grid>
         </DockPanel>

@@ -55,34 +55,58 @@ namespace taskmaker_wpf.Domain {
     public class DeleteMotorRequest : Request {
         public int Id { get; set; }
     }
-    public class ListMotorRequest : Request { }
+    public class ListMotorRequest : Request {
+        public int Id { get; set; } = -1;
+    }
 
 
-    public class MotorInteractorBus {
+    public class MotorInteractorBus : BaseInteractorBus {
         private AddMotorInteractor _add;
         private UpdateMotorInteractor _update;
         private DeleteMotorInteractor _delete;
         private ListMotorInteractor _list;
 
         public MotorInteractorBus(IRepository repository) {
-            _add = new AddMotorInteractor(repository);
-            _update = new UpdateMotorInteractor(repository);
-            _delete = new DeleteMotorInteractor(repository);
-            _list = new ListMotorInteractor(repository);
+            interactors = new BaseInteractor[] {
+                new AddMotorInteractor(repository),
+                new UpdateMotorInteractor(repository),
+                new DeleteMotorInteractor(repository),
+                new ListMotorInteractor(repository),
+            };
+
+            //_add = new AddMotorInteractor(repository);
+            //_update = new UpdateMotorInteractor(repository);
+            //_delete = new DeleteMotorInteractor(repository);
+            //_list = new ListMotorInteractor(repository);
         }
 
-        public void Handle<T, K>(T request, Action<K> callback) {
-            var requestType = typeof(T);
+        //public void Handle<T, K>(T request, Action<K> callback) {
+        //    var requestType = typeof(T);
 
-            if (requestType == typeof(AddMotorRequest))
-                _add.Handle(request, callback);
-            else if (requestType == typeof(UpdateMotorRequest))
-                _update.Handle(request, callback);
-            else if (requestType == typeof(DeleteMotorRequest))
-                _delete.Handle(request, callback);
-            else if (requestType == typeof(ListMotorRequest))
-                _list.Handle(request, callback);
-        }
+        //    if (requestType == typeof(AddMotorRequest))
+        //        _add.Handle(request, callback);
+        //    else if (requestType == typeof(UpdateMotorRequest))
+        //        _update.Handle(request, callback);
+        //    else if (requestType == typeof(DeleteMotorRequest))
+        //        _delete.Handle(request, callback);
+        //    else if (requestType == typeof(ListMotorRequest))
+        //        _list.Handle(request, callback);
+        //}
+
+        //public K Handle<T, K>(T request) {
+        //    var requestType = typeof(T);
+
+        //    if (requestType == typeof(AddMotorRequest))
+        //        return _add.Handle<T, K>(request);
+        //    else if (requestType == typeof(UpdateMotorRequest))
+        //        return _update.Handle<T, K>(request);
+        //    else if (requestType == typeof(DeleteMotorRequest))
+        //        return _delete.Handle<T, K>(request);
+        //    else if (requestType == typeof(ListMotorRequest))
+        //        return _list.Handle<T, K>(request);
+
+        //    return default;
+        //}
     }
 
     public class AddMotorInteractor : BaseInteractor {
@@ -141,9 +165,35 @@ namespace taskmaker_wpf.Domain {
         }
 
         public override void Handle<T, K>(T request, Action<K> callback) {
-            var targets = Repository.FindAll<MotorEntity>();
+            if (request is ListMotorRequest req) {
+                if (req.Id == -1) {
+                    var targets = Repository.FindAll<MotorEntity>();
 
-            callback((K)(object)targets);
+                    callback((K)(object)targets);
+                }
+                else {
+                    var target = Repository.Find<MotorEntity>(req.Id);
+
+                    callback((K)(object)target);
+                }
+            }
+        }
+
+        public override void Handle<T, K>(T request, out K result) {
+            result = default;
+
+            if (request is ListMotorRequest req) {
+                if (req.Id == -1) {
+                    var targets = Repository.FindAll<MotorEntity>();
+
+                    result = (K)(object)targets;
+                }
+                else {
+                    var target = Repository.Find<MotorEntity>(req.Id);
+
+                    result = (K)(object)target;
+                }
+            }
         }
     }
 
@@ -175,7 +225,15 @@ namespace taskmaker_wpf.Domain {
         public abstract void Handle<T, K>(T request, Action<K> callback);
         public virtual Task<K> HandleAsync<K, T>(T request) {
             throw new NotImplementedException();
-        } 
+        }
+
+        //public virtual K Handle<T, K>(T request) {
+        //    throw new NotImplementedException();
+        //}
+
+        public virtual void Handle<T, K>(T request, out K result) {
+            throw new NotImplementedException();
+        }
     }
 
     //public class AddNodeRequest { }
@@ -391,6 +449,24 @@ namespace taskmaker_wpf.Domain {
                 }
             }
         }
+
+        public override void Handle<T, K>(T request, out K result) {
+            result = default;
+
+            if (request is ListControlUiRequest req) {
+                if (req.Id == -1) {
+                    var uis = Repository.FindAll<ControlUiEntity>();
+
+                    result = (K)(object)uis;
+                }
+                else {
+                    var ui = Repository.Find<ControlUiEntity>(req.Id);
+
+                    result = (K)(object)ui;
+                }
+            }
+
+        }
     }
 
 
@@ -512,17 +588,7 @@ namespace taskmaker_wpf.Domain {
 
                     map.Initialize();
                 }
-                else if (req.PropertyType == "Initialize") {
-                    //var ids = (int[])req.PropertyValue;
-                    //var uis = Repository.FindAll<ControlUiEntity>()
-                    //    .Where(e => ids.Contains(e.Id))
-                    //    .ToArray();
-
-                    //map.Initialize(ui);
-
-                    //map.Initialize()
-                }
-                else if (req.PropertyType == "UpdateValue") {
+                else if (req.PropertyType == "SetValue") {
                     var contract = (ValueContract)req.PropertyValue;
 
                     map.SetValue(contract.Index, contract.Value);
@@ -531,6 +597,34 @@ namespace taskmaker_wpf.Domain {
                 Repository.Update(map);
 
                 callback((K)(object)map);
+            }
+        }
+
+        public override void Handle<T, K>(T request, out K result) {
+            result = default(K);
+
+            if (request is UpdateNLinearMapRequest req) {
+                var map = Repository.Find<NLinearMapEntity>(req.Id);
+
+                if (req.PropertyType == "UpdateInputs") {
+                    map.InputPorts = (InputPort[])req.PropertyValue;
+
+                    map.Initialize();
+                }
+                else if (req.PropertyType == "UpdateOutputs") {
+                    map.OutputPorts = (OutputPort[])req.PropertyValue;
+
+                    map.Initialize();
+                }
+                else if (req.PropertyType == "SetValue") {
+                    var contract = (ValueContract)req.PropertyValue;
+
+                    map.SetValue(contract.Index, contract.Value);
+                }
+
+                Repository.Update(map);
+
+                result = (K)(object)map;
             }
         }
     }
@@ -604,6 +698,20 @@ namespace taskmaker_wpf.Domain {
                 throw new NullReferenceException();
             else
                 interactor.Handle(request, callback);
+        }
+
+        public void Handle<T, K>(T request, out K result) {
+            var interactorName = typeof(T).Name.Replace("Request", "Interactor");
+            var interactor = interactors.Where(e => e.GetType().Name == interactorName).FirstOrDefault();
+
+            result = default;
+
+            if (interactor == null)
+                throw new NullReferenceException();
+            else {
+                interactor.Handle(request, out K resultDeep);
+                result = resultDeep;
+            }
         }
     }
 

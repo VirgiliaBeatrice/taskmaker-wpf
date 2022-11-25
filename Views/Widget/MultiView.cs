@@ -583,7 +583,7 @@ namespace taskmaker_wpf.Views.Widget {
             Content = scroll;
         }
 
-        private void Rect_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+        private void Rect_MouseLeftButtonUp(object sender, MouseButtonEventArgs args) {
             var r = sender as RelationWidget;
 
             r.ReleaseMouseCapture();
@@ -600,8 +600,9 @@ namespace taskmaker_wpf.Views.Widget {
             else {
                 if (r.State == UiElementState.Pressed) {
                     var parent = LogicalTreeHelperExtensions.FindAncestor<MultiView>(this);
+                    var index = Combinations.First().Nodes.Select(e => e.NodeId).ToArray();
 
-                    parent.Bind();
+                    parent.Bind(index);
 
                     r.GoToState(UiElementState.Default);
                 }
@@ -754,8 +755,9 @@ namespace taskmaker_wpf.Views.Widget {
             Content = grid;
         }
 
-        public void Bind() {
-            Console.WriteLine("A binding data has prepared.");
+        public void Bind(int[] index) {
+            BindCommand.Execute(index);
+            //Console.WriteLine("A binding data has prepared.");
         }
 
         public void UnSelect() {
