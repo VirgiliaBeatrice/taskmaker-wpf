@@ -14,6 +14,7 @@ using System.IO;
 using System.Diagnostics;
 using SkiaSharp;
 using taskmaker_wpf.ViewModels;
+using Numpy;
 
 namespace taskmaker_wpf.Data {
 
@@ -30,10 +31,61 @@ namespace taskmaker_wpf.Data {
 
     }
 
+    public class SerializableMapEntity {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public double[] Tensor { get; set; }
+        public int[] Shape { get; set; }
+
+        public OutputPort[] OutputPorts { get; set; }
+        public InputPort[] InputPorts { get; set; }
+
+        //public static implicit operator SerilizableMapEntity(NLinearMapEntity e) => new SerilizableMapEntity(e);
+        public static explicit operator SerializableMapEntity(NLinearMapEntity e) => new SerializableMapEntity(e);
+        public static explicit operator NLinearMapEntity(SerializableMapEntity e) => e.ToEntity();
+
+        public SerializableMapEntity() { }
+
+        public SerializableMapEntity(NLinearMapEntity entity) {
+            if (entity.IsFullySet)
+                Tensor = entity.Tensor.GetData<double>();
+                Shape = entity.Shape;
+
+            OutputPorts = entity.OutputPorts;
+            InputPorts = entity.InputPorts;
+            Id= entity.Id;
+            Name = entity.Name; 
+        }
+
+        public NLinearMapEntity ToEntity() {
+            return new NLinearMapEntity() {
+                Id = Id,
+                Name = Name,
+                Tensor = Tensor != null ? np.array(Tensor).reshape(Shape) : null,
+                Shape = Shape,
+                OutputPorts = OutputPorts,
+                InputPorts = InputPorts
+            };
+        }
+    }
+
     public class ProjectDataObject {
         public List<MotorEntity> Motors { get; set; } = new List<MotorEntity>();
         public List<ControlUiEntity> Uis { get; set; } = new List<ControlUiEntity>();
+
+        [XmlIgnore]
         public List<NLinearMapEntity> Maps { get; set; } = new List<NLinearMapEntity>();
+
+        public List<SerializableMapEntity> SerialMaps { get; set; } = new List<SerializableMapEntity>();
+
+
+        public void PreSerialize() {
+            SerialMaps = Maps.Select(e => (SerializableMapEntity)e).ToList(); 
+        }
+
+        public void AfterDeserialize() {
+            Maps = SerialMaps.Select(e => (NLinearMapEntity)e).ToList();
+        }
 
     }
 
@@ -131,6 +183,7 @@ namespace taskmaker_wpf.Data {
             var xml = new XmlSerializer(typeof(ProjectDataObject));
 
             using (var xmlfs = File.Create(xmlFilePath)) {
+                Project.PreSerialize();
                 xml.Serialize(xmlfs, Project);
             }
         }
@@ -151,6 +204,8 @@ namespace taskmaker_wpf.Data {
             using (var fs = File.OpenRead(xmlPath)) {
                 var xmlObject = (ProjectDataObject)xml.Deserialize(fs);
                 Project = xmlObject;
+
+                Project.AfterDeserialize();
             }
         }
     }

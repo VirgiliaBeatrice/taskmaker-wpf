@@ -13,6 +13,7 @@ using taskmaker_wpf.Model.Data;
 using System.Dynamic;
 using Numpy.Models;
 using System.Diagnostics;
+using System.Xml.Serialization;
 
 namespace taskmaker_wpf.Domain {
     public interface IEntity {
@@ -52,10 +53,20 @@ namespace taskmaker_wpf.Domain {
     }
 
     public class NLinearMapEntity : BaseEntity {
-        [System.Xml.Serialization.XmlIgnore]
         public NDarray Tensor { get; set; }
         public int[] Shape { get; set; }
-        public bool IsFullySet => !Tensor.isnan().any();
+
+        public bool IsDirty { get; set; } = true;
+        public bool IsFullySet {
+            get {
+                if (IsDirty)
+                    return false;
+                else {
+                    return !np.isnan(Tensor).any();
+                }
+            }
+        }
+        //public bool IsFullySet => !Tensor.isnan().any();
         //public string[] Targets { get; set; }
         //public (string, int)[] Targets { get; set; }
 
@@ -63,8 +74,8 @@ namespace taskmaker_wpf.Domain {
         public OutputPort[] OutputPorts { get; set; } = { };
         
 
-        private bool _isSet => !np.isnan(Tensor).any();
-        private double[] tensor => Tensor.isnan().any() ? null : Tensor.GetData<double>();
+        //protected bool _isSet => !np.isnan(Tensor).any();
+        protected double[] tensor => Tensor.isnan().any() ? null : Tensor.GetData<double>();
 
         //public static NLinearMapEntity Create(ControlUiEntity ui) {
         //    var map = new NLinearMapEntity();
@@ -87,6 +98,7 @@ namespace taskmaker_wpf.Domain {
         //    return map;
         //}
 
+
         public void Initialize() {
             if (OutputPorts.Length == 0 || InputPorts.Length == 0) return;
 
@@ -97,6 +109,8 @@ namespace taskmaker_wpf.Domain {
             Tensor = np.empty(Shape);
 
             Tensor.fill(np.nan);
+
+            IsDirty = false;
         }
 
         public void SetValue(int[] indices, double[] value) {
@@ -116,7 +130,7 @@ namespace taskmaker_wpf.Domain {
         }
 
         public NDarray MapTo(NDarray lambdas) {
-            if (!_isSet)
+            if (!IsFullySet)
                 return null;
 
             NDarray kronProd = null;
@@ -146,6 +160,8 @@ namespace taskmaker_wpf.Domain {
 
     }
 
+    [XmlInclude(typeof(SimplexRegionEntity))]
+    [XmlInclude(typeof(VoronoiRegionEntity))]
     public abstract class BaseRegionEntity : BaseEntity {
         public abstract double[] GetLambdas(Point pt, NodeEntity[] collection);
     }
@@ -179,6 +195,8 @@ namespace taskmaker_wpf.Domain {
         }
     }
 
+    [XmlInclude(typeof(RectVoronoiRegionEntity))]
+    [XmlInclude(typeof(SectoralVoronoiRegionEntity))]
     public class VoronoiRegionEntity : BaseRegionEntity {
         public double Factor { get; set; } = 100.0;
         public Point[] Vertices { get; set; }
@@ -305,6 +323,7 @@ namespace taskmaker_wpf.Domain {
             }; 
         }
     }
+
 
     public class RectVoronoiRegionEntity : VoronoiRegionEntity {
         public RectVoronoiRegionEntity() { }
