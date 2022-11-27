@@ -58,7 +58,7 @@ namespace taskmaker_wpf.Views {
             if (e.Key == Key.S & Keyboard.Modifiers == ModifierKeys.Control) {
                 // Configure save file dialog box
                 var dlg = new Microsoft.Win32.SaveFileDialog {
-                    FileName = "Project", // Default file name
+                    FileName = $"Project_{DateTime.Now.ToString("yyyyMMddHHmmss")}", // Default file name
                     DefaultExt = ".xml", // Default file extension
                     Filter = "Xml documents (.xml)|*.xml" // Filter files by extension
                 };
