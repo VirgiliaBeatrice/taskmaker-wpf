@@ -14,6 +14,10 @@ using System.Dynamic;
 using Numpy.Models;
 using System.Diagnostics;
 using System.Xml.Serialization;
+using System.Windows.Shapes;
+using System.Windows.Media;
+using taskmaker_wpf.Views.Widget;
+using System.Drawing.Drawing2D;
 
 namespace taskmaker_wpf.Domain {
     public interface IEntity {
@@ -239,7 +243,7 @@ namespace taskmaker_wpf.Domain {
     [XmlInclude(typeof(RectVoronoiRegionEntity))]
     [XmlInclude(typeof(SectoralVoronoiRegionEntity))]
     public class VoronoiRegionEntity : BaseRegionEntity {
-        public double Factor { get; set; } = 100.0;
+        public double Factor { get; set; } = 200.0;
         public Point[] Vertices { get; set; }
         public SimplexRegionEntity[] Governors { get; set; }
 
@@ -306,12 +310,24 @@ namespace taskmaker_wpf.Domain {
                 return lambda0.Zip(lambda1, (f, s) => (f + s)).ToArray();
             }
         }
+        private PathGeometry Geometry { get; set; }
 
         public SectoralVoronoiRegionEntity() { }
+
+        public override BaseRegionEntity HitTest(Point pt) {
+            return base.HitTest(pt);
+
+            //if (Geometry == null)
+            //    InitializeGeometry();
+
+            //return Geometry.FillContains(pt)? this : null;
+        }
 
         public SectoralVoronoiRegionEntity(NodeEntity[] nodes, SimplexRegionEntity[] simplices) {
             Governors = simplices;
             Invalidate(nodes);
+
+            InitializeGeometry();
         }
 
         private void Invalidate(NodeEntity[] nodes) {
@@ -344,6 +360,47 @@ namespace taskmaker_wpf.Domain {
                 .Select(e => e.astype(np.int32).GetData<int>())
                 .Select(e => new Point(e[0], e[1]))
                 .ToArray();
+        }
+
+        private void InitializeGeometry() {
+            var path = new GraphicsPath();
+
+            var radius = (Vertices[1] - Vertices[0]).Length;
+            var o = Vertices[1];
+            var p0 = Vertices[0];
+            var p1 = Vertices[2];
+
+            var p0o = (p0 - o);
+            var p1o = (p1 - o);
+            var dotProd = (p0o.X * p1o.X) + (p0o.Y * p1o.Y);
+            var alpha = Math.Abs(Math.Acos(dotProd / (p0o.Length * p1o.Length)));
+
+            var midLen = (float)Math.Tan(alpha / 2.0f) * Math.Abs(p0o.Length);
+
+            var op0 = o - p0;
+
+            op0.Normalize();
+            //var op0 = Point.Normalize(o - p0);
+            var transform = System.Windows.Media.Matrix.Identity;
+            transform.Rotate(Math.PI * 90.0 / 180.0);
+            var midP0 = transform.Transform(op0);
+            //var midP0 = SKMatrix.CreateRotation((float)(Math.PI * 90.0 / 180.0)).MapVector(op0);
+            midP0 *= midLen;
+
+            var mid = p0 + midP0;
+
+            var pathGeo = new PathGeometry();
+            var pathFig = new PathFigure {
+                StartPoint = o,
+            };
+
+            pathGeo.Figures.Add(pathFig);
+
+            pathFig.Segments.Add(new LineSegment { Point = p1 });
+            pathFig.Segments.Add(new ArcSegment { Point = p0, Size = new Size(radius, radius), SweepDirection = SweepDirection.Counterclockwise });
+            pathFig.Segments.Add(new LineSegment { Point = o });
+
+            Geometry = pathGeo;
         }
 
         private double[] GetFactors(Point pt) {

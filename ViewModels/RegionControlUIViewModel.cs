@@ -26,6 +26,7 @@ using static System.Windows.Forms.AxHost;
 using taskmaker_wpf.Model.Data;
 using SharpVectors.Dom.Svg;
 using System.Windows.Media;
+using System.Text;
 
 namespace taskmaker_wpf.ViewModels {
 
@@ -162,8 +163,6 @@ namespace taskmaker_wpf.ViewModels {
         private DelegateCommand<object> _addNodeCommand;
 
         private DelegateCommand _buildCommand;
-
-        private string _debug;
 
         private string _keymapInfo;
 
@@ -555,7 +554,17 @@ namespace taskmaker_wpf.ViewModels {
 
             _mapBus.Handle(req0, out NLinearMapEntity map);
 
+            _debugInfo.Clear();
             MapTo(map);
+            Debug = _debugInfo.ToString();
+        }
+
+        private StringBuilder _debugInfo = new StringBuilder();
+
+        private string _debug;
+        public string Debug {
+            get => _debug;
+            set { SetProperty(ref _debug, value); }
         }
 
         public void MapTo(NLinearMapEntity map) {
@@ -604,7 +613,7 @@ namespace taskmaker_wpf.ViewModels {
 
                     _motorBus.Handle(req1, out MotorEntity motorEntity);
 
-                    Console.WriteLine($"{output.Name}: {motorEntity.Value[0]}");
+                    _debugInfo.Append($"{output.Name}: {motorEntity.Value[0]} | ");
                 }
                 else {
                     var req1 = new ListNLinearMapRequest {
@@ -625,7 +634,7 @@ namespace taskmaker_wpf.ViewModels {
                         _uiBus.Handle(req2, out ControlUiEntity ui);
                     }
 
-                    Console.WriteLine($"{output.Name}");
+                    //Console.WriteLine($"{output.Name}");
                     MapTo(mapEntity);
 
                     //Console.WriteLine($"{output.Name}: {mapEntity.Value[0]} {mapEntity.Value[1]}");

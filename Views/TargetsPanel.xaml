@@ -255,9 +255,15 @@
                                         />
                                     <Popup
                                         PlacementTarget="{Binding ElementName=btnOpenCompactUi}"
-                                        StaysOpen="False"
+                                        StaysOpen="True"
+                                        AllowsTransparency="True"
                                         >
-                                        <Grid>
+                                        <Grid
+                                            Background="White"
+                                            >
+                                            <Grid.Effect>
+                                                <DropShadowEffect BlurRadius="10" Opacity="0.4" />
+                                            </Grid.Effect>
                                             <w:UiController
                                                 Width="400"
                                                 Height="400"

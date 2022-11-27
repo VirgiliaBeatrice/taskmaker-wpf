@@ -516,6 +516,9 @@ namespace taskmaker_wpf.Views.Widget {
         public NodeRelationViewer(MultiView parent) {
             View = parent;
 
+            Margin = new Thickness(0, 10, 0, 0);
+            Background = new SolidColorBrush(Colors.White);
+
             InvalidateState();
         }
 
@@ -566,6 +569,7 @@ namespace taskmaker_wpf.Views.Widget {
                 var circle = new Ellipse() {
                     Width = 20,
                     Height = 20,
+                    Stroke = new SolidColorBrush(Colors.Black),
                     Fill = new SolidColorBrush(fill),
                     Margin = new Thickness(2),
                     ToolTip = $"{a.ElementAt(i).UiId}({a.ElementAt(i).NodeId})"
@@ -1020,7 +1024,7 @@ namespace taskmaker_wpf.Views.Widget {
 
             if (parent is MultiView v) {
                 v.InvalidateViewer();
-                Console.WriteLine("Some property changed.");
+                //Console.WriteLine("Some property changed.");
             }
         }
 
@@ -1207,9 +1211,13 @@ namespace taskmaker_wpf.Views.Widget {
                 //Console.WriteLine(el);
             };
 
+            var border = new Border {
+                BorderBrush = new SolidColorBrush(Colors.DarkGray),
+                BorderThickness = new Thickness(1),
+            };
 
             var container = new Grid {
-                Background = Brushes.Azure,
+                //Background = Brushes.Azure,
                 ClipToBounds = true,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
@@ -1221,7 +1229,7 @@ namespace taskmaker_wpf.Views.Widget {
                 Content = mode.ToString()
             };
             _canvas = new Canvas() {
-                Background = Brushes.DarkGray,
+                Background = Brushes.White,
                 SnapsToDevicePixels = true,
                 UseLayoutRounding = true,
             };
@@ -1246,7 +1254,8 @@ namespace taskmaker_wpf.Views.Widget {
             _canvas.Children.Add(Pointer);
             container.Children.Add(_canvas);
 
-            Content = container;
+            border.Child = container;
+            Content = border;
 
             container.SizeChanged += (s, e) => {
 
@@ -1352,12 +1361,16 @@ namespace taskmaker_wpf.Views.Widget {
                             if (VMTemp == null) {
                                 var vm = DataContext as RegionControlUIViewModel;
                                 var result = VisualTreeHelper.HitTest(_canvas, curr);
-                                var state = (LogicalTreeHelperExtensions.FindAncestor<IRegionShape>(result.VisualHit))?.State;
 
-                                if (mode == UiMode.Trace)
-                                    vm.Interpolate(UiState, invMat.Transform(curr));
-                                else if (mode == UiMode.Drag)
-                                    vm.UpdateControlUiValue(UiState, invMat.Transform(curr));
+                                if (result != null) {
+                                    //var state = LogicalTreeHelperExtensions.FindAncestor<IRegionShape>(result.VisualHit)?.State;
+
+                                    if (mode == UiMode.Trace)
+                                        vm.Interpolate(UiState, invMat.Transform(curr));
+                                    else if (mode == UiMode.Drag)
+                                        vm.UpdateControlUiValue(UiState, invMat.Transform(curr));
+
+                                }
                             }
                             else if (VMTemp != null) {
                                 var vm = VMTemp as RegionControlUIViewModel;
@@ -1444,6 +1457,7 @@ namespace taskmaker_wpf.Views.Widget {
                 }
                 else if (e.Key == Key.Escape) {
                     GoToState(UiMode.Default);
+                    isDragging = false;
                 }
             };
 
