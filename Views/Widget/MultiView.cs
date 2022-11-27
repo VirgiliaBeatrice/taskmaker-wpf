@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Humanizer;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SharpVectors.Converters;
 using System;
 using System.Collections;
@@ -27,6 +28,8 @@ using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Model.SimplicialMapping;
 using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Views.Widgets;
+using static Humanizer.In;
+using static Humanizer.On;
 using static Unity.Storage.RegistrationSet;
 using Rectangle = System.Windows.Shapes.Rectangle;
 
@@ -1295,12 +1298,36 @@ namespace taskmaker_wpf.Views.Widget {
                 else if (mode == UiMode.Trace) {
                     if (isDragging) {
                         var curr = e.GetPosition(_canvas);
+                        var mat = Transform;
                         var invMat = Transform;
                         invMat.Invert();
 
-                        var diff = curr - start;
+                        // pointer in local
+                        var tCurr = invMat.Transform(curr);
+
 
                         if (UiState.Nodes.Length == 2) {
+                            // P1 = P0 + k * V
+
+                            double _clamp(double value, double min, double max) {
+                                if (value > max)
+                                    return max;
+                                else if (value < min) 
+                                    return min;
+                                else return value;
+                            }
+
+                            var nodes = UiState.Nodes.OrderBy(e0 => e0.Value.X).Select(e0 => e0.Value).ToArray();
+                            var v = nodes[1] - nodes[0];
+                            var range = nodes.Select(e0 => e0.X).ToArray();
+                            var x = _clamp(tCurr.X, range[0], range[1]);
+
+                            var k = (x - nodes[0].X) / v.Length;
+
+                            var p = nodes[0] + v * k;
+
+                            // Pointer in screen
+                            Pointer.Location = mat.Transform(p);
                             //var f = diff.Y > 0 ? 0.1 ;
                             //var line = UiState.Nodes[0].Value - UiState.Nodes[1].Value;
                             //var p = UiState.Nodes[0].Value + line * f;

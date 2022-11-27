@@ -275,6 +275,8 @@ namespace taskmaker_wpf.ViewModels {
             set { SetProperty(ref _mapStates, value); }
         }
 
+
+        // Motor Sources
         private MotorState_v1[] _motorStates;
         public MotorState_v1[] MotorStates {
             get { return _motorStates; }

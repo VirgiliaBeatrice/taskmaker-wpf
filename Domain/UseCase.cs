@@ -12,6 +12,7 @@ using taskmaker_wpf.Qhull;
 using System.Security.RightsManagement;
 using System.Diagnostics;
 using taskmaker_wpf.ViewModels;
+using taskmaker_wpf.Services;
 
 namespace taskmaker_wpf.Domain {
     public interface IPresenter { }
@@ -61,52 +62,17 @@ namespace taskmaker_wpf.Domain {
 
 
     public class MotorInteractorBus : BaseInteractorBus {
-        private AddMotorInteractor _add;
-        private UpdateMotorInteractor _update;
-        private DeleteMotorInteractor _delete;
-        private ListMotorInteractor _list;
+        private SerialService _serial;
+        public MotorInteractorBus(IRepository repository, SerialService serial) {
+            _serial = serial;
 
-        public MotorInteractorBus(IRepository repository) {
             interactors = new BaseInteractor[] {
                 new AddMotorInteractor(repository),
-                new UpdateMotorInteractor(repository),
+                new UpdateMotorInteractor(repository, _serial),
                 new DeleteMotorInteractor(repository),
                 new ListMotorInteractor(repository),
             };
-
-            //_add = new AddMotorInteractor(repository);
-            //_update = new UpdateMotorInteractor(repository);
-            //_delete = new DeleteMotorInteractor(repository);
-            //_list = new ListMotorInteractor(repository);
         }
-
-        //public void Handle<T, K>(T request, Action<K> callback) {
-        //    var requestType = typeof(T);
-
-        //    if (requestType == typeof(AddMotorRequest))
-        //        _add.Handle(request, callback);
-        //    else if (requestType == typeof(UpdateMotorRequest))
-        //        _update.Handle(request, callback);
-        //    else if (requestType == typeof(DeleteMotorRequest))
-        //        _delete.Handle(request, callback);
-        //    else if (requestType == typeof(ListMotorRequest))
-        //        _list.Handle(request, callback);
-        //}
-
-        //public K Handle<T, K>(T request) {
-        //    var requestType = typeof(T);
-
-        //    if (requestType == typeof(AddMotorRequest))
-        //        return _add.Handle<T, K>(request);
-        //    else if (requestType == typeof(UpdateMotorRequest))
-        //        return _update.Handle<T, K>(request);
-        //    else if (requestType == typeof(DeleteMotorRequest))
-        //        return _delete.Handle<T, K>(request);
-        //    else if (requestType == typeof(ListMotorRequest))
-        //        return _list.Handle<T, K>(request);
-
-        //    return default;
-        //}
     }
 
     public class AddMotorInteractor : BaseInteractor {
@@ -127,10 +93,31 @@ namespace taskmaker_wpf.Domain {
 
             callback((K)(object)true);
         }
+
+        public override void Handle<T, K>(T request, out K result) {
+            result = (K)(object)false;
+            
+            if (request is AddMotorRequest req) {
+                var idx = Repository.FindAll<MotorEntity>().Count();
+                // Request => Entity
+                var motor = new MotorEntity {
+                    Id = idx,
+                    Max = 10000,
+                    Min = -10000,
+                    Name = $"Motor[{idx}]",
+                };
+
+                Repository.Add(motor);
+
+                result = ((K)(object)true);
+            }
+        }
     }
 
     public class UpdateMotorInteractor : BaseInteractor {
-        public UpdateMotorInteractor(IRepository repository) : base(repository) {
+        private readonly SerialService _serial;
+        public UpdateMotorInteractor(IRepository repository, SerialService serial) : base(repository) {
+            _serial = serial;
         }
 
         public override void Handle<T, K>(T request, Action<K> callback) {
@@ -157,6 +144,9 @@ namespace taskmaker_wpf.Domain {
                 //Request.Spread(req, motor);
 
                 Repository.Update(motor);
+
+                // Send to serial service
+                _serial.Update(motor);
 
                 result = ((K)(object)motor);
             }
