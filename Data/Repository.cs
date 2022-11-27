@@ -40,6 +40,8 @@ namespace taskmaker_wpf.Data {
         public OutputPort[] OutputPorts { get; set; }
         public InputPort[] InputPorts { get; set; }
 
+        public bool IsDirty { get; set; } = false;
+
         //public static implicit operator SerilizableMapEntity(NLinearMapEntity e) => new SerilizableMapEntity(e);
         public static explicit operator SerializableMapEntity(NLinearMapEntity e) => new SerializableMapEntity(e);
         public static explicit operator NLinearMapEntity(SerializableMapEntity e) => e.ToEntity();
@@ -47,14 +49,20 @@ namespace taskmaker_wpf.Data {
         public SerializableMapEntity() { }
 
         public SerializableMapEntity(NLinearMapEntity entity) {
-            if (entity.IsFullySet)
+            if (entity.IsFullySet) {
                 Tensor = entity.Tensor.GetData<double>();
                 Shape = entity.Shape;
+            }
+            else {
+                IsDirty = false;
+            }
 
             OutputPorts = entity.OutputPorts;
             InputPorts = entity.InputPorts;
             Id= entity.Id;
-            Name = entity.Name; 
+            Name = entity.Name;
+            IsDirty = false;
+
         }
 
         public NLinearMapEntity ToEntity() {
@@ -64,7 +72,8 @@ namespace taskmaker_wpf.Data {
                 Tensor = Tensor != null ? np.array(Tensor).reshape(Shape) : null,
                 Shape = Shape,
                 OutputPorts = OutputPorts,
-                InputPorts = InputPorts
+                InputPorts = InputPorts,
+                IsDirty = IsDirty
             };
         }
     }

@@ -27,11 +27,20 @@ namespace taskmaker_wpf.ViewModels {
         string Name { get; set; }
     }
 
+    public interface IOutputPortState {
+        int Id { get; set; }
+        string Name { get; set; }
+    }
+    public interface IInputPortState {
+        int Id { get; set; }
+        string Name { get; set; }
+    }
+
     public class DisplayInputPort {
         public string Name { get; set; }
         public bool IsSelected { get; set; } = false;
 
-        public DisplayInputPort(IInputPort input) {
+        public DisplayInputPort(IInputPortState input) {
             Name = input.Name;
         }
     }
@@ -40,7 +49,7 @@ namespace taskmaker_wpf.ViewModels {
         public string Name { get; set; }
         public bool IsSelected { get; set; } = false;
 
-        public DisplayOutputPort(IOutputPort output) {
+        public DisplayOutputPort(IOutputPortState output) {
             Name = output.Name;
         }
     }
@@ -59,10 +68,10 @@ namespace taskmaker_wpf.ViewModels {
             };
         }
 
-        public static OutputPort Create(ControlUiEntity entity) {
+        public static OutputPort Create(NLinearMapEntity entity) {
             return new OutputPort {
                 Name = entity.Name,
-                Dimension = 2,
+                Dimension = 2 * entity.InputPorts.Length,
                 Id = entity.Id
             };
         }
@@ -71,23 +80,23 @@ namespace taskmaker_wpf.ViewModels {
             if (entity is MotorEntity motor) {
                 return Create(motor);
             }
-            else if (entity is ControlUiEntity control) {
-                return Create(control);
+            else if (entity is NLinearMapEntity map) {
+                return Create(map);
             }
-            else {
-                return default;
-            }
+            else return default;
         }
     }
 
     public struct InputPort {
         public string Name { get; set; }
         public int BasisCount { get; set; }
+        public int Id { get; set; }
 
 
         public static InputPort Create(IInputPort entity) {
 
             return new InputPort {
+                Id= entity.Id,
                 Name = entity.Name,
                 BasisCount = (entity as ControlUiEntity).Nodes.Length
             };

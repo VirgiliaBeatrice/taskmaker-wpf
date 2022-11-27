@@ -220,23 +220,6 @@ namespace taskmaker_wpf.Domain {
         }
     }
 
-    public class ListTargetRequest { }
-
-    public class ListTargetInteractor : BaseInteractor {
-        public ListTargetInteractor(IRepository repository) : base(repository) {
-        }
-
-        public override void Handle<T, K>(T request, Action<K> callback) {
-            var motors = Repository.FindAll<MotorEntity>();
-            var uis = Repository.FindAll<ControlUiEntity>();
-
-            var targets = new List<ITargetableEntity>().Concat(motors).Concat(uis).ToArray();
-
-            callback((K)(object)targets);
-        }
-    }
-
-
     public abstract class BaseInteractor : IUseCase {
         public BaseInteractor(IRepository repository) {
             Repository = repository;
@@ -364,7 +347,7 @@ namespace taskmaker_wpf.Domain {
                 var ui = Repository.Find<ControlUiEntity>(req.UiId);
 
                 if (req.PropertyName == "TargetValue") {
-                    ui.Nodes[req.NodeId].TargetValue = (double[])req.PropertyValue;
+                    //ui.Nodes[req.NodeId].TargetValue = (double[])req.PropertyValue;
                 }
                 
                 Repository.Update(ui);
@@ -380,7 +363,7 @@ namespace taskmaker_wpf.Domain {
                 var ui = Repository.Find<ControlUiEntity>(req.UiId);
 
                 if (req.PropertyName == "TargetValue") {
-                    ui.Nodes[req.NodeId].TargetValue = (double[])req.PropertyValue;
+                    //ui.Nodes[req.NodeId].TargetValue = (double[])req.PropertyValue;
                 }
 
                 Repository.Update(ui);
@@ -454,7 +437,7 @@ namespace taskmaker_wpf.Domain {
                 var ui = Repository.Find<ControlUiEntity>(req.Id);
 
                 if (req.PropertyName == "UpdateTargets") {
-                    ui.Targets = (TargetEntity[])req.PropertyValue;
+                    //ui.Targets = (TargetEntity[])req.PropertyValue;
 
                     Repository.Update(ui);
 
@@ -470,6 +453,7 @@ namespace taskmaker_wpf.Domain {
                 var ui = Repository.Find<ControlUiEntity>(req.Id);
 
                 if (req.PropertyName == "Value") {
+                    ui.Value = (double[])req.PropertyValue;
                     //ui.Targets = (TargetEntity[])req.PropertyValue;
 
                     Repository.Update(ui);
@@ -593,17 +577,13 @@ namespace taskmaker_wpf.Domain {
                 //var last = Repository.FindAll<NLinearMapEntity>().LastOrDefault() ??
                 var ui = Repository.Find<ControlUiEntity>(req.Id);
 
-                if (ui.Targets == null)
-                    callback((K)(object)null);
-                else {
-                    var map = new NLinearMapEntity();
+                var map = new NLinearMapEntity();
 
-                    map.Name = $"Map[{ui.Name}]";
+                map.Name = $"Map[{ui.Name}]";
 
-                    Repository.Add(map);
+                Repository.Add(map);
 
-                    callback((K)(object)map);
-                }
+                callback((K)(object)map);
             }
         }
     }
@@ -669,7 +649,9 @@ namespace taskmaker_wpf.Domain {
                     map.SetValue(contract.Index, contract.Value);
                 }
                 else if (req.PropertyType == "Init") {
-                    map.Initialize();
+                    var basisDims = (int[])req.PropertyValue;
+
+                    map.Initialize(basisDims);
                 }
 
                 Repository.Update(map);
@@ -700,7 +682,9 @@ namespace taskmaker_wpf.Domain {
                     map.SetValue(contract.Index, contract.Value);
                 }
                 else if (req.PropertyType == "Init") {
-                    map.Initialize();
+                    var basisDims = (int[])req.PropertyValue;
+
+                    map.Initialize(basisDims);
                 }
 
                 Repository.Update(map);

@@ -52,11 +52,13 @@ namespace taskmaker_wpf.Domain {
         }
     }
 
-    public class NLinearMapEntity : BaseEntity {
+    public class NLinearMapEntity : BaseEntity, IOutputPort {
         public NDarray Tensor { get; set; }
         public int[] Shape { get; set; }
 
         public bool IsDirty { get; set; } = true;
+
+        [XmlIgnore]
         public bool IsFullySet {
             get {
                 if (IsDirty)
@@ -98,6 +100,20 @@ namespace taskmaker_wpf.Domain {
         //    return map;
         //}
 
+        public void Initialize(int[] basisDims) {
+            if (OutputPorts.Length == 0 || InputPorts.Length == 0) return;
+
+            var targetDim = OutputPorts.Select(e => e.Dimension).Sum();
+            //var basisDims = InputPorts.Select(e => e.BasisCount).ToArray();
+
+            Shape = new int[] { targetDim }.Concat(basisDims).ToArray();
+            Tensor = np.empty(Shape);
+
+            Tensor.fill(np.nan);
+
+            IsDirty = false;
+        }
+
 
         public void Initialize() {
             if (OutputPorts.Length == 0 || InputPorts.Length == 0) return;
@@ -129,21 +145,19 @@ namespace taskmaker_wpf.Domain {
             //return Tensor[indexStr].GetData<double>().All(e => !double.IsNaN(e));
         }
 
-        public NDarray MapTo(NDarray lambdas) {
+        public NDarray MapTo(double[][] lambdas) {
             if (!IsFullySet)
                 return null;
 
             NDarray kronProd = null;
-            lambdas = np.atleast_2d(lambdas);
+            //lambdas = np.atleast_2d(lambdas);
 
-            for (var i = 0; i < lambdas.shape[0]; i++) {
+            for (int i = 0; i < lambdas.Length; ++i) {
                 if (i == 0) {
-                    var indexStr = $"{i}" + (lambdas.ndim > 1 ? ",:" : "");
-                    kronProd = np.array(lambdas[indexStr]);
+                    kronProd = np.array(lambdas[i]).flatten();
                 }
                 else {
-                    var indexStr = $"{i}" + (lambdas.ndim > 1 ? ",:" : "");
-                    kronProd = np.kron(kronProd, lambdas[indexStr]);
+                    kronProd = np.kron(kronProd, np.array(lambdas[i]));
                 }
             }
 
@@ -156,7 +170,6 @@ namespace taskmaker_wpf.Domain {
 
     public class NodeEntity : BaseEntity {
         public Point Value { get; set; }
-        public double[] TargetValue { get; set; }
 
     }
 
@@ -164,6 +177,26 @@ namespace taskmaker_wpf.Domain {
     [XmlInclude(typeof(VoronoiRegionEntity))]
     public abstract class BaseRegionEntity : BaseEntity {
         public abstract double[] GetLambdas(Point pt, NodeEntity[] collection);
+
+        public abstract BaseRegionEntity HitTest(Point pt);
+
+        public static bool HitTest(Point[] polygon, Point pt) {
+            var result = false;
+
+            int j = polygon.Length - 1;
+
+            for (int i = 0; i < polygon.Count(); i++) {
+                if (polygon[i].Y < pt.Y && polygon[j].Y >= pt.Y || polygon[j].Y < pt.Y && polygon[i].Y >= pt.Y) {
+                    if (polygon[i].X + (pt.Y - polygon[i].Y) / (polygon[j].Y - polygon[i].Y) * (polygon[j].X - polygon[i].X) < pt.X) {
+                        result = !result;
+                    }
+                }
+
+                j = i;
+            }
+
+            return result;
+        }
     }
 
     public class SimplexRegionEntity : BaseRegionEntity {
@@ -176,10 +209,18 @@ namespace taskmaker_wpf.Domain {
             Nodes = nodes;
         }
 
+        public override BaseRegionEntity HitTest(Point pt) {
+            return HitTest(Vertices, pt) ? this : null;
+        }
+
         public override double[] GetLambdas(Point pt, NodeEntity[] collection) {
             var lambdas = Bary.GetLambdas(Vertices, pt);
             var indices = Nodes
-                .Select(e => collection.ToList().IndexOf(e))
+                .Select(e => {
+                    var target = collection.Where(e1 => e1.Id == e.Id).FirstOrDefault();
+
+                    return collection.ToList().IndexOf(target);
+                })
                 .ToArray();
             var result = Enumerable.Repeat(0.0, collection.Length).ToArray();
 
@@ -203,6 +244,10 @@ namespace taskmaker_wpf.Domain {
         public SimplexRegionEntity[] Governors { get; set; }
 
         public VoronoiRegionEntity() { }
+
+        public override BaseRegionEntity HitTest(Point pt) {
+            return HitTest(Vertices, pt)? this : null;
+        }
 
         public override double[] GetLambdas(Point pt, NodeEntity[] collection) { throw new NotImplementedException(); }
 
@@ -250,7 +295,7 @@ namespace taskmaker_wpf.Domain {
 
     public class SectoralVoronoiRegionEntity : VoronoiRegionEntity {
         public override double[] GetLambdas(Point pt, NodeEntity[] collection) {
-            if (Governors[0] == Governors[1]) {
+            if (Governors[0].Id == Governors[1].Id) {
                 return Governors[0].GetLambdas(pt, collection);
             }
             else {
@@ -374,18 +419,19 @@ namespace taskmaker_wpf.Domain {
 
     }
 
-    public interface ITargetableEntity {
-        string TargetType { get; }
-        int Id { get; }
-    }
 
-    public class ControlUiEntity : BaseEntity, ITargetableEntity, IInputPort, IOutputPort {
+    public class ControlUiEntity : BaseEntity, IInputPort {
         public NodeEntity[] Nodes { get; set; }
         public BaseRegionEntity[] Regions { get; set; }
 
-        public string TargetType => "ControlUi";
-        public TargetEntity[] Targets { get; set; }
         public double[] Value { get; set; } = new double[2];
+
+        public void InvalidateValue() {
+            Value = new double[] {
+                Nodes.Select(e => e.Value.X).Average(),
+                Nodes.Select(e => e.Value.Y).Average(),
+            };
+        }
 
         public void Build() {
             var nodes = Nodes.OrderBy(e => e.Id).ToArray();
@@ -474,25 +520,11 @@ namespace taskmaker_wpf.Domain {
         //}
     }
 
-    public class MotorEntity : BaseEntity, ITargetableEntity, IOutputPort {
+    public class MotorEntity : BaseEntity, IOutputPort {
         public double[] Value { get; set; } = new double[1];
         public int Min { get; set; } = -10000;
         public int Max { get; set; } = 10000;
         public int NuibotBoardId { get; set; } = -1;
         public int NuibotMotorId { get; set; } = -1;
-
-        public string TargetType => "Motor";
-    }
-
-    public struct TargetState {
-        public string Name { get; set; }
-        public int Id { get; set; }
-        public int Dimension { get; set; }
-    }
-
-    public struct TargetEntity {
-        public string Name { get; set; }
-        public int Id { get; set; }
-        public int Dimension => Name.Contains("Motor") ? 1 : 2;
     }
 }

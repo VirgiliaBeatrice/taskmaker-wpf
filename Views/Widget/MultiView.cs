@@ -952,6 +952,7 @@ namespace taskmaker_wpf.Views.Widget {
         Delete,
         Build,
         Trace,
+        Drag,
         Pan,
         Zoom
     }
@@ -1039,6 +1040,19 @@ namespace taskmaker_wpf.Views.Widget {
         // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty UiStateProperty =
             DependencyProperty.Register("UiState", typeof(ControlUiState), typeof(UiController), new FrameworkPropertyMetadata(default(ControlUiState), OnUiStatePropertyChanged));
+
+
+
+        public object VMTemp {
+            get { return (object)GetValue(VMTempProperty); }
+            set { SetValue(VMTempProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for VMTemp.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty VMTempProperty =
+            DependencyProperty.Register("VMTemp", typeof(object), typeof(UiController), new PropertyMetadata(null));
+
+
 
         private static void OnUiStatePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
             var ui = (UiController)d;
@@ -1271,7 +1285,7 @@ namespace taskmaker_wpf.Views.Widget {
                     start = e.GetPosition(_canvas);
                     startMat = Translate;
                 }
-                else if (mode == UiMode.Trace) {
+                else if (mode == UiMode.Trace || mode == UiMode.Drag) {
                     CaptureMouse();
 
                     start = e.GetPosition(_canvas);
@@ -1295,7 +1309,7 @@ namespace taskmaker_wpf.Views.Widget {
                         InvalidateTransform();
                     }
                 }
-                else if (mode == UiMode.Trace) {
+                else if (mode == UiMode.Trace || mode == UiMode.Drag) {
                     if (isDragging) {
                         var curr = e.GetPosition(_canvas);
                         var mat = Transform;
@@ -1335,12 +1349,26 @@ namespace taskmaker_wpf.Views.Widget {
                         }
                         else {
                             Pointer.Location = curr;
+                            if (VMTemp == null) {
+                                var vm = DataContext as RegionControlUIViewModel;
+                                var result = VisualTreeHelper.HitTest(_canvas, curr);
+                                var state = (LogicalTreeHelperExtensions.FindAncestor<IRegionShape>(result.VisualHit))?.State;
 
-                            var vm = DataContext as RegionControlUIViewModel;
-                            var result = VisualTreeHelper.HitTest(_canvas, curr);
-                            var state = (LogicalTreeHelperExtensions.FindAncestor<IRegionShape>(result.VisualHit))?.State;
+                                if (mode == UiMode.Trace)
+                                    vm.Interpolate(UiState, invMat.Transform(curr));
+                                else if (mode == UiMode.Drag)
+                                    vm.UpdateControlUiValue(UiState, invMat.Transform(curr));
+                            }
+                            else if (VMTemp != null) {
+                                var vm = VMTemp as RegionControlUIViewModel;
+                                var result = VisualTreeHelper.HitTest(_canvas, curr);
+                                var state = (LogicalTreeHelperExtensions.FindAncestor<IRegionShape>(result.VisualHit))?.State;
 
-                            vm.UpdateControlUiInput(UiState, invMat.Transform(curr), state);
+                                if (mode == UiMode.Trace)
+                                    vm.Interpolate(UiState, invMat.Transform(curr));
+                                else if (mode == UiMode.Drag)
+                                    vm.UpdateControlUiValue(UiState, invMat.Transform(curr));
+                            }
                         }
                     }
                 }
@@ -1368,7 +1396,7 @@ namespace taskmaker_wpf.Views.Widget {
                     ReleaseMouseCapture();
                     GoToState(UiMode.Default);
                 }
-                else if (mode == UiMode.Trace) {
+                else if (mode == UiMode.Trace || mode == UiMode.Drag) {
                     var last = e.GetPosition(_canvas);
 
                     isDragging = false;
@@ -1411,6 +1439,9 @@ namespace taskmaker_wpf.Views.Widget {
                 else if (e.Key == Key.D3) {
                     GoToState(UiMode.Trace);
                 }
+                else if (e.Key == Key.D4) {
+                    GoToState(UiMode.Drag);
+                }
                 else if (e.Key == Key.Escape) {
                     GoToState(UiMode.Default);
                 }
@@ -1435,6 +1466,9 @@ namespace taskmaker_wpf.Views.Widget {
                 case UiMode.Build:
                     break;
                 case UiMode.Trace:
+                    State = new TraceUiState(this);
+                    break;
+                case UiMode.Drag:
                     State = new TraceUiState(this);
                     break;
                 case UiMode.Pan:

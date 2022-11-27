@@ -56,8 +56,6 @@ namespace taskmaker_wpf {
                     .ForMember(d => d.Regions, o => o.MapFrom(s => s.Regions))
                     .ReverseMap();
 
-                cfg.CreateMap<TargetEntity, TargetState>().ConvertUsing(e => new TargetState { Id = e.Id, Name = e.Name });
-
                 cfg.CreateMap<MotorEntity, MotorDTO>()
                     .ReverseMap();
 
@@ -118,7 +116,6 @@ namespace taskmaker_wpf {
             //containerRegistry.RegisterSingleton<IUseCase, BuildRegionUseCase>("BuildRegionUseCase");
 
 
-            containerRegistry.Register<ListTargetInteractor>();
             containerRegistry.Register<SystemInteractorBus>();
 
             // Register Interactor Bus

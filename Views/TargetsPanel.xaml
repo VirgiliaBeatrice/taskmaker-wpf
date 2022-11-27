@@ -19,7 +19,8 @@
             <Setter Property="Height" Value="16" />
         </Style>
     </UserControl.Resources>
-    <Grid>
+    <Grid
+        x:Name="Main">
         <StackPanel
             Margin="10"
             Orientation="Vertical">
@@ -232,6 +233,7 @@
                 Margin="0 5 0 5"
                 Header="Map > Ui Controllers">
                 <ItemsControl
+                    x:Name="compact"
                     Margin="2"
                     ItemsSource="{Binding DisplayUis}">
                     <ItemsControl.ItemTemplate>
@@ -259,6 +261,7 @@
                                             <w:UiController
                                                 Width="400"
                                                 Height="400"
+                                                VMTemp="{Binding ElementName=compact, Path=DataContext}"
                                                 UiState="{Binding .}"
                                                 />
                                         </Grid>

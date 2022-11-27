@@ -22,7 +22,7 @@ using taskmaker_wpf.Services;
 using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.ViewModels {
-    public class MotorState : ObservableObject, IOutputPort {
+    public class MotorState : ObservableObject, IOutputPortState {
         private double[] _value;
         private int id;
         private string name;
