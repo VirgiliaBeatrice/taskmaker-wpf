@@ -357,17 +357,10 @@
     <Compile Include="Views\TestWindow.xaml.cs">
       <DependentUpon>TestWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Widget\ComplexWidget.cs" />
-    <Compile Include="Views\Widget\Inspector.xaml.cs">
-      <DependentUpon>Inspector.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Widget\MultiView.cs" />
-    <Compile Include="Views\Widget\SimplexWidget.cs" />
     <Compile Include="Views\Widget\SKFrameworkElement.cs" />
-    <Compile Include="Views\Widget\VoronoiWidget.cs" />
     <Compile Include="Views\Widget\Core.cs" />
     <Compile Include="Views\DebugUtilities\DebugInfoWidget.cs" />
-    <Compile Include="Views\Widget\NodeWidget.cs" />
     <Compile Include="Views\Widget\Unit\UnitWidget.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
@@ -431,10 +424,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\UserControl1.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Widget\Inspector.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

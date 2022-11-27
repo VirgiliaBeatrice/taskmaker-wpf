@@ -34,9 +34,6 @@ namespace taskmaker_wpf {
                 cfg.CreateMap<NLinearMapEntity, NLinearMapDTO>()
                     .ReverseMap();
 
-                cfg.CreateMap<NodeEntity, NodeState>()
-                    .ForMember(d => d.IsSet, o => o.MapFrom(s => s.TargetValue == null ? false : true))
-                    .ReverseMap();
                 cfg.CreateMap<NodeEntity, NodeDTO>(MemberList.Destination)
                     .ReverseMap();
 
@@ -44,23 +41,11 @@ namespace taskmaker_wpf {
                     .IncludeAllDerived()
                     .ReverseMap();
 
-                cfg.CreateMap<BaseRegionEntity, RegionState>()
-                    //.IncludeAllDerived()
-                    .ReverseMap();
-
-                cfg.CreateMap<SimplexRegionEntity, SimplexState>()
-                    .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices))
-                    .IncludeBase<BaseRegionEntity, RegionState>()
-                    .ReverseMap();
                 cfg.CreateMap<SimplexRegionEntity, SimplexRegionDTO>()
                     .ForMember(d => d.Vertices, o => o.MapFrom(s => s.Vertices))
                     .IncludeBase<BaseRegionEntity, RegionDTO>()
                     .ReverseMap();
 
-                cfg.CreateMap<VoronoiRegionEntity, VoronoiState>()
-                    .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices))
-                    .IncludeBase<BaseRegionEntity, RegionState>()
-                    .ReverseMap();
                 cfg.CreateMap<VoronoiRegionEntity, VoronoiRegionDTO>()
                     .ForMember(d => d.Vertices, o => o.MapFrom(s => s.Vertices))
                     .IncludeBase<BaseRegionEntity, RegionDTO>()
@@ -69,12 +54,6 @@ namespace taskmaker_wpf {
                 cfg.CreateMap<ControlUiEntity, ControlUiDTO>()
                     .ForMember(d => d.Nodes, o => o.MapFrom(s => s.Nodes))
                     .ForMember(d => d.Regions, o => o.MapFrom(s => s.Regions))
-                    .ReverseMap();
-                cfg.CreateMap<ControlUiEntity, ControlUiState>()
-                    .ForMember(d => d.Name, o => o.MapFrom(s => s.Name))
-                    .ForMember(d => d.Nodes, o => o.MapFrom(s => s.Nodes))
-                    .ForMember(d => d.Regions, o => o.MapFrom(s => s.Regions))
-                    .ForMember(d => d.Value, o => o.Ignore())
                     .ReverseMap();
 
                 cfg.CreateMap<TargetEntity, TargetState>().ConvertUsing(e => new TargetState { Id = e.Id, Name = e.Name });
@@ -90,19 +69,19 @@ namespace taskmaker_wpf {
                 //    .ForMember(d => d.IsSelected, o => o.Ignore())
                 //    .ReverseMap();
 
-                cfg.CreateMap<NLinearMapEntity, NLinearMapState_v1>()
+                cfg.CreateMap<NLinearMapEntity, NLinearMapState>()
                     .ForMember(d => d.Value, o => o.MapFrom(s => s.Tensor.GetData<double>()));
                 cfg.CreateMap<MotorEntity, MotorState>()
                     .ReverseMap();
-                cfg.CreateMap<ControlUiEntity, ControlUiState_v1>();
+                cfg.CreateMap<ControlUiEntity, ControlUiState>();
                 
                 cfg.CreateMap<NodeEntity, NodeState_v1>();
 
                 cfg.CreateMap<BaseRegionEntity, BaseRegionState>();
-                cfg.CreateMap<SimplexRegionEntity, SimplexState_v1>()
+                cfg.CreateMap<SimplexRegionEntity, SimplexState>()
                     .IncludeBase<BaseRegionEntity, BaseRegionState>()
                     .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices));
-                cfg.CreateMap<VoronoiRegionEntity, VoronoiState_v1>()
+                cfg.CreateMap<VoronoiRegionEntity, VoronoiState>()
                     .IncludeBase<BaseRegionEntity, BaseRegionState>()
                     .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices));
             });

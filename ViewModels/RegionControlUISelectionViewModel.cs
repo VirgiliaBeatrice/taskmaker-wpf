@@ -24,13 +24,13 @@ namespace taskmaker_wpf.ViewModels {
         private readonly IMapper _mapper;
         private readonly IEventAggregator _ea;
 
-        private ControlUiState_v1 _selectedUi;
-        public ControlUiState_v1 SelectedUi {
+        private ControlUiState _selectedUi;
+        public ControlUiState SelectedUi {
             get { return _selectedUi; }
             set { SetProperty(ref _selectedUi, value); }
         }
 
-        public ObservableCollection<ControlUiState_v1> UIs { get; set; } = new ObservableCollection<ControlUiState_v1>();
+        public ObservableCollection<ControlUiState> UIs { get; set; } = new ObservableCollection<ControlUiState>();
 
         public RegionControlUISelectionViewModel(
             IRegionManager regionManager,
@@ -50,7 +50,7 @@ namespace taskmaker_wpf.ViewModels {
         private void InvalidateUiList() {
             _uiBus.Handle(new ListControlUiRequest(), (ControlUiEntity[] uis) => {
                 UIs.Clear();
-                UIs.AddRange(uis.Select(e => _mapper.Map<ControlUiState_v1>(e)));
+                UIs.AddRange(uis.Select(e => _mapper.Map<ControlUiState>(e)));
             });
         }
 

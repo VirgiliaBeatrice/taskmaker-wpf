@@ -78,7 +78,7 @@ namespace taskmaker_wpf.ViewModels {
         }
     }
 
-    public class NLinearMapState_v1 {
+    public class NLinearMapState {
         public int Id { get; set; }
         public string Name { get; set; }
         public InputPort[] InputPorts { get; set; } = new InputPort[0];
@@ -93,7 +93,7 @@ namespace taskmaker_wpf.ViewModels {
         }
     }
 
-    public class ControlUiState_v1 : ObservableObject, IInputPort, IOutputPort {
+    public class ControlUiState : ObservableObject, IInputPort, IOutputPort {
         private int _id;
         public int Id {
             get { return _id; }
@@ -117,84 +117,10 @@ namespace taskmaker_wpf.ViewModels {
         public bool IsSelected { get; set; } = false;
 
         public object Clone() {
-            return (ControlUiState_v1)MemberwiseClone();
+            return (ControlUiState)MemberwiseClone();
         }
         public override string ToString() {
             return Name;
-        }
-    }
-
-    public class ControlUiState : BindableBase {
-        private int _id;
-
-        private string _name;
-
-        private NodeState[] _nodes;
-
-        private RegionState[] _regions;
-
-        private double[] _value;
-
-        private TargetState[] _targets;
-
-        public int Id {
-            get => _id;
-            set => SetProperty(ref _id, value);
-        }
-        public string Name {
-            get => _name;
-            set => SetProperty(ref _name, value);
-        }
-        public NodeState[] Nodes {
-            get => _nodes;
-            set => SetProperty(ref _nodes, value);
-        }
-
-        public RegionState[] Regions {
-            get => _regions;
-            set => SetProperty(ref _regions, value);
-        }
-
-        public double[] Value {
-            get => _value;
-            set => SetProperty(ref _value, value);
-        }
-
-        public TargetState[] Targets {
-            get => _targets;
-            set => SetProperty(ref _targets, value);
-        }
-        public override string ToString() {
-            return Name;
-        }
-    }
-
-    public class NodeState : BindableBase {
-        private int _id;
-
-        private bool _isSet;
-
-        private double[] _targetValue;
-
-        private Point _value;
-
-        public int Id {
-            get => _id;
-            set => SetProperty(ref _id, value);
-        }
-        public bool IsSet {
-            get => _isSet;
-            set => SetProperty(ref _isSet, value);
-        }
-
-        public double[] TargetValue {
-            get => _targetValue;
-            set => SetProperty(ref _targetValue, value);
-        }
-
-        public Point Value {
-            get => _value;
-            set => SetProperty(ref _value, value);
         }
     }
 
@@ -235,21 +161,7 @@ namespace taskmaker_wpf.ViewModels {
 
         private string _debug;
 
-        private FrameworkElement _hitElement;
-
-        private FrameworkElement _inspectedWidget;
-
-        private DelegateCommand<object> _interpolateCommand;
-
         private string _keymapInfo;
-
-        private OperationMode _operationMode = Views.OperationMode.Default;
-
-        private DelegateCommand<NodeState> _removeNodeCommand;
-
-        private FrameworkElement _selectedNodeWidget;
-
-        private DelegateCommand<object> _setValueCommand;
 
         private string _statusMsg;
 
@@ -259,14 +171,14 @@ namespace taskmaker_wpf.ViewModels {
 
         // https://blog.csdn.net/jiuzaizuotian2014/article/details/104856673
 
-        private ControlUiState_v1[] _uiStates = new ControlUiState_v1[0];
-        public ControlUiState_v1[] UiStates {
+        private ControlUiState[] _uiStates = new ControlUiState[0];
+        public ControlUiState[] UiStates {
             get { return _uiStates; }
             set { SetProperty(ref _uiStates, value); }
         }
 
-        private NLinearMapState_v1[] _mapStates = new NLinearMapState_v1[0];
-        public NLinearMapState_v1[] MapStates {
+        private NLinearMapState[] _mapStates = new NLinearMapState[0];
+        public NLinearMapState[] MapStates {
             get { return _mapStates; }
             set { SetProperty(ref _mapStates, value); }
         }
@@ -297,14 +209,14 @@ namespace taskmaker_wpf.ViewModels {
             set { SetProperty(ref _validInputPorts, value); }
         }
 
-        private ControlUiState_v1[] _selectedUiStates = new ControlUiState_v1[0];
-        public ControlUiState_v1[] SelectedUiStates {
+        private ControlUiState[] _selectedUiStates = new ControlUiState[0];
+        public ControlUiState[] SelectedUiStates {
             get { return _selectedUiStates; }
             set { SetProperty(ref _selectedUiStates, value); }
         }
 
-        private NLinearMapState_v1 _selectedMap;
-        public NLinearMapState_v1 SelectedMap {
+        private NLinearMapState _selectedMap;
+        public NLinearMapState SelectedMap {
             get { return _selectedMap; }
             set { SetProperty(ref _selectedMap, value); }
         }
@@ -316,8 +228,8 @@ namespace taskmaker_wpf.ViewModels {
             set { SetProperty(ref _displayMotors, value); }
         }
 
-        private ControlUiState_v1[] _displayUis = new ControlUiState_v1[0];
-        public ControlUiState_v1[] DisplayUis {
+        private ControlUiState[] _displayUis = new ControlUiState[0];
+        public ControlUiState[] DisplayUis {
             get { return _displayUis; }
             set { SetProperty(ref _displayUis, value); }
         }
@@ -429,7 +341,7 @@ namespace taskmaker_wpf.ViewModels {
 
             _mapBus.Handle(addReq, (bool res) => { });
             _mapBus.Handle(listReq, (NLinearMapEntity[] maps) => {
-                MapStates = _mapper.Map<NLinearMapState_v1[]>(maps);
+                MapStates = _mapper.Map<NLinearMapState[]>(maps);
             });
         }
 
@@ -443,7 +355,7 @@ namespace taskmaker_wpf.ViewModels {
 
             _uiBus.Handle(request, (bool res) => { });
             _uiBus.Handle(request1, (ControlUiEntity[] uis) => {
-                UiStates = _mapper.Map<ControlUiState_v1[]>(uis);
+                UiStates = _mapper.Map<ControlUiState[]>(uis);
             });
         }
 
@@ -514,7 +426,7 @@ namespace taskmaker_wpf.ViewModels {
                                    .First(e1 => e1.Name == e.Name))
                 .ToArray();
             DisplayUis = SelectedMap.OutputPorts.Where(e => e.Name.Contains("ControlUi"))
-                .Select(e => uis.Select(e1 => _mapper.Map<ControlUiState_v1>(e1))
+                .Select(e => uis.Select(e1 => _mapper.Map<ControlUiState>(e1))
                                 .First(e1 => e1.Name == e.Name))
                 .ToArray();
         }
@@ -578,36 +490,10 @@ namespace taskmaker_wpf.ViewModels {
                 .ToArray();
         }
 
-        public string Debug {
-            get => _debug;
-            set => SetProperty(ref _debug, value);
-        }
-
-        public FrameworkElement HitElement {
-            get => _hitElement;
-            set => SetProperty(ref _hitElement, value);
-        }
-
         public string KeymapInfo {
             get => _keymapInfo;
             set => SetProperty(ref _keymapInfo, value);
         }
-
-        public OperationMode OperationMode {
-            get => _operationMode;
-            set => SetProperty(ref _operationMode, value);
-        }
-
-        public DelegateCommand<NodeState> RemoveNodeCommand =>
-            _removeNodeCommand ?? (_removeNodeCommand = new DelegateCommand<NodeState>(ExecuteRemoveNodeCommand));
-
-        public FrameworkElement SelectedNodeWidget {
-            get => _selectedNodeWidget;
-            set => SetProperty(ref _selectedNodeWidget, value);
-        }
-
-        public DelegateCommand<object> SetValueCommand =>
-            _setValueCommand ?? (_setValueCommand = new DelegateCommand<object>(ExecuteSetValueCommand));
 
         public string StatusMsg {
             get => _statusMsg;
@@ -617,17 +503,6 @@ namespace taskmaker_wpf.ViewModels {
         public string SystemInfo {
             get => _systemInfo;
             set => SetProperty(ref _systemInfo, value);
-        }
-
-        public Point TracePoint {
-            get => _tracePoint;
-            set {
-                SetProperty(ref _tracePoint, value);
-
-                if (_operationMode == OperationMode.Trace) {
-                    Interpolate();
-                }
-            }
         }
 
         public RegionControlUIViewModel(MapperConfiguration config,
@@ -647,10 +522,10 @@ namespace taskmaker_wpf.ViewModels {
 
             InvalidateValidPorts();
 
-            SystemInfo = $"{_operationMode}";
+            //SystemInfo = $"{_operationMode}";
         }
 
-        public void UpdateControlUiInput(ControlUiState_v1 state, Point value, BaseRegionState hitRegion) {
+        public void UpdateControlUiInput(ControlUiState state, Point value, BaseRegionState hitRegion) {
             var req = new ListControlUiRequest() {
                 Id = state.Id,
             };
@@ -719,58 +594,6 @@ namespace taskmaker_wpf.ViewModels {
             _motorBus.Handle(req, out MotorEntity motor);
         }
 
-        private void ExecuteRemoveNodeCommand(NodeState parameter) {
-            RemoveNode(parameter);
-        }
-
-        private void ExecuteSetValueCommand(object param) {
-            //if (param is int selectedNodeId) {
-            //    var targetValues = TargetsPanelVM.TargetsOfSelectedMap.SelectMany(e => e.Value).ToArray();
-            //    //var value = TargetsPanelVM.TargetMotors
-
-            //    var request = new UpdateNodeRequest {
-            //        UiId = UiState.Id,
-            //        NodeId = selectedNodeId,
-            //        PropertyName = "TargetValue",
-            //        PropertyValue = targetValues,
-            //    };
-
-            //    _uiBus.Handle(request, (ControlUiEntity ui) => {
-            //        UiState = _mapper.Map<ControlUiState>(ui);
-            //    });
-            //}
-            //if (SelectedNodeWidget is null) return;
-
-            
-            //_uiBus.Handle()
-        }
-
-        private void Interpolate() {
-            var pt = TracePoint;
-
-            var target = HitElement?.DataContext as ITraceRegion;
-
-            if (target is null) return;
-            else {
-                //if (target is StatefulSimplex) {
-                //    var bary = (target.GetRef() as SimplexM).Bary;
-                //    var lambdas = UI.Complex.Bary.GetLambdas(bary, pt.ToNDarray());
-                //    //var result = _map.MapTo(lambdas);
-
-                //    //UI.Complex.Targets.SetValue(result.GetData<double>());
-                //}
-                //else if (target is StatefulVoronoi) {
-                //    var bary = (target.GetRef() as VoronoiRegionM).Bary;
-                //    var lambdas = UI.Complex.Bary.GetLambdas(bary, pt.ToNDarray());
-                //    //var result = _map.MapTo(lambdas);
-
-                //    //UI.Complex.Targets.SetValue(result.GetData<double>());
-                //}
-
-                //Debug = UI.Complex.Targets.ToString();
-            }
-        }
-
         public void InvalidateValidPorts() {
             InvalidateMotors();
             InvalidateUis();
@@ -792,7 +615,7 @@ namespace taskmaker_wpf.ViewModels {
             var request = new ListNLinearMapRequest();
 
             _mapBus.Handle(request, (NLinearMapEntity[] maps) => {
-                MapStates = _mapper.Map<NLinearMapState_v1[]>(maps);
+                MapStates = _mapper.Map<NLinearMapState[]>(maps);
             });
         }
 
@@ -807,13 +630,10 @@ namespace taskmaker_wpf.ViewModels {
 
         private void InvalidateUis() {
             _uiBus.Handle(new ListControlUiRequest(), (ControlUiEntity[] uis) => {
-                UiStates = _mapper.Map<ControlUiState_v1[]>(uis);
+                UiStates = _mapper.Map<ControlUiState[]>(uis);
             });
         }
 
-        private void RemoveNode(NodeState node) {
-            //UI.Complex.Nodes.Remove(node);
-        }
         public bool IsNavigationTarget(NavigationContext navigationContext) {
             return true;
         }
@@ -854,7 +674,7 @@ namespace taskmaker_wpf.ViewModels {
         public string Name { get; set; }
     }
 
-    public class SimplexState_v1 : BaseRegionState {
+    public class SimplexState : BaseRegionState {
         public Point[] Points { get; set; } = new Point[0];
 
         public override string ToString() {
@@ -863,43 +683,10 @@ namespace taskmaker_wpf.ViewModels {
     }
 
 
-    public class VoronoiState_v1 : BaseRegionState {
+    public class VoronoiState : BaseRegionState {
         public Point[] Points { get; set; } = new Point[0];
         public override string ToString() {
             return Name;
-        }
-    }
-
-    public class RegionState : BindableBase {
-        private int _id;
-
-        private string _name;
-
-        public int Id {
-            get => _id;
-            set => SetProperty(ref _id, value);
-        }
-        public string Name {
-            get => _name;
-            set => SetProperty(ref _name, value);
-        }
-    }
-
-    public class SimplexState : RegionState, ITraceRegion {
-        private Point[] _points;
-
-        public Point[] Points {
-            get => _points;
-            set => SetProperty(ref _points, value);
-        }
-    }
-
-    public class VoronoiState : RegionState, ITraceRegion {
-        private Point[] _points;
-
-        public Point[] Points {
-            get => _points;
-            set => SetProperty(ref _points, value);
         }
     }
 }

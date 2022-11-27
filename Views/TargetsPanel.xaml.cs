@@ -54,7 +54,7 @@ namespace taskmaker_wpf.Views {
 
         private void lbMaps_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             if (e.AddedItems.Count != 0) {
-                var selectedMap = e.AddedItems[0] as NLinearMapState_v1;
+                var selectedMap = e.AddedItems[0] as NLinearMapState;
                 var listbox = sender as ListBox;
                 var vm = listbox.DataContext as RegionControlUIViewModel;
 
@@ -62,7 +62,7 @@ namespace taskmaker_wpf.Views {
             }
 
             if (e.RemovedItems.Count != 0) {
-                var selectedMap = e.RemovedItems[0] as NLinearMapState_v1;
+                var selectedMap = e.RemovedItems[0] as NLinearMapState;
                 var listbox = sender as ListBox;
                 var vm = listbox.DataContext as RegionControlUIViewModel;
 

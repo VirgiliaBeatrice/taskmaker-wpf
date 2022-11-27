@@ -235,7 +235,7 @@
                     Margin="2"
                     ItemsSource="{Binding DisplayUis}">
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type vm:ControlUiState_v1}">
+                        <DataTemplate DataType="{x:Type vm:ControlUiState}">
                             <Expander
                             BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
                             BorderThickness="1"

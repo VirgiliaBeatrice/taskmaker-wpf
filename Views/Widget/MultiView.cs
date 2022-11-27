@@ -680,7 +680,7 @@ namespace taskmaker_wpf.Views.Widget {
 
         // Using a DependencyProperty as the backing store for ItemsSource.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ItemsSourceProperty =
-            DependencyProperty.Register("ItemsSource", typeof(IEnumerable), typeof(MultiView), new FrameworkPropertyMetadata(new ControlUiState_v1[0], OnPropertyChanged));
+            DependencyProperty.Register("ItemsSource", typeof(IEnumerable), typeof(MultiView), new FrameworkPropertyMetadata(new ControlUiState[0], OnPropertyChanged));
 
 
 
@@ -705,8 +705,8 @@ namespace taskmaker_wpf.Views.Widget {
 
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
             if (d is MultiView view) {
-                var newUis = (args.NewValue as ControlUiState_v1[]).Select(e => e.Name);
-                var oldUis = (args.OldValue as ControlUiState_v1[]).Select(e => e.Name);
+                var newUis = (args.NewValue as ControlUiState[]).Select(e => e.Name);
+                var oldUis = (args.OldValue as ControlUiState[]).Select(e => e.Name);
                 
 
                 if (Enumerable.SequenceEqual(oldUis, newUis)) {
@@ -714,7 +714,7 @@ namespace taskmaker_wpf.Views.Widget {
                         view.Controllers[i].SetBinding(
                             UiController.UiStateProperty,
                             new Binding() {
-                                Source = (args.NewValue as ControlUiState_v1[])[i]
+                                Source = (args.NewValue as ControlUiState[])[i]
                             });
                         //view.Controllers[i].UiState =];
                     }
@@ -1031,18 +1031,18 @@ namespace taskmaker_wpf.Views.Widget {
             UiId = UiState.Id
         }).ToArray();
 
-        public ControlUiState_v1 UiState {
-            get { return (ControlUiState_v1)GetValue(UiStateProperty); }
+        public ControlUiState UiState {
+            get { return (ControlUiState)GetValue(UiStateProperty); }
             set { SetValue(UiStateProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty UiStateProperty =
-            DependencyProperty.Register("UiState", typeof(ControlUiState_v1), typeof(UiController), new FrameworkPropertyMetadata(default(ControlUiState_v1), OnUiStatePropertyChanged));
+            DependencyProperty.Register("UiState", typeof(ControlUiState), typeof(UiController), new FrameworkPropertyMetadata(default(ControlUiState), OnUiStatePropertyChanged));
 
         private static void OnUiStatePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
             var ui = (UiController)d;
-            var state = (ControlUiState_v1)args.NewValue;
+            var state = (ControlUiState)args.NewValue;
 
             state.PropertyChanged += (s, e) => {
                 if (e.PropertyName == "Nodes") {
@@ -1145,8 +1145,8 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public void InvalidateRegion() {
-            var simplexStates = UiState.Regions.OfType<SimplexState_v1>();
-            var voronoiStates = UiState.Regions.OfType<VoronoiState_v1>();
+            var simplexStates = UiState.Regions.OfType<SimplexState>();
+            var voronoiStates = UiState.Regions.OfType<VoronoiState>();
 
             var simplices = _canvas.Children.OfType<SimplexShape>().ToArray();
             foreach (var shape in simplices) {
