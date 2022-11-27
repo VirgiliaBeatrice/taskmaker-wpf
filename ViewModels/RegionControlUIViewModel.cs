@@ -243,10 +243,6 @@ namespace taskmaker_wpf.ViewModels {
 
         private string _keymapInfo;
 
-        private NLinearMapState[] _maps = new NLinearMapState[0];
-
-        private NLinearMapState _mapState;
-
         private OperationMode _operationMode = Views.OperationMode.Default;
 
         private DelegateCommand<NodeState> _removeNodeCommand;
@@ -277,8 +273,8 @@ namespace taskmaker_wpf.ViewModels {
 
 
         // Motor Sources
-        private MotorState_v1[] _motorStates;
-        public MotorState_v1[] MotorStates {
+        private MotorState[] _motorStates;
+        public MotorState[] MotorStates {
             get { return _motorStates; }
             set { SetProperty(ref _motorStates, value); }
         }
@@ -314,8 +310,8 @@ namespace taskmaker_wpf.ViewModels {
         }
 
 
-        private MotorState_v1[] _displayMotors = new MotorState_v1[0];
-        public MotorState_v1[] DisplayMotors {
+        private MotorState[] _displayMotors = new MotorState[0];
+        public MotorState[] DisplayMotors {
             get { return _displayMotors; }
             set { SetProperty(ref _displayMotors, value); }
         }
@@ -514,7 +510,7 @@ namespace taskmaker_wpf.ViewModels {
 
             // Invalidate display motors and uis
             DisplayMotors = SelectedMap.OutputPorts.Where(e => e.Name.Contains("Motor"))
-                .Select(e => motors.Select(e1 => _mapper.Map<MotorState_v1>(e1))
+                .Select(e => motors.Select(e1 => _mapper.Map<MotorState>(e1))
                                    .First(e1 => e1.Name == e.Name))
                 .ToArray();
             DisplayUis = SelectedMap.OutputPorts.Where(e => e.Name.Contains("ControlUi"))
@@ -714,7 +710,7 @@ namespace taskmaker_wpf.ViewModels {
             }
         }
 
-        public void UpdateMotor(MotorState_v1 state) {
+        public void UpdateMotor(MotorState state) {
             var req = new UpdateMotorRequest {
                 Id = state.Id,
                 Value = state.Value,
@@ -804,7 +800,7 @@ namespace taskmaker_wpf.ViewModels {
             var request = new ListMotorRequest();
 
             _motorBus.Handle(request, (MotorEntity[] motors) => {
-                MotorStates = _mapper.Map<MotorState_v1[]>(motors);
+                MotorStates = _mapper.Map<MotorState[]>(motors);
             });
         }
 

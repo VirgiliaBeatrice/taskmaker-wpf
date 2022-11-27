@@ -110,22 +110,22 @@ namespace taskmaker_wpf.Data {
         // TODO: Clone
         public void Update<T>(T item) {
             if (item is MotorEntity motor) {
-                var target = Project.Motors.Find(e => e.Id == motor.Id);
+                var targetIdx = Project.Motors.FindIndex(e => e.Id == motor.Id);
 
-                if (target != null)
-                    target = motor;
+                if (targetIdx != -1)
+                    Project.Motors[targetIdx] = motor;
             }
             else if (item is ControlUiEntity ui) {
-                var target = Project.Uis.Find(e => e.Id == ui.Id);
+                var targetIdx = Project.Uis.FindIndex(e => e.Id == ui.Id);
 
-                if (target != null)
-                    target = ui;
+                if (targetIdx != -1)
+                    Project.Uis[targetIdx] = ui;
             }
             else if (item is NLinearMapEntity map) {
-                var target = Project.Maps.Find(e => e.Id == map.Id);
+                var targetIdx = Project.Maps.FindIndex(e => e.Id == map.Id);
 
-                if (target != null)
-                    target = map;
+                if (targetIdx != -1)
+                    Project.Maps[targetIdx] = map;
             }
         }
 

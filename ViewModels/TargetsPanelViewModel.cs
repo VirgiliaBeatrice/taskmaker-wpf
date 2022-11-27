@@ -18,69 +18,6 @@ using Prism.Events;
 using SkiaSharp;
 
 namespace taskmaker_wpf.ViewModels {
-    public interface ISelectableState {
-        int Id { get; }
-        bool IsSelected { get; set; }
-        string Name { get; }
-        double[] Value { get; }
-    }
-
-    public class ControlUiTargetState : ControlUiState, IInputPort, IOutputPort {
-        private bool _isSelected;
-        public bool IsSelected {
-            get { return _isSelected; }
-            set { SetProperty(ref _isSelected, value); }
-        }
-
-        public override string ToString() {
-            return Name;
-        }
-
-        public object Clone() {
-            return (ControlUiTargetState)MemberwiseClone();
-        }
-    }
-
-    public class MotorTargetState : MotorState, IOutputPort {
-        private bool _isSelected;
-
-        public bool IsSelected {
-            get { return _isSelected; }
-            set { SetProperty(ref _isSelected, value); }
-        }
-
-        public object Clone() {
-            return (MotorTargetState)MemberwiseClone();
-        }
-
-        public override string ToString() {
-            return Name;
-        }
-    }
-    public class NLinearMapState : BindableBase {
-        private int _id;
-        private string _name;
-
-        private IInputPort[] _inputs;
-        private IOutputPort[] _outputs;
-
-        public int Id {
-            get => _id;
-            set => SetProperty(ref _id, value);
-        }
-        public string Name {
-            get => _name;
-            set => SetProperty(ref _name, value);
-        }
-        public IInputPort[] Inputs {
-            get => _inputs;
-            set => SetProperty(ref _inputs, value);
-        }
-        public IOutputPort[] Outputs { get => _outputs; set => SetProperty(ref _outputs, value); }
-
-        public override string ToString() => Name;
-    }
-
     public interface IOutputPort {
         int Id { get; set; }
         string Name { get; set; }
@@ -109,7 +46,7 @@ namespace taskmaker_wpf.ViewModels {
     }
 
 
-    public class OutputPort {
+    public struct OutputPort {
         public string Name { get; set; }
         public int Dimension { get; set; }
         public int Id { get; set; }
@@ -143,7 +80,7 @@ namespace taskmaker_wpf.ViewModels {
         }
     }
 
-    public class InputPort {
+    public struct InputPort {
         public string Name { get; set; }
         public int BasisCount { get; set; }
 

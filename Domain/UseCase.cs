@@ -13,8 +13,16 @@ using System.Security.RightsManagement;
 using System.Diagnostics;
 using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Services;
+using System.Windows.Media.Animation;
 
 namespace taskmaker_wpf.Domain {
+    public static class Helper {
+        static public double Clamp(this double x, double min, double max) {
+            if (x > max) return max;
+            else if (x < min) return min;
+            else return x;
+        }   
+    }
     public interface IPresenter { }
     public interface IUseCase {
         IRepository Repository { get; set; }
@@ -140,13 +148,21 @@ namespace taskmaker_wpf.Domain {
                 var motor = Repository.Find<MotorEntity>(req.Id);
 
                 //motor.GetType().GetProperty(req.PropertyName).SetValue(motor, req.Value);
-                motor.Value = (double[])req.Value;
+                if (req.Value is double[] value) {
+                    
+                    motor.Value = value.Select(e => e.Clamp(motor.Min, motor.Max)).ToArray();
+                    
+                    // Send to serial service
+                    
+                    _serial.Update(motor);
+                }
+                else if (req.Value is MotorEntity entity) {
+                    motor = entity;
+                }
                 //Request.Spread(req, motor);
 
                 Repository.Update(motor);
 
-                // Send to serial service
-                _serial.Update(motor);
 
                 result = ((K)(object)motor);
             }

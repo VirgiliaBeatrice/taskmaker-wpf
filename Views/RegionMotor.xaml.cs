@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using taskmaker_wpf.ViewModels;
 
 namespace taskmaker_wpf.Views {
     public class MotorInfo {
@@ -43,6 +44,32 @@ namespace taskmaker_wpf.Views {
     public partial class RegionMotor : UserControl {
         public RegionMotor() {
             InitializeComponent();
+        }
+
+        private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            var state = (sender as Slider).DataContext as MotorState;
+            var vm = DataContext as RegionMotorViewModel;
+
+            e.Handled = true;
+            if (e.NewValue != e.OldValue)
+                vm.UpdateMotorValue(state, e.NewValue);
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e) {
+            var state = (sender as Button).DataContext as MotorState;
+            var vm = DataContext as RegionMotorViewModel;
+
+            vm.UpdateMotor(state);
+        }
+
+        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            var state = (sender as ComboBox).DataContext as MotorState;
+            var cb = sender as ComboBox;
+
+            if (cb.Name == "cbBoardId")
+                state.NuibotBoardId = (int)e.AddedItems[0];
+            else if (cb.Name == "cbMotorId")
+                state.NuibotMotorId = (int)e.AddedItems[0];
         }
     }
 }

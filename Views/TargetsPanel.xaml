@@ -186,7 +186,7 @@
                     Margin="2"
                     ItemsSource="{Binding DisplayMotors}">
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type vm:MotorState_v1}">
+                        <DataTemplate DataType="{x:Type vm:MotorState}">
                             <Expander
                             BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
                             BorderThickness="1"

@@ -478,8 +478,8 @@ namespace taskmaker_wpf.Domain {
         public double[] Value { get; set; } = new double[1];
         public int Min { get; set; } = -10000;
         public int Max { get; set; } = 10000;
-        public int NuibotBoardId { get; set; }
-        public int NuibotMotorId { get; set; }
+        public int NuibotBoardId { get; set; } = -1;
+        public int NuibotMotorId { get; set; } = -1;
 
         public string TargetType => "Motor";
     }

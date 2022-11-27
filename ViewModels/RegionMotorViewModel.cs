@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
@@ -8,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -20,43 +22,30 @@ using taskmaker_wpf.Services;
 using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.ViewModels {
-    public class MotorState_v1 : IOutputPort {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public double[] Value { get; set; }
-        public int Max { get; set; }
-        public int Min { get; set; }
-        public int NuibotBoardId { get; set; }
-        public int NuibotMotorId { get; set; }
+    public class MotorState : ObservableObject, IOutputPort {
+        private double[] _value;
+        private int id;
+        private string name;
+        private string description;
+        private int max;
+        private int min;
+        private int nuibotBoardId;
+        private int nuibotMotorId;
+
+        public int Id { get => id; set => id = value; }
+        public string Name { get => name; set => name = value; }
+        public string Description { get => description; set => description = value; }
+        public double[] Value { get => _value; set => SetProperty(ref _value, value); }
+        public int Max { get => max; set => max = value; }
+        public int Min { get => min; set => min = value; }
+        public int NuibotBoardId { get => nuibotBoardId; set => nuibotBoardId = value; }
+        public int NuibotMotorId { get => nuibotMotorId; set => nuibotMotorId = value; }
         public bool IsSelected { get; set; }
 
         public object Clone() {
-            return (MotorState_v1)MemberwiseClone();
+            return (MotorState)MemberwiseClone();
         }
     }
-
-        public class MotorState : BindableBase {
-        private int id;
-        private string name;
-        //private double[] _value;
-        private double _motorValue;
-        private int max;
-        private int min;
-        private int boardId;
-        private int motorId;
-
-        public int Id { get => id; set => SetProperty(ref id, value); }
-        public string Name { get => name; set => SetProperty(ref name, value); }
-        public double[] Value => new double[] { MotorValue };
-        public double MotorValue { get => _motorValue; set => SetProperty(ref _motorValue, value); }
-        public int Max { get => max; set => SetProperty(ref max, value); }
-        public int Min { get => min; set => SetProperty(ref min, value); }
-        public int BoardId { get => boardId; set => SetProperty(ref boardId, value); }
-        public int MotorId { get => motorId; set => SetProperty(ref motorId, value); }
-
-    }
-
 
     public class RegionMotorViewModel : BindableBase, INavigationAware {
         private ICommand listBoardsCmd;
@@ -120,10 +109,10 @@ namespace taskmaker_wpf.ViewModels {
             Console.WriteLine(text);
         }
 
-        private ObservableCollection<MotorState> _motors = new ObservableCollection<MotorState>();
-        public ObservableCollection<MotorState> Motors {
-            get => _motors;
-            set => SetProperty(ref _motors, value);
+        private MotorState[] _motorStates = new MotorState[0];
+        public MotorState[] MotorStates {
+            get => _motorStates;
+            set => SetProperty(ref _motorStates, value);
         }
 
         private ObservableCollection<int> _boardIds = new ObservableCollection<int>();
@@ -141,7 +130,6 @@ namespace taskmaker_wpf.ViewModels {
         private IRegionManager _regionManager;
         private SerialService _serialSrv;
         private readonly IMapper _mapper;
-        //private readonly MotorUseCase _motorUseCase;
         private readonly MotorInteractorBus _motorBus;
         private readonly IEventAggregator _ea;
 
@@ -185,39 +173,55 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         private void AddMotor() {
-            _motorBus.Handle(new AddMotorRequest(), (bool res) => { });
+            //_motorBus.Handle(new AddMotorRequest(), (bool res) => { });
+            _motorBus.Handle(new AddMotorRequest(), out bool result);
+
+            RefreshMotors();
+        }
+
+        public void UpdateMotor(MotorState state) {
+            var req = new UpdateMotorRequest {
+                Id = state.Id,
+                Value = _mapper.Map<MotorEntity>(state)
+            };
+
+            _motorBus.Handle(req, out MotorEntity motor);
+
+            _mapper.Map(motor, MotorStates.Where(e => e.Id == motor.Id).FirstOrDefault());
+            //RefreshMotors();
         }
 
         private void RefreshMotors() {
-            _motorBus.Handle(new ListMotorRequest(), (MotorEntity[] motors) => {
-                Motors.ToList()
-                    .ForEach(e => e.PropertyChanged -= Motor_PropertyChanged);
-                Motors.Clear();
+            _motorBus.Handle(new ListMotorRequest(), out MotorEntity[] motors);
 
-                Motors.AddRange(motors.Select(e => _mapper.Map<MotorState>(e)));
-                Motors.ToList()
-                    .ForEach(e => e.PropertyChanged += Motor_PropertyChanged);
-            });
+            MotorStates = _mapper.Map<MotorState[]>(motors);
+
+            //_motorBus.Handle(new ListMotorRequest(), (MotorEntity[] motors) => {
+            //    MotorStates.ToList()
+            //        .ForEach(e => e.PropertyChanged -= Motor_PropertyChanged);
+            //    MotorStates.Clear();
+
+            //    MotorStates.AddRange(motors.Select(e => _mapper.Map<MotorState>(e)));
+            //    MotorStates.ToList()
+            //        .ForEach(e => e.PropertyChanged += Motor_PropertyChanged);
+            //});
         }
 
-        private void Motor_PropertyChanged(object sender, PropertyChangedEventArgs e) {
-            var prop = typeof(MotorState).GetProperty(e.PropertyName);
-
+        public void UpdateMotorValue(MotorState state, double newValue) {
             var req = new UpdateMotorRequest {
-                Id = ((MotorState)sender).Id,
-                PropertyName = e.PropertyName,
-                ValueType = prop.PropertyType.Name,
-                Value = prop.GetValue(sender)
+                Id = state.Id,
+                PropertyName = "MotorValue",
+                Value = new double[] { newValue },
             };
 
-            // TODO
-            if (e.PropertyName == "MotorValue") {
-                req.PropertyName = "Value";
-                req.Value = ((MotorState)sender).Value;
-            }
+            _motorBus.Handle(req, out MotorEntity motor);
 
-            _motorBus.Handle(req, (bool res) => { });
+            var target = MotorStates.Where(e => e.Id == motor.Id).FirstOrDefault();
+
+            _mapper.Map(motor, target);
+            //target.Value = motor.Value;
         }
+
 
         private void EnumBoards() {
             var boards = Enumerable
