@@ -1,10 +1,12 @@
-﻿using SharpVectors.Converters;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using SharpVectors.Converters;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Drawing.Design;
 using System.Drawing.Imaging;
 using System.Linq;
@@ -78,7 +80,35 @@ namespace taskmaker_wpf.Views.Widget {
         public Point Location { get; set; }
     }
 
-    public class Helper {
+    public static class Helper {
+        static public (double, double) Intersect(Point[] lineA, Point[] lineB) {
+            var a = lineA[0];
+            var b = lineA[1];
+            var c = lineB[0];
+            var d = lineB[1];
+
+            var dir0 = b - a;
+            var dir1 = d - c;
+
+            if (dir0.Cross(dir1) == 0)
+                return (double.NaN, double.NaN);
+
+            // p = a + dir0 * t1 = c + dir1 * t2
+            // A * T = B
+            //var A = new Matrix() {
+
+            //}(2, 2, new float[] { dir0.X, dir1.X, dir0.Y, dir1.Y });
+            //var B = (c - a).ToVector();
+            //var T = A.Solve(B);
+
+            //return (T[0], T[1]);
+            return default;
+        }
+
+        static public double Cross(this Vector a, Vector b) {
+            return a.X * b.Y - a.Y * b.X;
+        }
+
         static public NodeInfo[][] Calc(NodeInfo[] a, NodeInfo[] b) {
             var result = new List<NodeInfo[]>();
 
@@ -1241,9 +1271,9 @@ namespace taskmaker_wpf.Views.Widget {
                 else if (mode == UiMode.Trace) {
                     CaptureMouse();
 
-                    var point = e.GetPosition(_canvas);
+                    start = e.GetPosition(_canvas);
 
-                    Pointer.Location = point;
+                    Pointer.Location = start;
                     isDragging = true;
                 }
             };
@@ -1268,14 +1298,23 @@ namespace taskmaker_wpf.Views.Widget {
                         var invMat = Transform;
                         invMat.Invert();
 
-                        Pointer.Location = curr;
+                        var diff = curr - start;
 
-                        var vm = DataContext as RegionControlUIViewModel;
-                        var result = VisualTreeHelper.HitTest(_canvas, curr);
-                        var state = (LogicalTreeHelperExtensions.FindAncestor<IRegionShape>(result.VisualHit))?.State;
+                        if (UiState.Nodes.Length == 2) {
+                            //var f = diff.Y > 0 ? 0.1 ;
+                            //var line = UiState.Nodes[0].Value - UiState.Nodes[1].Value;
+                            //var p = UiState.Nodes[0].Value + line * f;
+                            //Pointer.Location = curr;
+                        }
+                        else {
+                            Pointer.Location = curr;
 
-                        vm.UpdateControlUiInput(UiState, invMat.Transform(curr), state);
+                            var vm = DataContext as RegionControlUIViewModel;
+                            var result = VisualTreeHelper.HitTest(_canvas, curr);
+                            var state = (LogicalTreeHelperExtensions.FindAncestor<IRegionShape>(result.VisualHit))?.State;
 
+                            vm.UpdateControlUiInput(UiState, invMat.Transform(curr), state);
+                        }
                     }
                 }
             };
