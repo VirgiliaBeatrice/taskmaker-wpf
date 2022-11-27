@@ -1890,7 +1890,7 @@ namespace taskmaker_wpf.Views.Widget {
 
 
                 var path = new Path {
-                    Stroke = new SolidColorBrush(Colors.White),
+                    Stroke = new SolidColorBrush(Colors.DarkGray),
                     Stretch = Stretch.None,
                     StrokeThickness = 2.0,
                     Data = pathGeo
