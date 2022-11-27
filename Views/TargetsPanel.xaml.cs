@@ -61,13 +61,13 @@ namespace taskmaker_wpf.Views {
                 vm.SelectedMap = selectedMap;
             }
 
-            if (e.RemovedItems.Count != 0) {
-                var selectedMap = e.RemovedItems[0] as NLinearMapState;
-                var listbox = sender as ListBox;
-                var vm = listbox.DataContext as RegionControlUIViewModel;
+            //if (e.RemovedItems.Count != 0) {
+            //    var selectedMap = e.RemovedItems[0] as NLinearMapState;
+            //    var listbox = sender as ListBox;
+            //    var vm = listbox.DataContext as RegionControlUIViewModel;
 
-                vm.SelectedMap = null; ;
-            }
+            //    vm.SelectedMap = null; ;
+            //}
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e) {

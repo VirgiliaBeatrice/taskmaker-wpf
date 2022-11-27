@@ -218,7 +218,15 @@ namespace taskmaker_wpf.ViewModels {
         private NLinearMapState _selectedMap;
         public NLinearMapState SelectedMap {
             get { return _selectedMap; }
-            set { SetProperty(ref _selectedMap, value); }
+            set { 
+                SetProperty(ref _selectedMap, value);
+
+                if (_selectedMap != null)
+                    SelectedUiStates = _selectedMap.InputPorts
+                    .Select(e => UiStates.Where(e1 => e1.Name == e.Name).FirstOrDefault()).ToArray();
+                else
+                    SelectedUiStates = new ControlUiState[0];
+            }
         }
 
 
@@ -277,26 +285,6 @@ namespace taskmaker_wpf.ViewModels {
             _mapper.Map(map, SelectedMap);
 
 
-
-            //if (param is int selectedNodeId) {
-            //    var targetValues = TargetsPanelVM.TargetsOfSelectedMap.SelectMany(e => e.Value).ToArray();
-            //    //var value = TargetsPanelVM.TargetMotors
-
-            //    var request = new UpdateNodeRequest {
-            //        UiId = UiState.Id,
-            //        NodeId = selectedNodeId,
-            //        PropertyName = "TargetValue",
-            //        PropertyValue = targetValues,
-            //    };
-
-            //    _uiBus.Handle(request, (ControlUiEntity ui) => {
-            //        UiState = _mapper.Map<ControlUiState>(ui);
-            //    });
-            //}
-            //if (SelectedNodeWidget is null) return;
-
-
-            //_uiBus.Handle()
         }
 
         private ICommand _uiCommand;
