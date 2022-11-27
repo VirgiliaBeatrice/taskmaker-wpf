@@ -579,7 +579,7 @@ namespace taskmaker_wpf.ViewModels {
 
             }
 
-            if (lambdas.Count == 0) return;
+            if (lambdas.Count != map.InputPorts.Length) return;
             //Console.WriteLine($"lambdas: {string.Join(",", lambdas)}");
 
             var results = map.MapTo(lambdas.ToArray()).GetData<double>();
@@ -612,6 +612,18 @@ namespace taskmaker_wpf.ViewModels {
                     };
 
                     _mapBus.Handle(req1, out NLinearMapEntity mapEntity);
+
+                    var uis = mapEntity.InputPorts.Select(e => UiStates.Where(e1 => e1.Id == e.Id).FirstOrDefault()).ToArray();
+
+                    for (int i = 0; i < uis.Count(); i++) {
+                        var req2 = new UpdateControlUiRequest {
+                            Id = uis[i].Id,
+                            PropertyName = "Value",
+                            PropertyValue = (values.Current as double[]).Skip(i * output.Dimension).Take(output.Dimension).ToArray(),
+                        };
+
+                        _uiBus.Handle(req2, out ControlUiEntity ui);
+                    }
 
                     Console.WriteLine($"{output.Name}");
                     MapTo(mapEntity);
