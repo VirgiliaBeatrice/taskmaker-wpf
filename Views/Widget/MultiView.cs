@@ -1,6 +1,4 @@
-﻿using Humanizer;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using SharpVectors.Converters;
+﻿using SharpVectors.Converters;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -28,8 +26,6 @@ using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Model.SimplicialMapping;
 using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Views.Widgets;
-using static Humanizer.In;
-using static Humanizer.On;
 using static Unity.Storage.RegistrationSet;
 using Rectangle = System.Windows.Shapes.Rectangle;
 
