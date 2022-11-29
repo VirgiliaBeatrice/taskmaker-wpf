@@ -145,7 +145,13 @@ namespace taskmaker_wpf.Domain {
         public bool HasSet(int[] indices) {
             var indexStr = $":,{string.Join(",", indices)}";
 
-            return !np.isnan(Tensor[indexStr]).any();
+            try {
+                return !np.isnan(Tensor[indexStr]).any();
+            }
+            catch (Exception e) {
+                Console.WriteLine(e);
+                return false;
+            }
             //return Tensor[indexStr].GetData<double>().All(e => !double.IsNaN(e));
         }
 
@@ -153,21 +159,26 @@ namespace taskmaker_wpf.Domain {
             if (!IsFullySet)
                 return null;
 
-            NDarray kronProd = null;
-            //lambdas = np.atleast_2d(lambdas);
+            try {
+                NDarray kronProd = null;
+                //lambdas = np.atleast_2d(lambdas);
 
-            for (int i = 0; i < lambdas.Length; ++i) {
-                if (i == 0) {
-                    kronProd = np.array(lambdas[i]).flatten();
+                for (int i = 0; i < lambdas.Length; ++i) {
+                    if (i == 0) {
+                        kronProd = np.array(lambdas[i]).flatten();
+                    }
+                    else {
+                        kronProd = np.kron(kronProd, np.array(lambdas[i]));
+                    }
                 }
-                else {
-                    kronProd = np.kron(kronProd, np.array(lambdas[i]));
-                }
+
+                var w = np.dot(Tensor.reshape(Shape[0], -1), kronProd);
+
+                return w;
+            } catch(Exception e) {
+                Console.WriteLine(e);
+                return np.zeros(1);
             }
-
-            var w = np.dot(Tensor.reshape(Shape[0], -1), kronProd);
-
-            return w;
         }
 
     }
