@@ -77,20 +77,18 @@
     <Folder Include="Views\Widget\Node\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="10.1.1" />
+    <PackageReference Include="AutoMapper" Version="12.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="4.4.0" />
-    <PackageReference Include="Numpy" Version="3.7.1.28" />
+    <PackageReference Include="Numpy" Version="3.10.1.30" />
     <PackageReference Include="Prism.Unity" Version="8.1.97" />
-    <PackageReference Include="ReactiveProperty.WPF" Version="8.1.0" />
+    <PackageReference Include="ReactiveProperty.WPF" Version="8.2.0" />
     <PackageReference Include="SharpVectors.Wpf" Version="1.8.1" />
-    <PackageReference Include="SkiaSharp.Views.WPF" Version="2.80.3" />
-    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <PackageReference Include="System.Text.Json" Version="6.0.5" />
+    <PackageReference Include="SkiaSharp.Views.WPF" Version="2.88.3" />
+    <PackageReference Include="System.Text.Json" Version="7.0.0" />
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="System.Windows.Forms.DataVisualization" Version="1.0.0-prerelease.20110.1" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
