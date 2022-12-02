@@ -22,12 +22,15 @@ using taskmaker_wpf.Services;
 using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.ViewModels {
-    public class MotorState : ObservableObject, IOutputPortState {
+    public partial class MotorState : ObservableObject, IOutputPortState {
         private double[] _value;
         private int id;
         private string name;
         private string description;
+
+        [ObservableProperty]
         private int max;
+        [ObservableProperty]
         private int min;
         private int nuibotBoardId;
         private int nuibotMotorId;
@@ -36,8 +39,7 @@ namespace taskmaker_wpf.ViewModels {
         public string Name { get => name; set => name = value; }
         public string Description { get => description; set => description = value; }
         public double[] Value { get => _value; set => SetProperty(ref _value, value); }
-        public int Max { get => max; set => max = value; }
-        public int Min { get => min; set => min = value; }
+
         public int NuibotBoardId { get => nuibotBoardId; set => nuibotBoardId = value; }
         public int NuibotMotorId { get => nuibotMotorId; set => nuibotMotorId = value; }
         public bool IsSelected { get; set; }
