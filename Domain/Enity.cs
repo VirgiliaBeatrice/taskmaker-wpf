@@ -104,6 +104,10 @@ namespace taskmaker_wpf.Domain {
         //    return map;
         //}
 
+        public (int, int) GetCurrentStatus() {
+            return (Tensor.size - np.count_nonzero(np.isnan(Tensor)), Tensor.size);
+        }
+
         public void Initialize(int[] basisDims) {
             if (OutputPorts.Length == 0 || InputPorts.Length == 0) return;
 

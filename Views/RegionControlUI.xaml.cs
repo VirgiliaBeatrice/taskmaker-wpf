@@ -51,5 +51,11 @@ namespace taskmaker_wpf.Views {
                 popup.IsOpen = !popup.IsOpen;
             }
         }
+
+        private void Expander_Expanded(object sender, RoutedEventArgs e) {
+            var vm = DataContext as RegionControlUIViewModel;
+
+            vm?.Invalidate();
+        }
     }
 }

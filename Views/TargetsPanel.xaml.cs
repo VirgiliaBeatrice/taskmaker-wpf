@@ -55,16 +55,14 @@ namespace taskmaker_wpf.Views {
         private void lbMaps_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             if (e.AddedItems.Count != 0) {
                 var selectedMap = e.AddedItems[0] as NLinearMapState;
-                var listbox = sender as ListBox;
-                var vm = listbox.DataContext as RegionControlUIViewModel;
+                var vm = DataContext as RegionControlUIViewModel;
 
                 vm.SelectedMap = selectedMap;
             }
 
             //if (e.RemovedItems.Count != 0) {
             //    var selectedMap = e.RemovedItems[0] as NLinearMapState;
-            //    var listbox = sender as ListBox;
-            //    var vm = listbox.DataContext as RegionControlUIViewModel;
+            //    var vm = DataContext as RegionControlUIViewModel;
 
             //    vm.SelectedMap = null; ;
             //}
@@ -97,9 +95,11 @@ namespace taskmaker_wpf.Views {
             }
         }
 
-        //private void Button_Click_3(object sender, RoutedEventArgs e) {
-        //    var vm = (sender as Button).DataContext as RegionControlUIViewModel;
-        //}
+        private void Expander_Expanded(object sender, RoutedEventArgs e) {
+            var vm = DataContext as RegionControlUIViewModel;
+
+            vm?.InvalidateValidPorts();
+        }
     }
 
     public class ISelectableTargetConverter : IValueConverter {

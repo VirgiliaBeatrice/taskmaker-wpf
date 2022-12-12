@@ -126,57 +126,68 @@
                 BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
                 BorderThickness="1"
                 Margin="0 5 0 5"
-                Header="Valid Inputs">
-                <ItemsControl
-                    Margin="2"
-                    ItemsSource="{Binding ValidInputPorts}"
+                Header="Valid Ports"
+                Expanded="Expander_Expanded"
+                >
+                <StackPanel>
+                    <Expander
+                        BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
+                        BorderThickness="0 0 0 1"
+                        Margin="10"
+                        Header="Inputs">
+                        <ItemsControl
+                            Margin="2"
+                            ItemsSource="{Binding ValidInputPorts}"
+                            >
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel
+                                        HorizontalAlignment="Right"
+                                        Margin="4"
+                                        Orientation="Horizontal">
+                                        <CheckBox 
+                                            VerticalAlignment="Center"
+                                            IsChecked="{Binding Path=IsSelected, Mode=TwoWay}"/>
+                                        <TextBlock
+                                            Margin="4 0 0 0"
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Path=Name}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Expander>
+                
+                    <Expander
+                        BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
+                        BorderThickness="0 0 0 1"
+                        Margin="10"
+                        Header="Outputs"
                     >
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel
-                                HorizontalAlignment="Right"
-                                Margin="4"
-                                Orientation="Horizontal">
-                                <CheckBox 
-                                    VerticalAlignment="Center"
-                                    IsChecked="{Binding Path=IsSelected, Mode=TwoWay}"/>
-                                <TextBlock
-                                    Margin="4 0 0 0"
-                                    VerticalAlignment="Center"
-                                    Text="{Binding Path=Name}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                        <ItemsControl
+                        Margin="2"
+                        ItemsSource="{Binding ValidOutputPorts}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel
+                                    HorizontalAlignment="Right"
+                                    Margin="4"
+                                        Orientation="Horizontal">
+                                    <CheckBox 
+                                        VerticalAlignment="Center"
+                                        IsChecked="{Binding Path=IsSelected, Mode=TwoWay}"/>
+                                    <TextBlock
+                                        Margin="4 0 0 0"
+                                        VerticalAlignment="Center"
+                                        Text="{Binding Path=Name}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Expander>
+                </StackPanel>
             </Expander>
 
-            <Expander
-                BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
-                BorderThickness="1"
-                Margin="0 5 0 5"
-                Header="ValidOutputs"
-                >
-                <ItemsControl
-                    Margin="2"
-                    ItemsSource="{Binding ValidOutputPorts}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel
-                                HorizontalAlignment="Right"
-                                Margin="4"
-                                    Orientation="Horizontal">
-                                <CheckBox 
-                                    VerticalAlignment="Center"
-                                    IsChecked="{Binding Path=IsSelected, Mode=TwoWay}"/>
-                                <TextBlock
-                                    Margin="4 0 0 0"
-                                    VerticalAlignment="Center"
-                                    Text="{Binding Path=Name}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Expander>
 
             <Expander
                 BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
@@ -207,7 +218,7 @@
                                     Grid.Column="0"
                                     
                                     x:Name="slider"
-                                    Value="{Binding Value[0]}"
+                                    Value="{Binding Value[0], Mode=TwoWay}"
                                     Maximum="{Binding Max}"
                                     Minimum="{Binding Min}"
                                     LargeChange="1000"

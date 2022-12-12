@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
@@ -23,25 +24,29 @@ using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.ViewModels {
     public partial class MotorState : ObservableObject, IOutputPortState {
+        [ObservableProperty]
         private double[] _value;
-        private int id;
+        [ObservableProperty]
         private string name;
+        [ObservableProperty]
         private string description;
 
         [ObservableProperty]
         private int max;
         [ObservableProperty]
         private int min;
+        [ObservableProperty]
         private int nuibotBoardId;
+        [ObservableProperty]
         private int nuibotMotorId;
 
-        public int Id { get => id; set => id = value; }
-        public string Name { get => name; set => name = value; }
-        public string Description { get => description; set => description = value; }
-        public double[] Value { get => _value; set => SetProperty(ref _value, value); }
+        public int Id { get; set; }
+        //public string Name { get => name; set => name = value; }
+        //public string Description { get => description; set => description = value; }
+        //public double[] Value { get => _value; set => SetProperty(ref _value, value); }
 
-        public int NuibotBoardId { get => nuibotBoardId; set => nuibotBoardId = value; }
-        public int NuibotMotorId { get => nuibotMotorId; set => nuibotMotorId = value; }
+        //public int NuibotBoardId { get => nuibotBoardId; set => nuibotBoardId = value; }
+        //public int NuibotMotorId { get => nuibotMotorId; set => nuibotMotorId = value; }
         public bool IsSelected { get; set; }
 
         public object Clone() {
@@ -49,16 +54,18 @@ namespace taskmaker_wpf.ViewModels {
         }
     }
 
-    public class RegionMotorViewModel : BindableBase, INavigationAware {
-        private ICommand listBoardsCmd;
-        public ICommand ListBoardsCmd => listBoardsCmd ?? (listBoardsCmd = new DelegateCommand(ListBoardsCmdExecute));
+    public partial class RegionMotorViewModel : BindableBase, INavigationAware {
 
-        private void ListBoardsCmdExecute() {
+        //private ICommand listBoardsCmd;
+        //public ICommand ListBoardsCmd => listBoardsCmd ??= new DelegateCommand(ListBoardsCmdExecute);
+
+        [RelayCommand]
+        private void ListBoardsCmd() {
             EnumBoards();
         }
 
         private ICommand listMotorsCmd;
-        public ICommand ListMotorsCmd => listMotorsCmd ?? (listMotorsCmd = new DelegateCommand(ListMotorsCmdExecute));
+        public ICommand ListMotorsCmd => listMotorsCmd ??= new DelegateCommand(ListMotorsCmdExecute);
 
         private void ListMotorsCmdExecute() {
             EnumMotors();

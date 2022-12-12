@@ -81,7 +81,7 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
     <PackageReference Include="Maikebing.System.Windows.Forms.DataVisualization" Version="5.0.1" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="4.4.0" />
-    <PackageReference Include="Numpy" Version="3.10.1.29" />
+    <PackageReference Include="Numpy" Version="3.10.1.30" />
     <PackageReference Include="Prism.Unity" Version="8.1.97" />
     <PackageReference Include="ReactiveProperty.WPF" Version="8.2.0" />
     <PackageReference Include="SharpVectors.Wpf" Version="1.8.1" />
