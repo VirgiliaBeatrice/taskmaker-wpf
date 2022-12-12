@@ -99,7 +99,7 @@ namespace taskmaker_wpf.Domain {
 
             Repository.Add(motor);
 
-            callback((K)(object)true);
+            callback((K)(object)motor);
         }
 
         public override void Handle<T, K>(T request, out K result) {
@@ -117,7 +117,7 @@ namespace taskmaker_wpf.Domain {
 
                 Repository.Add(motor);
 
-                result = ((K)(object)true);
+                result = ((K)(object)motor);
             }
         }
     }
@@ -138,7 +138,7 @@ namespace taskmaker_wpf.Domain {
 
             Repository.Update(motor);
 
-            callback((K)(object)true);
+            callback((K)(object)motor);
         }
 
         public override void Handle<T, K>(T request, out K result) {
