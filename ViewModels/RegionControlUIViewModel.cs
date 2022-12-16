@@ -335,7 +335,7 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         [RelayCommand]
-        public void ListMotor() {
+        public void ListMotors() {
             var request = new ListMotorRequest();
 
             _motorBus.Handle(request, out MotorEntity[] motors);
@@ -590,7 +590,7 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         public void Invalidate() {
-            ListMotor();
+            ListMotors();
             ListUis();
             ListMaps();
             ListValidPorts();
@@ -730,6 +730,10 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         public void InvalidateValidPorts() {
+            ListMotors();
+            ListMaps();
+            ListUis();
+
             InvalidateValidInputPorts();
             InvalidateValidOutputPorts();
         }

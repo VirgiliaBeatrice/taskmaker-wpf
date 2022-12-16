@@ -103,7 +103,7 @@ namespace taskmaker_wpf.Domain {
         }
 
         public override void Handle<T, K>(T request, out K result) {
-            result = (K)(object)false;
+            result = (K)(object)default;
             
             if (request is AddMotorRequest req) {
                 var idx = Repository.FindAll<MotorEntity>().Count();
@@ -117,7 +117,7 @@ namespace taskmaker_wpf.Domain {
 
                 Repository.Add(motor);
 
-                result = ((K)(object)true);
+                result = ((K)(object)motor);
             }
         }
     }

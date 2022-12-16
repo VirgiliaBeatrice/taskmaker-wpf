@@ -41,12 +41,6 @@ namespace taskmaker_wpf.ViewModels {
         private int nuibotMotorId;
 
         public int Id { get; set; }
-        //public string Name { get => name; set => name = value; }
-        //public string Description { get => description; set => description = value; }
-        //public double[] Value { get => _value; set => SetProperty(ref _value, value); }
-
-        //public int NuibotBoardId { get => nuibotBoardId; set => nuibotBoardId = value; }
-        //public int NuibotMotorId { get => nuibotMotorId; set => nuibotMotorId = value; }
         public bool IsSelected { get; set; }
 
         public object Clone() {
@@ -183,7 +177,7 @@ namespace taskmaker_wpf.ViewModels {
 
         private void AddMotor() {
             //_motorBus.Handle(new AddMotorRequest(), (bool res) => { });
-            _motorBus.Handle(new AddMotorRequest(), out bool result);
+            _motorBus.Handle(new AddMotorRequest(), out MotorEntity motor);
 
             RefreshMotors();
         }
