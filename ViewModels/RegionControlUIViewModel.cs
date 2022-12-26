@@ -238,14 +238,13 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         [ObservableProperty]
-        private MotorState[] _motorOutputsOfSelectedMap = new MotorState[0];
+        private MotorState[] _motorOutputsOfSelectedMap = Array.Empty<MotorState>();
 
         [ObservableProperty]
-        private ControlUiState[] _mapOutputsOfSelectedMap = new ControlUiState[0];
+        private ControlUiState[] _mapOutputsOfSelectedMap = Array.Empty<ControlUiState>();
 
         [RelayCommand]
         void Bind(int[] index) {
-            //var value = SelectedMap.OutputPorts.SelectMany()
             var value = SelectedMap.OutputPorts
                 .SelectMany(e => {
                     if (e.Name.Contains("Motor")) {

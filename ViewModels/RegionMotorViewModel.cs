@@ -23,9 +23,10 @@ using taskmaker_wpf.Services;
 using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.ViewModels {
-    public partial class MotorState : ObservableObject, IOutputPortState {
+    [ObservableObject]
+    public partial class MotorState : IOutputPortState {
         [ObservableProperty]
-        private double[] _value;
+        private double[] value;
         [ObservableProperty]
         private string name;
         [ObservableProperty]
@@ -40,42 +41,25 @@ namespace taskmaker_wpf.ViewModels {
         [ObservableProperty]
         private int nuibotMotorId;
 
-        public int Id { get; set; }
-        public bool IsSelected { get; set; }
+        [ObservableProperty]
+        private int id;
+        [ObservableProperty]
+        private bool isSelected;
 
         public object Clone() {
             return (MotorState)MemberwiseClone();
         }
     }
 
-    public partial class RegionMotorViewModel : BindableBase, INavigationAware {
-
-        //private ICommand listBoardsCmd;
-        //public ICommand ListBoardsCmd => listBoardsCmd ??= new DelegateCommand(ListBoardsCmdExecute);
-
+    [ObservableObject]
+    public partial class RegionMotorViewModel : INavigationAware {
         [RelayCommand]
-        private void ListBoardsCmd() {
+        public void ListBoards() {
             EnumBoards();
         }
 
-        private ICommand listMotorsCmd;
-        public ICommand ListMotorsCmd => listMotorsCmd ??= new DelegateCommand(ListMotorsCmdExecute);
-
-        private void ListMotorsCmdExecute() {
-            EnumMotors();
-        }
-
-        private DelegateCommand<MotorState> connectMotorCmd;
-        public DelegateCommand<MotorState> ConnectMotorCmd => connectMotorCmd ?? (connectMotorCmd = new DelegateCommand<MotorState>(ConnectMotorCmdExecute));
-
-        private void ConnectMotorCmdExecute(MotorState motor) {
-            //_motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(motor));
-        }
-
-        private ICommand removeMotorCmd;
-        public ICommand RemoveMotorCmd => removeMotorCmd ?? (removeMotorCmd = new DelegateCommand<MotorState>(RemoveMotorCmdExecute));
-
-        private void RemoveMotorCmdExecute(MotorState motor) {
+        [RelayCommand]
+        public void RemoveMotor(MotorState motor) {
             //_motorUseCase.RemoveMotor(_mapper.Map<MotorEntity>(motor));
 
             //var motors = _motorUseCase.GetMotors();
@@ -85,53 +69,23 @@ namespace taskmaker_wpf.ViewModels {
             //Motors.AddRange(stateMotors);
         }
 
-        private ICommand addMotorCmd;
-        public ICommand AddMotorCmd => addMotorCmd ?? (addMotorCmd = new DelegateCommand(AddMotorCmdExecute));
+        [RelayCommand]
+        public void AddMotor() {
+            _motorBus.Handle(new AddMotorRequest(), out MotorEntity _);
 
-        private void AddMotorCmdExecute() {
-            AddMotor();
             InvalidateMotors();
-            //_motorUseCase.AddMotor();
-
-            //var motors = _motorUseCase.GetMotors();
-            //var stateMotors = motors.Select(e => _mapper.Map<MotorState>(e));
-
-            //Motors.Clear();
-            //Motors.AddRange(stateMotors);
-
-            //Motors.ToList()
-            //    .ForEach(e => e.PropertyChanged += (s, args) => {
-            //        _motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(s as MotorState));
-            //    });
         }
 
-        private ICommand setCmd;
-        public ICommand SetCmd => setCmd ?? (setCmd = new DelegateCommand<string>(SetCmdExecute));
+        [ObservableProperty]
+        private MotorState[] _motorStates = Array.Empty<MotorState>();
 
-        private void SetCmdExecute(string text) {
-            Console.WriteLine(text);
-        }
+        [ObservableProperty]
+        private ObservableCollection<int> _boardIds = new();
 
-        private MotorState[] _motorStates = new MotorState[0];
-        public MotorState[] MotorStates {
-            get => _motorStates;
-            set => SetProperty(ref _motorStates, value);
-        }
-
-        private ObservableCollection<int> _boardIds = new ObservableCollection<int>();
-        public ObservableCollection<int> BoardIds {
-            get => _boardIds;
-            set => SetProperty(ref _boardIds, value);
-        }
-
-        private ObservableCollection<int> _motorIds = new ObservableCollection<int>();
-        public ObservableCollection<int> MotorIds {
-            get => _motorIds;
-            set => SetProperty(ref _motorIds, value);
-        }
+        [ObservableProperty]
+        private ObservableCollection<int> _motorIds = new();
 
         private IRegionManager _regionManager;
-        private SerialService _serialSrv;
         private readonly IMapper _mapper;
         private readonly MotorInteractorBus _motorBus;
         private readonly IEventAggregator _ea;
@@ -141,10 +95,8 @@ namespace taskmaker_wpf.ViewModels {
             MotorInteractorBus motorBus,
             //IEnumerable<IUseCase> useCases,
             IEventAggregator ea,
-            MapperConfiguration config,
-            SerialService serialSrv) {
+            MapperConfiguration config) {
             _regionManager = regionManager;
-            _serialSrv = serialSrv;
 
             _mapper = config.CreateMapper();
             _motorBus = motorBus;
@@ -155,31 +107,9 @@ namespace taskmaker_wpf.ViewModels {
             });
 
             InvalidateMotors();
-            //_motorBus.Handle(new ListMotorRequest(), (MotorEntity[] motors) => {
-            //    Motors.Clear();
-            //    Motors.AddRange(motors.Select(e => _mapper.Map<MotorState>(e)));
-            //});
-            //_motorUseCase = useCases.OfType<MotorUseCase>().First();
-            ////Motors.AddRange(_motorAgent.Repository.Select(e => new StatefulMotor(e)));
-            //Motors.AddRange(_motorUseCase.GetMotors().Select(e => _mapper.Map<MotorState>(e)));
-            //Motors.ToList().ForEach(e => e.PropertyChanged += Motor_PropertyChanged);
-
-
-            //foreach(var motor in Motors) {
-            //    motor.PropertyChanged += (s, args) => {
-            //        _motorUseCase.UpdateMotor(_mapper.Map<MotorEntity>(s as MotorState));
-            //    };
-            //}
 
             EnumBoards();
             EnumMotors();
-        }
-
-        private void AddMotor() {
-            //_motorBus.Handle(new AddMotorRequest(), (bool res) => { });
-            _motorBus.Handle(new AddMotorRequest(), out MotorEntity motor);
-
-            InvalidateMotors();
         }
 
         public void UpdateMotor(MotorState state) {
@@ -199,16 +129,6 @@ namespace taskmaker_wpf.ViewModels {
             _motorBus.Handle(new ListMotorRequest(), out MotorEntity[] motors);
 
             MotorStates = _mapper.Map<MotorState[]>(motors);
-
-            //_motorBus.Handle(new ListMotorRequest(), (MotorEntity[] motors) => {
-            //    MotorStates.ToList()
-            //        .ForEach(e => e.PropertyChanged -= Motor_PropertyChanged);
-            //    MotorStates.Clear();
-
-            //    MotorStates.AddRange(motors.Select(e => _mapper.Map<MotorState>(e)));
-            //    MotorStates.ToList()
-            //        .ForEach(e => e.PropertyChanged += Motor_PropertyChanged);
-            //});
         }
 
         public void UpdateMotorValue(MotorState state, double newValue) {
@@ -233,7 +153,6 @@ namespace taskmaker_wpf.ViewModels {
 
             BoardIds.Clear();
             BoardIds = new ObservableCollection<int>(boards);
-            //BoardIds.AddRange(boards);
         }
 
         private void EnumMotors() {
@@ -242,18 +161,14 @@ namespace taskmaker_wpf.ViewModels {
 
             MotorIds.Clear();
             BoardIds = new ObservableCollection<int>(motors);
-            //MotorIds.AddRange(motors);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext) {
             InvalidateMotors();
-            //throw new NotImplementedException();
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext) => true;
 
-        public void OnNavigatedFrom(NavigationContext navigationContext) {
-            //throw new NotImplementedException();
-        }
+        public void OnNavigatedFrom(NavigationContext navigationContext) { }
     }
 }

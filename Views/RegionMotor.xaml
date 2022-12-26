@@ -142,7 +142,7 @@
                             Grid.Column="13"
                             HorizontalAlignment="Center"
                             Content="Delete"
-                            Command="{Binding ElementName=root, Path=DataContext.RemoveMotorCmd}" 
+                            Command="{Binding ElementName=root, Path=DataContext.RemoveMotorCommand}" 
                             CommandParameter="{Binding .}"/>
                         <Button
                             Grid.Column="14"
@@ -158,7 +158,7 @@
 
         <Button 
             Grid.Row="2"
-            Command="{Binding AddMotorCmd}"
+            Command="{Binding AddMotorCommand}"
             HorizontalAlignment="Right" Width="40" Margin="10 0 10 0">
             Add
         </Button>

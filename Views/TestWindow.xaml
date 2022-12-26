@@ -36,15 +36,15 @@
 
         <ContentControl
             d:Width="50"
-            Background="BlanchedAlmond"
             Grid.Column="0"
             prism:RegionManager.RegionName="NavigationRegion"
+            BorderThickness="0 0 2 0"
+            BorderBrush="Gray"
             />
         
         
         <ContentControl
             Margin="15"
-            Background="Aquamarine"
             Grid.Column="1"
             prism:RegionManager.RegionName="ContentRegion" />
 
