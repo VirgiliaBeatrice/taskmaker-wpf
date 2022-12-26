@@ -90,7 +90,7 @@ namespace taskmaker_wpf.ViewModels {
 
         private void AddMotorCmdExecute() {
             AddMotor();
-            RefreshMotors();
+            InvalidateMotors();
             //_motorUseCase.AddMotor();
 
             //var motors = _motorUseCase.GetMotors();
@@ -151,10 +151,10 @@ namespace taskmaker_wpf.ViewModels {
             _ea = ea;
 
             _ea.GetEvent<SystemLoadedEvent>().Subscribe(() => {
-                RefreshMotors();
+                InvalidateMotors();
             });
 
-            RefreshMotors();
+            InvalidateMotors();
             //_motorBus.Handle(new ListMotorRequest(), (MotorEntity[] motors) => {
             //    Motors.Clear();
             //    Motors.AddRange(motors.Select(e => _mapper.Map<MotorState>(e)));
@@ -179,7 +179,7 @@ namespace taskmaker_wpf.ViewModels {
             //_motorBus.Handle(new AddMotorRequest(), (bool res) => { });
             _motorBus.Handle(new AddMotorRequest(), out MotorEntity motor);
 
-            RefreshMotors();
+            InvalidateMotors();
         }
 
         public void UpdateMotor(MotorState state) {
@@ -195,7 +195,7 @@ namespace taskmaker_wpf.ViewModels {
             _mapper.Map(motor, target);
         }
 
-        private void RefreshMotors() {
+        private void InvalidateMotors() {
             _motorBus.Handle(new ListMotorRequest(), out MotorEntity[] motors);
 
             MotorStates = _mapper.Map<MotorState[]>(motors);
@@ -246,6 +246,7 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext) {
+            InvalidateMotors();
             //throw new NotImplementedException();
         }
 

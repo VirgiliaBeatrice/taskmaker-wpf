@@ -192,8 +192,8 @@ namespace taskmaker_wpf.ViewModels {
         [ObservableProperty]
         private DisplayInputPort[] _validInputPorts;
 
-        [ObservableProperty]
-        private ControlUiState[] _selectedUiStates = new ControlUiState[0];
+        //[ObservableProperty]
+        //private ControlUiState[] _selectedUiStates = new ControlUiState[0];
 
         [ObservableProperty]
         private NLinearMapState _selectedMap;
@@ -202,41 +202,8 @@ namespace taskmaker_wpf.ViewModels {
         private ControlUiState[] _inputsOfSelectedMap = Array.Empty<ControlUiState>();
 
         partial void OnSelectedMapChanged(NLinearMapState value) {
-            // Update inputs
-            if (value != null) {
-                var inputs = new List<ControlUiState>();
-
-                foreach (var input in SelectedMap.InputPorts) {
-                    inputs.Add(UiStates.Where(e => e.Name == input.Name).FirstOrDefault());
-                }
-
-                InputsOfSelectedMap = inputs.ToArray();
-            } else {
-                InputsOfSelectedMap = Array.Empty<ControlUiState>();
-            }
-
-
-            //if (value != null)
-            //    SelectedUiStates = _selectedMap.InputPorts
-            //    .Select(e => UiStates.Where(e1 => e1.Name == e.Name).FirstOrDefault()).ToArray();
-            //else
-            //    SelectedUiStates = new ControlUiState[0];
-
-            if (value != null) {
-                // Invalidate display motors and uis
-                DisplayMotors = SelectedMap.OutputPorts
-                    .Where(e => e.Name.Contains("Motor"))
-                    .Select(e => MotorStates.Where(e1 => e1.Id == e.Id).FirstOrDefault())
-                    .ToArray();
-                    //.Select(e => MotorStates.Select(e1 => _mapper.Map<MotorState>(e1))
-                    //                   .First(e1 => e1.Name == e.Name))
-                    //.ToArray();
-                DisplayUis = UiStates.Where(e => e.Name.Contains("ControlUi"))
-                    .Select(e => UiStates.Select(e1 => _mapper.Map<ControlUiState>(e1))
-                                    .First(e1 => e1.Name == e.Name))
-                    .ToArray();
-
-            }
+            UpdateInputsOfSelectedMap();
+            UpdateOutputsOfSelectedMap();
         }
 
         private void UpdateInputsOfSelectedMap() {
@@ -254,24 +221,30 @@ namespace taskmaker_wpf.ViewModels {
             }
         }
 
-        private MotorState[] _displayMotors = new MotorState[0];
-        public MotorState[] DisplayMotors {
-            get { return _displayMotors; }
-            set { SetProperty(ref _displayMotors, value); }
+        private void UpdateOutputsOfSelectedMap() {
+            if (SelectedMap != null) {
+                MotorOutputsOfSelectedMap = SelectedMap.OutputPorts.Where(e => e.Name.Contains("Motor"))
+                    .Select(e => MotorStates.Where(e1 => e1.Name == e.Name).FirstOrDefault())
+                    .ToArray();
+
+                MapOutputsOfSelectedMap = SelectedMap.OutputPorts.Where(e => e.Name.Contains("ControlUi"))
+                    .Select(e => UiStates.Where(e1 => e1.Name == e.Name).FirstOrDefault())
+                    .ToArray();
+            }
+            else {
+                MotorOutputsOfSelectedMap = Array.Empty<MotorState>();
+                MapOutputsOfSelectedMap = Array.Empty<ControlUiState>();
+            }
         }
 
-        private ControlUiState[] _displayUis = new ControlUiState[0];
-        public ControlUiState[] DisplayUis {
-            get { return _displayUis; }
-            set { SetProperty(ref _displayUis, value); }
-        }
+        [ObservableProperty]
+        private MotorState[] _motorOutputsOfSelectedMap = new MotorState[0];
 
+        [ObservableProperty]
+        private ControlUiState[] _mapOutputsOfSelectedMap = new ControlUiState[0];
 
-        private ICommand _bindCommand;
-        public ICommand BindCommand =>
-            _bindCommand ?? (_bindCommand = new DelegateCommand<int[]>(ExecuteBindCommand));
-
-        void ExecuteBindCommand(int[] index) {
+        [RelayCommand]
+        void Bind(int[] index) {
             //var value = SelectedMap.OutputPorts.SelectMany()
             var value = SelectedMap.OutputPorts
                 .SelectMany(e => {
@@ -371,46 +344,39 @@ namespace taskmaker_wpf.ViewModels {
             }
         }
 
+        //[RelayCommand]
+        //private void ExcuteUi(CommandParameter parameter) {
+        //    if (parameter.Type == "AddNode") {
+        //        var request = new AddNodeRequest {
+        //            Value = (Point)parameter.Payload[0],
+        //            UiId = (int)parameter.Payload[1],
+        //        };
 
-        //private ICommand _uiCommand;
-        //public ICommand UiCommand => _uiCommand ?? (_uiCommand = new RelayCommand<CommandParameter>(ExecuteUiCommand));
+        //        _uiBus.Handle(request, out bool result);
+        //        _uiBus.Handle(new ListControlUiRequest(), out ControlUiEntity[] uis);
+
+        //        for (int i = 0; i < uis.Length; i++) {
+        //            _mapper.Map(uis[i], UiStates[i]);
+        //        }
+
+        //        UpdateInputsOfSelectedMap();
+        //    }
+        //    else if (parameter.Type == "Build") {
+        //        var request = new BuildRegionRequest() {
+        //            Id = (int)parameter.Payload[0],
+        //        };
+
+        //        _uiBus.Handle(request, out ControlUiEntity _);
+        //        _uiBus.Handle(new ListControlUiRequest(), out ControlUiEntity[] uis);
+
+        //        for (int i = 0; i < uis.Length; i++) {
+        //            _mapper.Map(uis[i], UiStates[i]);
+        //        }
+        //    }
+        //}
 
         [RelayCommand]
-        private void ExcuteUi(CommandParameter parameter) {
-            if (parameter.Type == "AddNode") {
-                var request = new AddNodeRequest {
-                    Value = (Point)parameter.Payload[0],
-                    UiId = (int)parameter.Payload[1],
-                };
-
-                _uiBus.Handle(request, out bool result);
-                _uiBus.Handle(new ListControlUiRequest(), out ControlUiEntity[] uis);
-
-                for (int i = 0; i < uis.Length; i++) {
-                    _mapper.Map(uis[i], UiStates[i]);
-                }
-
-                UpdateInputsOfSelectedMap();
-            }
-            else if (parameter.Type == "Build") {
-                var request = new BuildRegionRequest() {
-                    Id = (int)parameter.Payload[0],
-                };
-
-                _uiBus.Handle(request, out ControlUiEntity _);
-                _uiBus.Handle(new ListControlUiRequest(), out ControlUiEntity[] uis);
-
-                for (int i = 0; i < uis.Length; i++) {
-                    _mapper.Map(uis[i], UiStates[i]);
-                }
-            }
-        }
-
-        private ICommand _addMapCommand;
-        public ICommand AddMapCommand =>
-            _addMapCommand ?? (_addMapCommand = new DelegateCommand(ExecuteAddMapCommand));
-
-        void ExecuteAddMapCommand() {
+        void AddMap() {
             var addReq = new AddNLinearMapRequest();
             var listReq = new ListNLinearMapRequest();
 
@@ -425,11 +391,8 @@ namespace taskmaker_wpf.ViewModels {
             //});
         }
 
-        private ICommand _addUiCommand;
-        public ICommand AddUiCommand =>
-            _addUiCommand ?? (_addUiCommand = new DelegateCommand(ExecuteAddUiCommand));
-
-        void ExecuteAddUiCommand() {
+        [RelayCommand]
+        void AddUi() {
             var request = new AddControlUiRequest();
             var request1 = new ListControlUiRequest();
 
@@ -440,21 +403,14 @@ namespace taskmaker_wpf.ViewModels {
             UiStates = _mapper.Map<ControlUiState[]>(uis);
         }
 
-        private DelegateCommand _updateMapCommand;
-        public DelegateCommand UpdateMapCommand =>
-            _updateMapCommand ?? (_updateMapCommand = new DelegateCommand(ExecuteUpdateMapCommand));
-
-        void ExecuteUpdateMapCommand() {
+        [RelayCommand]
+        void UpdateMap() {
             if (SelectedMap == null) return;
-
-            //InvalidateValidPorts();
-
 
             var selectedMap = SelectedMap;
             var uiReq = new ListControlUiRequest();
             var motorReq = new ListMotorRequest();
             var mapReq = new ListNLinearMapRequest();
-
 
             var selectedInputPorts = ValidInputPorts.Where(e => e.IsSelected)
                 .ToArray();
@@ -496,33 +452,15 @@ namespace taskmaker_wpf.ViewModels {
             _mapBus.Handle(request, out map);
             _mapper.Map(map, SelectedMap);
 
-            SelectedUiStates = UiStates
-                .Where(e => SelectedMap.InputPorts.Any(e1 => e1.Name == e.Name))
-                .ToArray();
-
-
-            // Invalidate valid ports
-            InvalidateValidPorts();
-
-            // Invalidate display motors and uis
-            DisplayMotors = SelectedMap.OutputPorts.Where(e => e.Name.Contains("Motor"))
-                .Select(e => motors.Select(e1 => _mapper.Map<MotorState>(e1))
-                                   .First(e1 => e1.Name == e.Name))
-                .ToArray();
-            DisplayUis = SelectedMap.InputPorts.Where(e => e.Name.Contains("ControlUi"))
-                .Select(e => uis.Select(e1 => _mapper.Map<ControlUiState>(e1))
-                                .First(e1 => e1.Name == e.Name))
-                .ToArray();
+            UpdateInputsOfSelectedMap();
+            UpdateOutputsOfSelectedMap();
         }
 
-        private DelegateCommand _initMapCommand;
-        public DelegateCommand InitMapCommand =>
-            _initMapCommand ?? (_initMapCommand = new DelegateCommand(ExecuteInitMapCommand));
-
-        void ExecuteInitMapCommand() {
+        [RelayCommand]
+        void InitializeMap() {
             if (SelectedMap == null) return;
 
-            var basisDims = SelectedUiStates.Select(e => e.Nodes.Length).ToArray();
+            var basisDims = InputsOfSelectedMap.Select(e => e.Nodes.Length).ToArray();
 
             var request = new UpdateNLinearMapRequest {
                 Id = SelectedMap.Id,
@@ -533,9 +471,7 @@ namespace taskmaker_wpf.ViewModels {
             _mapBus.Handle(request, out NLinearMapEntity map);
             _mapper.Map(map, SelectedMap);
 
-            SelectedUiStates = UiStates.Where(
-                e => SelectedMap.InputPorts.Any(e1 => e1.Name == e.Name))
-                .ToArray();
+            UpdateInputsOfSelectedMap();
         }
 
         public string KeymapInfo {

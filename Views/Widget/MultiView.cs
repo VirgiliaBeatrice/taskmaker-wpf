@@ -845,7 +845,7 @@ namespace taskmaker_wpf.Views.Widget {
                     VerticalAlignment= VerticalAlignment.Stretch,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     Margin = new Thickness(2),
-                    Command = vm.ExcuteUiCommand,
+                    Command = vm.UpdateUiCommand,
                 };
 
                 ui.NotifyStatus += Ui_NotifyStatus;
@@ -903,7 +903,7 @@ namespace taskmaker_wpf.Views.Widget {
 
                     var ui = new UiController {
                         Margin = new Thickness(2),
-                        Command = vm.ExcuteUiCommand,
+                        Command = vm.UpdateUiCommand,
                         VerticalAlignment = VerticalAlignment.Stretch,
                         HorizontalAlignment = HorizontalAlignment.Stretch,
                     };

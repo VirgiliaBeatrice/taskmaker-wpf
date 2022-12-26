@@ -324,7 +324,7 @@ namespace taskmaker_wpf.Domain {
         //}
 
         public override void Handle<T, K>(T request, out K result) {
-            result = (K)(object)false;
+            result = default;
 
             if (request is AddNodeRequest req) {
                 var ui = Repository.Find<ControlUiEntity>(req.UiId);
@@ -339,7 +339,7 @@ namespace taskmaker_wpf.Domain {
 
                 Repository.Update(ui);
 
-                result = (K)(object)true;
+                result = (K)(object)ui;
             }
         }
     }

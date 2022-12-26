@@ -46,6 +46,7 @@ namespace taskmaker_wpf.Views {
             InitializeComponent();
         }
 
+
         private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             var state = (sender as Slider).DataContext as MotorState;
             var vm = DataContext as RegionMotorViewModel;

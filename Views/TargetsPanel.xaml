@@ -67,12 +67,10 @@
                     DockPanel.Dock="Right"
                     Width="20"
                     Height="20"
-                    Command="{Binding InitMapCommand}"
+                    Command="{Binding InitializeMapCommand}"
                     >
                     <Button.Content>
                         <Image 
-                            VerticalAlignment="Center"
-                            HorizontalAlignment="Center"
                             Width="12"
                             Height="12"
                             Source="{svgc:SvgImage Source=/icons/start.svg}" />
@@ -86,8 +84,6 @@
                     >
                     <Button.Content>
                         <Image 
-                            VerticalAlignment="Center"
-                            HorizontalAlignment="Center"
                             Width="12"
                             Height="12"
                             Source="{svgc:SvgImage Source=/icons/refresh.svg}" />
@@ -196,7 +192,7 @@
                 Header="Map > Motor Controllers">
                 <ItemsControl
                     Margin="2"
-                    ItemsSource="{Binding DisplayMotors}">
+                    ItemsSource="{Binding MotorOutputsOfSelectedMap}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type vm:MotorState}">
                             <Expander
@@ -246,7 +242,7 @@
                 <ItemsControl
                     x:Name="compact"
                     Margin="2"
-                    ItemsSource="{Binding DisplayUis}">
+                    ItemsSource="{Binding MapOutputsOfSelectedMap}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type vm:ControlUiState}">
                             <Expander
