@@ -59,7 +59,7 @@
                         <ListBox 
                             x:Name="lbMaps"
                             ItemsSource="{Binding MapStates}"
-                            SelectionChanged="lbMaps_SelectionChanged"/>
+                            SelectedItem="{Binding SelectedMap, Mode=TwoWay}" />
                     </Border>
                 </Popup>
 

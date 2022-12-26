@@ -70,7 +70,8 @@ namespace taskmaker_wpf.Views {
                 if (result == true) {
                     // Save document
                     string filename = dlg.FileName;
-                    _systemBus.Handle(new SaveRequest() { FileName = filename }, (bool res) => { });
+
+                    _systemBus.Handle(new SaveRequest() { FileName = filename }, out bool res);
                 }
 
                 //_eventAggregator.GetEvent<SystemSaveEvent>().Publish();
@@ -92,7 +93,7 @@ namespace taskmaker_wpf.Views {
                 if (result == true) {
                     // Open document
                     string filename = dialog.FileName;
-                    _systemBus.Handle(new LoadRequest() { FileName = filename }, (bool res) => { });
+                    _systemBus.Handle(new LoadRequest() { FileName = filename }, out bool res);
                     _eventAggregator.GetEvent<SystemLoadedEvent>().Publish();
                 }
 

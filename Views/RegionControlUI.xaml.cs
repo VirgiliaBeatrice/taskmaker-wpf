@@ -18,12 +18,16 @@ using taskmaker_wpf.ViewModels;
 using Numpy;
 using taskmaker_wpf.Model.Data;
 using System.Windows.Controls.Primitives;
+using NLog;
+
 
 namespace taskmaker_wpf.Views {
     /// <summary>
     /// Interaction logic for RegionControlUI.xaml
     /// </summary>
     public partial class RegionControlUI : UserControl {
+        private ILogger logger => LogManager.GetCurrentClassLogger();
+
         public RegionControlUI() {
             InitializeComponent();
 
@@ -33,9 +37,16 @@ namespace taskmaker_wpf.Views {
 
             //_viewModel = DataContext as RegionControlUIViewModel;
 
-            Console.WriteLine(np.pi);
+            //Console.WriteLine(np.pi);
+            logger.Info(np.pi);
 
-            //_timer.Start();
+            //var task = new Task<bool>(() => {
+            //    Console.WriteLine(np.pi);
+
+            //    return true;
+            //});
+
+            //task.Start();
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e) {

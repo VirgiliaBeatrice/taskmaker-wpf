@@ -16,6 +16,8 @@ using AutoMapper;
 using taskmaker_wpf.Data;
 using taskmaker_wpf.Domain;
 using Prism.Events;
+using Microsoft.Extensions.Logging;
+using NLog;
 
 namespace taskmaker_wpf {
     /// <summary>
@@ -134,7 +136,6 @@ namespace taskmaker_wpf {
             containerRegistry.RegisterForNavigation<RegionMotor>();
             containerRegistry.RegisterForNavigation<RegionSettings>();
             containerRegistry.RegisterForNavigation<RegionControlUI>();
-            containerRegistry.RegisterForNavigation<RegionControlUISelection>();
 
         }
 

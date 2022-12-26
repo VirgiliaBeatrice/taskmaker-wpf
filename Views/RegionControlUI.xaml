@@ -79,7 +79,7 @@
                     Focusable="True"
                     Width="auto"
                     MaxColumnCount="2"
-                    ItemsSource="{Binding SelectedUiStates, Mode=OneWay}"
+                    ItemsSource="{Binding InputsOfSelectedMap}"
                     BindCommand="{Binding BindCommand}"
                     />
             </Grid>

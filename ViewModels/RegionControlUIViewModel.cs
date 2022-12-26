@@ -27,27 +27,26 @@ using taskmaker_wpf.Model.Data;
 using SharpVectors.Dom.Svg;
 using System.Windows.Media;
 using System.Text;
+using NLog;
+using System.Diagnostics;
 
 namespace taskmaker_wpf.ViewModels {
-
-    public interface ITraceRegion { }
-
     public static class Helper {
 
-        public static IObservable<TSource> Debug<TSource>(this IObservable<TSource> observable) {
+        public static IObservable<TSource> Dump<TSource>(this IObservable<TSource> observable) {
             observable.Subscribe(
-                (e) => { Console.WriteLine($"[{DateTime.Now}] OnNext({e})"); },
-                (e) => { Console.WriteLine($"[{DateTime.Now}] OnError({e})"); },
-                () => { Console.WriteLine($"[{DateTime.Now}] OnCompleted()"); });
+                (e) => { Debug.WriteLine($"[{DateTime.Now}] OnNext({e})"); },
+                (e) => { Debug.WriteLine($"[{DateTime.Now}] OnError({e})"); },
+                () => { Debug.WriteLine($"[{DateTime.Now}] OnCompleted()"); });
 
             return observable;
         }
 
         public static void Dump<T>(this IObservable<T> source, string name) {
-            source.Subscribe(
-                i => Console.WriteLine("{0}-->{1}", name, i),
-                ex => Console.WriteLine("{0} failed-->{1}", name, ex.Message),
-                () => Console.WriteLine("{0} completed", name));
+            _ = source.Subscribe(
+                i => Debug.WriteLine("{0}-->{1}", name, i),
+                ex => Debug.WriteLine("{0} failed-->{1}", name, ex.Message),
+                () => Debug.WriteLine("{0} completed", name));
         }
 
         public static NDarray<float> ToNDarray(this Point pt) {
@@ -155,14 +154,10 @@ namespace taskmaker_wpf.ViewModels {
         private readonly NLinearMapInteractorBus _mapBus;
 
         private readonly IMapper _mapper;
-
+         
         private readonly MotorInteractorBus _motorBus;
 
         private readonly ControlUiInteractorBus _uiBus;
-
-        private DelegateCommand<object> _addNodeCommand;
-
-        private DelegateCommand _buildCommand;
 
         private string _keymapInfo;
 
@@ -174,17 +169,9 @@ namespace taskmaker_wpf.ViewModels {
 
         [ObservableProperty]
         private ControlUiState[] _uiStates = new ControlUiState[0];
-        //public ControlUiState[] UiStates {
-        //    get { return _uiStates; }
-        //    set { SetProperty(ref _uiStates, value); }
-        //}
 
         [ObservableProperty]
         private NLinearMapState[] _mapStates = new NLinearMapState[0];
-        //public NLinearMapState[] MapStates {
-        //    get { return _mapStates; }
-        //    set { SetProperty(ref _mapStates, value); }
-        //}
 
         partial void OnMapStatesChanging(NLinearMapState[] value) {
             if (_selectedMap != null) {
@@ -195,47 +182,45 @@ namespace taskmaker_wpf.ViewModels {
         // Motor Sources
         [ObservableProperty]
         private MotorState[] _motorStates;
-        //public MotorState[] MotorStates {
-        //    get { return _motorStates; }
-        //    set { SetProperty(ref _motorStates, value); }
-        //}
 
         [ObservableProperty]
         private DisplayOutputPort[] _validOutputPorts;
-        //public DisplayOutputPort[] ValidOutputPorts {
-        //    get { return _validOutputPorts; }
-        //    set { SetProperty(ref _validOutputPorts, value); }
-        //}
 
         [ObservableProperty]
         private OutputPort[] _selectedOutputPorts;
-        //public OutputPort[] SelectedOutputPorts {
-        //    get { return _selectedOutputPorts; }
-        //    set { SetProperty(ref _selectedOutputPorts, value); }
-        //}
 
         [ObservableProperty]
         private DisplayInputPort[] _validInputPorts;
-        //public DisplayInputPort[] ValidInputPorts {
-        //    get { return _validInputPorts; }
-        //    set { SetProperty(ref _validInputPorts, value); }
-        //}
 
+        [ObservableProperty]
         private ControlUiState[] _selectedUiStates = new ControlUiState[0];
-        public ControlUiState[] SelectedUiStates {
-            get { return _selectedUiStates; }
-            set { SetProperty(ref _selectedUiStates, value); }
-        }
 
         [ObservableProperty]
         private NLinearMapState _selectedMap;
 
+        [ObservableProperty]
+        private ControlUiState[] _inputsOfSelectedMap = Array.Empty<ControlUiState>();
+
         partial void OnSelectedMapChanged(NLinearMapState value) {
-            if (value != null)
-                SelectedUiStates = _selectedMap.InputPorts
-                .Select(e => UiStates.Where(e1 => e1.Name == e.Name).FirstOrDefault()).ToArray();
-            else
-                SelectedUiStates = new ControlUiState[0];
+            // Update inputs
+            if (value != null) {
+                var inputs = new List<ControlUiState>();
+
+                foreach (var input in SelectedMap.InputPorts) {
+                    inputs.Add(UiStates.Where(e => e.Name == input.Name).FirstOrDefault());
+                }
+
+                InputsOfSelectedMap = inputs.ToArray();
+            } else {
+                InputsOfSelectedMap = Array.Empty<ControlUiState>();
+            }
+
+
+            //if (value != null)
+            //    SelectedUiStates = _selectedMap.InputPorts
+            //    .Select(e => UiStates.Where(e1 => e1.Name == e.Name).FirstOrDefault()).ToArray();
+            //else
+            //    SelectedUiStates = new ControlUiState[0];
 
             if (value != null) {
                 // Invalidate display motors and uis
@@ -253,29 +238,21 @@ namespace taskmaker_wpf.ViewModels {
 
             }
         }
-        //public NLinearMapState SelectedMap {
-        //    get { return _selectedMap; }
-        //    set { 
-        //        SetProperty(ref _selectedMap, value);
 
-        //        if (_selectedMap != null)
-        //            SelectedUiStates = _selectedMap.InputPorts
-        //            .Select(e => UiStates.Where(e1 => e1.Name == e.Name).FirstOrDefault()).ToArray();
-        //        else
-        //            SelectedUiStates = new ControlUiState[0];
+        private void UpdateInputsOfSelectedMap() {
+            if (SelectedMap != null) {
+                var inputs = new List<ControlUiState>();
 
-        //        // Invalidate display motors and uis
-        //        DisplayMotors = SelectedMap.OutputPorts.Where(e => e.Name.Contains("Motor"))
-        //            .Select(e => MotorStates.Select(e1 => _mapper.Map<MotorState>(e1))
-        //                               .First(e1 => e1.Name == e.Name))
-        //            .ToArray();
-        //        DisplayUis = UiStates.Where(e => e.Name.Contains("ControlUi"))
-        //            .Select(e => UiStates.Select(e1 => _mapper.Map<ControlUiState>(e1))
-        //                            .First(e1 => e1.Name == e.Name))
-        //            .ToArray();
-        //    }
-        //}
+                foreach (var input in SelectedMap.InputPorts) {
+                    inputs.Add(UiStates.Where(e => e.Name == input.Name).FirstOrDefault());
+                }
 
+                InputsOfSelectedMap = inputs.ToArray();
+            }
+            else {
+                InputsOfSelectedMap = Array.Empty<ControlUiState>();
+            }
+        }
 
         private MotorState[] _displayMotors = new MotorState[0];
         public MotorState[] DisplayMotors {
@@ -413,6 +390,7 @@ namespace taskmaker_wpf.ViewModels {
                     _mapper.Map(uis[i], UiStates[i]);
                 }
 
+                UpdateInputsOfSelectedMap();
             }
             else if (parameter.Type == "Build") {
                 var request = new BuildRegionRequest() {
@@ -436,10 +414,15 @@ namespace taskmaker_wpf.ViewModels {
             var addReq = new AddNLinearMapRequest();
             var listReq = new ListNLinearMapRequest();
 
-            _mapBus.Handle(addReq, (bool res) => { });
-            _mapBus.Handle(listReq, (NLinearMapEntity[] maps) => {
-                MapStates = _mapper.Map<NLinearMapState[]>(maps);
-            });
+            _mapBus.Handle(addReq, out bool res);
+            _mapBus.Handle(listReq, out NLinearMapEntity[] maps);
+
+            MapStates = _mapper.Map<NLinearMapState[]>(maps);
+
+            //_mapBus.Handle(addReq, (bool res) => { });
+            //_mapBus.Handle(listReq, (NLinearMapEntity[] maps) => {
+            //    MapStates = _mapper.Map<NLinearMapState[]>(maps);
+            //});
         }
 
         private ICommand _addUiCommand;
@@ -450,10 +433,11 @@ namespace taskmaker_wpf.ViewModels {
             var request = new AddControlUiRequest();
             var request1 = new ListControlUiRequest();
 
-            _uiBus.Handle(request, (bool res) => { });
-            _uiBus.Handle(request1, (ControlUiEntity[] uis) => {
-                UiStates = _mapper.Map<ControlUiState[]>(uis);
-            });
+            _uiBus.Handle(request, out bool res);
+            
+            _uiBus.Handle(request1, out ControlUiEntity[] uis);
+            
+            UiStates = _mapper.Map<ControlUiState[]>(uis);
         }
 
         private DelegateCommand _updateMapCommand;
@@ -656,7 +640,7 @@ namespace taskmaker_wpf.ViewModels {
             }
 
             if (lambdas.Count != map.InputPorts.Length) return;
-            //Console.WriteLine($"lambdas: {string.Join(",", lambdas)}");
+            //Debug.WriteLine($"lambdas: {string.Join(",", lambdas)}");
 
             var results = map.MapTo(lambdas.ToArray()).GetData<double>();
 
@@ -707,10 +691,10 @@ namespace taskmaker_wpf.ViewModels {
                         _uiBus.Handle(req2, out ControlUiEntity ui);
                     }
 
-                    //Console.WriteLine($"{output.Name}");
+                    //Debug.WriteLine($"{output.Name}");
                     MapTo(mapEntity);
 
-                    //Console.WriteLine($"{output.Name}: {mapEntity.Value[0]} {mapEntity.Value[1]}");
+                    //Debug.WriteLine($"{output.Name}: {mapEntity.Value[0]} {mapEntity.Value[1]}");
                 }
             }
         }

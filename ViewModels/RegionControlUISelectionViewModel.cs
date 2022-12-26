@@ -17,86 +17,86 @@ using Prism.Events;
 using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.ViewModels {
-    public class RegionControlUISelectionViewModel : BindableBase, INavigationAware {
-        private readonly IRegionManager _regionManager;
-        //private readonly ControlUiUseCase _useCase;
-        private readonly ControlUiInteractorBus _uiBus;
-        private readonly IMapper _mapper;
-        private readonly IEventAggregator _ea;
+    //public class RegionControlUISelectionViewModel : BindableBase, INavigationAware {
+    //    private readonly IRegionManager _regionManager;
+    //    //private readonly ControlUiUseCase _useCase;
+    //    private readonly ControlUiInteractorBus _uiBus;
+    //    private readonly IMapper _mapper;
+    //    private readonly IEventAggregator _ea;
 
-        private ControlUiState _selectedUi;
-        public ControlUiState SelectedUi {
-            get { return _selectedUi; }
-            set { SetProperty(ref _selectedUi, value); }
-        }
+    //    private ControlUiState _selectedUi;
+    //    public ControlUiState SelectedUi {
+    //        get { return _selectedUi; }
+    //        set { SetProperty(ref _selectedUi, value); }
+    //    }
 
-        public ObservableCollection<ControlUiState> UIs { get; set; } = new ObservableCollection<ControlUiState>();
+    //    public ObservableCollection<ControlUiState> UIs { get; set; } = new ObservableCollection<ControlUiState>();
 
-        public RegionControlUISelectionViewModel(
-            IRegionManager regionManager,
-            MapperConfiguration config,
-            ControlUiInteractorBus uiBus,
-            IEventAggregator ea) {
-            _regionManager = regionManager;
-            _uiBus = uiBus;
-            _ea = ea;
-            _mapper = config.CreateMapper();
+    //    public RegionControlUISelectionViewModel(
+    //        IRegionManager regionManager,
+    //        MapperConfiguration config,
+    //        ControlUiInteractorBus uiBus,
+    //        IEventAggregator ea) {
+    //        _regionManager = regionManager;
+    //        _uiBus = uiBus;
+    //        _ea = ea;
+    //        _mapper = config.CreateMapper();
 
-            _ea.GetEvent<SystemLoadedEvent>().Subscribe(() => InvalidateUiList());
+    //        _ea.GetEvent<SystemLoadedEvent>().Subscribe(() => InvalidateUiList());
 
-            InvalidateUiList();
-        }
+    //        InvalidateUiList();
+    //    }
 
-        private void InvalidateUiList() {
-            _uiBus.Handle(new ListControlUiRequest(), (ControlUiEntity[] uis) => {
-                UIs.Clear();
-                UIs.AddRange(uis.Select(e => _mapper.Map<ControlUiState>(e)));
-            });
-        }
+    //    private void InvalidateUiList() {
+    //        _uiBus.Handle(new ListControlUiRequest(), (ControlUiEntity[] uis) => {
+    //            UIs.Clear();
+    //            UIs.AddRange(uis.Select(e => _mapper.Map<ControlUiState>(e)));
+    //        });
+    //    }
 
-        private void AddControlUi() {
-            _uiBus.Handle(new AddControlUiRequest(), (bool res) => { });
-        }
+    //    private void AddControlUi() {
+    //        _uiBus.Handle(new AddControlUiRequest(), (bool res) => { });
+    //    }
 
-        private DelegateCommand _updateCommand;
-        public DelegateCommand UpdateCommand =>
-            _updateCommand ?? (_updateCommand = new DelegateCommand(ExecuteUpdateCommand));
+    //    private DelegateCommand _updateCommand;
+    //    public DelegateCommand UpdateCommand =>
+    //        _updateCommand ?? (_updateCommand = new DelegateCommand(ExecuteUpdateCommand));
 
-        void ExecuteUpdateCommand() {
-            _uiBus.Handle(new UpdateControlUiRequest(), (bool res) => { });
-            InvalidateUiList();
-        }
+    //    void ExecuteUpdateCommand() {
+    //        _uiBus.Handle(new UpdateControlUiRequest(), (bool res) => { });
+    //        InvalidateUiList();
+    //    }
 
-        private DelegateCommand _addCmd;
-        public DelegateCommand AddCmd => _addCmd ?? (_addCmd = new DelegateCommand(ExecuteAddCmd));
+    //    private DelegateCommand _addCmd;
+    //    public DelegateCommand AddCmd => _addCmd ?? (_addCmd = new DelegateCommand(ExecuteAddCmd));
 
 
-        private DelegateCommand _navigateToNextCommand;
-        public DelegateCommand NavigateToNextCommand =>
-            _navigateToNextCommand ?? (_navigateToNextCommand = new DelegateCommand(ExecuteNavigateToNextCommand));
+    //    private DelegateCommand _navigateToNextCommand;
+    //    public DelegateCommand NavigateToNextCommand =>
+    //        _navigateToNextCommand ?? (_navigateToNextCommand = new DelegateCommand(ExecuteNavigateToNextCommand));
 
-        private void ExecuteNavigateToNextCommand() {
-            if (SelectedUi != null) {
-                var args = new NavigationParameters {
-                    { "ui", SelectedUi }
-                };
+    //    private void ExecuteNavigateToNextCommand() {
+    //        if (SelectedUi != null) {
+    //            var args = new NavigationParameters {
+    //                { "ui", SelectedUi }
+    //            };
 
-                _regionManager.RequestNavigate("ContentRegion", "RegionControlUI", args);
-            }
-        }
+    //            _regionManager.RequestNavigate("ContentRegion", "RegionControlUI", args);
+    //        }
+    //    }
 
-        private void ExecuteAddCmd() {
-            AddControlUi();
-            InvalidateUiList();
-        }
+    //    private void ExecuteAddCmd() {
+    //        AddControlUi();
+    //        InvalidateUiList();
+    //    }
 
-        public void OnNavigatedTo(NavigationContext navigationContext) {
-        }
+    //    public void OnNavigatedTo(NavigationContext navigationContext) {
+    //    }
 
-        public bool IsNavigationTarget(NavigationContext navigationContext) {
-            return true;
-        }
+    //    public bool IsNavigationTarget(NavigationContext navigationContext) {
+    //        return true;
+    //    }
 
-        public void OnNavigatedFrom(NavigationContext navigationContext) { }
-    }
+    //    public void OnNavigatedFrom(NavigationContext navigationContext) { }
+    //}
 }
