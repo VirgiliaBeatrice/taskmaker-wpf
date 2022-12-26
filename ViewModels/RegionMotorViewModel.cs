@@ -190,8 +190,9 @@ namespace taskmaker_wpf.ViewModels {
 
             _motorBus.Handle(req, out MotorEntity motor);
 
-            _mapper.Map(motor, MotorStates.Where(e => e.Id == motor.Id).FirstOrDefault());
-            //RefreshMotors();
+            var target = MotorStates.Where(e => e.Id == motor.Id).FirstOrDefault();
+
+            _mapper.Map(motor, target);
         }
 
         private void RefreshMotors() {
@@ -231,7 +232,8 @@ namespace taskmaker_wpf.ViewModels {
                 .Range(0, 8);
 
             BoardIds.Clear();
-            BoardIds.AddRange(boards);
+            BoardIds = new ObservableCollection<int>(boards);
+            //BoardIds.AddRange(boards);
         }
 
         private void EnumMotors() {
@@ -239,7 +241,8 @@ namespace taskmaker_wpf.ViewModels {
                 .Range(0, 4);
 
             MotorIds.Clear();
-            MotorIds.AddRange(motors);
+            BoardIds = new ObservableCollection<int>(motors);
+            //MotorIds.AddRange(motors);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext) {
