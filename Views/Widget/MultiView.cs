@@ -1,4 +1,5 @@
 ﻿using SharpVectors.Converters;
+using SkiaSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -1193,6 +1194,94 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
+        private void CreateIKTemplate() {
+            var template = new IKTemplate() {
+                Width = 500,
+                Height = 500,
+            };
+
+            //var o = new Point(0, 0);
+
+            //var radius = Math.Sin(30.0 * Math.PI / 180.0) * 100.0;
+
+            //var p1 = new Point(0, 100);
+            //var p2 = new Point {
+            //    X = -Math.Cos(60.0 * Math.PI / 180.0),
+            //    Y = -radius
+            //};
+            //var p3 = new Point {
+            //    X = Math.Cos(60.0 * Math.PI / 180.0),
+            //    Y = radius
+            //};
+
+            //var p1Shape = DrawPoint(p1);
+            //var p2Shape = DrawPoint(p2);
+            //var p3Shape = DrawPoint(p3);
+
+
+            //var circle = new Ellipse() {
+            //    Width = radius * 2,
+            //    Height = radius * 2,
+            //    StrokeThickness = 2,
+            //    Stroke = Brushes.Black
+            //};
+
+            //var centroid = new Point(o.X - radius, o.Y - radius);
+
+            //_canvas.Children.Add(circle);
+            //_canvas.Children.Add(p1Shape);
+            //_canvas.Children.Add(p2Shape);
+            //_canvas.Children.Add(p3Shape);
+            _canvas.Children.Add(template);
+        }
+
+        private void DrawLineWithArrowCap(Point startPoint, Point endPoint, Canvas canvas) {
+            // Create a new line object
+            Line line = new Line();
+
+            // Set the start and end points of the line
+            line.X1 = startPoint.X;
+            line.Y1 = startPoint.Y;
+            line.X2 = endPoint.X;
+            line.Y2 = endPoint.Y;
+
+            // Set the line thickness and color
+            line.StrokeThickness = 2;
+            line.Stroke = Brushes.Black;
+
+            // Create an arrow cap at the end of the line
+            double angle = Math.Atan2(endPoint.Y - startPoint.Y, endPoint.X - startPoint.X) * 180 / Math.PI;
+            Polyline arrowCap = new Polyline();
+            arrowCap.Points.Add(new Point(-10, -5));
+            arrowCap.Points.Add(new Point(0, 0));
+            arrowCap.Points.Add(new Point(-10, 5));
+            arrowCap.RenderTransform = new RotateTransform(angle, endPoint.X, endPoint.Y);
+            arrowCap.Fill = Brushes.Black;
+
+            // Add the line and arrow cap to the canvas
+            canvas.Children.Add(line);
+            canvas.Children.Add(arrowCap);
+        }
+
+        private Shape DrawPoint(Point point) {
+            // Create a new Ellipse object
+            Ellipse ellipse = new Ellipse();
+
+            // Set the center point and radius of the ellipse
+            Canvas.SetLeft(ellipse, point.X - 2);
+            Canvas.SetTop(ellipse, point.Y - 2);
+            ellipse.Width = 4;
+            ellipse.Height = 4;
+
+            // Set the fill color of the ellipse
+            ellipse.Fill = Brushes.Black;
+
+            // Add the ellipse to the canvas
+            return ellipse;
+        }
+
+
+
         public UiController() {
             Pointer.Visibility = Visibility.Collapsed;
             Panel.SetZIndex(Pointer, 25);
@@ -1200,6 +1289,7 @@ namespace taskmaker_wpf.Views.Widget {
             State = new DefaultUiState(this);
             Focusable = true;
             Visibility = Visibility.Visible;
+
 
             MouseEnter += (s, e) => {
                 var el = Keyboard.Focus(s as IInputElement);
@@ -1248,6 +1338,9 @@ namespace taskmaker_wpf.Views.Widget {
             _canvas.Children.Add(axisY);
             _canvas.Children.Add(_status);
             _canvas.Children.Add(Pointer);
+
+            CreateIKTemplate();
+
             container.Children.Add(_canvas);
 
             border.Child = container;
@@ -1560,6 +1653,10 @@ namespace taskmaker_wpf.Views.Widget {
 
             x.Transform = Transform;
             y.Transform = Transform;
+
+            var ik = _canvas.Children.OfType<IKTemplate>().First();
+
+            ik.Transform = Transform;
 
             // Invalidate widgets
             //Pointer.Transform = Transform;
@@ -2166,6 +2263,99 @@ namespace taskmaker_wpf.Views.Widget {
         Activated,
         Pressed,
         Dragged
+    }
+
+    public class IKTemplate : UserControl {
+        public Matrix Transform {
+            get { return (Matrix)GetValue(TransformProperty); }
+            set { SetValue(TransformProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Transform.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TransformProperty =
+            DependencyProperty.Register("Transform", typeof(Matrix), typeof(IKTemplate), new PropertyMetadata(Matrix.Identity, OnPropertyChanged));
+
+        static public void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            //(d as IKTemplate).InvalidateVisual();
+            (d as IKTemplate).Invalidate();
+        }
+
+        private Canvas _canvas;
+
+        public IKTemplate() {
+            _canvas = new Canvas() {
+                Width = 500,
+                Height = 500,
+            };
+
+            Transform = Matrix.Identity;
+
+            //Invalidate();
+            //Stroke = Brushes.Green;
+            //SnapsToDevicePixels = false;
+            //UseLayoutRounding = false;
+            Content = _canvas;
+        }
+
+        private Shape DrawPoint(Point point) {
+            // Create a new Ellipse object
+            Ellipse ellipse = new Ellipse();
+
+            // Set the center point and radius of the ellipse
+            Canvas.SetLeft(ellipse, point.X - 2);
+            Canvas.SetTop(ellipse, point.Y - 2);
+            ellipse.Width = 4;
+            ellipse.Height = 4;
+
+            // Set the fill color of the ellipse
+            ellipse.Fill = Brushes.Black;
+
+            // Add the ellipse to the canvas
+            return ellipse;
+        }
+
+
+        private Canvas Invalidate() {
+            _canvas.Children.Clear();
+
+            var o = new Point(0, 0);
+
+            var radius = Math.Sin(30.0 * Math.PI / 180.0) * 100.0;
+
+            var p1 = new Point(0, 100);
+            var p2 = new Point {
+                X = -Math.Cos(60.0 * Math.PI / 180.0),
+                Y = -radius
+            };
+            var p3 = new Point {
+                X = Math.Cos(60.0 * Math.PI / 180.0),
+                Y = radius
+            };
+
+            var p1Shape = DrawPoint(Transform.Transform(p1));
+            var p2Shape = DrawPoint(Transform.Transform(p2));
+            var p3Shape = DrawPoint(Transform.Transform(p3));
+
+
+            var circle = new Ellipse() {
+                Width = radius * 2,
+                Height = radius * 2,
+                StrokeThickness = 2,
+                Stroke = Brushes.Black
+            };
+
+            var centroid = new Point(o.X - radius, o.Y - radius);
+
+            _canvas.Children.Add(circle);
+            _canvas.Children.Add(p1Shape);
+            _canvas.Children.Add(p2Shape);
+            _canvas.Children.Add(p3Shape);
+
+            Canvas.SetTop(circle, Transform.Transform(centroid).X);
+            Canvas.SetLeft(circle, Transform.Transform(centroid).Y);
+
+            return _canvas;
+        }
     }
 
     public class Arrow : Shape {
