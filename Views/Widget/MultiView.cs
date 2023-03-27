@@ -30,6 +30,9 @@ using static Unity.Storage.RegistrationSet;
 using Rectangle = System.Windows.Shapes.Rectangle;
 using Point = System.Windows.Point;
 using NLog;
+using static System.Windows.Forms.LinkLabel;
+using System.IO;
+using Path = System.Windows.Shapes.Path;
 
 namespace taskmaker_wpf.Views.Widget {
     public static class VisualTreeHelperExtensions {
@@ -727,6 +730,7 @@ namespace taskmaker_wpf.Views.Widget {
                     view.InvalidateViewer();
                 }
 
+                view.Layout();
 
 
                 //if (DesignerProperties.GetIsInDesignMode(d) && d is MultiView control) {
@@ -777,7 +781,9 @@ namespace taskmaker_wpf.Views.Widget {
         public ScrollViewer Scroll { get; set; }
 
         public MultiView() : base() {
-            var grid = new Grid();
+            var grid = new Grid() {
+                Name = "Multiview_Grid",
+            };
             //var icon = new SvgIcon() {
             //    Width = 200,
             //    Height = 200,
@@ -1193,6 +1199,7 @@ namespace taskmaker_wpf.Views.Widget {
 
                 _canvas.Children.Add(shape);
             }
+
         }
 
         private void CreateIKTemplate() {
@@ -1235,6 +1242,20 @@ namespace taskmaker_wpf.Views.Widget {
             //_canvas.Children.Add(p2Shape);
             //_canvas.Children.Add(p3Shape);
             _canvas.Children.Add(template);
+        }
+
+        public void Save(string filename) {
+            var rootVisual = Content as Visual;
+            var rtb = new RenderTargetBitmap((int)ActualWidth, (int)ActualHeight, 96, 96, PixelFormats.Pbgra32);
+
+            rtb.Render(rootVisual);
+
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(rtb));
+
+            using (var stream = File.Create(filename)) {
+                encoder.Save(stream);
+            }
         }
 
         private void DrawLineWithArrowCap(Point startPoint, Point endPoint, Canvas canvas) {
@@ -1368,6 +1389,8 @@ namespace taskmaker_wpf.Views.Widget {
                 ik.Origin = cCenter;
 
                 InvalidateTransform();
+                Save("test1.png");
+
             };
 
             // Pan
@@ -2338,6 +2361,68 @@ namespace taskmaker_wpf.Views.Widget {
             return ellipse;
         }
 
+        private Color GetColorWithGradient(Color startColor, Color endColor, int step, int numSteps) {
+            double redIncrement = (endColor.R - startColor.R) / (double)(numSteps);
+            double greenIncrement = (endColor.G - startColor.G) / (double)(numSteps);
+            double blueIncrement = (endColor.B - startColor.B) / (double)(numSteps);
+
+            //Color[] gradientColors = new Color[numSteps];
+            //for (int i = 0; i < numSteps; i++) {
+            //    byte red = (byte)(startColor.R + i * redIncrement);
+            //    byte green = (byte)(startColor.G + i * greenIncrement);
+            //    byte blue = (byte)(startColor.B + i * blueIncrement);
+            //    gradientColors[i] = Color.FromRgb(red, green, blue);
+            //}
+
+            byte red = (byte)(startColor.R + step * redIncrement);
+            byte green = (byte)(startColor.G + step * greenIncrement);
+            byte blue = (byte)(startColor.B + step * blueIncrement);
+
+            return Color.FromRgb(red, green, blue);
+        }
+
+        // Save IKTemplate to a png file
+        public void Save(string filename) {
+            var rtb = new RenderTargetBitmap((int)Width, (int)Height, 96, 96, PixelFormats.Pbgra32);
+            logger.Debug(VisualTreeHelper.GetChildrenCount(_canvas));
+            rtb.Render(this);
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(rtb));
+            using (var stream = File.Create(filename)) {
+                encoder.Save(stream);
+            }
+        }
+
+        private void DrawTrajectory() {
+            //var line = new ArrowLine(new Point(0,0), new Point(300, 0));
+
+            //_canvas.Children.Add(line);
+
+            var start = new Point();
+
+            ArrowLine line;
+            var numberOfPoints = 12;
+            // generate 36 points
+            // all points are on a circle with radius 100
+            for (int i = 0; i <= numberOfPoints; i++) {
+                var angle = i * (360 / numberOfPoints);
+                var point = new Point(Math.Cos(angle * Math.PI / 180) * 100, Math.Sin(angle * Math.PI / 180) * 100);
+
+                line = new ArrowLine(start, point) {
+                    Stroke = new SolidColorBrush(GetColorWithGradient(Colors.Red, Colors.Yellow, i, numberOfPoints + 1))
+                };
+                _canvas.Children.Add(line);
+                
+                start = point;
+            }
+
+            line = new ArrowLine(start, new Point()) {
+                Stroke = new SolidColorBrush(GetColorWithGradient(Colors.Red, Colors.Yellow, 37, numberOfPoints + 1))
+            };
+            _canvas.Children.Add(line);
+
+        }
+
         // Method to make a tangent circle with three points
         // the center of circle is the origin
         private void MakeTangentCircle(double radius) {
@@ -2407,6 +2492,9 @@ namespace taskmaker_wpf.Views.Widget {
             var d = PerpendicularLength(new Point(), p1, p2);
 
             MakeTangentCircle(d);
+
+            DrawTrajectory();
+            Save("test.png");
         }
 
 
@@ -2422,7 +2510,7 @@ namespace taskmaker_wpf.Views.Widget {
         // Method to draw a triangle from three points
         private void DrawTriangle(Point p1, Point p2, Point p3) {
             // Create a new Path object
-            Path path = new Path();
+            System.Windows.Shapes.Path path = new System.Windows.Shapes.Path();
             // Create a StreamGeometry to use to specify my Path
             StreamGeometry geometry = new StreamGeometry();
             using (StreamGeometryContext ctx = geometry.Open()) {
@@ -2452,6 +2540,101 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
     }
+
+    public class ArrowLine : Shape {
+        public ArrowLine(Point start, Point end) {
+            Start = start;
+            End = end;
+            //Stroke = Brushes.Black;
+            StrokeThickness = 2;
+        }
+        public Point Start {
+            get { return (Point)GetValue(StartProperty); }
+            set { SetValue(StartProperty, value); }
+        }
+        // Using a DependencyProperty as the backing store for Start.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty StartProperty =
+            DependencyProperty.Register("Start", typeof(Point), typeof(ArrowLine), new PropertyMetadata(new Point(0, 0), OnPropertyChanged));
+        public Point End {
+            get { return (Point)GetValue(EndProperty); }
+            set { SetValue(EndProperty, value); }
+        }
+        // Using a DependencyProperty as the backing store for End.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty EndProperty =
+            DependencyProperty.Register("End", typeof(Point), typeof(ArrowLine), new PropertyMetadata(new Point(0, 0), OnPropertyChanged));
+        private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            var arrow = (ArrowLine)d;
+            arrow.Invalidate();
+        }
+
+        private void Invalidate() {
+            var geometry = GetGeometry();
+            Geometry = geometry;
+
+            InvalidateVisual();
+        }
+
+        private Geometry GetGeometry() {
+            var start = Start;
+            var end = End;
+
+            // Calculate the line segment vector
+            Vector lineSegment = end - start;
+
+            // Normalize the line segment vector
+            Vector lineDirection = lineSegment;
+            lineDirection.Normalize();
+
+            // Calculate the perpendicular vector to the line segment vector
+            Vector perpendicularVector = new Vector(-lineSegment.Y, lineSegment.X);
+            perpendicularVector.Normalize();
+
+            // Define the length and width of the arrowhead
+            double arrowheadLength = 20;
+            double arrowheadWidth = 8;
+
+            // Calculate the endpoints of the arrowhead
+            Point arrowheadEndpoint1 = end - (lineDirection * arrowheadLength) + (perpendicularVector * arrowheadWidth);
+            Point arrowheadEndpoint2 = end - (lineDirection * arrowheadLength) - (perpendicularVector * arrowheadWidth);
+
+            // Define the points of the arrow line
+            PointCollection points = new PointCollection {
+                start,
+                end,
+                arrowheadEndpoint1,
+                arrowheadEndpoint2,
+                end,
+            };
+
+            // Create PathFigure with points
+            PathFigure figure = new PathFigure {
+                StartPoint = start,
+                Segments = new PathSegmentCollection {
+                    new PolyLineSegment(points, true)
+                },
+
+            };
+
+            // Create PathGeometry with PathFigure
+            PathGeometry geometry = new PathGeometry {
+                Figures = new PathFigureCollection {
+                    figure
+                }
+            };
+
+            return geometry;
+
+        }
+
+        protected override Geometry DefiningGeometry {
+            get {
+                return GetGeometry();
+            }
+        }
+
+        protected Geometry Geometry { get; set; }
+    }
+
 
     public class Arrow : Shape {
 
