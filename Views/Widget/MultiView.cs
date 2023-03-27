@@ -2314,19 +2314,6 @@ namespace taskmaker_wpf.Views.Widget {
             Canvas.SetLeft(this, 0);
             Canvas.SetTop(this, 0);
 
-            // Set the RenderTransform of the canvas to move the origin to the center
-
-            // Set RenderTransform of canvas
-            // 1. Flip the Y axis
-            // 2. Move the origin to the center
-            //_canvas.RenderTransform = new MatrixTransform(new Matrix(1, 0, 0, -1, 200, 200));
-
-            //Transform = Matrix.Identity;
-
-            //Invalidate();
-            //Stroke = Brushes.Green;
-            //SnapsToDevicePixels = false;
-            //UseLayoutRounding = false;
             Content = _canvas;
         }
 
