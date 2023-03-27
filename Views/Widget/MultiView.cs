@@ -7,10 +7,9 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Drawing.Design;
-using System.Drawing.Imaging;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Controls;
@@ -29,6 +28,8 @@ using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Views.Widgets;
 using static Unity.Storage.RegistrationSet;
 using Rectangle = System.Windows.Shapes.Rectangle;
+using Point = System.Windows.Point;
+using NLog;
 
 namespace taskmaker_wpf.Views.Widget {
     public static class VisualTreeHelperExtensions {
@@ -1196,8 +1197,9 @@ namespace taskmaker_wpf.Views.Widget {
 
         private void CreateIKTemplate() {
             var template = new IKTemplate() {
-                Width = 500,
-                Height = 500,
+                Name = "IK",
+                Width = 400,
+                Height = 400,
             };
 
             //var o = new Point(0, 0);
@@ -1360,6 +1362,10 @@ namespace taskmaker_wpf.Views.Widget {
 
                 //Offset = Matrix.Identity;
                 //Offset.Translate(diff.X, diff.Y);
+
+                var ik = _canvas.Children.OfType<IKTemplate>().First();
+
+                ik.Origin = cCenter;
 
                 InvalidateTransform();
             };
@@ -1654,9 +1660,10 @@ namespace taskmaker_wpf.Views.Widget {
             x.Transform = Transform;
             y.Transform = Transform;
 
-            var ik = _canvas.Children.OfType<IKTemplate>().First();
+            //var ik = _canvas.Children.OfType<IKTemplate>().First();
 
-            ik.Transform = Transform;
+            ////ik.Transform = Transform;
+            //ik.Origin = new Point(ActualWidth / 2, ActualHeight / 2);
 
             // Invalidate widgets
             //Pointer.Transform = Transform;
@@ -2266,10 +2273,25 @@ namespace taskmaker_wpf.Views.Widget {
     }
 
     public class IKTemplate : UserControl {
+        private ILogger logger => LogManager.GetCurrentClassLogger();
+
+
         public Matrix Transform {
             get { return (Matrix)GetValue(TransformProperty); }
             set { SetValue(TransformProperty, value); }
         }
+
+
+
+        public Point Origin {
+            get { return (Point)GetValue(OriginProperty); }
+            set { SetValue(OriginProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Origin.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty OriginProperty =
+            DependencyProperty.Register("Origin", typeof(Point), typeof(IKTemplate), new PropertyMetadata(new Point(), OnPropertyChanged));
+
 
         // Using a DependencyProperty as the backing store for Transform.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty TransformProperty =
@@ -2284,11 +2306,22 @@ namespace taskmaker_wpf.Views.Widget {
 
         public IKTemplate() {
             _canvas = new Canvas() {
-                Width = 500,
-                Height = 500,
+                Width = 400,
+                Height = 400,
+                Background = Brushes.Tomato,
             };
 
-            Transform = Matrix.Identity;
+            Canvas.SetLeft(this, 0);
+            Canvas.SetTop(this, 0);
+
+            // Set the RenderTransform of the canvas to move the origin to the center
+
+            // Set RenderTransform of canvas
+            // 1. Flip the Y axis
+            // 2. Move the origin to the center
+            //_canvas.RenderTransform = new MatrixTransform(new Matrix(1, 0, 0, -1, 200, 200));
+
+            //Transform = Matrix.Identity;
 
             //Invalidate();
             //Stroke = Brushes.Green;
@@ -2297,65 +2330,140 @@ namespace taskmaker_wpf.Views.Widget {
             Content = _canvas;
         }
 
-        private Shape DrawPoint(Point point) {
+        private Shape DrawPoint(Point point, Brush color, double radius) {
             // Create a new Ellipse object
             Ellipse ellipse = new Ellipse();
 
             // Set the center point and radius of the ellipse
-            Canvas.SetLeft(ellipse, point.X - 2);
-            Canvas.SetTop(ellipse, point.Y - 2);
-            ellipse.Width = 4;
-            ellipse.Height = 4;
-
+            // the radius is 4
+            ellipse.Width = radius * 2;
+            ellipse.Height = radius * 2;
+            //ellipse.Margin = new Thickness(point.X - 4, point.Y - 4, 0, 0);
+            
             // Set the fill color of the ellipse
-            ellipse.Fill = Brushes.Black;
+            ellipse.Fill = color;
+            ellipse.StrokeThickness = 2;
+
+            Canvas.SetLeft(ellipse, point.X - radius);
+            Canvas.SetTop(ellipse, point.Y - radius);
 
             // Add the ellipse to the canvas
             return ellipse;
         }
 
-
-        private Canvas Invalidate() {
-            _canvas.Children.Clear();
-
-            var o = new Point(0, 0);
-
-            var radius = Math.Sin(30.0 * Math.PI / 180.0) * 100.0;
-
-            var p1 = new Point(0, 100);
-            var p2 = new Point {
-                X = -Math.Cos(60.0 * Math.PI / 180.0),
-                Y = -radius
-            };
-            var p3 = new Point {
-                X = Math.Cos(60.0 * Math.PI / 180.0),
-                Y = radius
-            };
-
-            var p1Shape = DrawPoint(Transform.Transform(p1));
-            var p2Shape = DrawPoint(Transform.Transform(p2));
-            var p3Shape = DrawPoint(Transform.Transform(p3));
-
-
-            var circle = new Ellipse() {
+        // Method to make a tangent circle with three points
+        // the center of circle is the origin
+        private void MakeTangentCircle(double radius) {
+            var circle = new Ellipse {
                 Width = radius * 2,
                 Height = radius * 2,
+                Stroke = Brushes.Linen,
                 StrokeThickness = 2,
-                Stroke = Brushes.Black
             };
 
-            var centroid = new Point(o.X - radius, o.Y - radius);
-
+            Canvas.SetLeft(circle, -radius);
+            Canvas.SetTop(circle, -radius);
+            
             _canvas.Children.Add(circle);
-            _canvas.Children.Add(p1Shape);
-            _canvas.Children.Add(p2Shape);
-            _canvas.Children.Add(p3Shape);
 
-            Canvas.SetTop(circle, Transform.Transform(centroid).X);
-            Canvas.SetLeft(circle, Transform.Transform(centroid).Y);
-
-            return _canvas;
         }
+
+        private Point p1;
+        private Point p2;
+        private Point p3;
+
+        private void MakePoints() {
+            // variable o is the origin
+            var o = new Point(0, 0);
+
+            // three point variables are p1, p2, p3
+            // p1 is (0, 100)
+            // the radius of the circle is 100
+            // the center of the circle is (0, 0)
+
+            p1 = new Point(0, 250);
+
+            p2 = RotatePoint(p1, 120);
+            p3 = RotatePoint(p1, -120);
+
+            // draw points on _canvas
+            _canvas.Children.Add(DrawPoint(o, Brushes.Red, 12));
+            _canvas.Children.Add(DrawPoint(p1, Brushes.Black, 8));
+            _canvas.Children.Add(DrawPoint(p2, Brushes.Green, 8));
+            _canvas.Children.Add(DrawPoint(p3, Brushes.Blue, 8));
+
+        }
+
+        private Point RotatePoint(Point p, double degree) {
+            var radian = degree * Math.PI / 180.0;
+
+            double rotatedX = Math.Cos(radian) * p.X - Math.Sin(radian) * p.Y;
+            double rotatedY = Math.Sin(radian) * p.X + Math.Cos(radian) * p.Y;
+
+
+            return new Point(rotatedX, rotatedY);
+        }
+
+        private void Invalidate() {
+            _canvas.Children.Clear();
+
+            //var offset = Transform.Transform(new Point(0, 0));
+
+            _canvas.RenderTransform = new MatrixTransform(new Matrix(1, 0, 0, -1, Origin.X, Origin.Y));
+
+
+            MakePoints();
+            DrawTriangle(p1, p2, p3);
+
+
+            // calculate d that is the distance from origin o to the line p1 and p2
+            var d = PerpendicularLength(new Point(), p1, p2);
+
+            MakeTangentCircle(d);
+        }
+
+
+        public static double PerpendicularLength(Point a, Point c, Point d) {
+            double dx = d.X - c.X;
+            double dy = d.Y - c.Y;
+            double numerator = Math.Abs(dy * a.X - dx * a.Y + d.X * c.Y - d.Y * c.X);
+            double denominator = Math.Sqrt(dx * dx + dy * dy);
+            double length = numerator / denominator;
+            return length;
+        }
+
+        // Method to draw a triangle from three points
+        private void DrawTriangle(Point p1, Point p2, Point p3) {
+            // Create a new Path object
+            Path path = new Path();
+            // Create a StreamGeometry to use to specify my Path
+            StreamGeometry geometry = new StreamGeometry();
+            using (StreamGeometryContext ctx = geometry.Open()) {
+                ctx.BeginFigure(p1, true /* is filled */, true /* is closed */);
+                ctx.LineTo(p2, true /* is stroked */, false /* is smooth join */);
+                ctx.LineTo(p3, true /* is stroked */, false /* is smooth join */);
+            }
+            // Freeze the geometry (make it unmodifiable)
+            // for additional performance benefits
+            geometry.Freeze();
+            // specify the shape (triangle) of the path using the StreamGeometry
+            path.Data = geometry;
+
+
+            // set the fill color of the triangle
+            // the fill color have 60% opacity
+            var fillColor = Color.FromArgb(128, Brushes.Linen.Color.R, Brushes.Linen.Color.G, Brushes.Linen.Color.B);
+
+            path.Fill = new SolidColorBrush(fillColor);
+            
+
+            // set the border of the triangle
+            path.Stroke = Brushes.Black;
+            path.StrokeThickness = 2;
+            // Add the path to the canvas
+            _canvas.Children.Add(path);
+        }
+
     }
 
     public class Arrow : Shape {
