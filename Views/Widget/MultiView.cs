@@ -710,32 +710,24 @@ namespace taskmaker_wpf.Views.Widget {
 
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
             if (d is MultiView view) {
-                var newUis = (args.NewValue as ControlUiState[]).Select(e => e.Name);
-                var oldUis = (args.OldValue as ControlUiState[]).Select(e => e.Name);
-                
+                var uis = args.NewValue as ControlUiState[];
 
-                if (Enumerable.SequenceEqual(oldUis, newUis)) {
-                    for (int i = 0; i < view.Controllers.Count; i++) {
-                        view.Controllers[i].SetBinding(
-                            UiController.UiStateProperty,
-                            new Binding() {
-                                Source = (args.NewValue as ControlUiState[])[i]
-                            });
-                        //view.Controllers[i].UiState =];
-                    }
-                }
-                else {
-                    view.Layout();
+                //// clear view.Controllers
+                //view.Controllers.Clear();
 
-                    view.InvalidateViewer();
-                }
+                //// for all view.Controllers
+                //foreach (var ui in uis) {
+                //    var controller = new UiController() {
+                //        UiState = ui,
+                //    };
+
+                //    view.Controllers.Add(controller);
+                    
+                //    controller.SetBinding(UiController.UiStateProperty, new Binding() { Source = ui });
+                //}
 
                 view.Layout();
-
-
-                //if (DesignerProperties.GetIsInDesignMode(d) && d is MultiView control) {
-                //    control.Layout();
-                //}
+                view.InvalidateViewer();
             }
         }
 
@@ -840,12 +832,13 @@ namespace taskmaker_wpf.Views.Widget {
 
             var items = ItemsSource.Cast<object>().ToList();
             var grid = new Grid() {
+                Name = "Multiview_SubGrid",
                 Visibility = Visibility.Visible
             };
 
             var vm = DataContext as RegionControlUIViewModel;
 
-            ((Grid)Content).Children.Clear();
+            Scroll.Content = grid;
             Controllers.Clear();
 
             if (items.Count == 1) {
@@ -945,9 +938,9 @@ namespace taskmaker_wpf.Views.Widget {
                 }
             }
 
-            Scroll.Content = grid;
-            ((Grid)Content).Children.Add(Scroll);
-            ((Grid)Content).Children.Add(Viewer);
+            //Scroll.Content = grid;
+            //((Grid)Content).Children.Add(Scroll);
+            //((Grid)Content).Children.Add(Viewer);
         }
 
         private void Ui_NotifyStatus(object sender, NotifyStatusEventArgs e) {
@@ -1207,6 +1200,7 @@ namespace taskmaker_wpf.Views.Widget {
                 Name = "IK",
                 Width = 400,
                 Height = 400,
+                Visibility = Visibility.Visible,
             };
 
             //var o = new Point(0, 0);
@@ -1389,7 +1383,7 @@ namespace taskmaker_wpf.Views.Widget {
                 ik.Origin = cCenter;
 
                 InvalidateTransform();
-                Save("test1.png");
+                //Save("test1.png");
 
             };
 
@@ -1572,6 +1566,9 @@ namespace taskmaker_wpf.Views.Widget {
                 }
                 else if (e.Key == Key.D4) {
                     GoToState(UiMode.Drag);
+                }
+                else if (e.Key == Key.D5) {
+                    Save("screenshot.png");
                 }
                 else if (e.Key == Key.Escape) {
                     GoToState(UiMode.Default);
@@ -2332,13 +2329,32 @@ namespace taskmaker_wpf.Views.Widget {
                 Width = 400,
                 Height = 400,
                 Background = Brushes.Tomato,
+                Visibility = Visibility.Visible,
             };
+
 
             Canvas.SetLeft(this, 0);
             Canvas.SetTop(this, 0);
 
             Content = _canvas;
         }
+
+        // save png
+        public void Save(string filename) {
+            var rootVisual = Content as Visual;
+            var rtb = new RenderTargetBitmap((int)800, (int)800, 96, 96, PixelFormats.Pbgra32);
+
+            rtb.Render(_canvas);
+
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(rtb));
+
+            using (var stream = File.Create(filename)) {
+                encoder.Save(stream);
+            }
+        }
+
+
 
         private Shape DrawPoint(Point point, Brush color, double radius) {
             // Create a new Ellipse object
@@ -2379,18 +2395,6 @@ namespace taskmaker_wpf.Views.Widget {
             byte blue = (byte)(startColor.B + step * blueIncrement);
 
             return Color.FromRgb(red, green, blue);
-        }
-
-        // Save IKTemplate to a png file
-        public void Save(string filename) {
-            var rtb = new RenderTargetBitmap((int)Width, (int)Height, 96, 96, PixelFormats.Pbgra32);
-            logger.Debug(VisualTreeHelper.GetChildrenCount(_canvas));
-            rtb.Render(this);
-            var encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(rtb));
-            using (var stream = File.Create(filename)) {
-                encoder.Save(stream);
-            }
         }
 
         private void DrawTrajectory() {
@@ -2494,7 +2498,8 @@ namespace taskmaker_wpf.Views.Widget {
             MakeTangentCircle(d);
 
             DrawTrajectory();
-            Save("test.png");
+
+            //InvalidateVisual();
         }
 
 
