@@ -1215,6 +1215,15 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
+        // method that is an iteratorW
+        public IEnumerable<Point> GetTrajectoryPoints(int count, double step) {
+            var points = new Point[count];
+            for (int i = 0; i < count; i++) {
+                var p = new Point(i * step, 0);
+                yield return p;
+            }
+        }
+
         public void InvalidateRegion() {
             var simplexStates = UiState.Regions.OfType<SimplexState>();
             var voronoiStates = UiState.Regions.OfType<VoronoiState>();
