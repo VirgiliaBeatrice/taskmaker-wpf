@@ -219,6 +219,7 @@
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="4*" />
                                         <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
 
                                     <Slider
@@ -237,6 +238,11 @@
                                     HorizontalContentAlignment="Center"
                                     Grid.Column="1"
                                     Text="{Binding ElementName=slider, Path=Value}" />
+                                    <Button
+                                        Grid.Column="2"
+                                        Content="Reset"
+                                        Click="Button_Click_3"
+                                        />
                                 </Grid>
                             </Expander>
                         </DataTemplate>

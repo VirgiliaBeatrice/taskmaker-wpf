@@ -100,6 +100,16 @@ namespace taskmaker_wpf.Views {
 
             vm?.InvalidateValidPorts();
         }
+
+        private void Button_Click_3(object sender, RoutedEventArgs e) {
+            var state = (sender as Button).DataContext as MotorState;
+
+            state.Value = new double[1] { 0 };
+
+            var vm = DataContext as RegionControlUIViewModel;
+
+            vm.UpdateMotor(state);
+        }
     }
 
     public class ISelectableTargetConverter : IValueConverter {

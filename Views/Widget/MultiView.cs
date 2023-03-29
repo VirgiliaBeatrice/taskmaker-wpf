@@ -33,6 +33,8 @@ using NLog;
 using static System.Windows.Forms.LinkLabel;
 using System.IO;
 using Path = System.Windows.Shapes.Path;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace taskmaker_wpf.Views.Widget {
     public static class VisualTreeHelperExtensions {
@@ -712,8 +714,9 @@ namespace taskmaker_wpf.Views.Widget {
             if (d is MultiView view) {
                 var uis = args.NewValue as ControlUiState[];
 
-                //// clear view.Controllers
+                // clear view.Controllers
                 //view.Controllers.Clear();
+
 
                 //// for all view.Controllers
                 //foreach (var ui in uis) {
@@ -722,7 +725,7 @@ namespace taskmaker_wpf.Views.Widget {
                 //    };
 
                 //    view.Controllers.Add(controller);
-                    
+
                 //    controller.SetBinding(UiController.UiStateProperty, new Binding() { Source = ui });
                 //}
 
@@ -791,6 +794,14 @@ namespace taskmaker_wpf.Views.Widget {
             grid.Children.Add(Scroll);
 
             Content = grid;
+
+            Viewer = new NodeRelationViewer(this) {
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Center,
+            };
+
+            Panel.SetZIndex(Viewer, 10);
+            ((Grid)Content).Children.Add(Viewer);
         }
 
         public void Bind(int[] index) {
@@ -821,13 +832,6 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public void Layout() {
-            Viewer = new NodeRelationViewer(this) {
-                VerticalAlignment = VerticalAlignment.Top,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
-
-            Panel.SetZIndex(Viewer, 10);
-
             if (ItemsSource == null) return;
 
             var items = ItemsSource.Cast<object>().ToList();
@@ -938,9 +942,7 @@ namespace taskmaker_wpf.Views.Widget {
                 }
             }
 
-            //Scroll.Content = grid;
-            //((Grid)Content).Children.Add(Scroll);
-            //((Grid)Content).Children.Add(Viewer);
+
         }
 
         private void Ui_NotifyStatus(object sender, NotifyStatusEventArgs e) {
@@ -1004,6 +1006,8 @@ namespace taskmaker_wpf.Views.Widget {
     }
 
     public class UiController : UserControl {
+        // add a logger
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
         public PointerWidget Pointer { get; set; } = new PointerWidget();
 
         public BaseUiState State { get; set; }
@@ -1052,6 +1056,18 @@ namespace taskmaker_wpf.Views.Widget {
         // Using a DependencyProperty as the backing store for VMTemp.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty VMTempProperty =
             DependencyProperty.Register("VMTemp", typeof(object), typeof(UiController), new PropertyMetadata(null));
+
+
+
+
+        public bool HasExterior {
+            get { return (bool)GetValue(HasExteriorProperty); }
+            set { SetValue(HasExteriorProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for HasExterior.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty HasExteriorProperty =
+            DependencyProperty.Register("HasExterior", typeof(bool), typeof(UiController), new PropertyMetadata(true));
 
 
 
@@ -1159,6 +1175,46 @@ namespace taskmaker_wpf.Views.Widget {
             nodeShape.CaptureMouse();
         }
 
+        private void MakeTemplateNodes() {
+            var p1 = new Point(0, 300);
+
+            var p2 = RotatePoint(p1, 120);
+            var p3 = RotatePoint(p1, -120);
+
+            OnAddNode(p1);
+            OnAddNode(p2);
+            OnAddNode(p3);
+
+            HasExterior = false;
+        }
+
+        private Point RotatePoint(Point p, double degree) {
+            var radian = degree * Math.PI / 180.0;
+
+            double rotatedX = Math.Cos(radian) * p.X - Math.Sin(radian) * p.Y;
+            double rotatedY = Math.Sin(radian) * p.X + Math.Cos(radian) * p.Y;
+
+
+            return new Point(rotatedX, rotatedY);
+        }
+
+        public void Evaluate() {
+            var ik = _canvas.Children.OfType<IKTemplate>().First();
+
+            var points = ik.GetTrajectoryPoints(100, 12);
+
+            var vm = DataContext as RegionControlUIViewModel;
+
+            foreach (var p in points) {
+                vm.Interpolate(UiState, p);
+
+                // every 1 seconds to execute
+                //Thread.Sleep(1000);
+
+                _logger.Info($"Interpolated! {p}");
+            }
+        }
+
         public void InvalidateRegion() {
             var simplexStates = UiState.Regions.OfType<SimplexState>();
             var voronoiStates = UiState.Regions.OfType<VoronoiState>();
@@ -1183,14 +1239,16 @@ namespace taskmaker_wpf.Views.Widget {
                 _canvas.Children.Remove(shape);
             }
 
-            foreach (var item in voronoiStates) {
-                var shape = new VoronoiShape(UiState.Id, item) {
-                    Points = item.Points,
-                };
+            if (HasExterior) {
+                foreach (var item in voronoiStates) {
+                    var shape = new VoronoiShape(UiState.Id, item) {
+                        Points = item.Points,
+                    };
 
-                Panel.SetZIndex(shape, 5);
+                    Panel.SetZIndex(shape, 5);
 
-                _canvas.Children.Add(shape);
+                    _canvas.Children.Add(shape);
+                }
             }
 
         }
@@ -1297,7 +1355,7 @@ namespace taskmaker_wpf.Views.Widget {
             return ellipse;
         }
 
-
+        private Point _origin = new Point();
 
         public UiController() {
             Pointer.Visibility = Visibility.Collapsed;
@@ -1378,9 +1436,11 @@ namespace taskmaker_wpf.Views.Widget {
                 //Offset = Matrix.Identity;
                 //Offset.Translate(diff.X, diff.Y);
 
-                var ik = _canvas.Children.OfType<IKTemplate>().First();
+                //var ik = _canvas.Children.OfType<IKTemplate>().First();
 
-                ik.Origin = cCenter;
+                //ik.Origin = cCenter;
+
+                _origin = cCenter;
 
                 InvalidateTransform();
                 //Save("test1.png");
@@ -1501,7 +1561,7 @@ namespace taskmaker_wpf.Views.Widget {
 
             MouseUp += (s, e) => {
                 if (mode == UiMode.Add) {
-                    OnMouseClicked(mousePosition);
+                    OnAddNode(mousePosition);
                     GoToState(UiMode.Default);
 
                     ReleaseMouseCapture();
@@ -1569,6 +1629,21 @@ namespace taskmaker_wpf.Views.Widget {
                 }
                 else if (e.Key == Key.D5) {
                     Save("screenshot.png");
+                }
+                else if (e.Key == Key.D6) {
+                    Evaluate();
+                }
+                else if (e.Key == Key.D0) {
+                    MakeTemplateNodes();
+                }
+                else if (e.Key == Key.F1) {
+                    HasExterior = !HasExterior;
+                    InvalidateRegion();
+                    InvalidateTransform();
+                }
+                else if (e.Key == Key.F5) {
+                    InvalidateRegion();
+                    InvalidateTransform();
                 }
                 else if (e.Key == Key.Escape) {
                     GoToState(UiMode.Default);
@@ -1641,7 +1716,7 @@ namespace taskmaker_wpf.Views.Widget {
         private Point start;
         private Matrix startMat;
 
-        private void OnMouseClicked(Point point) {
+        private void OnAddNode(Point point) {
             var param = new CommandParameter();
 
             param.Payload = new object[] {
@@ -1680,9 +1755,17 @@ namespace taskmaker_wpf.Views.Widget {
             x.Transform = Transform;
             y.Transform = Transform;
 
-            //var ik = _canvas.Children.OfType<IKTemplate>().First();
+            var ik = _canvas.Children.OfType<IKTemplate>().First();
 
-            ////ik.Transform = Transform;
+            ik.Origin = _origin;
+
+            var trs = Matrix.Identity;
+            trs.Append(Translate);
+            trs.Append(Scale);
+
+            ik.TRS = trs;
+
+            ik.Invalidate();
             //ik.Origin = new Point(ActualWidth / 2, ActualHeight / 2);
 
             // Invalidate widgets
@@ -1965,7 +2048,7 @@ namespace taskmaker_wpf.Views.Widget {
                 var v = s as SimplexShape;
                 var path = v.Content as Path;
 
-                path.Opacity = 1;
+                path.Opacity = 0.3;
             };
         }
 
@@ -2322,19 +2405,22 @@ namespace taskmaker_wpf.Views.Widget {
             (d as IKTemplate).Invalidate();
         }
 
+        public Matrix TRS { get; set; } = Matrix.Identity;
+
         private Canvas _canvas;
 
         public IKTemplate() {
             _canvas = new Canvas() {
                 Width = 400,
                 Height = 400,
-                Background = Brushes.Tomato,
+                //Background = Brushes.Tomato,
                 Visibility = Visibility.Visible,
             };
 
 
             Canvas.SetLeft(this, 0);
             Canvas.SetTop(this, 0);
+            Panel.SetZIndex(this, 10);
 
             Content = _canvas;
         }
@@ -2397,7 +2483,7 @@ namespace taskmaker_wpf.Views.Widget {
             return Color.FromRgb(red, green, blue);
         }
 
-        private void DrawTrajectory() {
+        private void DrawTrajectory(double radius, int numPoints) {
             //var line = new ArrowLine(new Point(0,0), new Point(300, 0));
 
             //_canvas.Children.Add(line);
@@ -2405,26 +2491,43 @@ namespace taskmaker_wpf.Views.Widget {
             var start = new Point();
 
             ArrowLine line;
-            var numberOfPoints = 12;
+            //var numberOfPoints = 12;
             // generate 36 points
             // all points are on a circle with radius 100
-            for (int i = 0; i <= numberOfPoints; i++) {
-                var angle = i * (360 / numberOfPoints);
-                var point = new Point(Math.Cos(angle * Math.PI / 180) * 100, Math.Sin(angle * Math.PI / 180) * 100);
+            for (int i = 0; i <= numPoints; i++) {
+                var angle = i * (360 / numPoints);
+                var point = new Point(Math.Cos(angle * Math.PI / 180) * radius, Math.Sin(angle * Math.PI / 180) * radius);
 
                 line = new ArrowLine(start, point) {
-                    Stroke = new SolidColorBrush(GetColorWithGradient(Colors.Red, Colors.Yellow, i, numberOfPoints + 1))
+                    Stroke = new SolidColorBrush(GetColorWithGradient(Colors.Blue, Colors.Violet, i, numPoints + 1))
                 };
                 _canvas.Children.Add(line);
                 
                 start = point;
             }
 
-            line = new ArrowLine(start, new Point()) {
-                Stroke = new SolidColorBrush(GetColorWithGradient(Colors.Red, Colors.Yellow, 37, numberOfPoints + 1))
-            };
-            _canvas.Children.Add(line);
+            //line = new ArrowLine(start, new Point()) {
+            //    Stroke = new SolidColorBrush(GetColorWithGradient(Colors.Red, Colors.Yellow, 37, numPoints + 1))
+            //};
+            //_canvas.Children.Add(line);
 
+        }
+
+        public Point[] GetTrajectoryPoints(double radius, int numPoints) {
+            var points = new List<Point>();
+            var start = new Point();
+
+            points.Add(start);
+            // generate numPoints points
+            // all points are on a circle with radius 100
+            for (int i = 0; i <= numPoints; i++) {
+                var angle = i * (360 / numPoints);
+                var point = new Point(Math.Cos(angle * Math.PI / 180) * radius, Math.Sin(angle * Math.PI / 180) * radius);
+
+                points.Add(point);
+            }
+
+            return points.ToArray();
         }
 
         // Method to make a tangent circle with three points
@@ -2433,7 +2536,7 @@ namespace taskmaker_wpf.Views.Widget {
             var circle = new Ellipse {
                 Width = radius * 2,
                 Height = radius * 2,
-                Stroke = Brushes.Linen,
+                Stroke = Brushes.Teal,
                 StrokeThickness = 2,
             };
 
@@ -2457,7 +2560,7 @@ namespace taskmaker_wpf.Views.Widget {
             // the radius of the circle is 100
             // the center of the circle is (0, 0)
 
-            p1 = new Point(0, 250);
+            p1 = new Point(0, 300);
 
             p2 = RotatePoint(p1, 120);
             p3 = RotatePoint(p1, -120);
@@ -2480,16 +2583,28 @@ namespace taskmaker_wpf.Views.Widget {
             return new Point(rotatedX, rotatedY);
         }
 
-        private void Invalidate() {
+        public void Invalidate() {
             _canvas.Children.Clear();
 
             //var offset = Transform.Transform(new Point(0, 0));
 
-            _canvas.RenderTransform = new MatrixTransform(new Matrix(1, 0, 0, -1, Origin.X, Origin.Y));
+            //_canvas.RenderTransform = new MatrixTransform(new Matrix(1, 0, 0, -1, Origin.X, Origin.Y));
 
+            //create new TRS matrix
+            //var matrix = new Matrix();
+            //matrix.Translate(Origin.X, Origin.Y);
+            //matrix.Scale(1, -1);
+            //_canvas.RenderTransform = new MatrixTransform(matrix);
+
+            var normalizedT = new Matrix(1, 0, 0, -1, Origin.X, Origin.Y);
+
+            var mat = new Matrix(1, 0, 0, -1, Origin.X, Origin.Y);
+            mat.Append(TRS);
+
+            _canvas.RenderTransform = new MatrixTransform(mat);
 
             MakePoints();
-            DrawTriangle(p1, p2, p3);
+            //DrawTriangle(p1, p2, p3);
 
 
             // calculate d that is the distance from origin o to the line p1 and p2
@@ -2497,8 +2612,30 @@ namespace taskmaker_wpf.Views.Widget {
 
             MakeTangentCircle(d);
 
-            DrawTrajectory();
+            DrawTrajectory(d, 12);
 
+            var points = GetTrajectoryPoints(d, 12);
+
+            var circles = points.ToList().Select(e => DrawPoint(e, Brushes.WhiteSmoke, 2));
+
+            circles.ToList().ForEach(e => _canvas.Children.Add(e));
+
+            //for (var i = 0; i < points.Length; i ++) {
+            //    var label = new TextBlock() {
+            //        Background = Brushes.White,
+            //        FontSize = 12,
+            //        Text = i.ToString(),
+            //    };
+
+            //    var t = Matrix.Identity;
+            //    mat.Scale(-1, -1);
+            //    label.RenderTransform = new MatrixTransform(t);
+
+            //    Canvas.SetLeft(label, points[i].X);
+            //    Canvas.SetTop(label, points[i].Y);
+
+            //    _canvas.Children.Add(label);
+            //}
             //InvalidateVisual();
         }
 
@@ -2552,6 +2689,7 @@ namespace taskmaker_wpf.Views.Widget {
             End = end;
             //Stroke = Brushes.Black;
             StrokeThickness = 2;
+            StrokeLineJoin = PenLineJoin.Bevel;
         }
         public Point Start {
             get { return (Point)GetValue(StartProperty); }
@@ -2617,7 +2755,6 @@ namespace taskmaker_wpf.Views.Widget {
                 Segments = new PathSegmentCollection {
                     new PolyLineSegment(points, true)
                 },
-
             };
 
             // Create PathGeometry with PathFigure

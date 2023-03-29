@@ -543,6 +543,8 @@ namespace taskmaker_wpf.ViewModels {
             _debugInfo.Clear();
             MapTo(map);
             Debug = _debugInfo.ToString();
+
+            _logger.Debug(_debugInfo.ToString());
         }
 
         private StringBuilder _debugInfo = new();
@@ -552,6 +554,11 @@ namespace taskmaker_wpf.ViewModels {
             get => _debug;
             set { SetProperty(ref _debug, value); }
         }
+
+        // add a logger
+        private readonly ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
+
+
 
         public void MapTo(NLinearMapEntity map) {
 
