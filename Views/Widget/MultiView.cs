@@ -35,6 +35,8 @@ using System.IO;
 using Path = System.Windows.Shapes.Path;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace taskmaker_wpf.Views.Widget {
     public static class VisualTreeHelperExtensions {
@@ -1188,6 +1190,24 @@ namespace taskmaker_wpf.Views.Widget {
             HasExterior = false;
         }
 
+        private double distance => IKTemplate.PerpendicularLength(new Point(), new Point(0, 300), RotatePoint(new Point(0, 300), 120));
+
+        private void MakeTemplateNodesWithOrigin() {
+            var p1 = new Point(0, 300);
+
+            var p2 = RotatePoint(p1, 120);
+            var p3 = RotatePoint(p1, -120);
+
+            var o = new Point();
+
+            OnAddNode(o);
+            OnAddNode(p1);
+            OnAddNode(p2);
+            OnAddNode(p3);
+
+            HasExterior = false;
+        }
+
         private Point RotatePoint(Point p, double degree) {
             var radian = degree * Math.PI / 180.0;
 
@@ -1198,21 +1218,40 @@ namespace taskmaker_wpf.Views.Widget {
             return new Point(rotatedX, rotatedY);
         }
 
+        private DispatcherTimer timer;
+        private int step = 0;
+
         public void Evaluate() {
+            timer = new DispatcherTimer();
+
+            timer.Interval = TimeSpan.FromSeconds(2);
+
+            timer.Tick += Timer_Tick;
+
+            timer.Start();
+
+            step = 0;
+        }
+
+        private void Timer_Tick(object sender, EventArgs e) {
             var ik = _canvas.Children.OfType<IKTemplate>().First();
 
-            var points = ik.GetTrajectoryPoints(100, 12);
+            var points = ik.GetTrajectoryPoints(distance, 12);
 
             var vm = DataContext as RegionControlUIViewModel;
-
-            foreach (var p in points) {
-                vm.Interpolate(UiState, p);
-
-                // every 1 seconds to execute
-                //Thread.Sleep(1000);
-
-                _logger.Info($"Interpolated! {p}");
+            
+            if (step == points.Length) {
+                timer.Stop();
+                return;
             }
+
+            var p = points[step++];
+
+
+            vm.Interpolate(UiState, p, false);
+
+            
+            _logger.Info($"Interpolated! {p}");
         }
 
         // method that is an iteratorW
@@ -1543,11 +1582,14 @@ namespace taskmaker_wpf.Views.Widget {
                                 var vm = DataContext as RegionControlUIViewModel;
                                 var result = VisualTreeHelper.HitTest(_canvas, curr);
 
+                                if (result.VisualHit is VoronoiShape) {
+
+                                }
                                 if (result != null) {
                                     //var state = LogicalTreeHelperExtensions.FindAncestor<IRegionShape>(result.VisualHit)?.State;
 
                                     if (mode == UiMode.Trace)
-                                        vm.Interpolate(UiState, invMat.Transform(curr));
+                                        vm.Interpolate(UiState, invMat.Transform(curr), HasExterior);
                                     else if (mode == UiMode.Drag)
                                         vm.UpdateControlUiValue(UiState, invMat.Transform(curr));
 
@@ -1559,7 +1601,7 @@ namespace taskmaker_wpf.Views.Widget {
                                 var state = (LogicalTreeHelperExtensions.FindAncestor<IRegionShape>(result.VisualHit))?.State;
 
                                 if (mode == UiMode.Trace)
-                                    vm.Interpolate(UiState, invMat.Transform(curr));
+                                    vm.Interpolate(UiState, invMat.Transform(curr), HasExterior);
                                 else if (mode == UiMode.Drag)
                                     vm.UpdateControlUiValue(UiState, invMat.Transform(curr));
                             }
@@ -1642,8 +1684,12 @@ namespace taskmaker_wpf.Views.Widget {
                 else if (e.Key == Key.D6) {
                     Evaluate();
                 }
+                
                 else if (e.Key == Key.D0) {
                     MakeTemplateNodes();
+                }
+                else if (e.Key == Key.D9) {
+                    MakeTemplateNodesWithOrigin();
                 }
                 else if (e.Key == Key.F1) {
                     HasExterior = !HasExterior;
@@ -2085,9 +2131,10 @@ namespace taskmaker_wpf.Views.Widget {
                     StrokeThickness = 1.0,
                     Data = pathGeo
                 };
+                
+                path.Opacity = 0.3;
 
                 Content = path;
-
             }
             // 2-simplex
             else if (points.Length == 2){
@@ -2107,6 +2154,8 @@ namespace taskmaker_wpf.Views.Widget {
                     StrokeThickness = 2.0,
                     Data = pathGeo
                 };
+
+                path.Opacity = 0.3;
 
                 Content = path;
             }
@@ -2418,6 +2467,9 @@ namespace taskmaker_wpf.Views.Widget {
 
         private Canvas _canvas;
 
+        public int Length = 300;
+        public double Distance = 0;
+
         public IKTemplate() {
             _canvas = new Canvas() {
                 Width = 400,
@@ -2464,6 +2516,7 @@ namespace taskmaker_wpf.Views.Widget {
             // Set the fill color of the ellipse
             ellipse.Fill = color;
             ellipse.StrokeThickness = 2;
+            ellipse.Stroke = Brushes.Black;
 
             Canvas.SetLeft(ellipse, point.X - radius);
             Canvas.SetTop(ellipse, point.Y - radius);
@@ -2569,16 +2622,16 @@ namespace taskmaker_wpf.Views.Widget {
             // the radius of the circle is 100
             // the center of the circle is (0, 0)
 
-            p1 = new Point(0, 300);
+            p1 = new Point(0, Length);
 
             p2 = RotatePoint(p1, 120);
             p3 = RotatePoint(p1, -120);
 
             // draw points on _canvas
-            _canvas.Children.Add(DrawPoint(o, Brushes.Red, 12));
-            _canvas.Children.Add(DrawPoint(p1, Brushes.Black, 8));
-            _canvas.Children.Add(DrawPoint(p2, Brushes.Green, 8));
-            _canvas.Children.Add(DrawPoint(p3, Brushes.Blue, 8));
+            _canvas.Children.Add(DrawPoint(o, Brushes.Transparent, 8));
+            //_canvas.Children.Add(DrawPoint(p1, Brushes.Black, 8));
+            //_canvas.Children.Add(DrawPoint(p2, Brushes.Green, 8));
+            //_canvas.Children.Add(DrawPoint(p3, Brushes.Blue, 8));
 
         }
 
@@ -2619,13 +2672,15 @@ namespace taskmaker_wpf.Views.Widget {
             // calculate d that is the distance from origin o to the line p1 and p2
             var d = PerpendicularLength(new Point(), p1, p2);
 
+            Distance = d;
+
             MakeTangentCircle(d);
 
             DrawTrajectory(d, 12);
 
             var points = GetTrajectoryPoints(d, 12);
 
-            var circles = points.ToList().Select(e => DrawPoint(e, Brushes.WhiteSmoke, 2));
+            var circles = points.ToList().Select(e => DrawPoint(e, Brushes.WhiteSmoke, 4));
 
             circles.ToList().ForEach(e => _canvas.Children.Add(e));
 

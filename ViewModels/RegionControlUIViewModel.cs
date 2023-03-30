@@ -525,7 +525,7 @@ namespace taskmaker_wpf.ViewModels {
             _uiBus.Handle(req, out ControlUiEntity ui);
         }
 
-        public void Interpolate(ControlUiState state, Point pt) {
+        public void Interpolate(ControlUiState state, Point pt, bool hasExtra = true) {
             var req = new UpdateControlUiRequest {
                 Id = state.Id,
                 PropertyName = "Value",
@@ -541,7 +541,7 @@ namespace taskmaker_wpf.ViewModels {
             _mapBus.Handle(req0, out NLinearMapEntity map);
 
             _debugInfo.Clear();
-            MapTo(map);
+            MapTo(map, hasExtra);
             Debug = _debugInfo.ToString();
 
             _logger.Debug(_debugInfo.ToString());
@@ -560,7 +560,7 @@ namespace taskmaker_wpf.ViewModels {
 
 
 
-        public void MapTo(NLinearMapEntity map) {
+        public void MapTo(NLinearMapEntity map, bool hasExtra = true) {
 
             var lambdas = new List<double[]>();
 
@@ -573,7 +573,11 @@ namespace taskmaker_wpf.ViewModels {
 
                 var pt = new Point(ui.Value[0], ui.Value[1]);
                 var regions = ui.Regions;
-                var hit = regions.Where(e => e.HitTest(pt) != null).FirstOrDefault();
+
+                var hit = hasExtra ? 
+                    regions.Where(e => e.HitTest(pt) != null).OfType<SimplexRegionEntity>().FirstOrDefault() :
+                    regions.Where(e => e.HitTest(pt) != null).FirstOrDefault();
+                //var hit = regions.Where(e => e.HitTest(pt) != null).OfType<SimplexRegionEntity>().FirstOrDefault();
 
                 if (hit != null) {
                     lambdas.Add(hit.GetLambdas(pt, ui.Nodes));
