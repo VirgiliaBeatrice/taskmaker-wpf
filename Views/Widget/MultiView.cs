@@ -30,13 +30,10 @@ using static Unity.Storage.RegistrationSet;
 using Rectangle = System.Windows.Shapes.Rectangle;
 using Point = System.Windows.Point;
 using NLog;
-using static System.Windows.Forms.LinkLabel;
 using System.IO;
 using Path = System.Windows.Shapes.Path;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Threading;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Text;
 
 namespace taskmaker_wpf.Views.Widget {
     public static class VisualTreeHelperExtensions {
@@ -1105,6 +1102,7 @@ namespace taskmaker_wpf.Views.Widget {
 
         private Canvas _canvas;
         private Label _status;
+        private Label _expInfo;
         public NodeShape[] NodeVisuals { get; set; } = new NodeShape[0];
 
         public void InvalidateNode() {
@@ -1234,9 +1232,18 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         private void Timer_Tick(object sender, EventArgs e) {
+            var info = new StringBuilder();
+
+            // get current timestamp and append into info
+            info.Append(DateTime.Now.ToShortTimeString() + " ");
+            
+
+
+
             var ik = _canvas.Children.OfType<IKTemplate>().First();
 
             var points = ik.GetTrajectoryPoints(distance, 12);
+
 
             var vm = DataContext as RegionControlUIViewModel;
             
@@ -1245,22 +1252,17 @@ namespace taskmaker_wpf.Views.Widget {
                 return;
             }
 
-            var p = points[step++];
+            ik.Invalidate(step);
+            info.Append($"{step} ");
 
+            var p = points[step++];
+            info.Append($"{p} ");
 
             vm.Interpolate(UiState, p, false);
 
+            _expInfo.Content = info;
             
-            _logger.Info($"Interpolated! {p}");
-        }
-
-        // method that is an iteratorW
-        public IEnumerable<Point> GetTrajectoryPoints(int count, double step) {
-            var points = new Point[count];
-            for (int i = 0; i < count; i++) {
-                var p = new Point(i * step, 0);
-                yield return p;
-            }
+            //_logger.Info($"Interpolated! {p}");
         }
 
         public void InvalidateRegion() {
@@ -1434,9 +1436,18 @@ namespace taskmaker_wpf.Views.Widget {
                 //Height = 400,
             };
 
+            // stackpanel with vertical direction
+            var stackPanel = new StackPanel {
+                Orientation = Orientation.Vertical,
+            };
+
             _status = new Label() {
                 Content = mode.ToString()
             };
+            _expInfo = new Label() {
+                Content = "Exp: null"
+            };
+
             _canvas = new Canvas() {
                 Background = Brushes.White,
                 SnapsToDevicePixels = true,
@@ -1459,7 +1470,11 @@ namespace taskmaker_wpf.Views.Widget {
 
             _canvas.Children.Add(axisX);
             _canvas.Children.Add(axisY);
-            _canvas.Children.Add(_status);
+
+            stackPanel.Children.Add(_status);
+            stackPanel.Children.Add(_expInfo);
+
+            _canvas.Children.Add(stackPanel);
             _canvas.Children.Add(Pointer);
 
             CreateIKTemplate();
@@ -2572,7 +2587,39 @@ namespace taskmaker_wpf.Views.Widget {
             //    Stroke = new SolidColorBrush(GetColorWithGradient(Colors.Red, Colors.Yellow, 37, numPoints + 1))
             //};
             //_canvas.Children.Add(line);
+        }
 
+        private void DrawTrajectoryWithStep(double radius, int numPoints, int step) {
+            var start = new Point();
+
+            ArrowLine line;
+
+            List<Point> points = new List<Point>();
+
+            for (int i = 0; i < numPoints; i++) {
+                var angle = i * (360 / numPoints);
+                var point = new Point(Math.Cos(angle * Math.PI / 180) * radius, Math.Sin(angle * Math.PI / 180) * radius);
+
+                points.Add(point);
+            }
+
+            points.Insert(0, start);
+
+
+            for (int i = 0; i < step; i++) {
+                line = new ArrowLine(points[i], points[i + 1]) {
+                    Stroke = new SolidColorBrush(GetColorWithGradient(Colors.Blue, Colors.Violet, i, points.Count))
+                };
+                _canvas.Children.Add(line);
+            }
+
+            var p0 = points[points.Count - 1];
+            var p1 = points[1];
+
+            line = new ArrowLine(p0, p1) {
+                Stroke = new SolidColorBrush(GetColorWithGradient(Colors.Blue, Colors.Violet, points.Count, points.Count))
+            };
+            _canvas.Children.Add(line);
         }
 
         public Point[] GetTrajectoryPoints(double radius, int numPoints) {
@@ -2645,7 +2692,9 @@ namespace taskmaker_wpf.Views.Widget {
             return new Point(rotatedX, rotatedY);
         }
 
-        public void Invalidate() {
+        public int Step { get; set; } = 0;
+
+        public void Invalidate(int step = 12) {
             _canvas.Children.Clear();
 
             //var offset = Transform.Transform(new Point(0, 0));
@@ -2676,7 +2725,8 @@ namespace taskmaker_wpf.Views.Widget {
 
             MakeTangentCircle(d);
 
-            DrawTrajectory(d, 12);
+            //DrawTrajectory(d, 12);
+            DrawTrajectoryWithStep(d, 12, step);
 
             var points = GetTrajectoryPoints(d, 12);
 
