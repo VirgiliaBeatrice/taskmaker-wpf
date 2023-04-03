@@ -1231,10 +1231,15 @@ namespace taskmaker_wpf.Views.Widget {
 
                 //info.Append($"{step} ");
 
-                //var p = points[step++];
+                var ik = _canvas.Children.OfType<IKTemplate>().First();
+
+                var vm = DataContext as RegionControlUIViewModel;
+
+                var points = ik.CreateTrajectory(ik.Distance, 36);
+                var p = points[ik.Step];
                 //info.Append($"{p} ");
 
-                //vm.Interpolate(UiState, p, false);
+                vm.Interpolate(UiState, p, false);
 
                 _expInfo.Content = info;
             }, 36);
@@ -2643,7 +2648,7 @@ namespace taskmaker_wpf.Views.Widget {
             //_canvas.Children.Add(line);
         }
 
-        private Point[] CreateTrajectory(double radius, int numSegments) {
+        public Point[] CreateTrajectory(double radius, int numSegments) {
             var start = new Point();
             var points = new List<Point>() { start };
 
