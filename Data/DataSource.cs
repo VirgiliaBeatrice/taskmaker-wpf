@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Models;
 using taskmaker_wpf.Views;
@@ -59,7 +60,8 @@ namespace taskmaker_wpf.Data {
             else {
                 _counter = 0;
 
-                Save();
+                Task.Run(Save);
+                //Save();
             }
         }
 
