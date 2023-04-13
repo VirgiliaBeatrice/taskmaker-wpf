@@ -4,14 +4,19 @@ using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Timers;
+using NLog;
 using PCController;
 using taskmaker_wpf.Domain;
 
 namespace taskmaker_wpf.Services {
     public class SerialService {
+        public Logger logger = LogManager.GetCurrentClassLogger();
         public List<string> Ports { get; set; } = new List<string> { };
         public Motors Motors { get; set; }
         public Boards Boards { get; set; }
+
+        public int Max { get; set; } = 8000;
+        public int Min { get; set; } = -8000;
 
         public Queue<short[]> MessageQueue { get; set; } = new Queue<short[]>();
         public bool IsConnected => _serial != null;
@@ -89,8 +94,25 @@ namespace taskmaker_wpf.Services {
         
         public void Update(MotorEntity motor) {
             if (IsConnected) {
-                Motors[motor.NuibotBoardId * 4 + motor.NuibotMotorId].position.Value = (int)motor.Value[0];
-                _buffer[motor.NuibotBoardId * 4 + motor.NuibotMotorId] = (short)motor.Value[0];
+
+                var value = motor.Value[0];
+
+                if (value > Max) {
+                    value = Max;
+
+                    // Invoke clamp event
+                    logger.Info("Clamped caused by safety limit (max)");
+
+                }
+                else if (value < Min) {
+                    value = Min;
+
+                    // Invoke clamp event
+                    logger.Info("Clamped caused by safety limit (min)");
+                }
+
+                Motors[motor.NuibotBoardId * 4 + motor.NuibotMotorId].position.Value = (int)value;
+                _buffer[motor.NuibotBoardId * 4 + motor.NuibotMotorId] = (short)value;
 
                 MessageQueue.Enqueue(_buffer);
             }

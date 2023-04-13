@@ -598,5 +598,9 @@ namespace taskmaker_wpf.Domain {
         public int Max { get; set; } = 10000;
         public int NuibotBoardId { get; set; } = -1;
         public int NuibotMotorId { get; set; } = -1;
+
+        public int ThresholdMin { get; set; } = -10000;
+        public int ThresholdMax { get; set; } = 10000;
+        public bool IsClamped { get; set; } = false;
     }
 }

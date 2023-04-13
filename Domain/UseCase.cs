@@ -152,9 +152,8 @@ namespace taskmaker_wpf.Domain {
                 if (req.Value is double[] value) {
                     
                     motor.Value = value.Select(e => e.Clamp(motor.Min, motor.Max)).ToArray();
-                    
+
                     // Send to serial service
-                    
                     _serial.Update(motor);
                 }
                 else if (req.Value is MotorEntity entity) {

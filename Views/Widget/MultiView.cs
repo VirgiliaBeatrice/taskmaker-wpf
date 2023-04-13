@@ -1220,29 +1220,57 @@ namespace taskmaker_wpf.Views.Widget {
         private DispatcherTimer timer;
         private int step = 0;
 
-        public void Evaluate() {
+        public void Evaluate(int mode) {
             var ik = _canvas.Children.OfType<IKTemplate>().First();
 
-            ik.Start(() => {
-                var info = new StringBuilder();
+            if (mode == 1) {
+                ik.Start(() => {
+                    var info = new StringBuilder();
 
-                // get current timestamp and append into info
-                info.Append(DateTime.Now.ToShortTimeString() + " ");
+                    // get current timestamp and append into info
+                    info.Append(DateTime.Now.ToShortTimeString() + " ");
 
-                //info.Append($"{step} ");
 
-                var ik = _canvas.Children.OfType<IKTemplate>().First();
+                    var ik = _canvas.Children.OfType<IKTemplate>().First();
 
-                var vm = DataContext as RegionControlUIViewModel;
+                    var vm = DataContext as RegionControlUIViewModel;
 
-                var points = ik.CreateTrajectory(ik.Distance, 36);
-                var p = points[ik.Step];
-                //info.Append($"{p} ");
+                    info.Append($"{ik.Step} ");
 
-                vm.Interpolate(UiState, p, false);
+                    var points = ik.CreateTrajectory(ik.Distance, 36);
+                    var p = points[ik.Step - 1];
+                    info.Append($"{p} ");
 
-                _expInfo.Content = info;
-            }, 36);
+                    vm.Interpolate(UiState, p, false);
+
+                    _expInfo.Content = info;
+                }, 36, mode = 1);
+            }
+            else if (mode == 2) {
+                ik.Start(() => {
+                    var info = new StringBuilder();
+
+                    // get current timestamp and append into info
+                    info.Append(DateTime.Now.ToShortTimeString() + " ");
+
+
+                    var ik = _canvas.Children.OfType<IKTemplate>().First();
+
+                    var vm = DataContext as RegionControlUIViewModel;
+
+                    info.Append($"{ik.Step} ");
+
+                    var points = ik.CreateTrajectory(ik.Distance, 36 / 2);
+                    var p = points[ik.Step - 1];
+                    info.Append($"p[{ik.Step - 1}]{p} ");
+
+                    vm.Interpolate(UiState, p, false);
+
+                    _expInfo.Content = info;
+                }, 36 / 2, mode = 2);
+            }
+
+
             //timer = new DispatcherTimer();
 
             //timer.Interval = TimeSpan.FromSeconds(2);
@@ -1719,9 +1747,11 @@ namespace taskmaker_wpf.Views.Widget {
                     Save("screenshot.png");
                 }
                 else if (e.Key == Key.D6) {
-                    Evaluate();
+                    Evaluate(1);
                 }
-                
+                else if (e.Key == Key.D7) {
+                    Evaluate(2);
+                }
                 else if (e.Key == Key.D0) {
                     MakeTemplateNodes();
                 }
@@ -2545,13 +2575,15 @@ namespace taskmaker_wpf.Views.Widget {
         private int step = 0;
         private int _numSegments = 12;
         private Action OnTick;
+        private int _mode = 1;
 
-        public void Start(Action action, int numSegments) {
+        public void Start(Action action, int numSegments, int mode = 1) {
             Step = 0;
 
             timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(0.5);
+            timer.Interval = TimeSpan.FromSeconds(3);
             timer.Tick += Timer_Tick;
+            _mode = mode;
 
             OnTick = action;
             _numSegments = numSegments;
@@ -2768,7 +2800,7 @@ namespace taskmaker_wpf.Views.Widget {
 
 
             // calculate d that is the distance from origin o to the line p1 and p2
-            var d = PerpendicularLength(new Point(), p1, p2);
+            var d = PerpendicularLength(new Point(), p1, p2) / _mode;
 
             Distance = d;
 
