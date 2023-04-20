@@ -136,6 +136,7 @@ namespace taskmaker_wpf {
             containerRegistry.RegisterForNavigation<RegionMotor>();
             containerRegistry.RegisterForNavigation<RegionSettings>();
             containerRegistry.RegisterForNavigation<RegionControlUI>();
+            containerRegistry.RegisterForNavigation<RegionSlider>();
 
         }
 

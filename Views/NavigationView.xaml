@@ -51,6 +51,11 @@
                 CommandParameter="RegionMotor">
                 <Image Source="/icons/panel.png" RenderOptions.BitmapScalingMode="HighQuality"/>
             </Button>
+            <Button
+                Command="{Binding NavigateCommand}"
+                CommandParameter="RegionSlider">
+                <Image Source="/icons/panel.png" RenderOptions.BitmapScalingMode="HighQuality"/>
+            </Button>
         </StackPanel>
     </Border>
 </UserControl>
