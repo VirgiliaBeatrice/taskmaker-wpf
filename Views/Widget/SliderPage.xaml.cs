@@ -14,6 +14,7 @@ using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using taskmaker_wpf.ViewModels;
 
 namespace taskmaker_wpf.Views.Widget {
 
@@ -281,69 +282,29 @@ namespace taskmaker_wpf.Views.Widget {
     /// Interaction logic for SliderPage.xaml
     /// </summary>
     public partial class SliderPage : UserControl {
-        private int[] _touchDevices = new int[3] { -1, -1, -1 };
-
-        private Dictionary<int, Ellipse> _fingers = new Dictionary<int, Ellipse>();
-
         public SliderPage() {
             InitializeComponent();
         }
 
+        private void page_Loaded(object sender, RoutedEventArgs e) {
+            var vm = DataContext as RegionMotorViewModel;
 
+            vm.AddMotor();
+            vm.AddMotor();
+            vm.AddMotor();
 
-        private void Canvas_TouchDown(object sender, TouchEventArgs e) {
-            var canvas = sender as Canvas;
+            var idx = 0;
 
-            if (!_fingers.ContainsKey(e.TouchDevice.Id)) {
-                var touchPoint = e.GetTouchPoint(canvas);
-                var circle = new Ellipse() {
-                    Tag = $"{e.TouchDevice.Id}",
-                    Width = 20,
-                    Height = 20,
-                    Fill = Brushes.Red
-                };
+            foreach(var motor in vm.MotorStates) {
+                motor.NuibotBoardId = 0;
+                motor.NuibotMotorId = 1 + idx;
 
-                canvas.Children.Add(circle);
-                _fingers.Add(e.TouchDevice.Id, circle);
+                motor.Max = 10000;
+                motor.Min = -10000;
+                idx++;
 
-                Canvas.SetLeft(circle, touchPoint.Position.X - 10);
-                Canvas.SetTop(circle, touchPoint.Position.Y - 10);
+                vm.UpdateMotor(motor);
             }
-
-            e.Handled = false;
-        }
-
-        private void Canvas_TouchMove(object sender, TouchEventArgs e) {
-            var canvas = sender as Canvas;
-
-            if (_fingers.ContainsKey(e.TouchDevice.Id)) {
-                var touchPoint = e.GetTouchPoint(canvas);
-                var circle = _fingers[e.TouchDevice.Id];
-
-                Canvas.SetLeft(circle, touchPoint.Position.X - 10);
-                Canvas.SetTop(circle, touchPoint.Position.Y - 10);
-            }
-
-            e.Handled = false;
-
-        }
-
-        private void Canvas_TouchUp(object sender, TouchEventArgs e) {
-            var canvas = sender as Canvas;
-
-            if (_fingers.ContainsKey(e.TouchDevice.Id)) {
-                var circle = _fingers[e.TouchDevice.Id];
-
-                canvas.Children.Remove(circle);
-                _fingers.Remove(e.TouchDevice.Id);
-            }
-
-            e.Handled = false;
-
-        }
-
-        private void SliderController_Loaded(object sender, RoutedEventArgs e) {
-
         }
     }
 }

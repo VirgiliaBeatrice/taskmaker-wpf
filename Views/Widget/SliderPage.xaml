@@ -6,16 +6,18 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:taskmaker_wpf.Views.Widget"
-             mc:Ignorable="d" Height="600" Width="800">
-
+             mc:Ignorable="d" Height="600" Width="800"
+    Loaded="page_Loaded"
+    >
     <Grid
-        x:Name="stack"
+        VerticalAlignment="Stretch"
+        HorizontalAlignment="Stretch"
         >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
-            
+
         </Grid.ColumnDefinitions>
         <local:SliderController
             Grid.Column="0" />
