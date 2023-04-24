@@ -49,5 +49,35 @@
                     IsChecked="{Binding IsConnected}" />
             </Grid>
         </GroupBox>
+
+        <GroupBox
+            Grid.Row="1"
+            Header="Experiment">
+            <StackPanel
+                HorizontalAlignment="Left"
+                Orientation="Horizontal">
+                <Label
+                    Margin="20"                    
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+                    Participant
+                </Label>
+                <TextBox
+                    Margin="20"                    
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Width="200"
+                    >
+                    
+                </TextBox>
+                <Button
+                    Width="100"
+                    Margin="20"                    
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    >Enter</Button>
+            </StackPanel>
+            
+        </GroupBox>
     </Grid>
 </UserControl>

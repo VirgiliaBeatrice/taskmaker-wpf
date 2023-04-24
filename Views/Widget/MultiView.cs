@@ -1447,7 +1447,7 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         private Point _origin = new Point();
-
+        private int capturedFinger = -1;
         public UiController() {
             Pointer.Visibility = Visibility.Collapsed;
             Panel.SetZIndex(Pointer, 25);
@@ -1550,6 +1550,59 @@ namespace taskmaker_wpf.Views.Widget {
                 //Save("test1.png");
 
             };
+
+            TouchDown += (s, e) => {
+                var finger = e.TouchDevice.Id;
+
+                if (capturedFinger == -1) {
+                    capturedFinger = finger;
+                    CaptureTouch(e.TouchDevice);
+                    e.Handled = true;
+                }
+
+            };
+
+            TouchMove += (s, e) => {
+                var finger = e.TouchDevice.Id;
+
+                if (capturedFinger == finger) {
+                    var point = e.GetTouchPoint(_canvas).Position;
+
+                    var invMat = Transform;
+                    invMat.Invert();
+
+                    var vm = DataContext as RegionControlUIViewModel;
+                    var result = VisualTreeHelper.HitTest(_canvas, point);
+
+                    if (result.VisualHit is VoronoiShape) {
+
+                    }
+                    if (result != null) {
+                        //_logger.Debug("dududu");
+
+                        if (mode == UiMode.Trace)
+                            vm.Interpolate(UiState, invMat.Transform(point), HasExterior);
+                        //else if (mode == UiMode.Drag)
+                        //    vm.UpdateControlUiValue(UiState, invMat.Transform(point));
+
+                    }
+
+                    e.Handled = true;
+
+                }
+            };
+
+            TouchUp += (s, e) => {
+                var finger = e.TouchDevice.Id;
+
+                if (capturedFinger == finger) {
+                    ReleaseTouchCapture(e.TouchDevice);
+                    capturedFinger = -1;
+
+                    e.Handled = true;
+                }
+            };
+
 
             // Pan
             MouseDown += (s, e) => {

@@ -6,8 +6,9 @@
              xmlns:local="clr-namespace:taskmaker_wpf.Views"
              xmlns:w="clr-namespace:taskmaker_wpf.Views.Widget"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="800">
+             d:DesignHeight="600" d:DesignWidth="800"
+             >
     <Grid>
-        <w:SliderPage />
+        <w:SliderPage  />
     </Grid>
 </UserControl>

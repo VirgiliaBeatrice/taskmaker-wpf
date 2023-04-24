@@ -12,6 +12,7 @@ using taskmaker_wpf.Models;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using taskmaker_wpf.Domain;
 
 namespace taskmaker_wpf.ViewModels {
     public class TestWindowViewModel : BindableBase {
@@ -46,6 +47,28 @@ namespace taskmaker_wpf.ViewModels {
             if (navigatePath != null) {
                 if (navigatePath == "RegionControlUI") {
                     _regionManager.RequestNavigate("ContentRegion", nameof(Views.RegionControlUI));
+                }
+                else if (navigatePath.Contains("RegionSlider")) {
+                    var parameters = new NavigationParameters();
+
+
+                    if (navigatePath == "RegionSliderPanda") {
+                        parameters.Add("sub", "Panda");
+                        
+                        _regionManager.RequestNavigate(
+                            "ContentRegion", 
+                            nameof(Views.RegionSlider),
+                            parameters
+                            );
+                    }
+                    else {
+                        parameters.Add("sub", "Arm");
+                        _regionManager.RequestNavigate(
+                            "ContentRegion",
+                            nameof(Views.RegionSlider),
+                            parameters
+                            );
+                    }
                 }
                 else {
                     _regionManager.RequestNavigate("ContentRegion", navigatePath);

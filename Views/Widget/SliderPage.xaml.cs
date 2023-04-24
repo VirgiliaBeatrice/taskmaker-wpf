@@ -33,6 +33,37 @@ namespace taskmaker_wpf.Views.Widget {
 
 
 
+
+        public RegionMotorViewModel ViewModel {
+            get { return (RegionMotorViewModel)GetValue(ViewModelProperty); }
+            set { SetValue(ViewModelProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ViewModel.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ViewModelProperty =
+            DependencyProperty.Register("ViewModel", typeof(RegionMotorViewModel), typeof(SliderController), new PropertyMetadata(null));
+
+
+        public MotorState State {
+            get { return (MotorState)GetValue(StateProperty); }
+            set { SetValue(StateProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for State.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty StateProperty =
+            DependencyProperty.Register("State", typeof(MotorState), typeof(SliderController), new PropertyMetadata(null, OnPropertyChanged));
+
+        private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            if (d is SliderController controller) {
+                controller.InvalidateMotorState();
+            }
+        }
+
+        private void InvalidateMotorState() {
+            SetVerticalLayouts();
+        }
+
+
         public SliderController() {
             //SetHorizontalLayouts();
             SetVerticalLayouts();
@@ -53,46 +84,88 @@ namespace taskmaker_wpf.Views.Widget {
                 Width = new GridLength(1, GridUnitType.Star),
             });
 
-            var min = new TextBlock() {
-                Text = "0",
-                Foreground = Brushes.Black,
-                FontSize = 18,
-                Margin = new Thickness(0, 0, 0, 0),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-            };
 
-            Grid.SetColumn(min, 0);
+            TextBlock min, max;
+            Slider slider;
 
-            var max = new TextBlock() {
-                Text = "100",
-                Foreground = Brushes.Black,
-                FontSize = 18,
-                Margin = new Thickness(0, 0, 0, 0),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-            };
+            if (State != null) {
+                min = new TextBlock() {
+                    Foreground = Brushes.Black,
+                    FontSize = 18,
+                    Margin = new Thickness(0, 0, 0, 0),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
 
-            Grid.SetColumn(max, 2);
+                min.SetBinding(TextBlock.TextProperty, new Binding("Min") {
+                    Source = State
+                });
 
+                max = new TextBlock() {
+                    Foreground = Brushes.Black,
+                    FontSize = 18,
+                    Margin = new Thickness(0, 0, 0, 0),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
 
-            var slider = new Slider() {
-                Minimum = 0,
-                Maximum = 100,
-                Value = 50,
-                MinWidth = 400,
-                MinHeight = 50,
-            };
+                max.SetBinding(TextBlock.TextProperty, new Binding("Max") {
+                    Source = State
+                });
+
+                slider = new Slider() {
+                    MinWidth = 400,
+                    MinHeight = 50,
+                };
+
+                slider.SetBinding(Slider.ValueProperty, new Binding("Value[0]") {
+                    Source = State
+                });
+                slider.SetBinding(Slider.MaximumProperty, new Binding("Max") {
+                    Source = State
+                });
+                slider.SetBinding(Slider.MinimumProperty, new Binding("Min") {
+                    Source = State
+                });
+            }
+            else {
+                min = new TextBlock() {
+                    Foreground = Brushes.Black,
+                    FontSize = 18,
+                    Margin = new Thickness(0, 0, 0, 0),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Text = "0",
+                };
+                max = new TextBlock() {
+                    Foreground = Brushes.Black,
+                    FontSize = 18,
+                    Margin = new Thickness(0, 0, 0, 0),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Text = "100",
+                };
+                slider = new Slider() {
+                    Minimum = 0,
+                    Maximum = 100,
+                    Value = 50,
+                    MinWidth = 400,
+                    MinHeight = 50,
+                };
+            }
+
             var box = new Viewbox() {
             };
 
             box.Child = slider;
 
-            Grid.SetColumn(box, 1);
-
             grid.Children.Add(min);
             grid.Children.Add(box);
             grid.Children.Add(max);
+
+            Grid.SetColumn(min, 0);
+            Grid.SetColumn(box, 1);
+            Grid.SetColumn(max, 2);
 
             Content = grid;
         }
@@ -120,81 +193,142 @@ namespace taskmaker_wpf.Views.Widget {
                 Height = new GridLength(1, GridUnitType.Star),
             });
 
-            var label = new TextBlock {
-                Text = "Motor0",
-                Foreground = Brushes.Black,
-                FontSize = 18,
-                Margin = new Thickness(0, 0, 0, 0),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-            };
 
-            Grid.SetRow(label, 0);
+            TextBlock label, min, max;
+            Slider slider;
 
-            var min = new TextBlock() {
-                Text = "0",
-                Foreground = Brushes.Black,
-                FontSize = 18,
-                Margin = new Thickness(0, 0, 0, 0),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-            };
+            if (State != null) {
+                label = new TextBlock {
+                    Foreground = Brushes.Black,
+                    FontSize = 18,
+                    Margin = new Thickness(0, 0, 0, 0),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
 
-            Grid.SetRow(min, 3);
+                label.SetBinding(TextBlock.TextProperty, new Binding("Name") {
+                    Source = State
+                });
 
-            var max = new TextBlock() {
-                Text = "100",
-                Foreground = Brushes.Black,
-                FontSize = 18,
-                Margin = new Thickness(0, 0, 0, 0),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-            };
+                min = new TextBlock() {
+                    Foreground = Brushes.Black,
+                    FontSize = 18,
+                    Margin = new Thickness(0, 0, 0, 0),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
 
-            Grid.SetRow(max, 1);
+                min.SetBinding(TextBlock.TextProperty, new Binding("Min") {
+                    Source = State
+                });
 
+                max = new TextBlock() {
+                    Foreground = Brushes.Black,
+                    FontSize = 18,
+                    Margin = new Thickness(0, 0, 0, 0),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
 
-            var slider = new Slider() {
-                Minimum = 0,
-                Maximum = 100,
-                Value = 50,
-                Height = 200,
-                //VerticalAlignment = VerticalAlignment.Stretch,
-                Orientation = Orientation.Vertical,
-                //Background = Brushes.Red,
-                Margin = new Thickness(0, 0, 0, 0),
-                IsDirectionReversed = true,
-            };
+                max.SetBinding(TextBlock.TextProperty, new Binding("Max") {
+                    Source = State
+                });
 
-            //slider.TouchDown += Slider_TouchDown;
-            //slider.TouchMove += Slider_TouchMove;
-            //slider.TouchUp += Slider_TouchUp;
+                slider = new Slider() {
+                    Height = 200,
+                    Orientation = Orientation.Vertical,
+                    IsDirectionReversed = true,
+                };
+
+                slider.SetBinding(Slider.ValueProperty, new Binding("Value[0]") {
+                    Source = State
+                });
+                slider.SetBinding(Slider.MaximumProperty, new Binding("Max") {
+                    Source = State
+                });
+                slider.SetBinding(Slider.MinimumProperty, new Binding("Min") {
+                    Source = State
+                });
+
+                slider.ValueChanged += Slider_ValueChanged;
+            }
+            else {
+                label = new TextBlock {
+                    Text = "Motor0",
+                    Foreground = Brushes.Black,
+                    FontSize = 18,
+                    Margin = new Thickness(0, 0, 0, 0),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
+                min = new TextBlock() {
+                    Text = "0",
+                    Foreground = Brushes.Black,
+                    FontSize = 18,
+                    Margin = new Thickness(0, 0, 0, 0),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
+                max = new TextBlock() {
+                    Text = "100",
+                    Foreground = Brushes.Black,
+                    FontSize = 18,
+                    Margin = new Thickness(0, 0, 0, 0),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
+                slider = new Slider() {
+                    Minimum = 0,
+                    Maximum = 100,
+                    Value = 50,
+                    Height = 200,
+                    //VerticalAlignment = VerticalAlignment.Stretch,
+                    Orientation = Orientation.Vertical,
+                    //Background = Brushes.Red,
+                    Margin = new Thickness(0, 0, 0, 0),
+                    IsDirectionReversed = true,
+                };
+            }
 
             var border = new Border {
                 //Background = Brushes.Green,
                 BorderBrush = Brushes.Gray,
                 BorderThickness = new Thickness(1)
             };
-            var box = new Viewbox() {
-                StretchDirection = StretchDirection.UpOnly,
-                Stretch = Stretch.Uniform,
-                Width = 80
-            };
-            border.Child = box;
-            box.Child = slider;
 
             border.TouchDown += Box_TouchDown;
             border.TouchMove += Box_TouchMove;
             border.TouchUp += Box_TouchUp;
 
-            Grid.SetRow(border, 2);
+            var box = new Viewbox() {
+                StretchDirection = StretchDirection.UpOnly,
+                Stretch = Stretch.Uniform,
+                Width = 80
+            };
+
+            border.Child = box;
+            box.Child = slider;
 
             grid.Children.Add(label);
             grid.Children.Add(min);
             grid.Children.Add(border);
             grid.Children.Add(max);
 
+            Grid.SetRow(label, 0);
+            Grid.SetRow(max, 1);
+            Grid.SetRow(border, 2);
+            Grid.SetRow(min, 3);
+
             Content = grid;
+        }
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            var slider = sender as Slider;
+            var vm = ViewModel;
+
+            var state = slider.DataContext as MotorState;
+
+            vm.UpdateMotorValue(state, e.NewValue);
         }
 
         private void Box_TouchUp(object sender, TouchEventArgs e) {
@@ -215,6 +349,8 @@ namespace taskmaker_wpf.Views.Widget {
                     var slider = (box.Child as Viewbox).Child as Slider;
 
                     slider.Value = value * (slider.Maximum - slider.Minimum) + slider.Minimum;
+
+
                 }
                 else {
                     var touchPoint = e.GetTouchPoint(box);
@@ -236,46 +372,6 @@ namespace taskmaker_wpf.Views.Widget {
 
             var box = sender as Viewbox;
         }
-
-        private void Slider_TouchDown(object sender, TouchEventArgs e) {
-            var slider = sender as Slider;
-
-            _finger = e.TouchDevice.Id;
-
-            //slider.CaptureTouch(e.TouchDevice);
-
-            //e.Handled = true;
-        }
-
-        private void Slider_TouchMove(object sender, TouchEventArgs e) {
-            var slider = sender as Slider;
-
-            if (_finger != -1) {
-                if (IsVertical) {
-                    var touchPoint = e.GetTouchPoint(slider);
-                    var value = touchPoint.Position.Y / slider.ActualHeight;
-                    slider.Value = value * (slider.Maximum - slider.Minimum) + slider.Minimum;
-                }
-                else {
-                    var touchPoint = e.GetTouchPoint(slider);
-                    var value = touchPoint.Position.X / slider.ActualWidth;
-                    slider.Value = value * (slider.Maximum - slider.Minimum) + slider.Minimum;
-                }
-
-
-                //e.Handled = true;
-            }
-        }
-
-        private void Slider_TouchUp(object sender, TouchEventArgs e) {
-            var slider = sender as Slider;
-
-            if (_finger != -1) {
-                //slider.ReleaseTouchCapture(e.TouchDevice);
-                _finger = -1;
-                //e.Handled = true;
-            }
-        }
     }
 
     /// <summary>
@@ -284,27 +380,40 @@ namespace taskmaker_wpf.Views.Widget {
     public partial class SliderPage : UserControl {
         public SliderPage() {
             InitializeComponent();
+
+            KeyDown += OnKeyDown;
+        }
+
+        private void OnKeyDown(object sender, KeyEventArgs e) {
+            var vm = DataContext as RegionMotorViewModel;
+
+            if (e.Key == Key.F5) {
+                vm.InvalidateMotorState();
+            }
         }
 
         private void page_Loaded(object sender, RoutedEventArgs e) {
             var vm = DataContext as RegionMotorViewModel;
+            
+            if (vm.MotorStates.Length == 0) {
+                vm.AddMotor();
+                vm.AddMotor();
+                vm.AddMotor();
 
-            vm.AddMotor();
-            vm.AddMotor();
-            vm.AddMotor();
+                var idx = 0;
 
-            var idx = 0;
+                foreach(var motor in vm.MotorStates) {
+                    motor.NuibotBoardId = 0;
+                    motor.NuibotMotorId = 1 + idx;
 
-            foreach(var motor in vm.MotorStates) {
-                motor.NuibotBoardId = 0;
-                motor.NuibotMotorId = 1 + idx;
+                    motor.Max = 10000;
+                    motor.Min = -10000;
+                    idx++;
 
-                motor.Max = 10000;
-                motor.Min = -10000;
-                idx++;
-
-                vm.UpdateMotor(motor);
+                    vm.UpdateMotor(motor);
+                }
             }
+
         }
     }
 }

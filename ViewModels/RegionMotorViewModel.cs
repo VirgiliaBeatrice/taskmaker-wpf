@@ -125,6 +125,14 @@ namespace taskmaker_wpf.ViewModels {
             _mapper.Map(motor, target);
         }
 
+        public void InvalidateMotorState() {
+            var req = new ListMotorRequest();
+
+            _motorBus.Handle(req, out MotorEntity[] motors);
+
+            MotorStates = _mapper.Map<MotorState[]>(motors);
+        }
+
         private void InvalidateMotors() {
             _motorBus.Handle(new ListMotorRequest(), out MotorEntity[] motors);
 

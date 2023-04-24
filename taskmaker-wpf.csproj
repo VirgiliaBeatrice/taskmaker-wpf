@@ -30,6 +30,20 @@
     <OutputPath>bin\x64\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Views\Elements\**" />
+    <Compile Remove="Views\Widget\Container\**" />
+    <Compile Remove="Views\Widget\Node\**" />
+    <EmbeddedResource Remove="Views\Elements\**" />
+    <EmbeddedResource Remove="Views\Widget\Container\**" />
+    <EmbeddedResource Remove="Views\Widget\Node\**" />
+    <None Remove="Views\Elements\**" />
+    <None Remove="Views\Widget\Container\**" />
+    <None Remove="Views\Widget\Node\**" />
+    <Page Remove="Views\Elements\**" />
+    <Page Remove="Views\Widget\Container\**" />
+    <Page Remove="Views\Widget\Node\**" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="System.Windows" />
   </ItemGroup>
   <ItemGroup>
@@ -38,7 +52,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="icons\arm.png" />
     <Resource Include="icons\home.png" />
+    <Resource Include="icons\panda.png" />
     <Resource Include="icons\settings.png" />
     <Resource Include="icons\triangle.png" />
     <Resource Include="icons\panel.png" />
@@ -72,11 +88,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Views\Elements\" />
-    <Folder Include="Views\Widget\Container\" />
-    <Folder Include="Views\Widget\Node\" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
     <PackageReference Include="Maikebing.System.Windows.Forms.DataVisualization" Version="5.0.1" />
@@ -97,6 +108,10 @@
     <Compile Remove="ViewModels\MainPage\MainPageViewModel.cs" />
     <Compile Remove="Views\Widget\Pages\Page.cs" />
     <Compile Remove="Views\Widget\Pages\SimplexView.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="icons\arm.png" />
+    <None Remove="icons\panda.png" />
   </ItemGroup>
   <ItemGroup>
     <None Update="nlog.config">

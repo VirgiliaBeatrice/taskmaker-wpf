@@ -6,7 +6,6 @@
              xmlns:local="clr-namespace:taskmaker_wpf.Views.Widget"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
-             Loaded="UserControl_Loaded"
              >
     <Grid
         VerticalAlignment="Stretch"

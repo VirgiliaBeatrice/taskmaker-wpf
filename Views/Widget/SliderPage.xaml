@@ -6,101 +6,29 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:taskmaker_wpf.Views.Widget"
-             mc:Ignorable="d" Height="600" Width="800"
-    Loaded="page_Loaded"
+             xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels" 
+    d:DataContext="{d:DesignInstance Type=viewmodels:RegionMotorViewModel}"
+    mc:Ignorable="d"
     >
     <Grid
+        Background="AliceBlue"
         VerticalAlignment="Stretch"
-        HorizontalAlignment="Stretch"
-        >
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-
-        </Grid.ColumnDefinitions>
-        <local:SliderController
-            Grid.Column="0" />
-        <local:SliderController
-            Grid.Column="1" />
-        <local:SliderController
-            Grid.Column="2" />
+        HorizontalAlignment="Stretch">
+        <ItemsControl
+            ItemsSource="{Binding Path=MotorStates}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type viewmodels:MotorState}">
+                    <local:SliderController 
+                        ViewModel="{Binding ElementName=page, Path=DataContext}"
+                        State="{Binding .}" Margin="40 0 40 0"
+                                            />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
     </Grid>
-    <!--
-    
-    <Grid
-        VerticalAlignment="Stretch">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="2*" />
-            <RowDefinition Height="2*" />
-            <RowDefinition Height="2*" />
-        </Grid.RowDefinitions>
-
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="8*" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-
-        <Canvas
-            Panel.ZIndex="-2"
-            Background="Transparent"
-            Grid.Column="0" Grid.Row="0"
-            Grid.ColumnSpan="3" Grid.RowSpan="3"
-            PreviewTouchDown="Canvas_TouchDown"
-            PreviewTouchMove="Canvas_TouchMove"
-            PreviewTouchUp="Canvas_TouchUp"
-            >
-            
-        </Canvas>
-
-        <TextBlock Grid.Column="0" Grid.Row="0" Text="0"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
-        <Viewbox Grid.Column="1" Grid.Row="0"
-                 >
-            <Slider Minimum="0" Maximum="100" Value="50"
-                    TouchDown="Slider_TouchDown"
-                    TouchMove="Slider_TouchMove"
-                    TouchUp="Slider_TouchUp"
-                    MinWidth="400"/>
-            
-        </Viewbox>
-        <TextBlock Grid.Column="2" Grid.Row="0" Text="100" 
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
-
-        <TextBlock Grid.Column="0" Grid.Row="1" Text="0"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
-        <Viewbox Grid.Column="1" Grid.Row="1"
-                 >
-            <Slider Minimum="0" Maximum="100" Value="50"
-                    TouchDown="Slider_TouchDown"
-                    TouchMove="Slider_TouchMove"
-                    TouchUp="Slider_TouchUp"
-                    MinWidth="400"/>
-
-        </Viewbox>
-        <TextBlock Grid.Column="2" Grid.Row="1" Text="100"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
-
-        <TextBlock Grid.Column="0" Grid.Row="2" Text="0" VerticalAlignment="Center" 
-                   HorizontalAlignment="Center"
-                   />
-        <Viewbox Grid.Column="1" Grid.Row="2"
-                 >
-            <Slider Minimum="0" Maximum="100" Value="50"
-                    TouchDown="Slider_TouchDown"
-                    TouchMove="Slider_TouchMove"
-                    TouchUp="Slider_TouchUp"
-                    MinWidth="400"/>
-
-        </Viewbox>
-        <TextBlock Grid.Column="2" Grid.Row="2" Text="100" 
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
-    </Grid>
-    -->
 </UserControl>

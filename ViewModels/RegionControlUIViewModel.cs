@@ -574,7 +574,7 @@ namespace taskmaker_wpf.ViewModels {
                 var pt = new Point(ui.Value[0], ui.Value[1]);
                 var regions = ui.Regions;
 
-                var hit = hasExtra ? 
+                var hit = !hasExtra ? 
                     regions.Where(e => e.HitTest(pt) != null).OfType<SimplexRegionEntity>().FirstOrDefault() :
                     regions.Where(e => e.HitTest(pt) != null).FirstOrDefault();
                 //var hit = regions.Where(e => e.HitTest(pt) != null).OfType<SimplexRegionEntity>().FirstOrDefault();
