@@ -42,6 +42,10 @@
                                 <StackPanel
                                     Orientation="Vertical"
                                     >
+                                    <GroupBox Header="Details">
+                                        <Label Content="Null" />
+                                    </GroupBox>
+                                    
                                     <Button
                                         Margin="4"
                                         Command="{Binding AddUiCommand}">
@@ -50,10 +54,35 @@
                                         </Button.Content>
                                     </Button>
                                     <ListBox
+                                        x:Name="lbUiStates"
                                         MinHeight="20"
                                         Margin="4"
                                         ItemsSource="{Binding UiStates}"
-                                        />
+                                        SelectionMode="Multiple"
+                                        >
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type viewmodels:ControlUiState}">
+                                                <StackPanel
+                                                    Orientation="Horizontal">
+                                                    <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                              Checked="CheckBox_Checked"
+                                                              Unchecked="CheckBox_Unchecked"
+                                                              />
+                                                    <Label
+                                                        VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                        Content="{Binding Name}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                        
+                                    </ListBox>
+                                    <Button 
+                                        Margin="4"
+                                        Click="Button_Click">
+                                        <Button.Content>
+                                            Open
+                                        </Button.Content>
+                                    </Button>
                                 </StackPanel>
 
                             </Expander>
@@ -79,7 +108,7 @@
                     Focusable="True"
                     Width="auto"
                     MaxColumnCount="2"
-                    ItemsSource="{Binding InputsOfSelectedMap}"
+                    ItemsSource="{Binding SelectedUis}"
                     BindCommand="{Binding BindCommand}"
                     />
             </Grid>

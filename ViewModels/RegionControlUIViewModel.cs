@@ -201,6 +201,9 @@ namespace taskmaker_wpf.ViewModels {
         [ObservableProperty]
         private ControlUiState[] _inputsOfSelectedMap = Array.Empty<ControlUiState>();
 
+        [ObservableProperty]
+        private ControlUiState[] _selectedUis = Array.Empty<ControlUiState>();
+
         partial void OnSelectedMapChanged(NLinearMapState value) {
             UpdateInputsOfSelectedMap();
             UpdateOutputsOfSelectedMap();

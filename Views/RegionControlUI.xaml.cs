@@ -68,5 +68,31 @@ namespace taskmaker_wpf.Views {
 
             vm?.Invalidate();
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e) {
+            // find all selected uis
+            var vm = DataContext as RegionControlUIViewModel;
+
+            // find listbox according to the x:Name
+            var lb = FindName("lbUiStates") as ListBox;
+
+            vm.SelectedUis = lb.SelectedItems.Cast<ControlUiState>().ToArray();
+        }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e) {
+            var uiState = (sender as CheckBox).DataContext as ControlUiState;
+
+            var lb = FindName("lbUiStates") as ListBox;
+
+            lb.SelectedItems.Add(uiState);
+        }
+
+        private void CheckBox_Unchecked(object sender, RoutedEventArgs e) {
+            var uiState = (sender as CheckBox).DataContext as ControlUiState;
+
+            var lb = FindName("lbUiStates") as ListBox;
+
+            lb.SelectedItems.Remove(uiState);
+        }
     }
 }
