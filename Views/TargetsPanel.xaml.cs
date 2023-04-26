@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -109,6 +110,38 @@ namespace taskmaker_wpf.Views {
             var vm = DataContext as RegionControlUIViewModel;
 
             vm.UpdateMotor(state);
+        }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e) {
+            var checkbox = sender as CheckBox;
+
+            if (checkbox.IsChecked == null) {
+                return;
+            }
+            else if (checkbox.IsChecked == true) {
+                var vm = DataContext as RegionControlUIViewModel;
+
+                //vm.SelectedInplugs.Concat(checkbox.DataContext)
+                //vm?.InvalidateValidPorts();
+            }
+            else {
+                //var vm
+            }
+
+        }
+
+        private void btnUpdateSockets_Clicked(object sender, RoutedEventArgs e) {
+            var vm = DataContext as RegionControlUIViewModel;
+
+            var lbInPlugs = FindName("lbInPlugs") as ListBox;
+            var inPlugs = lbInPlugs.SelectedItems.Cast<InPlug>().ToArray();
+
+            vm.UpdateSocket(vm.SelectedMap, inPlugs);
+
+            var lbOutPlugs = FindName("lbOutPlugs") as ListBox;
+            var outPlugs = lbOutPlugs.SelectedItems.Cast<OutPlug>().ToArray();
+
+            vm.UpdateSocket(vm.SelectedMap, outPlugs);
         }
     }
 

@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using taskmaker_wpf.Data;
 using taskmaker_wpf.Model.Data;
-using taskmaker_wpf.Models;
 using taskmaker_wpf.Qhull;
 using System.Security.RightsManagement;
 using System.Diagnostics;
@@ -762,12 +761,12 @@ namespace taskmaker_wpf.Domain {
                 var map = Repository.Find<NLinearMapEntity>(req.Id);
 
                 if (req.PropertyType == "UpdateInputs") {
-                    map.InputPorts = (InputPort[])req.PropertyValue;
+                    map.InSockets = (InPlug[])req.PropertyValue;
 
                     //map.Initialize();
                 }
                 else if (req.PropertyType == "UpdateOutputs") {
-                    map.OutputPorts = (OutputPort[])req.PropertyValue;
+                    map.OutSockets = (OutPlug[])req.PropertyValue;
 
                     //map.Initialize();
                 }

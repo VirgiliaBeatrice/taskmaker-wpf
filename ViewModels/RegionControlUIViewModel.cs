@@ -29,6 +29,7 @@ using System.Windows.Media;
 using System.Text;
 using NLog;
 using System.Diagnostics;
+using System.Collections.Immutable;
 
 namespace taskmaker_wpf.ViewModels {
     public static class Helper {
@@ -85,9 +86,8 @@ namespace taskmaker_wpf.ViewModels {
     public class NLinearMapState : IOutputPortState {
         public int Id { get; set; }
         public string Name { get; set; }
-        public InputPort[] InputPorts { get; set; } = new InputPort[0];
-        public OutputPort[] OutputPorts { get; set; } = new OutputPort[0];
-        public bool IsSelected { get; set; } = false;
+        public InPlug[] InSockets { get; set; } = Array.Empty<InPlug>();
+        public OutPlug[] OutSockets { get; set; } = Array.Empty<OutPlug>();
 
         public int[] Shape { get; set; }
         public double[] Value { get; set; }
@@ -187,7 +187,16 @@ namespace taskmaker_wpf.ViewModels {
         private DisplayOutputPort[] _validOutputPorts;
 
         [ObservableProperty]
-        private OutputPort[] _selectedOutputPorts;
+        private OutPlug[] _selectedOutputPorts;
+
+        [ObservableProperty]
+        private InPlug[] _selectedInplugs;
+
+        [ObservableProperty]
+        private InPlug[] _validInPlugs;
+        [ObservableProperty]
+        private OutPlug[] _validOutPlugs;
+
 
         [ObservableProperty]
         private DisplayInputPort[] _validInputPorts;
@@ -213,7 +222,7 @@ namespace taskmaker_wpf.ViewModels {
             if (SelectedMap != null) {
                 var inputs = new List<ControlUiState>();
 
-                foreach (var input in SelectedMap.InputPorts) {
+                foreach (var input in SelectedMap.InSockets) {
                     inputs.Add(UiStates.Where(e => e.Name == input.Name).FirstOrDefault());
                 }
 
@@ -226,11 +235,11 @@ namespace taskmaker_wpf.ViewModels {
 
         private void UpdateOutputsOfSelectedMap() {
             if (SelectedMap != null) {
-                MotorOutputsOfSelectedMap = SelectedMap.OutputPorts.Where(e => e.Name.Contains("Motor"))
+                MotorOutputsOfSelectedMap = SelectedMap.OutSockets.Where(e => e.Name.Contains("Motor"))
                     .Select(e => MotorStates.Where(e1 => e1.Name == e.Name).FirstOrDefault())
                     .ToArray();
 
-                MapOutputsOfSelectedMap = SelectedMap.OutputPorts.Where(e => e.Name.Contains("ControlUi"))
+                MapOutputsOfSelectedMap = SelectedMap.OutSockets.Where(e => e.Name.Contains("ControlUi"))
                     .Select(e => UiStates.Where(e1 => e1.Name == e.Name).FirstOrDefault())
                     .ToArray();
             }
@@ -248,7 +257,7 @@ namespace taskmaker_wpf.ViewModels {
 
         [RelayCommand]
         void Bind(int[] index) {
-            var value = SelectedMap.OutputPorts
+            var value = SelectedMap.OutSockets
                 .SelectMany(e => {
                     if (e.Name.Contains("Motor")) {
                         var req = new ListMotorRequest() {
@@ -386,11 +395,6 @@ namespace taskmaker_wpf.ViewModels {
             _mapBus.Handle(listReq, out NLinearMapEntity[] maps);
 
             MapStates = _mapper.Map<NLinearMapState[]>(maps);
-
-            //_mapBus.Handle(addReq, (bool res) => { });
-            //_mapBus.Handle(listReq, (NLinearMapEntity[] maps) => {
-            //    MapStates = _mapper.Map<NLinearMapState[]>(maps);
-            //});
         }
 
         [RelayCommand]
@@ -423,17 +427,17 @@ namespace taskmaker_wpf.ViewModels {
             _motorBus.Handle(motorReq, out MotorEntity[] motors);
             _mapBus.Handle(mapReq, out NLinearMapEntity[] maps);
 
-            var inputPortCollection = uis.Cast<IInputPort>();
+            var inputPortCollection = uis.Cast<ControlUiEntity>();
             var outputPortCollection = maps.Cast<IOutputPort>().Concat(motors.Cast<IOutputPort>());
 
             var inputParam = selectedInputPorts
                 .Select(
-                    e => InputPort.Create(inputPortCollection.Where(e1 => e1.Name == e.Name).FirstOrDefault()))
+                    e => InPlug.Create(inputPortCollection.Where(e1 => e1.Name == e.Name).FirstOrDefault()))
                 .ToArray();
 
             var outputParam = selectedOutputPorts
                 .Select(
-                    e => OutputPort.Create(outputPortCollection.Where(e1 => e1.Name == e.Name).FirstOrDefault()))
+                    e => OutPlug.Create(outputPortCollection.Where(e1 => e1.Name == e.Name).FirstOrDefault()))
                 .ToArray();
 
             var request = new UpdateNLinearMapRequest {
@@ -476,6 +480,28 @@ namespace taskmaker_wpf.ViewModels {
             UpdateInputsOfSelectedMap();
         }
 
+        public void UpdateSocket(NLinearMapState target, InPlug[] plugs) {
+            var mapReq = new UpdateNLinearMapRequest() {
+                Id = target.Id,
+                PropertyType = "UpdateInputs",
+                PropertyValue = plugs
+            };
+
+            _mapBus.Handle(mapReq, out NLinearMapEntity map);
+            _mapper.Map(map, target);
+        }
+
+        public void UpdateSocket(NLinearMapState target, OutPlug[] plugs) {
+            var mapReq = new UpdateNLinearMapRequest() {
+                Id = target.Id,
+                PropertyType = "UpdateOutputs",
+                PropertyValue = plugs
+            };
+
+            _mapBus.Handle(mapReq, out NLinearMapEntity map);
+            _mapper.Map(map, target);
+        }
+
         public string KeymapInfo {
             get => _keymapInfo;
             set => SetProperty(ref _keymapInfo, value);
@@ -515,7 +541,9 @@ namespace taskmaker_wpf.ViewModels {
             ListMotors();
             ListUis();
             ListMaps();
-            ListValidPorts();
+            //ListValidPorts();
+
+            InvalidateValidPlugs();
         }
 
         public void UpdateControlUiValue(ControlUiState state, Point pt) {
@@ -567,8 +595,8 @@ namespace taskmaker_wpf.ViewModels {
 
             var lambdas = new List<double[]>();
 
-            for (int i = 0; i < map.InputPorts.Length; i++) {
-                var input = map.InputPorts[i];
+            for (int i = 0; i < map.InSockets.Length; i++) {
+                var input = map.InSockets[i];
                 var req = new ListControlUiRequest() {
                     Id = input.Id,
                 };
@@ -588,13 +616,13 @@ namespace taskmaker_wpf.ViewModels {
 
             }
 
-            if (lambdas.Count != map.InputPorts.Length) return;
+            if (lambdas.Count != map.InSockets.Length) return;
             //Debug.WriteLine($"lambdas: {string.Join(",", lambdas)}");
 
             var results = map.MapTo(lambdas.ToArray()).GetData<double>();
 
             int idx = 0;
-            var values = SelectedMap.OutputPorts.Select(e => {
+            var values = SelectedMap.OutSockets.Select(e => {
                 var returnValue = results.Skip(idx).Take(e.Dimension).ToArray();
 
                 idx += e.Dimension;
@@ -602,7 +630,7 @@ namespace taskmaker_wpf.ViewModels {
                 return returnValue;
             }).ToArray().GetEnumerator();
 
-            foreach (var output in map.OutputPorts) {
+            foreach (var output in map.OutSockets) {
                 values.MoveNext();
 
                 if (output.Name.Contains("Motor")) {
@@ -628,7 +656,7 @@ namespace taskmaker_wpf.ViewModels {
 
                     _mapBus.Handle(req1, out NLinearMapEntity mapEntity);
 
-                    var uis = mapEntity.InputPorts.Select(e => UiStates.Where(e1 => e1.Id == e.Id).FirstOrDefault()).ToArray();
+                    var uis = mapEntity.InSockets.Select(e => UiStates.Where(e1 => e1.Id == e.Id).FirstOrDefault()).ToArray();
 
                     for (int i = 0; i < uis.Length; i++) {
                         var req2 = new UpdateControlUiRequest {
@@ -667,8 +695,27 @@ namespace taskmaker_wpf.ViewModels {
             ListMaps();
             ListUis();
 
-            InvalidateValidInputPorts();
-            InvalidateValidOutputPorts();
+            //InvalidateValidInputPorts();
+            //InvalidateValidOutputPorts();
+        }
+
+        public void InvalidateValidPlugs() {
+            ListMotors();
+            ListUis();
+
+            var motorReq = new ListMotorRequest();
+            var uiReq = new ListControlUiRequest();
+
+            _motorBus.Handle(motorReq, out MotorEntity[] motors);
+            _uiBus.Handle(uiReq, out ControlUiEntity[] uis);
+
+            ValidInPlugs = uis
+                .Select(InPlug.Create)
+                .ToArray();
+            ValidOutPlugs = uis
+                .Select(OutPlug.Create)
+                .Concat(motors.Select(OutPlug.Create))
+                .ToArray();
         }
 
         public void InvalidateValidInputPorts() {

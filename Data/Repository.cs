@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using taskmaker_wpf.Domain;
 using taskmaker_wpf.Model.Data;
-using taskmaker_wpf.Models;
 using AutoMapper;
 using taskmaker_wpf.Services;
 using System.Xml.Serialization;
@@ -37,8 +36,8 @@ namespace taskmaker_wpf.Data {
         public double[] Tensor { get; set; }
         public int[] Shape { get; set; }
 
-        public OutputPort[] OutputPorts { get; set; }
-        public InputPort[] InputPorts { get; set; }
+        public OutPlug[] OutputPorts { get; set; }
+        public InPlug[] InputPorts { get; set; }
 
         public bool IsDirty { get; set; } = false;
 
@@ -57,8 +56,8 @@ namespace taskmaker_wpf.Data {
                 IsDirty = false;
             }
 
-            OutputPorts = entity.OutputPorts;
-            InputPorts = entity.InputPorts;
+            OutputPorts = entity.OutSockets;
+            InputPorts = entity.InSockets;
             Id= entity.Id;
             Name = entity.Name;
             IsDirty = false;
@@ -71,8 +70,8 @@ namespace taskmaker_wpf.Data {
                 Name = Name,
                 Tensor = Tensor != null ? np.array(Tensor).reshape(Shape) : null,
                 Shape = Shape,
-                OutputPorts = OutputPorts,
-                InputPorts = InputPorts,
+                OutSockets = OutputPorts,
+                InSockets = InputPorts,
                 IsDirty = IsDirty
             };
         }

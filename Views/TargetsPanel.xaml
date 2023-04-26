@@ -121,7 +121,22 @@
                                     Orientation="Horizontal">
                                     <Label Content="Name" />
                                     <TextBox Text="{Binding Name}" VerticalAlignment="Center" Width="100" MaxWidth="100" />
+                                    
                                 </StackPanel>
+                                <GroupBox
+                                    Margin="2"
+                                    Header="In Sockets">
+                                    <ListBox
+                                        ItemsSource="{Binding InSockets}">
+                                    </ListBox>
+                                </GroupBox>
+                                <GroupBox
+                                    Margin="2"
+                                    Header="Out Sockets">
+                                    <ListBox
+                                        ItemsSource="{Binding OutSockets}">
+                                    </ListBox>
+                                </GroupBox>
                             </StackPanel>
                         </DataTemplate>
                     </ContentControl.ContentTemplate>
@@ -137,64 +152,110 @@
                 BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
                 BorderThickness="1"
                 Margin="0 5 0 5"
-                Header="Valid Ports"
+                Header="Valid Plugs"
                 Expanded="Expander_Expanded">
                 <StackPanel>
                     <Expander
-                        BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
-                        BorderThickness="0 0 0 1"
                         IsExpanded="True"
                         Margin="10"
-                        Header="Inputs">
-                        <ItemsControl
+                        Header="In Plugs">
+                        <ListBox
+                            x:Name="lbInPlugs"
                             Margin="2"
-                            ItemsSource="{Binding ValidInputPorts}">
-                            <ItemsControl.ItemTemplate>
+                            ItemsSource="{Binding ValidInPlugs}"
+                            SelectionMode="Multiple"
+                            >
+                            <ListBox.Style>
+                                <Style
+                                    TargetType="ListBox"
+                                    BasedOn="{StaticResource {x:Type ListBox}}">
+                                    <Style.Triggers>
+                                        <DataTrigger
+                                            Binding="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=HasItems}"
+                                            Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListBox.Style>
+                            <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel
-                                        HorizontalAlignment="Right"
-                                        Margin="4"
+                                        HorizontalAlignment="Left"
+                                        Margin="2"
                                         Orientation="Horizontal">
                                         <CheckBox
+                                            IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}},Path=IsSelected}"
                                             VerticalAlignment="Center"
-                                            IsChecked="{Binding Path=IsSelected, Mode=TwoWay}" />
-                                        <TextBlock
-                                            Margin="4 0 0 0"
+                                            HorizontalAlignment="Center" />
+                                        <Label
+                                            Margin="2"
                                             VerticalAlignment="Center"
-                                            Text="{Binding Path=Name}" />
+                                            HorizontalAlignment="Center"
+                                            Content="{Binding Name}" />
                                     </StackPanel>
                                 </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
                     </Expander>
 
                     <Expander
-                        BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
-                        BorderThickness="0 0 0 1"
                         IsExpanded="True"
                         Margin="10"
-                        Header="Outputs">
-                        <ItemsControl
-                        Margin="2"
-                        ItemsSource="{Binding ValidOutputPorts}">
-                            <ItemsControl.ItemTemplate>
+                        Header="Out Plugs">
+
+                        <ListBox
+                            SelectionMode="Multiple"
+                            x:Name="lbOutPlugs"
+                            Margin="2"
+                            ItemsSource="{Binding ValidOutPlugs}">
+                            <ListBox.Style>
+                                <Style
+                                    TargetType="ListBox"
+                                    BasedOn="{StaticResource {x:Type ListBox}}">
+                                    <Style.Triggers>
+                                        <DataTrigger
+                                            Binding="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=HasItems}"
+                                            Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+
+                                        </DataTrigger>
+                                    </Style.Triggers> 
+                                </Style>
+                            </ListBox.Style>
+                            <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel
-                                    HorizontalAlignment="Right"
-                                    Margin="4"
+                                        HorizontalAlignment="Left"
+                                        Margin="2"
                                         Orientation="Horizontal">
                                         <CheckBox
-                                        VerticalAlignment="Center"
-                                        IsChecked="{Binding Path=IsSelected, Mode=TwoWay}" />
-                                        <TextBlock
-                                        Margin="4 0 0 0"
-                                        VerticalAlignment="Center"
-                                        Text="{Binding Path=Name}" />
+                                            IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}},Path=IsSelected}"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center" />
+                                        <Label
+                                            Margin="2"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center"
+                                            Content="{Binding Name}" />
                                     </StackPanel>
                                 </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        
                     </Expander>
+
+                    <Button
+                        Width="100"
+                        Margin="2"
+                        Click="btnUpdateSockets_Clicked"
+                        >
+                        
+                        <Button.Content>
+                            <Image Source="{svgc:SvgImage Source=/icons/check.svg}" Width="12" Height="12" />
+                        </Button.Content>
+                    </Button>
                 </StackPanel>
             </Expander>
 

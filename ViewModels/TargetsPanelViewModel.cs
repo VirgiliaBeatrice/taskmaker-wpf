@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using taskmaker_wpf.Domain;
 using taskmaker_wpf.Model.Data;
-using taskmaker_wpf.Models;
 using taskmaker_wpf.Services;
 using AutoMapper;
 using System.Runtime.CompilerServices;
@@ -55,50 +54,48 @@ namespace taskmaker_wpf.ViewModels {
     }
 
 
-    public struct OutputPort {
+    public struct OutPlug {
         public string Name { get; set; }
         public int Dimension { get; set; }
         public int Id { get; set; }
 
-        public static OutputPort Create(MotorEntity entity) {
-            return new OutputPort {
+        public static OutPlug Create(MotorEntity entity) {
+            return new OutPlug {
                 Name = entity.Name,
                 Dimension = 1,
                 Id = entity.Id
             };
         }
 
-        public static OutputPort Create(NLinearMapEntity entity) {
-            return new OutputPort {
+        public static OutPlug Create(ControlUiEntity entity) {
+            return new OutPlug {
                 Name = entity.Name,
-                Dimension = 2 * entity.InputPorts.Length,
+                Dimension = 2,
                 Id = entity.Id
             };
         }
 
-        public static OutputPort Create(IOutputPort entity) {
+        public static OutPlug Create(IOutputPort entity) {
             if (entity is MotorEntity motor) {
                 return Create(motor);
             }
-            else if (entity is NLinearMapEntity map) {
-                return Create(map);
+            else if (entity is ControlUiEntity ui) {
+                return Create(ui);
             }
             else return default;
         }
     }
 
-    public struct InputPort {
+    public struct InPlug {
         public string Name { get; set; }
         public int BasisCount { get; set; }
         public int Id { get; set; }
 
-
-        public static InputPort Create(IInputPort entity) {
-
-            return new InputPort {
-                Id= entity.Id,
+        public static InPlug Create(ControlUiEntity entity) {
+            return new InPlug {
+                Id = entity.Id,
                 Name = entity.Name,
-                BasisCount = (entity as ControlUiEntity).Nodes.Length
+                BasisCount = entity.Nodes.Length
             };
         }
     }

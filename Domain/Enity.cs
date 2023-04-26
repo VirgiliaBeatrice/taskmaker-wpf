@@ -56,7 +56,7 @@ namespace taskmaker_wpf.Domain {
         }
     }
 
-    public class NLinearMapEntity : BaseEntity, IOutputPort {
+    public class NLinearMapEntity : BaseEntity {
         public NDarray Tensor { get; set; }
         public int[] Shape { get; set; }
 
@@ -72,46 +72,25 @@ namespace taskmaker_wpf.Domain {
                 }
             }
         }
-        //public bool IsFullySet => !Tensor.isnan().any();
-        //public string[] Targets { get; set; }
-        //public (string, int)[] Targets { get; set; }
 
-        public InputPort[] InputPorts { get; set; } = { };
-        public OutputPort[] OutputPorts { get; set; } = { };
+
+        // For NLinearMap, InSockets
+        public InPlug[] InSockets { get; set; } = Array.Empty<InPlug>();
+
+        // For NLinearMap, OutSockets
+        public OutPlug[] OutSockets { get; set; } = Array.Empty<OutPlug>();
         
 
-        //protected bool _isSet => !np.isnan(Tensor).any();
         protected double[] tensor => Tensor.isnan().any() ? null : Tensor.GetData<double>();
-
-        //public static NLinearMapEntity Create(ControlUiEntity ui) {
-        //    var map = new NLinearMapEntity();
-
-        //    map.Initialize(ui);
-
-        //    //var targetDim = ui.Targets.Select(e => e.Dimension).Sum();
-        //    //var basisDim = new int[] { ui.Nodes.Length };
-
-        //    //map.Shape = new int[] { targetDim }.Concat(basisDim).ToArray();
-        //    //map.Tensor = np.empty(map.Shape);
-
-        //    //map.Tensor.fill(np.nan);
-
-        //    //var basis = ui.Nodes;
-        //    //for (int idx = 0; idx < basis.Length; idx++) {
-        //    //    map.Tensor[$":,{string.Join(",", new int[] { idx })}"] = basis[idx].TargetValue;
-        //    //}
-
-        //    return map;
-        //}
 
         public (int, int) GetCurrentStatus() {
             return (Tensor.size - np.count_nonzero(np.isnan(Tensor)), Tensor.size);
         }
 
         public void Initialize(int[] basisDims) {
-            if (OutputPorts.Length == 0 || InputPorts.Length == 0) return;
+            if (OutSockets.Length == 0 || InSockets.Length == 0) return;
 
-            var targetDim = OutputPorts.Select(e => e.Dimension).Sum();
+            var targetDim = OutSockets.Select(e => e.Dimension).Sum();
             //var basisDims = InputPorts.Select(e => e.BasisCount).ToArray();
 
             Shape = new int[] { targetDim }.Concat(basisDims).ToArray();
@@ -124,10 +103,10 @@ namespace taskmaker_wpf.Domain {
 
 
         public void Initialize() {
-            if (OutputPorts.Length == 0 || InputPorts.Length == 0) return;
+            if (OutSockets.Length == 0 || InSockets.Length == 0) return;
 
-            var targetDim = OutputPorts.Select(e => e.Dimension).Sum();
-            var basisDims = InputPorts.Select(e => e.BasisCount).ToArray();
+            var targetDim = OutSockets.Select(e => e.Dimension).Sum();
+            var basisDims = InSockets.Select(e => e.BasisCount).ToArray();
 
             Shape = new int[] { targetDim }.Concat(basisDims).ToArray();
             Tensor = np.empty(Shape);
@@ -492,11 +471,40 @@ namespace taskmaker_wpf.Domain {
     }
 
 
-    public class ControlUiEntity : BaseEntity, IInputPort {
-        public NodeEntity[] Nodes { get; set; }
+    public class ControlUiEntity : BaseEntity, IInputPort, IOutputPort {
+        private double[] inputValue = new double[2];
+        private NodeEntity[] nodes;
+
+        public NodeEntity[] Nodes { get => nodes;
+            set {
+                nodes = value;
+
+                InvalidateInPlug();
+            }
+        }
         public BaseRegionEntity[] Regions { get; set; }
+        public NLinearMapEntity Map { get; set; }
 
         public double[] Value { get; set; } = new double[2];
+
+        public double[] OutputValue { get; set; } = new double[2];
+        public double[] InputValue {
+            get => inputValue;
+            set {
+                inputValue = value;
+
+                OutputValue = inputValue;
+            }
+        }
+
+        public void InvalidateInPlug() {
+            if (Map != null) {
+                var plug = InPlug.Create(this);
+                var idx = Map.InSockets.ToList().IndexOf(plug);
+
+                Map.InSockets[idx] = plug;
+            }
+        }
 
         public void InvalidateValue() {
             Value = new double[] {
@@ -573,7 +581,7 @@ namespace taskmaker_wpf.Domain {
                 }
 
                 int idx0 = 0;
-                foreach(var item in regions) {
+                foreach (var item in regions) {
                     item.Id = ++idx0;
                     item.Name = $"{item.GetType()}-{item.Id}";
                 }
@@ -581,15 +589,6 @@ namespace taskmaker_wpf.Domain {
                 Regions = regions.ToArray();
             }
         }
-
-        //public NLinearMapEntity CreateMap() {
-        //    if (Nodes.Any(e => e.TargetValue == null)) {
-        //        return default;
-        //    }
-        //    else {
-        //        return NLinearMapEntity.Create(this);
-        //    }
-        //}
     }
 
     public class MotorEntity : BaseEntity, IOutputPort {

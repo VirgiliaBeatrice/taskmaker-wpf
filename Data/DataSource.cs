@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using taskmaker_wpf.Model.Data;
-using taskmaker_wpf.Models;
 using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.Data {
