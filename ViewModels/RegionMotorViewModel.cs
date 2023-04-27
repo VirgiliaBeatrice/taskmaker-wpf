@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -24,7 +25,7 @@ using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.ViewModels {
     [ObservableObject]
-    public partial class MotorState : IOutputPortState {
+    public partial class MotorState {
         [ObservableProperty]
         private double[] value;
         [ObservableProperty]
@@ -45,6 +46,9 @@ namespace taskmaker_wpf.ViewModels {
         private int id;
         [ObservableProperty]
         private bool isSelected;
+
+        [ObservableProperty]
+        private Color _color = Color.Black;
 
         public object Clone() {
             return (MotorState)MemberwiseClone();

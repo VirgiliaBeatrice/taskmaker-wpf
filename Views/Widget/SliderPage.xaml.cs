@@ -315,9 +315,9 @@ namespace taskmaker_wpf.Views.Widget {
             grid.Children.Add(max);
 
             Grid.SetRow(label, 0);
-            Grid.SetRow(max, 1);
+            Grid.SetRow(max, 3);
             Grid.SetRow(border, 2);
-            Grid.SetRow(min, 3);
+            Grid.SetRow(min, 1);
 
             Content = grid;
         }
@@ -404,7 +404,7 @@ namespace taskmaker_wpf.Views.Widget {
 
                 foreach(var motor in vm.MotorStates) {
                     motor.NuibotBoardId = 0;
-                    motor.NuibotMotorId = 1 + idx;
+                    motor.NuibotMotorId = idx;
 
                     motor.Max = 10000;
                     motor.Min = -10000;

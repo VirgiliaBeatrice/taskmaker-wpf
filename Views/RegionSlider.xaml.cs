@@ -45,7 +45,7 @@ namespace taskmaker_wpf.Views {
 
                     foreach (var motor in vm.MotorStates) {
                         motor.NuibotBoardId = 0;
-                        motor.NuibotMotorId = 1 + idx;
+                        motor.NuibotMotorId = idx;
 
                         motor.Max = 10000;
                         motor.Min = -10000;
