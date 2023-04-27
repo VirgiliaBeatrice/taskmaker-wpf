@@ -18,7 +18,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using taskmaker_wpf.ViewModels;
 
-namespace taskmaker_wpf.Views {
+namespace taskmaker_wpf.Views.Widget {
     /// <summary>
     /// Interaction logic for TargetsPanel.xaml
     /// </summary>
@@ -72,10 +72,10 @@ namespace taskmaker_wpf.Views {
         private void Button_Click_1(object sender, RoutedEventArgs e) {
         }
 
-        private void Button_Click_2(object sender, RoutedEventArgs e) {
+        private void btnRefresh_Click(object sender, RoutedEventArgs e) {
             var vm = (sender as Button).DataContext as RegionControlUIViewModel;
 
-            vm.InvalidateValidPorts();
+            vm.Invalidate();
         }
 
         private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
@@ -99,7 +99,7 @@ namespace taskmaker_wpf.Views {
         private void Expander_Expanded(object sender, RoutedEventArgs e) {
             var vm = DataContext as RegionControlUIViewModel;
 
-            vm?.InvalidateValidPorts();
+            vm?.InvalidateValidPlugs();
         }
 
         private void Button_Click_3(object sender, RoutedEventArgs e) {
@@ -142,16 +142,6 @@ namespace taskmaker_wpf.Views {
             var outPlugs = lbOutPlugs.SelectedItems.Cast<OutPlug>().ToArray();
 
             vm.UpdateSocket(vm.SelectedMap, outPlugs);
-        }
-    }
-
-    public class ISelectableTargetConverter : IValueConverter {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            return targetType + $"[{value}]";
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
-            throw new NotImplementedException();
         }
     }
 }

@@ -34,17 +34,36 @@
                             Margin="10"
                             Orientation="Vertical">
                             <Expander
-                                BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
-                                BorderThickness="1"
-                                Header="Maps"
+                                Header="Control UI"
                                 Expanded="Expander_Expanded"
                                 >
                                 <StackPanel
+                                    Margin="4"
                                     Orientation="Vertical"
                                     >
-                                    <GroupBox Header="Details">
-                                        <Label Content="Null" />
-                                    </GroupBox>
+                                    <ItemsControl ItemsSource="{Binding SelectedUis}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type viewmodels:ControlUiState}">
+                                                <GroupBox Header="Details">
+                                                    <StackPanel Orientation="Vertical">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Label Content="Name" FontWeight="Bold" />
+                                                            <Label Content="{Binding Name}" />
+                                                        </StackPanel>
+                                                        
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Label Content="Num. Of Nodes"  FontWeight="Bold"/>
+                                                            <Label Content="{Binding Nodes.Length}" />
+                                                        </StackPanel>
+
+                                                        </StackPanel>
+
+                                                </GroupBox> 
+
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>       
+                                    </ItemsControl>
+                                    
                                     
                                     <Button
                                         Margin="4"
@@ -64,9 +83,9 @@
                                             <DataTemplate DataType="{x:Type viewmodels:ControlUiState}">
                                                 <StackPanel
                                                     Orientation="Horizontal">
-                                                    <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center"
-                                                              Checked="CheckBox_Checked"
-                                                              Unchecked="CheckBox_Unchecked"
+                                                    <CheckBox 
+                                                        IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}},Path=IsSelected}"
+                                                        VerticalAlignment="Center" HorizontalAlignment="Center"
                                                               />
                                                     <Label
                                                         VerticalAlignment="Center" HorizontalAlignment="Center"
@@ -96,7 +115,7 @@
                     <ScrollViewer
                         VerticalScrollBarVisibility="Hidden"
                         >
-                        <local:TargetsPanel />
+                        <w:TargetsPanel />
                         
                     </ScrollViewer>
                 </TabItem>
