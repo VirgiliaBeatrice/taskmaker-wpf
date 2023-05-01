@@ -601,5 +601,7 @@ namespace taskmaker_wpf.Domain {
         public int ThresholdMin { get; set; } = -10000;
         public int ThresholdMax { get; set; } = 10000;
         public bool IsClamped { get; set; } = false;
+
+        public SolidColorBrush Color { get; set; } = Brushes.Black;
     }
 }

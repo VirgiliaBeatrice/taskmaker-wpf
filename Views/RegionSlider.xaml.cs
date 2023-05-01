@@ -69,17 +69,17 @@ namespace taskmaker_wpf.Views {
 
 
                     vm.MotorStates[0].NuibotBoardId = 0;
-                    vm.MotorStates[0].NuibotMotorId = 1;
+                    vm.MotorStates[0].NuibotMotorId = 0;
                     vm.MotorStates[1].NuibotBoardId = 0;
-                    vm.MotorStates[1].NuibotMotorId = 2;
+                    vm.MotorStates[1].NuibotMotorId = 1;
                     vm.MotorStates[2].NuibotBoardId = 0;
-                    vm.MotorStates[2].NuibotMotorId = 3;
+                    vm.MotorStates[2].NuibotMotorId = 2;
                     vm.MotorStates[3].NuibotBoardId = 1;
-                    vm.MotorStates[3].NuibotMotorId = 1;
+                    vm.MotorStates[3].NuibotMotorId = 0;
                     vm.MotorStates[4].NuibotBoardId = 1;
-                    vm.MotorStates[4].NuibotMotorId = 2;
+                    vm.MotorStates[4].NuibotMotorId = 1;
                     vm.MotorStates[5].NuibotBoardId = 1;
-                    vm.MotorStates[5].NuibotMotorId = 3;
+                    vm.MotorStates[5].NuibotMotorId = 2;
 
                     foreach (var state in vm.MotorStates) {
                         state.Min = -10000;

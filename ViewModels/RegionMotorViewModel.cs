@@ -11,13 +11,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data.SqlClient;
-using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using taskmaker_wpf.Domain;
 using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Services;
@@ -48,7 +48,7 @@ namespace taskmaker_wpf.ViewModels {
         private bool isSelected;
 
         [ObservableProperty]
-        private Color _color = Color.Black;
+        private SolidColorBrush _color = Brushes.Black;
 
         public object Clone() {
             return (MotorState)MemberwiseClone();
@@ -64,13 +64,13 @@ namespace taskmaker_wpf.ViewModels {
 
         [RelayCommand]
         public void RemoveMotor(MotorState motor) {
-            //_motorUseCase.RemoveMotor(_mapper.Map<MotorEntity>(motor));
+            var req = new DeleteMotorRequest {
+                Id = motor.Id
+            };
 
-            //var motors = _motorUseCase.GetMotors();
-            //var stateMotors = motors.Select(e => _mapper.Map<MotorState>(e));
+            _motorBus.Handle(req, out bool _);
 
-            //Motors.Clear();
-            //Motors.AddRange(stateMotors);
+            InvalidateMotors();
         }
 
         [RelayCommand]
@@ -88,6 +88,14 @@ namespace taskmaker_wpf.ViewModels {
 
         [ObservableProperty]
         private ObservableCollection<int> _motorIds = new();
+
+        [ObservableProperty]
+        private Brush[] _colors = new Brush[] {
+            Brushes.Black,
+            Brushes.Red,
+            Brushes.Green,
+            Brushes.Blue
+        };
 
         private IRegionManager _regionManager;
         private readonly IMapper _mapper;

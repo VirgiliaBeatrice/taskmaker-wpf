@@ -14,6 +14,7 @@ using System.Diagnostics;
 using SkiaSharp;
 using taskmaker_wpf.ViewModels;
 using Numpy;
+using System.Windows.Media;
 
 namespace taskmaker_wpf.Data {
 
@@ -281,6 +282,7 @@ namespace taskmaker_wpf.Data {
         public double[] Value { get; set; }
         public int BoardId { get; set; }
         public int MotorId { get; set; }
+        public SolidColorBrush Color { get; set; }
     }
 
     [Serializable]

@@ -1,4 +1,5 @@
-﻿using SharpVectors.Scripting;
+﻿using NLog;
+using SharpVectors.Scripting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,8 @@ using taskmaker_wpf.ViewModels;
 namespace taskmaker_wpf.Views.Widget {
 
     public class SliderController : UserControl {
+        private Logger logger = LogManager.GetCurrentClassLogger();
+
         private int _finger = -1;
 
 
@@ -199,14 +202,17 @@ namespace taskmaker_wpf.Views.Widget {
 
             if (State != null) {
                 label = new TextBlock {
-                    Foreground = Brushes.Black,
+                    Foreground = Brushes.White,
                     FontSize = 18,
-                    Margin = new Thickness(0, 0, 0, 0),
+                    Margin = new Thickness(2),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                 };
 
                 label.SetBinding(TextBlock.TextProperty, new Binding("Name") {
+                    Source = State
+                });
+                label.SetBinding(TextBlock.BackgroundProperty, new Binding("Color") {
                     Source = State
                 });
 
@@ -237,7 +243,7 @@ namespace taskmaker_wpf.Views.Widget {
                 slider = new Slider() {
                     Height = 200,
                     Orientation = Orientation.Vertical,
-                    IsDirectionReversed = true,
+                    //IsDirectionReversed = true,
                 };
 
                 slider.SetBinding(Slider.ValueProperty, new Binding("Value[0]") {
@@ -286,7 +292,7 @@ namespace taskmaker_wpf.Views.Widget {
                     Orientation = Orientation.Vertical,
                     //Background = Brushes.Red,
                     Margin = new Thickness(0, 0, 0, 0),
-                    IsDirectionReversed = true,
+                    //IsDirectionReversed = true,
                 };
             }
 
@@ -315,9 +321,9 @@ namespace taskmaker_wpf.Views.Widget {
             grid.Children.Add(max);
 
             Grid.SetRow(label, 0);
-            Grid.SetRow(max, 3);
+            Grid.SetRow(max, 1);
             Grid.SetRow(border, 2);
-            Grid.SetRow(min, 1);
+            Grid.SetRow(min, 3);
 
             Content = grid;
         }
@@ -345,23 +351,26 @@ namespace taskmaker_wpf.Views.Widget {
             if (_finger != -1) {
                 if (IsVertical) {
                     var touchPoint = e.GetTouchPoint(box);
-                    var value = touchPoint.Position.Y / box.ActualHeight;
+                    var value = Math.Clamp(1.0 - touchPoint.Position.Y / box.ActualHeight, 0.0, 1.0);
                     var slider = (box.Child as Viewbox).Child as Slider;
 
-                    slider.Value = value * (slider.Maximum - slider.Minimum) + slider.Minimum;
+                    //slider.Value = 
+                    var motorValue = value * (slider.Maximum - slider.Minimum) + slider.Minimum;
+                    
+                    ViewModel.UpdateMotorValue(State, motorValue);
 
-
+                    //logger.Debug("Percentage: {0}; Value: {1}", value.ToString("P"), slider.Value.ToString("F2"));
                 }
                 else {
-                    var touchPoint = e.GetTouchPoint(box);
-                    var value = touchPoint.Position.X / box.ActualWidth;
-                    var slider = box.Child as Slider;
+                    //var touchPoint = e.GetTouchPoint(box);
+                    //var value = touchPoint.Position.X / box.ActualWidth;
+                    //var slider = box.Child as Slider;
 
-                    slider.Value = value * (slider.Maximum - slider.Minimum) + slider.Minimum;
+                    //slider.Value = value * (slider.Maximum - slider.Minimum) + slider.Minimum;
                 }
 
 
-                //e.Handled = true;
+                e.Handled = true;
             }
         }
 

@@ -72,5 +72,29 @@ namespace taskmaker_wpf.Views {
             else if (cb.Name == "cbMotorId")
                 state.NuibotMotorId = (int)e.AddedItems[0];
         }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e) {
+            var vm = DataContext as RegionMotorViewModel;
+            var dg = FindName("dgMotors") as DataGrid;
+
+            if (dg.SelectedItem is MotorState state) {
+                vm.RemoveMotor(state);
+            }
+        }
+
+        private void dgMotors_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e) {
+            if (e.EditingElement is ComboBox cb) {
+                var state = cb.DataContext as MotorState;
+
+                var vm = DataContext as RegionMotorViewModel;
+
+                vm.UpdateMotor(state);
+            }
+
+        }
+
+        private void ComboBox_SelectionChanged_1(object sender, SelectionChangedEventArgs e) {
+
+        }
     }
 }
