@@ -49,10 +49,6 @@ namespace taskmaker_wpf.ViewModels {
 
         [ObservableProperty]
         private SolidColorBrush _color = Brushes.Black;
-
-        public object Clone() {
-            return (MotorState)MemberwiseClone();
-        }
     }
 
     [ObservableObject]
@@ -88,6 +84,9 @@ namespace taskmaker_wpf.ViewModels {
 
         [ObservableProperty]
         private ObservableCollection<int> _motorIds = new();
+
+        [ObservableProperty]
+        private bool _hasModified = false;
 
         [ObservableProperty]
         private Brush[] _colors = new Brush[] {

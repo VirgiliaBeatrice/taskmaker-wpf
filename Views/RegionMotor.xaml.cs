@@ -82,19 +82,17 @@ namespace taskmaker_wpf.Views {
             }
         }
 
-        private void dgMotors_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e) {
-            if (e.EditingElement is ComboBox cb) {
-                var state = cb.DataContext as MotorState;
-
-                var vm = DataContext as RegionMotorViewModel;
-
-                vm.UpdateMotor(state);
-            }
+        private void ComboBox_SelectionChanged_1(object sender, SelectionChangedEventArgs e) {
 
         }
 
-        private void ComboBox_SelectionChanged_1(object sender, SelectionChangedEventArgs e) {
+        private void Button_Click_2(object sender, RoutedEventArgs e) {
+            var vm = DataContext as RegionMotorViewModel;
+            var dg = FindName("dgMotors") as DataGrid;
 
+            foreach(var state in vm.MotorStates) {
+                vm.UpdateMotor(state);
+            }
         }
     }
 }

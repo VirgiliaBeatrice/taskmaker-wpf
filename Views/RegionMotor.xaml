@@ -28,15 +28,37 @@
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="4">
             <Button Margin="2" Content="Add Motor" Command="{Binding AddMotorCommand}" />
             <Button Margin="2" Content="Remove Motor" Click="Button_Click_1"/>
+            <Button Margin="2" Content="Save Changes" Click="Button_Click_2">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=HasModified}" Value="true">
+                                <Setter Property="Content" Value="Save Changes*" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=HasModified}" Value="false">
+                                <Setter Property="Content" Value="Save Changes" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
         </StackPanel>
         
         <DataGrid
-            CellEditEnding="dgMotors_CellEditEnding"
             x:Name="dgMotors"
             ItemsSource="{Binding MotorStates}" DockPanel.Dock="Top" AutoGenerateColumns="False">
             <DataGrid.Resources>
                 <CollectionViewSource x:Key="ColorSource" Source="{Binding Colors}"/>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="FontWeight" Value="Bold" />
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                </Style>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="MinHeight" Value="40" />
+                </Style>
             </DataGrid.Resources>
+            
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
                 <DataGridTextColumn Header="Min" Binding="{Binding Min}" />
@@ -53,15 +75,7 @@
                 
                 <DataGridTextColumn Header="Board Id" Binding="{Binding NuibotBoardId}" />
                 <DataGridTextColumn Header="Motor Id" Binding="{Binding NuibotMotorId}" />
-                
-                <DataGridTextColumn Header="Color Display">
-                    <DataGridTextColumn.CellStyle>
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="Background" Value="{Binding Color}" />
-                        </Style>
-                    </DataGridTextColumn.CellStyle>
-                </DataGridTextColumn>
-                
+                              
                 <DataGridTemplateColumn Header="Color">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -87,6 +101,17 @@
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Actions">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" >
+                                <Button Margin="2" Width="16" Height="16" Content="R" FontSize="12" />
+                                <Button Margin="2" Width="16" Height="16" Content="S" FontSize="12" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                
             </DataGrid.Columns>

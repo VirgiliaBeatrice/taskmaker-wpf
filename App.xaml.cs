@@ -140,6 +140,8 @@ namespace taskmaker_wpf {
             containerRegistry.RegisterForNavigation<RegionSlider>();
 
             ViewModelLocationProvider.Register<RegionSlider>(Container.Resolve<RegionMotorViewModel>);
+
+            containerRegistry.RegisterSingleton<RegionMotorViewModel>();
         }
 
         protected override void Initialize() {
