@@ -19,110 +19,11 @@
             <RowDefinition Height="20"/>
         </Grid.RowDefinitions>
 
-        <DockPanel
-            LastChildFill="True"
+        <Grid
             Grid.Row="0">
-            <TabControl
-                DockPanel.Dock="Right"
-                Width="250">
-                <TabItem
-                    Header="ControlUi" >
-                    <ScrollViewer
-                        VerticalScrollBarVisibility="Hidden"
-                        >
-                        <StackPanel
-                            Margin="10"
-                            Orientation="Vertical">
-                            <Expander
-                                Header="Control UI"
-                                Expanded="Expander_Expanded"
-                                >
-                                <StackPanel
-                                    Margin="4"
-                                    Orientation="Vertical"
-                                    >
-                                    <ItemsControl ItemsSource="{Binding SelectedUis}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate DataType="{x:Type viewmodels:ControlUiState}">
-                                                <GroupBox Header="Details">
-                                                    <StackPanel Orientation="Vertical">
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <Label Content="Name" FontWeight="Bold" />
-                                                            <Label Content="{Binding Name}" />
-                                                        </StackPanel>
-                                                        
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <Label Content="Num. Of Nodes"  FontWeight="Bold"/>
-                                                            <Label Content="{Binding Nodes.Length}" />
-                                                        </StackPanel>
 
-                                                        </StackPanel>
-
-                                                </GroupBox> 
-
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>       
-                                    </ItemsControl>
-                                    
-                                    
-                                    <Button
-                                        Margin="4"
-                                        Command="{Binding AddUiCommand}">
-                                        <Button.Content>
-                                            <Image Source="/icons/add_FILL0_wght400_GRAD0_opsz48.png" Width="16" Height="16"/>
-                                        </Button.Content>
-                                    </Button>
-                                    <ListBox
-                                        x:Name="lbUiStates"
-                                        MinHeight="20"
-                                        Margin="4"
-                                        ItemsSource="{Binding UiStates}"
-                                        SelectionMode="Multiple"
-                                        >
-                                        <ListBox.ItemTemplate>
-                                            <DataTemplate DataType="{x:Type viewmodels:ControlUiState}">
-                                                <StackPanel
-                                                    Orientation="Horizontal">
-                                                    <CheckBox 
-                                                        IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}},Path=IsSelected}"
-                                                        VerticalAlignment="Center" HorizontalAlignment="Center"
-                                                              />
-                                                    <Label
-                                                        VerticalAlignment="Center" HorizontalAlignment="Center"
-                                                        Content="{Binding Name}"/>
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ListBox.ItemTemplate>
-                                        
-                                    </ListBox>
-                                    <Button 
-                                        Margin="4"
-                                        Click="Button_Click">
-                                        <Button.Content>
-                                            Open
-                                        </Button.Content>
-                                    </Button>
-                                </StackPanel>
-
-                            </Expander>
-                        
-                        </StackPanel>
-                    </ScrollViewer>
-
-                </TabItem>
-                <TabItem
-                    Header="Map">
-                    <ScrollViewer
-                        VerticalScrollBarVisibility="Hidden"
-                        >
-                        <w:TargetsPanel />
-                        
-                    </ScrollViewer>
-                </TabItem>
-
-            </TabControl>
             <Grid
-                DockPanel.Dock="Left">
+                VerticalAlignment="Stretch">
                 <w:MultiView
                     Focusable="True"
                     Width="auto"
@@ -130,8 +31,145 @@
                     ItemsSource="{Binding SelectedUis}"
                     BindCommand="{Binding BindCommand}"
                     />
+                <Border
+                    Name="sideContainter"
+                    Margin="4"
+                    Background="White"
+                    BorderBrush="Gray"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    HorizontalAlignment="Right"
+                    >
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="VerticalAlignment" Value="Top"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=side, Path=IsExpanded}" Value="True">
+                                    <Setter Property="VerticalAlignment" Value="Stretch" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Border.Effect>
+                        <DropShadowEffect
+                            Color="Black"
+                            Direction="270"
+                            ShadowDepth="2"
+                            Opacity="0.5"
+                            BlurRadius="10" />
+                    </Border.Effect>
+                    
+                    <Expander
+                        x:Name="side"
+                    Margin="8"
+                    ExpandDirection="Right"
+                    IsExpanded="False"
+                    >
+                
+                    <TabControl
+                        Margin="4"
+                        Width="250">
+                        <TabItem
+                            Header="ControlUi" >
+                            <ScrollViewer
+                                VerticalScrollBarVisibility="Hidden"
+                                >
+                                <StackPanel
+                                    Margin="10"
+                                    Orientation="Vertical">
+                                    <Expander
+                                        Header="Control UI"
+                                        Expanded="Expander_Expanded"
+                                        >
+                                        <StackPanel
+                                            Margin="4"
+                                            Orientation="Vertical"
+                                            >
+                                            <ItemsControl ItemsSource="{Binding SelectedUis}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate DataType="{x:Type viewmodels:ControlUiState}">
+                                                        <GroupBox Header="Details">
+                                                            <StackPanel Orientation="Vertical">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <Label Content="Name" FontWeight="Bold" />
+                                                                    <Label Content="{Binding Name}" />
+                                                                </StackPanel>
+                                                        
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <Label Content="Num. Of Nodes"  FontWeight="Bold"/>
+                                                                    <Label Content="{Binding Nodes.Length}" />
+                                                                </StackPanel>
+
+                                                                </StackPanel>
+
+                                                        </GroupBox> 
+
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>       
+                                            </ItemsControl>
+                                    
+                                    
+                                            <Button
+                                                Margin="4"
+                                                Command="{Binding AddUiCommand}">
+                                                <Button.Content>
+                                                    <Image Source="/icons/add_FILL0_wght400_GRAD0_opsz48.png" Width="16" Height="16"/>
+                                                </Button.Content>
+                                            </Button>
+                                            <ListBox
+                                                x:Name="lbUiStates"
+                                                MinHeight="20"
+                                                Margin="4"
+                                                ItemsSource="{Binding UiStates}"
+                                                SelectionMode="Multiple"
+                                                >
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate DataType="{x:Type viewmodels:ControlUiState}">
+                                                        <StackPanel
+                                                            Orientation="Horizontal">
+                                                            <CheckBox 
+                                                                IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}},Path=IsSelected}"
+                                                                VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                                        />
+                                                            <Label
+                                                                VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                                Content="{Binding Name}"/>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                        
+                                            </ListBox>
+                                            <Button 
+                                                Margin="4"
+                                                Click="Button_Click">
+                                                <Button.Content>
+                                                    Open
+                                                </Button.Content>
+                                            </Button>
+                                        </StackPanel>
+
+                                    </Expander>
+                        
+                                </StackPanel>
+                            </ScrollViewer>
+
+                        </TabItem>
+                        <TabItem
+                            Header="Map">
+                            <ScrollViewer
+                                VerticalScrollBarVisibility="Hidden"
+                                >
+                                <w:TargetsPanel />
+                        
+                            </ScrollViewer>
+                        </TabItem>
+
+                    </TabControl>
+                </Expander>
+                </Border>
             </Grid>
-        </DockPanel>
+        </Grid>
+        
 
 
 

@@ -779,6 +779,40 @@ namespace taskmaker_wpf.Views.Widget {
             var grid = new Grid() {
                 Name = "Multiview_Grid",
             };
+
+            var infoContainer = new Grid();
+
+            var expander = new Expander() {
+                Header = "Info",
+            };
+
+            infoContainer.Children.Add(expander);
+            
+            var toolPanel = new StackPanel() {
+                Background = Brushes.AliceBlue,
+                Orientation = Orientation.Vertical,
+                Width = 200,
+                Height = 400,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+                //Opacity = 0.5
+            };
+
+            toolPanel.MouseEnter += (_, ev) => {
+                toolPanel.Opacity = 1;
+            };
+
+            toolPanel.MouseLeave += (_, ev) => {
+                toolPanel.Opacity = 0.5;
+            };
+
+            var statusInfo = new Label {
+                Content = "TEST"
+            };
+
+            toolPanel.Children.Add(statusInfo);
+
+            expander.Content = toolPanel;
             //var icon = new SvgIcon() {
             //    Width = 200,
             //    Height = 200,
@@ -792,6 +826,7 @@ namespace taskmaker_wpf.Views.Widget {
             };
 
             grid.Children.Add(Scroll);
+            grid.Children.Add(infoContainer);
 
             Content = grid;
 
