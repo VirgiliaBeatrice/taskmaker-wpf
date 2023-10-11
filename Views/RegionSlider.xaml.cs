@@ -31,64 +31,64 @@ namespace taskmaker_wpf.Views {
         public void OnNavigatedFrom(NavigationContext navigationContext) { }
 
         public void OnNavigatedTo(NavigationContext navigationContext) {
-            navigationContext.Parameters.TryGetValue("sub", out string message);
+            //navigationContext.Parameters.TryGetValue("sub", out string message);
 
-            if (message == "Arm") {
-                var vm = DataContext as RegionMotorViewModel;
+            //if (message == "Arm") {
+            //    var vm = DataContext as RegionMotorViewModel;
 
-                if (vm.MotorStates.Length == 0) {
-                    vm.AddMotor();
-                    vm.AddMotor();
-                    vm.AddMotor();
+            //    if (vm.MotorStates.Length == 0) {
+            //        vm.AddMotor();
+            //        vm.AddMotor();
+            //        vm.AddMotor();
 
-                    var idx = 0;
+            //        var idx = 0;
 
-                    foreach (var motor in vm.MotorStates) {
-                        motor.NuibotBoardId = 0;
-                        motor.NuibotMotorId = idx;
+            //        foreach (var motor in vm.MotorStates) {
+            //            motor.NuibotBoardId = 0;
+            //            motor.NuibotMotorId = idx;
 
-                        motor.Max = 10000;
-                        motor.Min = -10000;
-                        idx++;
+            //            motor.Max = 10000;
+            //            motor.Min = -10000;
+            //            idx++;
 
-                        vm.UpdateMotor(motor);
-                    }
-                }
-            }
-            else {
-                var vm = DataContext as RegionMotorViewModel;
+            //            vm.UpdateMotor(motor);
+            //        }
+            //    }
+            //}
+            //else {
+            //    var vm = DataContext as RegionMotorViewModel;
 
-                if (vm.MotorStates.Length == 0) {
-                    vm.AddMotor();
-                    vm.AddMotor();
-                    vm.AddMotor();
-                    vm.AddMotor();
-                    vm.AddMotor();
-                    vm.AddMotor();
+            //    if (vm.MotorStates.Length == 0) {
+            //        vm.AddMotor();
+            //        vm.AddMotor();
+            //        vm.AddMotor();
+            //        vm.AddMotor();
+            //        vm.AddMotor();
+            //        vm.AddMotor();
 
 
 
-                    vm.MotorStates[0].NuibotBoardId = 0;
-                    vm.MotorStates[0].NuibotMotorId = 0;
-                    vm.MotorStates[1].NuibotBoardId = 0;
-                    vm.MotorStates[1].NuibotMotorId = 1;
-                    vm.MotorStates[2].NuibotBoardId = 0;
-                    vm.MotorStates[2].NuibotMotorId = 2;
-                    vm.MotorStates[3].NuibotBoardId = 1;
-                    vm.MotorStates[3].NuibotMotorId = 0;
-                    vm.MotorStates[4].NuibotBoardId = 1;
-                    vm.MotorStates[4].NuibotMotorId = 1;
-                    vm.MotorStates[5].NuibotBoardId = 1;
-                    vm.MotorStates[5].NuibotMotorId = 2;
+            //        vm.MotorStates[0].NuibotBoardId = 0;
+            //        vm.MotorStates[0].NuibotMotorId = 0;
+            //        vm.MotorStates[1].NuibotBoardId = 0;
+            //        vm.MotorStates[1].NuibotMotorId = 1;
+            //        vm.MotorStates[2].NuibotBoardId = 0;
+            //        vm.MotorStates[2].NuibotMotorId = 2;
+            //        vm.MotorStates[3].NuibotBoardId = 1;
+            //        vm.MotorStates[3].NuibotMotorId = 0;
+            //        vm.MotorStates[4].NuibotBoardId = 1;
+            //        vm.MotorStates[4].NuibotMotorId = 1;
+            //        vm.MotorStates[5].NuibotBoardId = 1;
+            //        vm.MotorStates[5].NuibotMotorId = 2;
 
-                    foreach (var state in vm.MotorStates) {
-                        state.Min = -10000;
-                        state.Max = 10000;
+            //        foreach (var state in vm.MotorStates) {
+            //            state.Min = -10000;
+            //            state.Max = 10000;
 
-                        vm.UpdateMotor(state);
-                    }
-                }
-            }
+            //            vm.UpdateMotor(state);
+            //        }
+            //    }
+            //}
         }
     }
 }

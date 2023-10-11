@@ -11,7 +11,7 @@ using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Services;
 using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Views;
-using CMessageBox = taskmaker_wpf.Views.MessageBox;
+//using CMessageBox = taskmaker_wpf.Views.MessageBox;
 using AutoMapper;
 using taskmaker_wpf.Data;
 using taskmaker_wpf.Domain;
@@ -90,6 +90,8 @@ namespace taskmaker_wpf {
 
             // Register services
             containerRegistry.RegisterSingleton<SerialService>();
+            containerRegistry.RegisterSingleton<EvaluationService>();
+            containerRegistry.RegisterSingleton<MotorService>();
             //containerRegistry.RegisterSingleton<SystemService>();
 
             // Register model agent
@@ -130,7 +132,7 @@ namespace taskmaker_wpf {
             containerRegistry.Register<IPresenter>(() => Container.Resolve<RegionControlUIViewModel>());
 
             // Register messagebox
-            containerRegistry.RegisterDialog<CMessageBox, MessageBoxViewModel>("standard");
+            //containerRegistry.RegisterDialog<CMessageBox, MessageBoxViewModel>("standard");
 
             // Register regions for navigation
             containerRegistry.RegisterForNavigation<RegionHome>();
@@ -141,7 +143,7 @@ namespace taskmaker_wpf {
 
             ViewModelLocationProvider.Register<RegionSlider>(Container.Resolve<RegionMotorViewModel>);
 
-            containerRegistry.RegisterSingleton<RegionMotorViewModel>();
+            //containerRegistry.RegisterSingleton<RegionMotorViewModel>();
         }
 
         protected override void Initialize() {

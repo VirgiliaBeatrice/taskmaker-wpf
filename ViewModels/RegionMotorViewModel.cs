@@ -59,19 +59,17 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         [RelayCommand]
-        public void RemoveMotor(MotorState motor) {
-            var req = new DeleteMotorRequest {
-                Id = motor.Id
-            };
+        public void RemoveMotor(MotorState state) {
+            var input = _mapper.Map<MotorEntity>(state);
 
-            _motorBus.Handle(req, out bool _);
+            _motorSrv.RemoveMotor(input);
 
             InvalidateMotors();
         }
 
         [RelayCommand]
         public void AddMotor() {
-            _motorBus.Handle(new AddMotorRequest(), out MotorEntity _);
+            _motorSrv.AddMotor();
 
             InvalidateMotors();
         }
@@ -98,20 +96,28 @@ namespace taskmaker_wpf.ViewModels {
 
         private IRegionManager _regionManager;
         private readonly IMapper _mapper;
-        private readonly MotorInteractorBus _motorBus;
+        //private readonly MotorInteractorBus _motorBus;
         private readonly IEventAggregator _ea;
+        private readonly MotorService _motorSrv;
+        private readonly EvaluationService _evaSrv;
 
         public RegionMotorViewModel(
             IRegionManager regionManager,
-            MotorInteractorBus motorBus,
+            //MotorInteractorBus motorBus,
             //IEnumerable<IUseCase> useCases,
             IEventAggregator ea,
-            MapperConfiguration config) {
+            MapperConfiguration config,
+            EvaluationService evaluation,
+            MotorService motorSrv
+            ) {
             _regionManager = regionManager;
 
             _mapper = config.CreateMapper();
-            _motorBus = motorBus;
+            //_motorBus = motorBus;
             _ea = ea;
+            _motorSrv = motorSrv;
+
+            _evaSrv = evaluation;
 
             _ea.GetEvent<SystemLoadedEvent>().Subscribe(() => {
                 InvalidateMotors();
@@ -123,47 +129,33 @@ namespace taskmaker_wpf.ViewModels {
             EnumMotors();
         }
 
+        public void Initialize() {
+            if (MotorStates.Length == 0) {
+                //_evaSrv.Initialize();
+                _motorSrv.Initialize();
+            }
+
+            InvalidateMotors();
+        }
+
         public void UpdateMotor(MotorState state) {
-            var req = new UpdateMotorRequest {
-                Id = state.Id,
-                Value = _mapper.Map<MotorEntity>(state)
-            };
+            var input = _mapper.Map<MotorEntity>(state);
+            var output = _motorSrv.UpdateMotor(input);
 
-            _motorBus.Handle(req, out MotorEntity motor);
-
-            var target = MotorStates.Where(e => e.Id == motor.Id).FirstOrDefault();
-
-            _mapper.Map(motor, target);
+            _mapper.Map(output, state);
         }
-
-        public void InvalidateMotorState() {
-            var req = new ListMotorRequest();
-
-            _motorBus.Handle(req, out MotorEntity[] motors);
-
-            MotorStates = _mapper.Map<MotorState[]>(motors);
-        }
-
-        private void InvalidateMotors() {
-            _motorBus.Handle(new ListMotorRequest(), out MotorEntity[] motors);
-
-            MotorStates = _mapper.Map<MotorState[]>(motors);
-        }
-
         public void UpdateMotorValue(MotorState state, double newValue) {
-            var req = new UpdateMotorRequest {
-                Id = state.Id,
-                PropertyName = "MotorValue",
-                Value = new double[] { newValue },
-            };
+            var output = _motorSrv.UpdateMotorValue(state.Id, newValue);
 
-            _motorBus.Handle(req, out MotorEntity motor);
-
-            var target = MotorStates.Where(e => e.Id == motor.Id).FirstOrDefault();
-
-            _mapper.Map(motor, target);
-            //target.Value = motor.Value;
+            _mapper.Map(output, state);
         }
+
+        public void InvalidateMotors() {
+            var output = _motorSrv.InvalidateMotors();
+
+            MotorStates = _mapper.Map<MotorState[]>(output);
+        }
+
 
 
         private void EnumBoards() {

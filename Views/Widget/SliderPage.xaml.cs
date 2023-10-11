@@ -397,31 +397,32 @@ namespace taskmaker_wpf.Views.Widget {
             var vm = DataContext as RegionMotorViewModel;
 
             if (e.Key == Key.F5) {
-                vm.InvalidateMotorState();
+                //vm.InvalidateMotorState();
+                vm.InvalidateMotors();
             }
         }
 
         private void page_Loaded(object sender, RoutedEventArgs e) {
             var vm = DataContext as RegionMotorViewModel;
             
-            if (vm.MotorStates.Length == 0) {
-                vm.AddMotor();
-                vm.AddMotor();
-                vm.AddMotor();
+            //if (vm.MotorStates.Length == 0) {
+            //    vm.AddMotor();
+            //    vm.AddMotor();
+            //    vm.AddMotor();
 
-                var idx = 0;
+            //    var idx = 0;
 
-                foreach(var motor in vm.MotorStates) {
-                    motor.NuibotBoardId = 0;
-                    motor.NuibotMotorId = idx;
+            //    foreach(var motor in vm.MotorStates) {
+            //        motor.NuibotBoardId = 0;
+            //        motor.NuibotMotorId = idx;
 
-                    motor.Max = 10000;
-                    motor.Min = -10000;
-                    idx++;
+            //        motor.Max = 10000;
+            //        motor.Min = -10000;
+            //        idx++;
 
-                    vm.UpdateMotor(motor);
-                }
-            }
+            //        vm.UpdateMotor(motor);
+            //    }
+            //}
 
         }
     }

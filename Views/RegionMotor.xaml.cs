@@ -94,5 +94,38 @@ namespace taskmaker_wpf.Views {
                 vm.UpdateMotor(state);
             }
         }
+
+        private void root_KeyDown(object sender, KeyEventArgs e) {
+
+        }
+
+        private void root_KeyUp(object sender, KeyEventArgs e) {
+            var vm = DataContext as RegionMotorViewModel;
+            
+            if (e.Key == Key.F1) {
+                vm.Initialize();
+                
+            }
+        }
+
+        private void root_PreviewKeyUp(object sender, KeyEventArgs e) {
+            var vm = DataContext as RegionMotorViewModel;
+
+            if (e.Key == Key.F1) {
+                vm.Initialize();
+
+                // Popup a message box to inform succss
+                MessageBox.Show("Motors initialized successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            }
+        }
+
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e) {
+            if (Focus()) {
+                e.Handled = true;
+            }
+
+            base.OnMouseLeftButtonDown(e);
+        }
     }
 }
