@@ -2,124 +2,174 @@
              x:Name="root"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:core="clr-namespace:System;assembly=mscorlib"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:prism="http://prismlibrary.com/"
              xmlns:local="clr-namespace:taskmaker_wpf.Views"
-             xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels" 
+             xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels"
              d:DataContext="{d:DesignInstance Type=viewmodels:RegionMotorViewModel}"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
              prism:ViewModelLocator.AutoWireViewModel="True"
-             d:DesignHeight="600" d:DesignWidth="800"
+             d:DesignHeight="600"
+             d:DesignWidth="800"
              PreviewKeyUp="root_PreviewKeyUp"
-             Focusable="True"
-             >
+             Focusable="True">
 
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <Style x:Key="labelMarginStyle" TargetType="TextBlock">
-                <Setter Property="Margin" Value="5" />
-                <Setter Property="HorizontalAlignment" Value="Center"/>
-                <Setter Property="VerticalAlignment" Value="Center"/>
-            </Style>
-        </ResourceDictionary>
-    </UserControl.Resources>
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <Style x:Key="labelMarginStyle"
+             TargetType="TextBlock">
+        <Setter Property="Margin"
+                Value="5" />
+        <Setter Property="HorizontalAlignment"
+                Value="Center" />
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+      </Style>
+    </ResourceDictionary>
+  </UserControl.Resources>
 
-    <DockPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="4">
-            <Button Margin="2" Content="Add Motor" Command="{Binding AddMotorCommand}" />
-            <Button Margin="2" Content="Remove Motor" Click="Button_Click_1"/>
-            <Button Margin="2" Content="Save Changes" Click="Button_Click_2">
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Path=HasModified}" Value="true">
-                                <Setter Property="Content" Value="Save Changes*" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Path=HasModified}" Value="false">
-                                <Setter Property="Content" Value="Save Changes" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
-        </StackPanel>
-        
-        <DataGrid
-            Focusable="True"
-            x:Name="dgMotors"
-            ItemsSource="{Binding MotorStates}" DockPanel.Dock="Top" AutoGenerateColumns="False">
-            <DataGrid.Resources>
-                <CollectionViewSource x:Key="ColorSource" Source="{Binding Colors}"/>
-                <Style TargetType="DataGridColumnHeader">
-                    <Setter Property="FontWeight" Value="Bold" />
-                    <Setter Property="HorizontalAlignment" Value="Stretch" />
-                    <Setter Property="HorizontalContentAlignment" Value="Center" />
-                </Style>
-                <Style TargetType="DataGridCell">
-                    <Setter Property="MinHeight" Value="40" />
-                </Style>
-            </DataGrid.Resources>
-            
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
-                <DataGridTextColumn Header="Min" Binding="{Binding Min}" />
-                <DataGridTextColumn Header="Max" Binding="{Binding Max}" />
-                <DataGridTextColumn Header="Value" Binding="{Binding Value[0],StringFormat=F4}" />
-                
-                <DataGridTemplateColumn Header="Controller" MinWidth="200">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Slider Minimum="{Binding Min}" Maximum="{Binding Max}" Value="{Binding Value[0]}" ValueChanged="slider_ValueChanged"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                
-                <DataGridTextColumn Header="Board Id" Binding="{Binding NuibotBoardId}" />
-                <DataGridTextColumn Header="Motor Id" Binding="{Binding NuibotMotorId}" />
-                              
-                <DataGridTemplateColumn Header="Color">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <Ellipse Fill="{Binding Color}" Width="16" Height="16" />
-                                <TextBlock Text="{Binding Color}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                    <DataGridTemplateColumn.CellEditingTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <ComboBox ItemsSource="{Binding Source={StaticResource ColorSource}}" SelectedItem="{Binding Color}">
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Orientation="Horizontal">
-                                                <Ellipse Fill="{Binding}" Width="16" Height="16" />
-                                                <TextBlock Text="{Binding}" />
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellEditingTemplate>
-                </DataGridTemplateColumn>
+  <DockPanel VerticalAlignment="Stretch"
+             HorizontalAlignment="Stretch">
+    <StackPanel DockPanel.Dock="Bottom"
+                Orientation="Horizontal"
+                HorizontalAlignment="Right"
+                Margin="4">
+      <Button Margin="2"
+              Content="[Exp.] Initialize"
+              Command="{Binding InitializeCommand}" />
+      <Button Margin="2"
+              Content="Add Motor"
+              Command="{Binding AddMotorCommand}" />
+      <Button Margin="2"
+              Content="Remove Motor"
+              Click="Button_Click_1" />
+      <Button Margin="2"
+              Content="Save Changes"
+              Click="Button_Click_2">
+        <Button.Style>
+          <Style TargetType="Button">
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding Path=HasModified}"
+                           Value="true">
+                <Setter Property="Content"
+                        Value="Save Changes*" />
+              </DataTrigger>
+              <DataTrigger Binding="{Binding Path=HasModified}"
+                           Value="false">
+                <Setter Property="Content"
+                        Value="Save Changes" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </Button.Style>
+      </Button>
+    </StackPanel>
 
-                <DataGridTemplateColumn Header="Actions">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" >
-                                <Button Margin="2" Width="16" Height="16" Content="R" FontSize="12" />
-                                <Button Margin="2" Width="16" Height="16" Content="S" FontSize="12" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-               
-            </DataGrid.Columns>
-        </DataGrid>
+    <DataGrid Focusable="True"
+              x:Name="dgMotors"
+              ItemsSource="{Binding MotorStates}"
+              DockPanel.Dock="Top"
+              AutoGenerateColumns="False">
+      <DataGrid.Resources>
+        <CollectionViewSource x:Key="ColorSource"
+                              Source="{Binding Colors}" />
+        <Style TargetType="DataGridColumnHeader">
+          <Setter Property="FontWeight"
+                  Value="Bold" />
+          <Setter Property="HorizontalAlignment"
+                  Value="Stretch" />
+          <Setter Property="HorizontalContentAlignment"
+                  Value="Center" />
+        </Style>
+        <Style TargetType="DataGridCell">
+          <Setter Property="MinHeight"
+                  Value="40" />
+        </Style>
+      </DataGrid.Resources>
 
-    </DockPanel>
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Name"
+                            Binding="{Binding Name}" />
+        <DataGridTextColumn Header="Min"
+                            Binding="{Binding Min}" />
+        <DataGridTextColumn Header="Max"
+                            Binding="{Binding Max}" />
+        <DataGridTextColumn Header="Value"
+                            Binding="{Binding Value[0],StringFormat=F4}" />
+
+        <DataGridTemplateColumn Header="Controller"
+                                MinWidth="200">
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+              <Slider Minimum="{Binding Min}"
+                      Maximum="{Binding Max}"
+                      Value="{Binding Value[0]}"
+                      ValueChanged="slider_ValueChanged" />
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+
+        <DataGridTextColumn Header="Board Id"
+                            Binding="{Binding NuibotBoardId}" />
+        <DataGridTextColumn Header="Motor Id"
+                            Binding="{Binding NuibotMotorId}" />
+
+        <DataGridTemplateColumn Header="Color">
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal">
+                <Ellipse Fill="{Binding Color}"
+                         Width="16"
+                         Height="16" />
+                <TextBlock Text="{Binding Color}" />
+              </StackPanel>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+          <DataGridTemplateColumn.CellEditingTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal">
+                <ComboBox ItemsSource="{Binding Source={StaticResource ColorSource}}"
+                          SelectedItem="{Binding Color}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                      <StackPanel Orientation="Horizontal">
+                        <Ellipse Fill="{Binding}"
+                                 Width="16"
+                                 Height="16" />
+                        <TextBlock Text="{Binding}" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+              </StackPanel>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellEditingTemplate>
+        </DataGridTemplateColumn>
+
+        <DataGridTemplateColumn Header="Actions">
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal">
+                <Button Margin="2"
+                        Width="16"
+                        Height="16"
+                        Content="R"
+                        FontSize="12" />
+                <Button Margin="2"
+                        Width="16"
+                        Height="16"
+                        Content="S"
+                        FontSize="12" />
+              </StackPanel>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+
+      </DataGrid.Columns>
+    </DataGrid>
+
+  </DockPanel>
 </UserControl>

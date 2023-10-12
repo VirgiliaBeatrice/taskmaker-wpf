@@ -780,39 +780,39 @@ namespace taskmaker_wpf.Views.Widget {
                 Name = "Multiview_Grid",
             };
 
-            var infoContainer = new Grid();
+            //var infoContainer = new Grid();
 
-            var expander = new Expander() {
-                Header = "Info",
-            };
+            //var expander = new Expander() {
+            //    Header = "Info",
+            //};
 
-            infoContainer.Children.Add(expander);
+            //infoContainer.Children.Add(expander);
             
-            var toolPanel = new StackPanel() {
-                Background = Brushes.AliceBlue,
-                Orientation = Orientation.Vertical,
-                Width = 200,
-                Height = 400,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Top,
-                //Opacity = 0.5
-            };
+            //var toolPanel = new StackPanel() {
+            //    Background = Brushes.AliceBlue,
+            //    Orientation = Orientation.Vertical,
+            //    Width = 200,
+            //    Height = 400,
+            //    HorizontalAlignment = HorizontalAlignment.Left,
+            //    VerticalAlignment = VerticalAlignment.Top,
+            //    //Opacity = 0.5
+            //};
 
-            toolPanel.MouseEnter += (_, ev) => {
-                toolPanel.Opacity = 1;
-            };
+            //toolPanel.MouseEnter += (_, ev) => {
+            //    toolPanel.Opacity = 1;
+            //};
 
-            toolPanel.MouseLeave += (_, ev) => {
-                toolPanel.Opacity = 0.5;
-            };
+            //toolPanel.MouseLeave += (_, ev) => {
+            //    toolPanel.Opacity = 0.5;
+            //};
 
-            var statusInfo = new Label {
-                Content = "TEST"
-            };
+            //var statusInfo = new Label {
+            //    Content = "TEST"
+            //};
 
-            toolPanel.Children.Add(statusInfo);
+            //toolPanel.Children.Add(statusInfo);
 
-            expander.Content = toolPanel;
+            //expander.Content = toolPanel;
             //var icon = new SvgIcon() {
             //    Width = 200,
             //    Height = 200,
@@ -823,10 +823,11 @@ namespace taskmaker_wpf.Views.Widget {
                 Focusable= false,
                 VerticalAlignment = VerticalAlignment.Stretch,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
             };
 
             grid.Children.Add(Scroll);
-            grid.Children.Add(infoContainer);
+            //grid.Children.Add(infoContainer);
 
             Content = grid;
 
@@ -981,6 +982,13 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         private void Ui_NotifyStatus(object sender, NotifyStatusEventArgs e) {
+        }
+
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e) {
+            if (Focus()) {
+                e.Handled = true;
+            }
+            base.OnMouseLeftButtonUp(e);
         }
     }
 

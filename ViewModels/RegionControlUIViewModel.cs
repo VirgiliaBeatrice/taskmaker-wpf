@@ -28,6 +28,7 @@ using System.Text;
 using NLog;
 using System.Diagnostics;
 using System.Collections.Immutable;
+using taskmaker_wpf.Services;
 
 namespace taskmaker_wpf.ViewModels {
 
@@ -227,7 +228,7 @@ namespace taskmaker_wpf.ViewModels {
         private readonly IMapper _mapper;
          
         private readonly MotorInteractorBus _motorBus;
-
+        private readonly EvaluationService _evaSrv;
         private readonly ControlUiInteractorBus _uiBus;
 
         private string _keymapInfo;
@@ -435,6 +436,7 @@ namespace taskmaker_wpf.ViewModels {
 
         [RelayCommand]
         void AddMap() {
+            
             var addReq = new AddNLinearMapRequest();
             var listReq = new ListNLinearMapRequest();
 
@@ -481,6 +483,13 @@ namespace taskmaker_wpf.ViewModels {
             Invalidate();
         }
 
+        [RelayCommand]
+        void Initialze() {
+            _evaSrv.Initialize();
+
+            Invalidate();
+        }
+
         public void UpdateSocket(NLinearMapState target, InPlug[] plugs) {
             var mapReq = new UpdateNLinearMapRequest() {
                 Id = target.Id,
@@ -503,6 +512,7 @@ namespace taskmaker_wpf.ViewModels {
             _mapper.Map(map, target);
         }
 
+
         public string KeymapInfo {
             get => _keymapInfo;
             set => SetProperty(ref _keymapInfo, value);
@@ -519,6 +529,7 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         public RegionControlUIViewModel(MapperConfiguration config,
+            EvaluationService evaSrv,
             ControlUiInteractorBus uiBus,
             NLinearMapInteractorBus mapBus,
             MotorInteractorBus motorBus) {
@@ -527,7 +538,7 @@ namespace taskmaker_wpf.ViewModels {
             _uiBus = uiBus;
             _mapBus = mapBus;
             _motorBus = motorBus;
-
+            _evaSrv = evaSrv;
             Invalidate();
         }
 

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
@@ -15,6 +16,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -74,6 +76,23 @@ namespace taskmaker_wpf.ViewModels {
             InvalidateMotors();
         }
 
+        [RelayCommand]
+        async public void Initialize() {
+            _motorSrv.Initialize();
+
+            var result = await WeakReferenceMessenger.Default.Send(new ShowMessageBoxMessage {
+                Message = "Initialized all motors for experiments!",
+                Caption = "Initialize",
+                Button = MessageBoxButton.OK,
+                Image = MessageBoxImage.Information,
+                Result = MessageBoxResult.None
+            });
+
+            if (result == MessageBoxResult.OK) {
+                InvalidateMotors();
+            }
+        }
+
         [ObservableProperty]
         private MotorState[] _motorStates = Array.Empty<MotorState>();
 
@@ -85,6 +104,8 @@ namespace taskmaker_wpf.ViewModels {
 
         [ObservableProperty]
         private bool _hasModified = false;
+        [ObservableProperty]
+        private bool _isInitialized = false;
 
         [ObservableProperty]
         private Brush[] _colors = new Brush[] {
@@ -129,25 +150,25 @@ namespace taskmaker_wpf.ViewModels {
             EnumMotors();
         }
 
-        public void Initialize() {
-            if (MotorStates.Length == 0) {
-                //_evaSrv.Initialize();
-                _motorSrv.Initialize();
-            }
+        //public void Initialize() {
+        //    if (!IsInitialized) {
+        //        _evaSrv.Initialize();
+        //    }
 
-            InvalidateMotors();
-        }
+        //    InvalidateMotors();
+        //}
 
         public void UpdateMotor(MotorState state) {
-            var input = _mapper.Map<MotorEntity>(state);
-            var output = _motorSrv.UpdateMotor(input);
+            var motor = _mapper.Map<MotorEntity>(state);
+            _motorSrv.UpdateMotor(ref motor);
 
-            _mapper.Map(output, state);
+            _mapper.Map(motor, state);
         }
         public void UpdateMotorValue(MotorState state, double newValue) {
-            var output = _motorSrv.UpdateMotorValue(state.Id, newValue);
+            var motor = _mapper.Map<MotorEntity>(state);
+            _motorSrv.UpdateMotorValue(ref motor, newValue);
 
-            _mapper.Map(output, state);
+            _mapper.Map(motor, state);
         }
 
         public void InvalidateMotors() {

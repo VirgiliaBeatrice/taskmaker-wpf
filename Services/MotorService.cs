@@ -14,6 +14,8 @@ namespace taskmaker_wpf.Services
     {
         private readonly MotorInteractorBus _motorBus;
 
+        public List<MotorEntity> Motors { get; set; } = new List<MotorEntity>();
+
         public MotorService(MotorInteractorBus motorBus) {
             _motorBus = motorBus;
         }
@@ -22,6 +24,7 @@ namespace taskmaker_wpf.Services
             var req = new AddMotorRequest();
 
             _motorBus.Handle(req, out MotorEntity output);
+            Motors.Add(output);
 
             return output;
         }
@@ -32,28 +35,25 @@ namespace taskmaker_wpf.Services
             };
 
             _motorBus.Handle(req, out bool output);
+            Motors.Remove(input);
         }
 
-        public MotorEntity UpdateMotor(MotorEntity input) {
+        public void UpdateMotor(ref MotorEntity motor) {
             var req = new UpdateMotorRequest {
-                Id = input.Id,
-                Value = input
+                Id = motor.Id,
+                Value = motor
             };
 
-            _motorBus.Handle(req, out MotorEntity output);
-
-            return output;
+            _motorBus.Handle(req, out motor);
         }
-        public MotorEntity UpdateMotorValue(int id, double newValue) {
+        public void UpdateMotorValue(ref MotorEntity motor, double newValue) {
             var req = new UpdateMotorRequest {
-                Id = id,
+                Id = motor.Id,
                 PropertyName = "MotorValue",
                 Value = new double[] { newValue },
             };
 
-            _motorBus.Handle(req, out MotorEntity motor);
-
-            return motor;
+            _motorBus.Handle(req, out motor);
         }
 
         public MotorEntity[] InvalidateMotors() {
@@ -70,7 +70,7 @@ namespace taskmaker_wpf.Services
             AddMotor();
             AddMotor();
 
-            var motors = InvalidateMotors();
+            var motors = Motors;
 
             motors[0].NuibotBoardId = 0;
             motors[0].NuibotMotorId = 0;
@@ -85,13 +85,13 @@ namespace taskmaker_wpf.Services
             motors[5].NuibotBoardId = 1;
             motors[5].NuibotMotorId = 2;
 
-            var idx = 0;
-            foreach (var motor in motors) {
+
+            for (int i = 0; i < motors.Count(); i++) {
+                var motor = motors[i];
                 motor.Max = 10000;
                 motor.Min = -10000;
-                idx++;
 
-                UpdateMotor(motor);
+                UpdateMotor(ref motor);
             }
         }
 

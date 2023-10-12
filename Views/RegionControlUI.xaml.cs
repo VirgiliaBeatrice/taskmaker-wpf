@@ -19,7 +19,7 @@ using Numpy;
 using taskmaker_wpf.Model.Data;
 using System.Windows.Controls.Primitives;
 using NLog;
-
+using taskmaker_wpf.Views.Widget;
 
 namespace taskmaker_wpf.Views {
     /// <summary>
@@ -93,6 +93,26 @@ namespace taskmaker_wpf.Views {
             var lb = FindName("lbUiStates") as ListBox;
 
             lb.SelectedItems.Remove(uiState);
+        }
+
+        private void Border_MouseEnter(object sender, MouseEventArgs e) {
+            var br = (sender as Border);
+
+            br.Opacity = 1;
+        }
+
+        private void Border_MouseLeave(object sender, MouseEventArgs e) {
+            var br = sender as Border;
+
+            br.Opacity = 0.4;
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e) {
+            var view = FindName("view") as MultiView;
+
+            var ui = view.Controllers.First();
+
+            ui?.GoToState(UiMode.Add);
         }
     }
 }

@@ -385,7 +385,8 @@ namespace taskmaker_wpf.Domain {
     }
 
     public class DeleteNodeRequest : Request {
-        public int Id { get; set; }
+        public int UiId { get; set; }
+        public int NodeId { get; set; }
     }
 
     public class DeleteNodeInteractor : BaseInteractor {
@@ -404,9 +405,13 @@ namespace taskmaker_wpf.Domain {
             result = default;
 
             if (request is DeleteNodeRequest req) {
-                var node = Repository.Find<NodeEntity>(req.Id);
+                var ui = Repository.Find<ControlUiEntity>(req.UiId);
+                var newValue = ui.Nodes.ToList();
+                
+                newValue.RemoveAt(req.NodeId);
+                ui.Nodes = newValue.ToArray();
 
-                Repository.Delete(node);
+                Repository.Update(ui);
 
                 result = (K)(object)true;
             }
@@ -468,7 +473,7 @@ namespace taskmaker_wpf.Domain {
 
                 Repository.Add(ui);
 
-                result = (K)(object)true;
+                result = (K)(object)ui;
             }
 
         }
@@ -712,7 +717,7 @@ namespace taskmaker_wpf.Domain {
 
                 Repository.Add(map);
 
-                result = ((K)(object)true);
+                result = ((K)(object)map);
             }
         }
     }

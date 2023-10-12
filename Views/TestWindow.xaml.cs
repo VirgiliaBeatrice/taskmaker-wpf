@@ -1,4 +1,6 @@
-﻿using Prism.Events;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
+using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,7 +23,7 @@ namespace taskmaker_wpf.Views {
     /// <summary>
     /// Interaction logic for TestWindow.xaml
     /// </summary>
-    public partial class TestWindow : Window {
+    public partial class TestWindow : Window, IRecipient<ShowMessageBoxMessage> {
         private IEventAggregator _eventAggregator;
         private SystemInteractorBus _systemBus;
         private static readonly FieldInfo _menuDropAlignmentField;
@@ -52,6 +54,9 @@ namespace taskmaker_wpf.Views {
             _eventAggregator = @event;
             _systemBus = systemBus;
             InitializeComponent();
+
+            // Register ShowMessageBox message
+            WeakReferenceMessenger.Default.Register(this);
         }
 
         private void Window_PreviewKeyUp(object sender, KeyEventArgs e) {
@@ -100,6 +105,12 @@ namespace taskmaker_wpf.Views {
                 e.Handled = true;
             }
         }
+
+        public void Receive(ShowMessageBoxMessage msg) {
+            var result = MessageBox.Show(msg.Message, msg.Caption, msg.Button, msg.Image);
+
+            msg.Reply(result);
+        }
     }
 
     public class SystemSaveEvent : PubSubEvent {
@@ -108,5 +119,13 @@ namespace taskmaker_wpf.Views {
 
     public class SystemLoadedEvent : PubSubEvent {
 
+    }
+
+    public class ShowMessageBoxMessage : AsyncRequestMessage<MessageBoxResult> {
+        public string Message { get; set; }
+        public string Caption { get; set; }
+        public MessageBoxButton Button { get; set; }
+        public MessageBoxImage Image { get; set; }
+        public MessageBoxResult Result { get; set; }
     }
 }

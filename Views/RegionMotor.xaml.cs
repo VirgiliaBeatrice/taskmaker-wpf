@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using taskmaker_wpf.Services;
 using taskmaker_wpf.ViewModels;
 
 namespace taskmaker_wpf.Views {
@@ -42,8 +43,12 @@ namespace taskmaker_wpf.Views {
     /// Interaction logic for MainWindowNew.xaml
     /// </summary>
     public partial class RegionMotor : UserControl {
-        public RegionMotor() {
+        private readonly EvaluationService _evaSrv;
+
+        public RegionMotor(EvaluationService evaSrv) {
             InitializeComponent();
+
+            _evaSrv = evaSrv;
         }
 
 
@@ -95,24 +100,11 @@ namespace taskmaker_wpf.Views {
             }
         }
 
-        private void root_KeyDown(object sender, KeyEventArgs e) {
-
-        }
-
-        private void root_KeyUp(object sender, KeyEventArgs e) {
-            var vm = DataContext as RegionMotorViewModel;
-            
-            if (e.Key == Key.F1) {
-                vm.Initialize();
-                
-            }
-        }
-
         private void root_PreviewKeyUp(object sender, KeyEventArgs e) {
             var vm = DataContext as RegionMotorViewModel;
 
             if (e.Key == Key.F1) {
-                vm.Initialize();
+                _evaSrv.Initialize();
 
                 // Popup a message box to inform succss
                 MessageBox.Show("Motors initialized successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
