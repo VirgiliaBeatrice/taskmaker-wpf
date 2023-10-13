@@ -492,6 +492,12 @@ namespace taskmaker_wpf.ViewModels {
             Invalidate();
         }
 
+        public void OpenUI() {
+            SelectedUis = UiStates;
+
+            Invalidate();
+        }
+
         public void UpdateSocket(NLinearMapState target, InPlug[] plugs) {
             var mapReq = new UpdateNLinearMapRequest() {
                 Id = target.Id,

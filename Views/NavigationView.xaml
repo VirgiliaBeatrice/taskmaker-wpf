@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:taskmaker_wpf.Views" xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:TestWindowViewModel}"
              mc:Ignorable="d" 
-             Width="50"
+             Width="auto"
              Height="auto">
     <Border>
         <StackPanel 
@@ -13,7 +13,7 @@
             HorizontalAlignment="Stretch"
             VerticalAlignment="Top"
             Grid.Row="0"
-            Orientation="Vertical">
+            Orientation="Horizontal">
 
             <StackPanel.Resources>
                 <Style

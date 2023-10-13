@@ -121,6 +121,5 @@ namespace taskmaker_wpf.Services
 
             _mapBus.Handle(req, out map);
         }
-
     }
 }

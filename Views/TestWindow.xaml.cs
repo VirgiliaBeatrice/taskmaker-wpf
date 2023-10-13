@@ -107,7 +107,7 @@ namespace taskmaker_wpf.Views {
         }
 
         public void Receive(ShowMessageBoxMessage msg) {
-            var result = MessageBox.Show(msg.Message, msg.Caption, msg.Button, msg.Image);
+            var result = MessageBox.Show(msg.Message, msg.Caption, msg.Button, msg.Icon);
 
             msg.Reply(result);
         }
@@ -125,7 +125,6 @@ namespace taskmaker_wpf.Views {
         public string Message { get; set; }
         public string Caption { get; set; }
         public MessageBoxButton Button { get; set; }
-        public MessageBoxImage Image { get; set; }
-        public MessageBoxResult Result { get; set; }
+        public MessageBoxImage Icon { get; set; }
     }
 }

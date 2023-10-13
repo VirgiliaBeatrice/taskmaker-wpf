@@ -14,287 +14,359 @@
              d:DesignWidth="800">
   <UserControl.InputBindings>
   </UserControl.InputBindings>
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition Height="*" />
-      <RowDefinition Height="20" />
-    </Grid.RowDefinitions>
+  <UserControl.Resources>
+    <Style TargetType="Button"
+           x:Key="roundedBtn"
+           BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Effect">
+        <Setter.Value>
+          <DropShadowEffect Color="Black"
+                            Direction="270"
+                            ShadowDepth="1"
+                            Opacity="0.32"
+                            BlurRadius="5" />
+        </Setter.Value>
+      </Setter>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <!-- Start by copying the default template -->
+            <Border Name="border"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8">
+              <!-- Customize this value as needed -->
+              <ContentPresenter HorizontalAlignment="Center"
+                                VerticalAlignment="Center" 
+                                Margin="{TemplateBinding Padding}"/>
+            </Border>
 
-    <Grid Grid.Row="0">
+            <!-- Preserve default visual states (e.g., MouseOver, Pressed) -->
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver"
+                       Value="True">
+                <Setter TargetName="border"
+                        Property="Background"
+                        Value="LightGray" />
+                <!-- Or another color of your choice -->
+              </Trigger>
+              <Trigger Property="IsPressed"
+                       Value="True">
+                <Setter TargetName="border"
+                        Property="Background"
+                        Value="Gray" />
+                <!-- Or another color of your choice -->
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </UserControl.Resources>
+  <Border Background="LightGray" CornerRadius="16">
 
-      <Grid VerticalAlignment="Stretch">
-        <w:MultiView x:Name="view"
-          Focusable="True"
-                     Width="auto"
-                     MaxColumnCount="2"
-                     ItemsSource="{Binding SelectedUis}"
-                     BindCommand="{Binding BindCommand}" />
-        <Border x:Name="toolPanel_br"
-                Margin="8"
-                Background="White"
-                BorderBrush="Gray"
-                BorderThickness="1"
-                CornerRadius="8"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                MouseEnter="Border_MouseEnter"
-                MouseLeave="Border_MouseLeave">
-          <Border.Effect>
-            <DropShadowEffect Color="Black"
-                              Direction="270"
-                              ShadowDepth="1"
-                              Opacity="0.32"
-                              BlurRadius="5" />
-          </Border.Effect>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*" />
+        <RowDefinition Height="20" />
+      </Grid.RowDefinitions>
 
-            <StackPanel Orientation="Vertical"
-                        VerticalAlignment="Top"
-                        Margin="8">
-              <StackPanel.Resources>
-                <Style TargetType="Button">
-                  <Setter Property="Width"
-                          Value="28" />
-                  <Setter Property="Height"
-                          Value="28" />
-                  <Setter Property="Margin"
-                          Value="0 4 0 4" />
-                </Style>
-              </StackPanel.Resources>
-              <Button ToolTip="Select (1)"
-                      Click="Button_Click_1">
-                <Image Source="/icons/settings.png"
-                       RenderOptions.BitmapScalingMode="HighQuality" />
-              </Button>
-              <Button>
-                <Image Source="/icons/settings.png"
-                       RenderOptions.BitmapScalingMode="HighQuality" />
-              </Button>
-              <Button>
-                <Image Source="/icons/settings.png"
-                       RenderOptions.BitmapScalingMode="HighQuality" />
-              </Button>
-              <Button>
-                <Image Source="/icons/settings.png"
-                       RenderOptions.BitmapScalingMode="HighQuality" />
-              </Button>
-              <Button>
-                <Image Source="/icons/settings.png"
-                       RenderOptions.BitmapScalingMode="HighQuality" />
-              </Button>
-            </StackPanel>
-            
-        </Border>
+      <Grid Grid.Row="0">
 
-        <Border x:Name="infoContainer"
-                Margin="8"
-                Background="DimGray"
-                BorderBrush="Gray"
-                BorderThickness="1"
-                CornerRadius="8"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Bottom"
-                MouseEnter="Border_MouseEnter"
-                MouseLeave="Border_MouseLeave">
-          <Border.Effect>
-            <DropShadowEffect Color="Black"
-                              Direction="270"
-                              ShadowDepth="1"
-                              Opacity="0.32"
-                              BlurRadius="5" />
-          </Border.Effect>
-          <StackPanel Orientation="Vertical">
-            <Label Content="AA"
-                    Foreground="White" />
-            <Label Content="BB"
-                    Foreground="White" />
+        <Grid VerticalAlignment="Stretch">
+          <w:MultiView x:Name="view"
+                       Focusable="True"
+                       Width="auto"
+                       MaxColumnCount="2"
+                       BindCommand="{Binding BindCommand}" />
+
+          <StackPanel Orientation="Vertical"
+                      VerticalAlignment="Top"
+                      HorizontalAlignment="Left"
+                      Margin="8">
+            <StackPanel.Resources>
+              <Style TargetType="Button"
+                     BasedOn="{StaticResource roundedBtn}">
+                <Setter Property="Width"
+                        Value="32" />
+                <Setter Property="Height"
+                        Value="32" />
+                <Setter Property="Margin"
+                        Value="0 4 0 4" />
+                <Setter Property="Padding"
+                        Value="4" />
+                <Setter Property="FontFamily"
+                        Value="Segoe Fluent Icons" />
+                <Setter Property="FontSize"
+                        Value="16" />
+              </Style>
+            </StackPanel.Resources>
+            <Button ToolTip="Select"
+                    Name="toolbarSelect"
+                    Click="ToolBar_Click"
+                    Content="&#xe7c9;" />
+            <Button Content="&#xED5F;"
+                    Click="ToolBar_Click"
+                    ToolTip="Control" />
+            <Button Content="&#xec61;"
+                    Foreground="Green"
+                    Click="ToolBar_Click"
+                    ToolTip="Build" />
+            <Separator />
+            <Button Content="&#xecc8;"
+                    Click="ToolBar_Click"
+                    ToolTip="Add" />
+            <Button Content="&#xecc9;"
+                    Click="ToolBar_Click"
+                    ToolTip="Remove" />
+            <Button Content="&#xe759;"
+                    Click="ToolBar_Click"
+                    ToolTip="Move" />
+            <Button Content="&#xe71b;"
+                    Click="ToolBar_Click"
+                    ToolTip="Assign" />
+            <Separator />
+            <Button Content="&#xece8;"
+                    Click="ToolBar_Click"
+                    ToolTip="Pan" />
+            <Button Content="&#xece9;"
+                    Click="ToolBar_Click"
+                    ToolTip="Zoom" />
+
           </StackPanel>
-        </Border>
-        
-        
-        <Border Name="sideContainter"
-                Margin="8"
-                Background="White"
-                BorderBrush="Gray"
-                BorderThickness="1"
-                CornerRadius="8"
-                HorizontalAlignment="Right">
-          <Border.Style>
-            <Style TargetType="Border">
-              <Setter Property="VerticalAlignment"
-                      Value="Top" />
-              <Style.Triggers>
-                <DataTrigger Binding="{Binding ElementName=side, Path=IsExpanded}"
-                             Value="True">
-                  <Setter Property="VerticalAlignment"
-                          Value="Stretch" />
-                </DataTrigger>
-              </Style.Triggers>
-            </Style>
-          </Border.Style>
-          <Border.Effect>
-            <DropShadowEffect Color="Black"
-                              Direction="270"
-                              ShadowDepth="1"
-                              Opacity="0.32"
-                              BlurRadius="5" />
-          </Border.Effect>
 
-          <Expander x:Name="side"
-                    Margin="8"
-                    ExpandDirection="Right"
-                    IsExpanded="False">
 
-            <TabControl Margin="4"
-                        Width="250">
-              <TabItem Header="Evaluation">
-                <ScrollViewer VerticalScrollBarVisibility="Hidden">
-                  <StackPanel Margin="4"
-                              Orientation="Vertical">
-                    <GroupBox Header="Commands">
-                      <StackPanel Margin="5">
-                        <Button Content="Start"
-                                Width="50"
-                                Margin="4"
-                                VerticalAlignment="Center"
-                                Command="{Binding InitialzeCommand}">
-                        </Button>
-                        <Button Content="Stop"
-                                Width="50"
-                                Margin="10"
-                                VerticalAlignment="Center" />
-                        
-                      </StackPanel>
-                      
-                    </GroupBox>
-                    <GroupBox Header="Info">
-                      <StackPanel Orientation="Vertical">
-                        <Label Content="Participant Name" FontWeight="Bold"/>
-                        <TextBox Text="text" TextAlignment="Center"/>
-                        <Label Content="Trial No."
-                               FontWeight="Bold" />
-                        <TextBox Text="test" TextAlignment="Center" />
-                      </StackPanel>
-                      
-                    </GroupBox>
-                              
+          <Border x:Name="infoContainer"
+                  Visibility="Hidden"
+                  Margin="8"
+                  Background="DimGray"
+                  BorderBrush="Gray"
+                  BorderThickness="1"
+                  CornerRadius="8"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Bottom"
+                  MouseEnter="Border_MouseEnter"
+                  MouseLeave="Border_MouseLeave">
+            <Border.Effect>
+              <DropShadowEffect Color="Black"
+                                Direction="270"
+                                ShadowDepth="1"
+                                Opacity="0.32"
+                                BlurRadius="5" />
+            </Border.Effect>
+            <StackPanel Orientation="Vertical">
+              <Label Content="AA"
+                     Foreground="White" />
+              <Label Content="BB"
+                     Foreground="White" />
+            </StackPanel>
+          </Border>
 
-                  </StackPanel>
-                </ScrollViewer>
 
-              </TabItem>
-              <TabItem Header="ControlUi">
-                <ScrollViewer VerticalScrollBarVisibility="Hidden">
-                  <StackPanel Margin="10"
-                              Orientation="Vertical">
-                    <Expander Header="Control UI"
-                              Expanded="Expander_Expanded">
-                      <StackPanel Margin="4"
-                                  Orientation="Vertical">
-                        <ItemsControl ItemsSource="{Binding SelectedUis}">
-                          <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type viewmodels:ControlUiState}">
-                              <GroupBox Header="Details">
-                                <StackPanel Orientation="Vertical">
-                                  <StackPanel Orientation="Horizontal">
-                                    <Label Content="Name"
-                                           FontWeight="Bold" />
-                                    <Label Content="{Binding Name}" />
+          <Border Name="sideContainter"
+                  Margin="8"
+                  Background="White"
+                  BorderBrush="Gray"
+                  BorderThickness="1"
+                  CornerRadius="8"
+                  HorizontalAlignment="Right">
+            <Border.Style>
+              <Style TargetType="Border">
+                <Setter Property="VerticalAlignment"
+                        Value="Top" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding ElementName=side, Path=IsExpanded}"
+                               Value="True">
+                    <Setter Property="VerticalAlignment"
+                            Value="Stretch" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Border.Style>
+            <Border.Effect>
+              <DropShadowEffect Color="Black"
+                                Direction="270"
+                                ShadowDepth="1"
+                                Opacity="0.32"
+                                BlurRadius="5" />
+            </Border.Effect>
+
+            <Expander x:Name="side"
+                      Margin="8"
+                      ExpandDirection="Right"
+                      IsExpanded="False">
+
+              <TabControl Margin="4"
+                          Width="250">
+                <TabItem Header="Evaluation">
+                  <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                    <StackPanel Margin="4"
+                                Orientation="Vertical">
+                      <GroupBox Header="Commands">
+                        <StackPanel Margin="5"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center">
+                          <StackPanel.Resources>
+                            <Style TargetType="Button"
+                                   BasedOn="{StaticResource roundedBtn}">
+                              <Setter Property="Padding"
+                                      Value="4 0 4 0" />
+                              <Setter Property="Height"
+                                      Value="24" />
+                              <Setter Property="Margin"
+                                      Value="4" />
+                              <Setter Property="FontFamily"
+                                      Value="Segoe UI, Segoe Fluent Icons" />
+
+                            </Style>
+                          </StackPanel.Resources>
+                          <Button Content="&#xe777;"
+                                  Command="{Binding InitialzeCommand}" />
+                          <Button Content="&#xe768;" />
+                          <Button Content="&#xe769;">
+                          </Button>
+                          <Button Content="&#xe71a;" />
+
+                        </StackPanel>
+
+                      </GroupBox>
+                      <GroupBox Header="Info">
+                        <StackPanel Orientation="Vertical">
+                          <Label Content="Participant Name"
+                                 FontWeight="Bold" />
+                          <TextBox Text="text"
+                                   TextAlignment="Center" />
+                          <Label Content="Trial No."
+                                 FontWeight="Bold" />
+                          <TextBox Text="test"
+                                   TextAlignment="Center" />
+                        </StackPanel>
+
+                      </GroupBox>
+
+
+                    </StackPanel>
+                  </ScrollViewer>
+
+                </TabItem>
+                <TabItem Header="ControlUi">
+                  <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                    <StackPanel Margin="10"
+                                Orientation="Vertical">
+                      <Expander Header="Control UI"
+                                Expanded="Expander_Expanded">
+                        <StackPanel Margin="4"
+                                    Orientation="Vertical">
+                          <ItemsControl ItemsSource="{Binding SelectedUis}">
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate DataType="{x:Type viewmodels:ControlUiState}">
+                                <GroupBox Header="Details">
+                                  <StackPanel Orientation="Vertical">
+                                    <StackPanel Orientation="Horizontal">
+                                      <Label Content="Name"
+                                             FontWeight="Bold" />
+                                      <Label Content="{Binding Name}" />
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal">
+                                      <Label Content="Num. Of Nodes"
+                                             FontWeight="Bold" />
+                                      <Label Content="{Binding Nodes.Length}" />
+                                    </StackPanel>
+
                                   </StackPanel>
 
+                                </GroupBox>
+
+                              </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                          </ItemsControl>
+
+
+                          <Button Margin="4"
+                                  Command="{Binding AddUiCommand}">
+                            <Button.Content>
+                              <Image Source="/icons/add_FILL0_wght400_GRAD0_opsz48.png"
+                                     Width="16"
+                                     Height="16" />
+                            </Button.Content>
+                          </Button>
+                          <ListBox x:Name="lbUiStates"
+                                   MinHeight="20"
+                                   Margin="4"
+                                   ItemsSource="{Binding UiStates}"
+                                   SelectionMode="Single"
+                                   MouseDoubleClick="lbUiStates_MouseDoubleClick">
+                            <!--
+                              <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type viewmodels:ControlUiState}">
                                   <StackPanel Orientation="Horizontal">
-                                    <Label Content="Num. Of Nodes"
-                                           FontWeight="Bold" />
-                                    <Label Content="{Binding Nodes.Length}" />
+                                    <CheckBox
+                                        IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}},Path=IsSelected}"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Center" />
+                                    <Label VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"
+                                           Content="{Binding Name}" />
                                   </StackPanel>
+                                </DataTemplate>
+                              </ListBox.ItemTemplate>
+                            -->
 
-                                </StackPanel>
+                          </ListBox>
+                          <Button Margin="4"
+                                  Click="Button_Click">
+                            <Button.Content>
+                              Open
+                            </Button.Content>
+                          </Button>
+                        </StackPanel>
 
-                              </GroupBox>
+                      </Expander>
 
-                            </DataTemplate>
-                          </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                    </StackPanel>
+                  </ScrollViewer>
 
+                </TabItem>
+                <TabItem Header="Map">
+                  <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                    <w:TargetsPanel />
 
-                        <Button Margin="4"
-                                Command="{Binding AddUiCommand}">
-                          <Button.Content>
-                            <Image Source="/icons/add_FILL0_wght400_GRAD0_opsz48.png"
-                                   Width="16"
-                                   Height="16" />
-                          </Button.Content>
-                        </Button>
-                        <ListBox x:Name="lbUiStates"
-                                 MinHeight="20"
-                                 Margin="4"
-                                 ItemsSource="{Binding UiStates}"
-                                 SelectionMode="Multiple">
-                          <ListBox.ItemTemplate>
-                            <DataTemplate DataType="{x:Type viewmodels:ControlUiState}">
-                              <StackPanel Orientation="Horizontal">
-                                <CheckBox
-                                    IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}},Path=IsSelected}"
-                                          VerticalAlignment="Center"
-                                          HorizontalAlignment="Center" />
-                                <Label VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"
-                                       Content="{Binding Name}" />
-                              </StackPanel>
-                            </DataTemplate>
-                          </ListBox.ItemTemplate>
+                  </ScrollViewer>
+                </TabItem>
 
-                        </ListBox>
-                        <Button Margin="4"
-                                Click="Button_Click">
-                          <Button.Content>
-                            Open
-                          </Button.Content>
-                        </Button>
-                      </StackPanel>
-
-                    </Expander>
-
-                  </StackPanel>
-                </ScrollViewer>
-
-              </TabItem>
-              <TabItem Header="Map">
-                <ScrollViewer VerticalScrollBarVisibility="Hidden">
-                  <w:TargetsPanel />
-
-                </ScrollViewer>
-              </TabItem>
-
-            </TabControl>
-          </Expander>
-        </Border>
+              </TabControl>
+            </Expander>
+          </Border>
+        </Grid>
       </Grid>
+
+
+
+
+      <StackPanel x:Name="statusBar"
+                  Orientation="Horizontal"
+                  HorizontalAlignment="Stretch"
+                  Background="LightGray"
+                  Grid.Row="1">
+        <TextBlock x:Name="timer"
+                   Margin="8 0 4 0"
+                   Width="200"
+                   Text="{Binding Time}" />
+        <TextBlock x:Name="keymapInfo"
+                   Margin="4 0 4 0"
+                   MinWidth="250"
+                   Text="{Binding Path=KeymapInfo}" />
+        <TextBlock x:Name="statusMsg"
+                   Margin="4 0 4 0"
+                   MinWidth="250"
+                   Text="{Binding Path=StatusMsg}" />
+        <TextBlock x:Name="systemInfo"
+                   Margin="4 0 4 0"
+                   Text="{Binding Debug}" />
+      </StackPanel>
     </Grid>
-
-
-
-
-    <StackPanel x:Name="statusBar"
-                Orientation="Horizontal"
-                HorizontalAlignment="Stretch"
-                Background="LightGray"
-                Grid.Row="1">
-      <TextBlock x:Name="timer"
-                 Margin="8 0 4 0"
-                 Width="200"
-                 Text="{Binding Time}" />
-      <TextBlock x:Name="keymapInfo"
-                 Margin="4 0 4 0"
-                 MinWidth="250"
-                 Text="{Binding Path=KeymapInfo}" />
-      <TextBlock x:Name="statusMsg"
-                 Margin="4 0 4 0"
-                 MinWidth="250"
-                 Text="{Binding Path=StatusMsg}" />
-      <TextBlock x:Name="systemInfo"
-                 Margin="4 0 4 0"
-                 Text="{Binding Debug}" />
-    </StackPanel>
-  </Grid>
+  </Border>
 
 </UserControl>

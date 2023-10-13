@@ -84,8 +84,7 @@ namespace taskmaker_wpf.ViewModels {
                 Message = "Initialized all motors for experiments!",
                 Caption = "Initialize",
                 Button = MessageBoxButton.OK,
-                Image = MessageBoxImage.Information,
-                Result = MessageBoxResult.None
+                Icon = MessageBoxImage.Information,
             });
 
             if (result == MessageBoxResult.OK) {

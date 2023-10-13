@@ -680,17 +680,6 @@ namespace taskmaker_wpf.Views.Widget {
     }
 
     public class MultiView : UserControl {
-        public IEnumerable ItemsSource {
-            get { return (IEnumerable)GetValue(ItemsSourceProperty); }
-            set { SetValue(ItemsSourceProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for ItemsSource.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ItemsSourceProperty =
-            DependencyProperty.Register("ItemsSource", typeof(IEnumerable), typeof(MultiView), new FrameworkPropertyMetadata(new ControlUiState[0], OnPropertyChanged));
-
-
-
         public ICommand BindCommand {
             get { return (ICommand)GetValue(BindCommandProperty); }
             set { SetValue(BindCommandProperty, value); }
@@ -712,26 +701,20 @@ namespace taskmaker_wpf.Views.Widget {
 
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
             if (d is MultiView view) {
-                var uis = args.NewValue as ControlUiState[];
+                //var uis = args.NewValue as ControlUiState[];
 
-                // clear view.Controllers
-                //view.Controllers.Clear();
-
-
-                //// for all view.Controllers
-                //foreach (var ui in uis) {
-                //    var controller = new UiController() {
-                //        UiState = ui,
-                //    };
-
-                //    view.Controllers.Add(controller);
-
-                //    controller.SetBinding(UiController.UiStateProperty, new Binding() { Source = ui });
-                //}
-
-                view.Layout();
-                view.InvalidateViewer();
+                //view.Layout();
+                //view.InvalidateViewer();
             }
+        }
+
+        public ControlUiState[] UiStates { get; set; }
+
+        public void Invalidate(ControlUiState[] states) {
+            UiStates = states;
+
+            Layout();
+            InvalidateViewer();
         }
 
         public void InvalidateViewer() {
@@ -868,9 +851,10 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public void Layout() {
-            if (ItemsSource == null) return;
+            //if (ItemsSource == null) return;
+            if (UiStates == null) return;
 
-            var items = ItemsSource.Cast<object>().ToList();
+            //var items = ItemsSource.Cast<object>().ToList();
             var grid = new Grid() {
                 Name = "Multiview_SubGrid",
                 Visibility = Visibility.Visible
@@ -881,7 +865,7 @@ namespace taskmaker_wpf.Views.Widget {
             Scroll.Content = grid;
             Controllers.Clear();
 
-            if (items.Count == 1) {
+            if (UiStates.Count() == 1) {
                 var ui = new UiController {
                     VerticalAlignment= VerticalAlignment.Stretch,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -892,7 +876,7 @@ namespace taskmaker_wpf.Views.Widget {
                 ui.NotifyStatus += Ui_NotifyStatus;
 
                 var textblock = new TextBlock {
-                    Text = items[0].ToString(),
+                    Text = UiStates[0].ToString(),
                     FontSize = 42,
                     Foreground = Brushes.DimGray,
                     VerticalAlignment = VerticalAlignment.Bottom,
@@ -903,7 +887,7 @@ namespace taskmaker_wpf.Views.Widget {
                 ui.SetBinding(
                     UiController.UiStateProperty,
                     new Binding {
-                        Source = items[0]
+                        Source = UiStates[0]
                     });
 
                 grid.Children.Add(ui);
@@ -911,7 +895,7 @@ namespace taskmaker_wpf.Views.Widget {
 
                 Controllers.Add(ui);
             }
-            else if (items.Count == 0) {
+            else if (UiStates.Count() == 0) {
                 var textblock = new TextBlock {
                     Text = "NULL",
                     VerticalAlignment = VerticalAlignment.Center,
@@ -923,7 +907,7 @@ namespace taskmaker_wpf.Views.Widget {
                 grid.Children.Add(textblock);
             }
             else {
-                int remainder, quotient = Math.DivRem(items.Count, MaxColumnCount, out remainder);
+                int remainder, quotient = Math.DivRem(UiStates.Count(), MaxColumnCount, out remainder);
 
                 for (int i = 0; i < (remainder == 0 ? quotient : quotient + 1); i++) {
                     grid.RowDefinitions.Add(new RowDefinition() { MinHeight = 400 });
@@ -933,7 +917,7 @@ namespace taskmaker_wpf.Views.Widget {
                     grid.ColumnDefinitions.Add(new ColumnDefinition());
                 }
 
-                for (int i = 0; i < items.Count; i++) {
+                for (int i = 0; i < UiStates.Count(); i++) {
                     int r, q = Math.DivRem(i, MaxColumnCount, out r);
 
                     //var item = new Button() {
@@ -949,7 +933,7 @@ namespace taskmaker_wpf.Views.Widget {
                         HorizontalAlignment = HorizontalAlignment.Stretch,
                     };
                     var textblock = new TextBlock {
-                        Text = items[i].ToString(),
+                        Text = UiStates[i].ToString(),
                         FontSize = 42,
                         Foreground = Brushes.DimGray,
                         VerticalAlignment = VerticalAlignment.Bottom,
@@ -962,7 +946,7 @@ namespace taskmaker_wpf.Views.Widget {
                     ui.SetBinding(
                         UiController.UiStateProperty,
                         new Binding() {
-                            Source = items[i]
+                            Source = UiStates[i]
                         });
 
                     Grid.SetColumn(ui, r);
@@ -995,7 +979,7 @@ namespace taskmaker_wpf.Views.Widget {
     public enum UiMode {
         Default = 0,
         Add,
-        Delete,
+        Remove,
         Build,
         Trace,
         Drag,
@@ -1883,7 +1867,7 @@ namespace taskmaker_wpf.Views.Widget {
                     break;
                 case UiMode.Add:
                     break;
-                case UiMode.Delete:
+                case UiMode.Remove:
                     break;
                 case UiMode.Build:
                     break;

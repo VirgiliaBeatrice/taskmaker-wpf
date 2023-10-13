@@ -1,14 +1,20 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualBasic;
 using NLog;
 using NLog.Fluent;
 using Prism.Ioc;
 using System;
 using System.Collections.Generic;
+using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Threading;
 using taskmaker_wpf.ViewModels;
+using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.Services
 {
@@ -34,12 +40,27 @@ namespace taskmaker_wpf.Services
 
             timer = new DispatcherTimer();
 
-            _startTime = DateTime.Now;
             timer.Interval = TimeSpan.FromSeconds(1);
             timer.Tick += (_, _) => {
                 Time = DateTime.Now - _startTime;
             };
 
+        }
+
+        public void Start() {
+            if (!timer.IsEnabled) {
+                _startTime = DateTime.Now;
+                timer.Start();
+            }
+        }
+
+        public void Pause() {
+            timer.Stop();
+        }
+
+        public void Stop() {
+            _startTime = DateTime.MinValue;
+            timer.Stop();
         }
 
         public void Log() {
@@ -52,21 +73,38 @@ namespace taskmaker_wpf.Services
         }
 
         public void Initialize() {
-            //// Add motors
-            //_motorSrv.Initialize();
-            var motors = _motorSrv.Motors;
+            // confirm initialization of motors
+            if (_motorSrv.Motors.Count == 0) {
+                var msg = new ShowMessageBoxMessage {
+                    Message = "No motors found. Please connect motors and restart the application.",
+                    Caption = "Error",
+                    Button = MessageBoxButton.OK,
+                    Icon = MessageBoxImage.Error
+                };
 
-            // Add a Ui
-            var ui = _uiSrv.AddUi();
-            var map = _uiSrv.AddMap();
+                WeakReferenceMessenger.Default.Send(msg);
+            } else {
+                var motors = _motorSrv.Motors;
 
-            // Bind motors to ui
-            _uiSrv.BindMotorsToUi(
-                ref map, 
-                new[] { InPlug.Create(ui) }, 
-                motors.Select(OutPlug.Create).ToArray());
+                // Add ui and map
+                var ui = _uiSrv.AddUi();
+                var map = _uiSrv.AddMap();
 
-            timer.Start();
+                // Bind motors to ui
+                _uiSrv.BindMotorsToUi(
+                    ref map, 
+                    new[] { InPlug.Create(ui) }, 
+                    motors.Select(OutPlug.Create).ToArray());
+
+                var msg = new ShowMessageBoxMessage {
+                    Message = "Evaluation session initialized.",
+                    Caption = "Success",
+                    Button = MessageBoxButton.OK,
+                    Icon = MessageBoxImage.Information
+                };
+
+                WeakReferenceMessenger.Default.Send(msg);
+            }
         }
 
 

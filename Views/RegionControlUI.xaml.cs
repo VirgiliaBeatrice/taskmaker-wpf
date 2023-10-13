@@ -20,6 +20,7 @@ using taskmaker_wpf.Model.Data;
 using System.Windows.Controls.Primitives;
 using NLog;
 using taskmaker_wpf.Views.Widget;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace taskmaker_wpf.Views {
     /// <summary>
@@ -107,12 +108,62 @@ namespace taskmaker_wpf.Views {
             br.Opacity = 0.4;
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e) {
+        private void ChangeMode(UiMode mode) {
             var view = FindName("view") as MultiView;
 
             var ui = view.Controllers.First();
 
-            ui?.GoToState(UiMode.Add);
+            ui?.GoToState(mode);
+        }
+
+        private void Button_Click_Add(object sender, RoutedEventArgs e) {
+            ChangeMode(UiMode.Add);
+        }
+
+        private void Button_Click_Remove(object sender, RoutedEventArgs e) {
+            ChangeMode(UiMode.Remove);
+        }
+
+        private void Button_Click_Pan(object sender, RoutedEventArgs e) {
+            ChangeMode(UiMode.Pan);
+        }
+
+        private void Button_Click_Zoom(object sender, RoutedEventArgs e) {
+            var view = FindName("view") as MultiView;
+
+            var ui = view.Controllers.First();
+
+            ui?.GoToState(UiMode.Zoom);
+        }
+
+        private void ToolBar_Click(object sender, RoutedEventArgs e) {
+            var btn = sender as Button;
+
+            if (btn.Name == "toolbarSelect") {
+                ChangeMode(UiMode.Default);
+            }
+            else if (btn.Name == "toolbarAdd") {
+                ChangeMode(UiMode.Add);
+            }
+
+        }
+
+        private void lbUiStates_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
+            var view = FindName("view") as MultiView;
+            var vm = DataContext as RegionControlUIViewModel;
+            var list = sender as ListBox;
+
+            if (e.LeftButton == MouseButtonState.Pressed) {
+                view.Invalidate(new [] { list.SelectedItem as ControlUiState });
+
+                // Send a ShowMessageBoxMessage to inform success
+                var msg = new ShowMessageBoxMessage() {
+                    Caption = "Success",
+                    Message = "Selected UIs are shown in the view."
+                };
+
+                WeakReferenceMessenger.Default.Send(msg);
+            }
         }
     }
 }

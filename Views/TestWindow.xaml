@@ -24,35 +24,17 @@
         </ResourceDictionary>
     </Window.Resources>
 
-    
-    <Grid 
-        >
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="auto"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+
+  <DockPanel>
+    <ContentControl prism:RegionManager.RegionName="NavigationRegion"
+                    DockPanel.Dock="Top"
+                    Margin="16 0 16 0"
+                    BorderBrush="Gray" />
 
 
+    <ContentControl prism:RegionManager.RegionName="ContentRegion"
+                    DockPanel.Dock="Top"
+                    Margin="16 0 16 16"/>
 
-        <ContentControl
-            d:Width="50"
-            Grid.Column="0"
-            prism:RegionManager.RegionName="NavigationRegion"
-            BorderThickness="0 0 2 0"
-            BorderBrush="Gray"
-            />
-        
-        
-        <ContentControl
-            Margin="15"
-            Grid.Column="1"
-            prism:RegionManager.RegionName="ContentRegion" />
-
-        <!--
-        <widget:UiController
-            Grid.Column="1"
-            Background="AntiqueWhite"
-            />
-        -->
-    </Grid>
+  </DockPanel>
 </Window>
