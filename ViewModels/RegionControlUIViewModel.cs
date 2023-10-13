@@ -282,6 +282,8 @@ namespace taskmaker_wpf.ViewModels {
         [ObservableProperty]
         private string _numOfNodesOfSelectedUis = "0";
 
+        public TimeSpan Time => _evaSrv.Time;
+
         partial void OnSelectedMapChanged(NLinearMapState value) {
             InvalidateInPlugsOfSelectedMap();
             InvalidateOutPlugsOfSelectedMap();
@@ -539,7 +541,16 @@ namespace taskmaker_wpf.ViewModels {
             _mapBus = mapBus;
             _motorBus = motorBus;
             _evaSrv = evaSrv;
+
+            _evaSrv.PropertyChanged += EvaluationService_PropertyChanged;
             Invalidate();
+        }
+
+        private void EvaluationService_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
+            if (e.PropertyName == nameof(EvaluationService.Time)) {
+                OnPropertyChanged(nameof(Time));
+            }
+
         }
 
         public void Invalidate() {

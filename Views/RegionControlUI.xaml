@@ -30,11 +30,11 @@
                      ItemsSource="{Binding SelectedUis}"
                      BindCommand="{Binding BindCommand}" />
         <Border x:Name="toolPanel_br"
-                Margin="4"
+                Margin="8"
                 Background="White"
                 BorderBrush="Gray"
                 BorderThickness="1"
-                CornerRadius="5"
+                CornerRadius="8"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 MouseEnter="Border_MouseEnter"
@@ -43,52 +43,54 @@
             <DropShadowEffect Color="Black"
                               Direction="270"
                               ShadowDepth="1"
-                              Opacity="0.5"
+                              Opacity="0.32"
                               BlurRadius="5" />
           </Border.Effect>
-          
-          <StackPanel Orientation="Vertical"
-                      VerticalAlignment="Top">
-            <StackPanel.Resources>
-              <Style TargetType="Button">
-                <Setter Property="Width"
-                        Value="25" />
-                <Setter Property="Height"
-                        Value="25" />
-                <Setter Property="Margin"
-                        Value="4" />
-              </Style>
-            </StackPanel.Resources>
-            <Button ToolTip="Select (1)"
-                    Click="Button_Click_1">
-              <Image Source="/icons/settings.png"
-                     RenderOptions.BitmapScalingMode="HighQuality" />
-            </Button>
-            <Button>
-              <Image Source="/icons/settings.png"
-                     RenderOptions.BitmapScalingMode="HighQuality" />
-            </Button>
-            <Button>
-              <Image Source="/icons/settings.png"
-                     RenderOptions.BitmapScalingMode="HighQuality" />
-            </Button>
-            <Button>
-              <Image Source="/icons/settings.png"
-                     RenderOptions.BitmapScalingMode="HighQuality" />
-            </Button>
-            <Button>
-              <Image Source="/icons/settings.png"
-                     RenderOptions.BitmapScalingMode="HighQuality" />
-            </Button>
-          </StackPanel>
+
+            <StackPanel Orientation="Vertical"
+                        VerticalAlignment="Top"
+                        Margin="8">
+              <StackPanel.Resources>
+                <Style TargetType="Button">
+                  <Setter Property="Width"
+                          Value="28" />
+                  <Setter Property="Height"
+                          Value="28" />
+                  <Setter Property="Margin"
+                          Value="0 4 0 4" />
+                </Style>
+              </StackPanel.Resources>
+              <Button ToolTip="Select (1)"
+                      Click="Button_Click_1">
+                <Image Source="/icons/settings.png"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
+              </Button>
+              <Button>
+                <Image Source="/icons/settings.png"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
+              </Button>
+              <Button>
+                <Image Source="/icons/settings.png"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
+              </Button>
+              <Button>
+                <Image Source="/icons/settings.png"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
+              </Button>
+              <Button>
+                <Image Source="/icons/settings.png"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
+              </Button>
+            </StackPanel>
+            
         </Border>
 
         <Border x:Name="infoContainer"
-                Margin="4"
+                Margin="8"
                 Background="DimGray"
                 BorderBrush="Gray"
                 BorderThickness="1"
-                CornerRadius="5"
+                CornerRadius="8"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Bottom"
                 MouseEnter="Border_MouseEnter"
@@ -97,7 +99,7 @@
             <DropShadowEffect Color="Black"
                               Direction="270"
                               ShadowDepth="1"
-                              Opacity="0.5"
+                              Opacity="0.32"
                               BlurRadius="5" />
           </Border.Effect>
           <StackPanel Orientation="Vertical">
@@ -110,11 +112,11 @@
         
         
         <Border Name="sideContainter"
-                Margin="4"
+                Margin="8"
                 Background="White"
                 BorderBrush="Gray"
                 BorderThickness="1"
-                CornerRadius="10"
+                CornerRadius="8"
                 HorizontalAlignment="Right">
           <Border.Style>
             <Style TargetType="Border">
@@ -133,7 +135,7 @@
             <DropShadowEffect Color="Black"
                               Direction="270"
                               ShadowDepth="1"
-                              Opacity="0.5"
+                              Opacity="0.32"
                               BlurRadius="5" />
           </Border.Effect>
 
@@ -154,7 +156,7 @@
                                 Width="50"
                                 Margin="4"
                                 VerticalAlignment="Center"
-                                Command="{Binding InitializeCommand}">
+                                Command="{Binding InitialzeCommand}">
                         </Button>
                         <Button Content="Stop"
                                 Width="50"
@@ -277,11 +279,17 @@
                 HorizontalAlignment="Stretch"
                 Background="LightGray"
                 Grid.Row="1">
+      <TextBlock x:Name="timer"
+                 Margin="8 0 4 0"
+                 Width="200"
+                 Text="{Binding Time}" />
       <TextBlock x:Name="keymapInfo"
-                 Margin="0 0 4 0"
+                 Margin="4 0 4 0"
+                 MinWidth="250"
                  Text="{Binding Path=KeymapInfo}" />
       <TextBlock x:Name="statusMsg"
                  Margin="4 0 4 0"
+                 MinWidth="250"
                  Text="{Binding Path=StatusMsg}" />
       <TextBlock x:Name="systemInfo"
                  Margin="4 0 4 0"
