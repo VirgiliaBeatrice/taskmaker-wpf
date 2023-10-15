@@ -11,30 +11,100 @@
         xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels"
         d:DataContext="{d:DesignInstance Type=viewmodels:TestWindowViewModel}"
         mc:Ignorable="d"
-        Title="TestWindow" Height="450" Width="800"
+        Title="Tinkering Controller"
+        d:Height="450"
+        d:Width="800"
+        WindowState="Maximized"
         PreviewKeyUp="Window_PreviewKeyUp"
-        >
-    <Window.Resources>
-        <ResourceDictionary>
-            <BitmapImage x:Key="home" UriSource="../icons/home.png"/>
-            <BitmapImage x:Key="settings" UriSource="../icons/settings.png"/>
-            <BitmapImage x:Key="control" UriSource="../icons/triangle.png"/>
-            <BitmapImage x:Key="panel" UriSource="../icons/panel.png"/>
+        Background="WhiteSmoke">
+  <Window.Resources>
+    <ResourceDictionary>
+      <BitmapImage x:Key="home"
+                   UriSource="../icons/home.png" />
+      <BitmapImage x:Key="settings"
+                   UriSource="../icons/settings.png" />
+      <BitmapImage x:Key="control"
+                   UriSource="../icons/triangle.png" />
+      <BitmapImage x:Key="panel"
+                   UriSource="../icons/panel.png" />
 
-        </ResourceDictionary>
-    </Window.Resources>
+    </ResourceDictionary>
 
-
-  <DockPanel>
-    <ContentControl prism:RegionManager.RegionName="NavigationRegion"
-                    DockPanel.Dock="Top"
-                    Margin="16 0 16 0"
-                    BorderBrush="Gray" />
+  </Window.Resources>
 
 
-    <ContentControl prism:RegionManager.RegionName="ContentRegion"
-                    DockPanel.Dock="Top"
-                    Margin="16 0 16 16"/>
+  <Grid>
+    <DockPanel>
+      <DockPanel.Resources>
+        <Style TargetType="Border"
+               x:Key="panel">
+          <Setter Property="Effect">
+            <Setter.Value>
+              <DropShadowEffect Color="Black"
+                                Direction="270"
+                                Opacity="0.32"
+                                BlurRadius="10"
+                                ShadowDepth="10" />
+            </Setter.Value>
+          </Setter>
+        </Style>
+      </DockPanel.Resources>
+      <Border x:Name="NavPanel"
+              Background="White"
+              CornerRadius="8"
+              Margin="0 16 12 0">
+        <ContentControl prism:RegionManager.RegionName="NavigationRegion"
+                        Margin="12 0 12 0"
+                        Width="80"
+                        VerticalAlignment="Center"
+                        DockPanel.Dock="Top" />
 
-  </DockPanel>
+      </Border>
+
+      <Border x:Name="BodyPanel"
+              Background="White"
+              CornerRadius="8"
+              Margin="12 16 24 0">
+        <ContentControl prism:RegionManager.RegionName="ContentRegion"
+                        DockPanel.Dock="Top" />
+
+
+      </Border>
+    </DockPanel>
+
+    <Border x:Name="Scrim"
+            Background="Black" 
+            Opacity="0.32"
+            Visibility="Hidden" />
+
+    <Border x:Name="Dialog"
+            Visibility="Hidden"
+            CornerRadius="8"
+            Background="white"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Width="200"
+            MaxHeight="200">
+      <StackPanel Orientation="Vertical" Margin="24">
+        <Label Content="&#xe9e9;"
+               FontFamily="Segoe Fluent Icons"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"
+               />
+        <Label Content="Dialog Title" FontSize="14" FontWeight="Medium"
+               Margin="0 16 0 0" />
+        <Label Content="Infoinfo"
+               Margin="0 16 0 0" />
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0 24 0 0">
+          <Button Content="OK" />
+        </StackPanel>
+        
+      </StackPanel>
+      
+    </Border>
+
+  </Grid>
+
 </Window>

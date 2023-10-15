@@ -9,356 +9,223 @@
              xmlns:w="clr-namespace:taskmaker_wpf.Views.Widget"
              d:DataContext="{d:DesignInstance Type=vm:RegionControlUIViewModel}"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="300">
-    <UserControl.Resources>
-        <Style TargetType="{x:Type Image}">
-            <Setter Property="Width" Value="16" />
-            <Setter Property="Height" Value="16" />
-        </Style>
-    </UserControl.Resources>
-    <Grid
-        x:Name="Main">
-        <StackPanel
-            Margin="10"
-            Orientation="Vertical">
+             d:DesignHeight="450"
+             d:DesignWidth="300">
+  <UserControl.Resources>
+    <Style TargetType="{x:Type Image}">
+      <Setter Property="Width"
+              Value="16" />
+      <Setter Property="Height"
+              Value="16" />
+    </Style>
+  </UserControl.Resources>
+  <Grid x:Name="Main">
+    <StackPanel Margin="10"
+                Orientation="Vertical">
 
-            <DockPanel
-                Margin="0 0 0 5"
-                LastChildFill="True"
-                HorizontalAlignment="Stretch">
-                <Button
-                    Name="btn0"
-                    DockPanel.Dock="Left"
-                    Click="ToggleButton_Click">
-                    <Button.Content>
-                        <Image
-                            Width="16"
-                            Height="16"
-                            Source="../icons/expand_more_FILL0_wght400_GRAD0_opsz48.png" />
-                    </Button.Content>
-                </Button>
-                <Popup
-                    StaysOpen="False"
-                    PlacementTarget="{Binding ElementName=btn0}"
-                    x:Name="popup0"
-                    Placement="Bottom"
-                    AllowsTransparency="True">
-                    <Border
-                        BorderThickness="1"
-                        Background="White"
-                        Width="100"
-                        Height="100">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="10" Opacity="0.2" />
-                        </Border.Effect>
-                        <ListBox
-                            x:Name="lbMaps"
-                            ItemsSource="{Binding MapStates}"
-                            SelectedItem="{Binding SelectedMap, Mode=TwoWay}" />
-                    </Border>
-                </Popup>
+      <DockPanel Margin="0 0 0 5"
+                 LastChildFill="True"
+                 HorizontalAlignment="Stretch">
+        <Button Name="btn0"
+                DockPanel.Dock="Left"
+                Click="ToggleButton_Click">
+          <Button.Content>
+            <Image Width="16"
+                   Height="16"
+                   Source="../icons/expand_more_FILL0_wght400_GRAD0_opsz48.png" />
+          </Button.Content>
+        </Button>
+        <Popup StaysOpen="False"
+               PlacementTarget="{Binding ElementName=btn0}"
+               x:Name="popup0"
+               Placement="Bottom"
+               AllowsTransparency="True">
+          <Border BorderThickness="1"
+                  Background="White"
+                  Width="100"
+                  Height="100">
+            <Border.Effect>
+              <DropShadowEffect BlurRadius="10"
+                                Opacity="0.2" />
+            </Border.Effect>
+            <ListBox x:Name="lbMaps"
+                     ItemsSource="{Binding MapStates}"
+                     SelectedItem="{Binding SelectedMap, Mode=TwoWay}" />
+          </Border>
+        </Popup>
 
-                <Button
-                    DockPanel.Dock="Right"
-                    Width="20"
-                    Height="20"
-                    Command="{Binding InitializeMapCommand}">
-                    <Button.Content>
-                        <Image
-                            Width="12"
-                            Height="12"
-                            Source="{svgc:SvgImage Source=/icons/start.svg}" />
-                    </Button.Content>
-                </Button>
-                <Button
-                    DockPanel.Dock="Right"
-                    Width="20"
-                    Height="20"
-                    Click="btnRefresh_Click">
-                    <Button.Content>
-                        <Image
-                            Width="12"
-                            Height="12"
-                            Source="{svgc:SvgImage Source=/icons/refresh.svg}" />
-                    </Button.Content>
-                </Button>
+        <Button DockPanel.Dock="Right"
+                Width="20"
+                Height="20"
+                Command="{Binding InitializeMapCommand}">
+          <Button.Content>
+            <Image Width="12"
+                   Height="12"
+                   Source="{svgc:SvgImage Source=/icons/start.svg}" />
+          </Button.Content>
+        </Button>
+        <Button DockPanel.Dock="Right"
+                Width="20"
+                Height="20"
+                Click="btnRefresh_Click">
+          <Button.Content>
+            <Image Width="12"
+                   Height="12"
+                   Source="{svgc:SvgImage Source=/icons/refresh.svg}" />
+          </Button.Content>
+        </Button>
 
-                <Button
-                    x:Name="btnAdd"
-                    DockPanel.Dock="Right"
-                    Command="{Binding AddMapCommand}" Width="20" Height="20">
-                    <Button.Content>
-                        <Image
-                            Source="{svgc:SvgImage Source=/icons/add.svg}" Width="12" Height="12" />
-                    </Button.Content>
-                </Button>
+        <Button x:Name="btnAdd"
+                DockPanel.Dock="Right"
+                Command="{Binding AddMapCommand}"
+                Width="20"
+                Height="20">
+          <Button.Content>
+            <Image Source="{svgc:SvgImage Source=/icons/add.svg}"
+                   Width="12"
+                   Height="12" />
+          </Button.Content>
+        </Button>
 
-                <TextBox
-                    VerticalAlignment="Stretch"
-                    Text="{Binding ElementName=lbMaps, Path=SelectedItem}" />
-            </DockPanel>
+        <TextBox VerticalAlignment="Stretch"
+                 Text="{Binding ElementName=lbMaps, Path=SelectedItem}" />
+      </DockPanel>
 
-            <Expander
-                Margin="0 5 0 5"
+      <Expander Margin="0 5 0 5"
                 Header="Details">
-                <ContentControl
-                    Content="{Binding SelectedMap}">
-                    <ContentControl.ContentTemplate>
-                        <DataTemplate DataType="{x:Type vm:NLinearMapState}">
-                            <StackPanel
-                                Orientation="Vertical"
-                                Margin="2">
-                                <StackPanel
-                                    Orientation="Horizontal">
-                                    <Label Content="Name" />
-                                    <TextBox Text="{Binding Name}" VerticalAlignment="Center" Width="100" MaxWidth="100" />
-                                    
-                                </StackPanel>
-                                <GroupBox
-                                    Margin="2"
-                                    Header="In Sockets">
-                                    <ListBox
-                                        ItemsSource="{Binding InSockets}">
-                                    </ListBox>
-                                </GroupBox>
-                                <GroupBox
-                                    Margin="2"
-                                    Header="Out Sockets">
-                                    <ListBox
-                                        ItemsSource="{Binding OutSockets}">
-                                    </ListBox>
-                                </GroupBox>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ContentControl.ContentTemplate>
-                    <d:ContentControl.Content>
-                        <x:Array Type="{x:Type sys:Object}">
-                            <vm:NLinearMapState Name="S0" />
-                        </x:Array>
-                    </d:ContentControl.Content>
-                </ContentControl>
-            </Expander>
+        <ContentControl Content="{Binding SelectedMap}">
+          <ContentControl.ContentTemplate>
+            <DataTemplate DataType="{x:Type vm:NLinearMapState}">
+              <StackPanel Orientation="Vertical"
+                          Margin="2">
+                <StackPanel Orientation="Horizontal">
+                  <Label Content="Name" />
+                  <TextBox Text="{Binding Name}"
+                           VerticalAlignment="Center"
+                           Width="100"
+                           MaxWidth="100" />
 
-            <Expander
-                BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
+                </StackPanel>
+                <GroupBox Margin="2"
+                          Header="In Sockets">
+                  <ListBox ItemsSource="{Binding InSockets}">
+                  </ListBox>
+                </GroupBox>
+                <GroupBox Margin="2"
+                          Header="Out Sockets">
+                  <ListBox ItemsSource="{Binding OutSockets}">
+                  </ListBox>
+                </GroupBox>
+              </StackPanel>
+            </DataTemplate>
+          </ContentControl.ContentTemplate>
+          <d:ContentControl.Content>
+            <x:Array Type="{x:Type sys:Object}">
+              <vm:NLinearMapState Name="S0" />
+            </x:Array>
+          </d:ContentControl.Content>
+        </ContentControl>
+      </Expander>
+
+      <Expander BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
                 BorderThickness="1"
                 Margin="0 5 0 5"
                 Header="Valid Plugs"
                 IsExpanded="False"
                 Expanded="Expander_Expanded">
-                <StackPanel>
-                    <Expander
-                        IsExpanded="True"
-                        Margin="10"
-                        Header="In Plugs">
-                        <ListBox
-                            x:Name="lbInPlugs"
-                            Margin="2"
-                            ItemsSource="{Binding ValidInPlugs}"
-                            SelectionMode="Multiple"
-                            >
-                            <ListBox.Style>
-                                <Style
-                                    TargetType="ListBox"
-                                    BasedOn="{StaticResource {x:Type ListBox}}">
-                                    <Style.Triggers>
-                                        <DataTrigger
-                                            Binding="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=HasItems}"
-                                            Value="False">
-                                            <Setter Property="Visibility" Value="Collapsed" />
+        <StackPanel>
+          <Expander IsExpanded="True"
+                    Margin="10"
+                    Header="In Plugs">
+            <ListBox x:Name="lbInPlugs"
+                     Margin="2"
+                     ItemsSource="{Binding ValidInPlugs}"
+                     SelectionMode="Multiple">
+              <ListBox.Style>
+                <Style TargetType="ListBox"
+                       BasedOn="{StaticResource {x:Type ListBox}}">
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=HasItems}"
+                                 Value="False">
+                      <Setter Property="Visibility"
+                              Value="Collapsed" />
 
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </ListBox.Style>
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel
-                                        HorizontalAlignment="Left"
-                                        Margin="2"
-                                        Orientation="Horizontal">
-                                        <CheckBox
-                                            IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}},Path=IsSelected}"
-                                            VerticalAlignment="Center"
-                                            HorizontalAlignment="Center" />
-                                        <Label
-                                            Margin="2"
-                                            VerticalAlignment="Center"
-                                            HorizontalAlignment="Center"
-                                            Content="{Binding Name}" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </Expander>
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </ListBox.Style>
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel HorizontalAlignment="Left"
+                              Margin="2"
+                              Orientation="Horizontal">
+                    <CheckBox
+                        IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}},Path=IsSelected}"
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Center" />
+                    <Label Margin="2"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           Content="{Binding Name}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </Expander>
 
-                    <Expander
-                        IsExpanded="True"
-                        Margin="10"
-                        Header="Out Plugs">
+          <Expander IsExpanded="True"
+                    Margin="10"
+                    Header="Out Plugs">
 
-                        <ListBox
-                            SelectionMode="Multiple"
-                            x:Name="lbOutPlugs"
-                            Margin="2"
-                            ItemsSource="{Binding ValidOutPlugs}">
-                            <ListBox.Style>
-                                <Style
-                                    TargetType="ListBox"
-                                    BasedOn="{StaticResource {x:Type ListBox}}">
-                                    <Style.Triggers>
-                                        <DataTrigger
-                                            Binding="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=HasItems}"
-                                            Value="False">
-                                            <Setter Property="Visibility" Value="Collapsed" />
+            <ListBox SelectionMode="Multiple"
+                     x:Name="lbOutPlugs"
+                     Margin="2"
+                     ItemsSource="{Binding ValidOutPlugs}">
+              <ListBox.Style>
+                <Style TargetType="ListBox"
+                       BasedOn="{StaticResource {x:Type ListBox}}">
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=HasItems}"
+                                 Value="False">
+                      <Setter Property="Visibility"
+                              Value="Collapsed" />
 
-                                        </DataTrigger>
-                                    </Style.Triggers> 
-                                </Style>
-                            </ListBox.Style>
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel
-                                        HorizontalAlignment="Left"
-                                        Margin="2"
-                                        Orientation="Horizontal">
-                                        <CheckBox
-                                            IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}},Path=IsSelected}"
-                                            VerticalAlignment="Center"
-                                            HorizontalAlignment="Center" />
-                                        <Label
-                                            Margin="2"
-                                            VerticalAlignment="Center"
-                                            HorizontalAlignment="Center"
-                                            Content="{Binding Name}" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                        
-                    </Expander>
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </ListBox.Style>
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel HorizontalAlignment="Left"
+                              Margin="2"
+                              Orientation="Horizontal">
+                    <CheckBox
+                        IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}},Path=IsSelected}"
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Center" />
+                    <Label Margin="2"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           Content="{Binding Name}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
 
-                    <Button
-                        Width="100"
-                        Margin="2"
-                        Click="btnUpdateSockets_Clicked"
-                        >
-                        
-                        <Button.Content>
-                            <Image Source="{svgc:SvgImage Source=/icons/check.svg}" Width="12" Height="12" />
-                        </Button.Content>
-                    </Button>
-                </StackPanel>
-            </Expander>
+          </Expander>
 
-            <Expander
-                BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
-                BorderThickness="1"
-                Margin="0 5 0 5"
-                Header="Map > Motor Controllers">
-                <ItemsControl
-                    Margin="2"
-                    ItemsSource="{Binding MotorOutputsOfSelectedMap}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type vm:MotorState}">
-                            <Expander
-                            BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
-                            BorderThickness="1"
-                            Margin="4 4 4 4"
-                            IsExpanded="True"
-                            Header="{Binding Name}">
-                                <Grid
-                                Margin="4">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="4*" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
+          <Button Width="100"
+                  Margin="2"
+                  Click="btnUpdateSockets_Clicked">
 
-                                    <Slider
-                                    Grid.Column="0"
-
-                                    x:Name="slider"
-                                    Value="{Binding Value[0], Mode=TwoWay}"
-                                    Maximum="{Binding Max}"
-                                    Minimum="{Binding Min}"
-                                    LargeChange="1000"
-                                    SmallChange="100"
-                                    IsSnapToTickEnabled="True"
-                                        ValueChanged="slider_ValueChanged" />
-                                    <TextBox
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalContentAlignment="Center"
-                                    Grid.Column="1"
-                                    Text="{Binding ElementName=slider, Path=Value}" />
-                                    <Button
-                                        Grid.Column="2"
-                                        Content="Reset"
-                                        Click="Button_Click_3"
-                                        />
-                                </Grid>
-                            </Expander>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Expander>
-
-            <Expander
-                BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
-                BorderThickness="1"
-                Margin="0 5 0 5"
-                Header="Map > Ui Controllers">
-                <ItemsControl
-                    x:Name="compact"
-                    Margin="2"
-                    ItemsSource="{Binding MapOutputsOfSelectedMap}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type vm:ControlUiState}">
-                            <Expander
-                            BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
-                            BorderThickness="1"
-                            Margin="0 4 0 4"
-                            IsExpanded="True"
-                            Header="{Binding Name}">
-                                <StackPanel
-                                    Focusable="True">
-                                    <Button
-                                        x:Name="btnOpenCompactUi"
-                                        Content="ClickToOpen"
-                                        Click="btnOpenCompactUi_Click" />
-                                    <Popup
-                                        PlacementTarget="{Binding ElementName=btnOpenCompactUi}"
-                                        StaysOpen="True"
-                                        AllowsTransparency="True">
-                                        <Grid
-                                            Background="White">
-                                            <Grid.Effect>
-                                                <DropShadowEffect BlurRadius="10" Opacity="0.4" />
-                                            </Grid.Effect>
-                                            <w:UiController
-                                                Width="400"
-                                                Height="400"
-                                                VMTemp="{Binding ElementName=compact, Path=DataContext}"
-                                                UiState="{Binding .}" />
-                                        </Grid>
-                                    </Popup>
-                                </StackPanel>
-                            </Expander>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Expander>
-
-            <!--
-                <d:ItemsControl.ItemsSource>
-                    <x:Array Type="{x:Type sys:Object}">
-                        <vm:MotorState_v1 Name="S0" Value="100" Max="10000" Min="-10000" />
-                        <vm:MotorState_v1 Name="S1" Value="100" Max="10000" Min="-10000" />
-                        <vm:MotorState_v1 Name="S2" Value="100" Max="10000" Min="-10000" />
-                        <vm:MotorState_v1 Name="S3" Value="100" Max="10000" Min="-10000" />
-                    </x:Array>
-                </d:ItemsControl.ItemsSource>
-                    -->
+            <Button.Content>
+              <Image Source="{svgc:SvgImage Source=/icons/check.svg}"
+                     Width="12"
+                     Height="12" />
+            </Button.Content>
+          </Button>
         </StackPanel>
-    </Grid>
+      </Expander>
+    </StackPanel>
+  </Grid>
 </UserControl>

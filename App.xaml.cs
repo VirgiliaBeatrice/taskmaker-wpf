@@ -76,7 +76,7 @@ namespace taskmaker_wpf {
                     .ReverseMap();
                 cfg.CreateMap<ControlUiEntity, ControlUiState>();
                 
-                cfg.CreateMap<NodeEntity, NodeState_v1>();
+                cfg.CreateMap<NodeEntity, NodeState>();
 
                 cfg.CreateMap<BaseRegionEntity, BaseRegionState>();
                 cfg.CreateMap<SimplexRegionEntity, SimplexState>()

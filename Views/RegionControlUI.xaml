@@ -38,8 +38,8 @@
                     CornerRadius="8">
               <!-- Customize this value as needed -->
               <ContentPresenter HorizontalAlignment="Center"
-                                VerticalAlignment="Center" 
-                                Margin="{TemplateBinding Padding}"/>
+                                VerticalAlignment="Center"
+                                Margin="{TemplateBinding Padding}" />
             </Border>
 
             <!-- Preserve default visual states (e.g., MouseOver, Pressed) -->
@@ -64,7 +64,8 @@
       </Setter>
     </Style>
   </UserControl.Resources>
-  <Border Background="LightGray" CornerRadius="16">
+
+  <Border x:Name="MultiViewContainer">
 
     <Grid>
       <Grid.RowDefinitions>
@@ -75,7 +76,7 @@
       <Grid Grid.Row="0">
 
         <Grid VerticalAlignment="Stretch">
-          <w:MultiView x:Name="view"
+          <w:MultiView x:Name="multiView"
                        Focusable="True"
                        Width="auto"
                        MaxColumnCount="2"
@@ -103,10 +104,11 @@
               </Style>
             </StackPanel.Resources>
             <Button ToolTip="Select"
-                    Name="toolbarSelect"
+                    Name="tbBtnSelect"
                     Click="ToolBar_Click"
                     Content="&#xe7c9;" />
             <Button Content="&#xED5F;"
+                    Name="tbBtnCtrl"
                     Click="ToolBar_Click"
                     ToolTip="Control" />
             <Button Content="&#xec61;"
@@ -115,22 +117,28 @@
                     ToolTip="Build" />
             <Separator />
             <Button Content="&#xecc8;"
+                    Name="tbBtnAdd"
                     Click="ToolBar_Click"
                     ToolTip="Add" />
             <Button Content="&#xecc9;"
+                    Name="tbBtnRm"
                     Click="ToolBar_Click"
                     ToolTip="Remove" />
             <Button Content="&#xe759;"
+                    Name="tbBtnMove"
                     Click="ToolBar_Click"
                     ToolTip="Move" />
             <Button Content="&#xe71b;"
+                    Name="tbBtnAssign"
                     Click="ToolBar_Click"
                     ToolTip="Assign" />
             <Separator />
-            <Button Content="&#xece8;"
-                    Click="ToolBar_Click"
-                    ToolTip="Pan" />
             <Button Content="&#xece9;"
+                    Click="ToolBar_Click"
+                    Name="tbBtnPan"
+                    ToolTip="Pan" />
+            <Button Content="&#xece8;"
+                    Name="tbBtnZoom"
                     Click="ToolBar_Click"
                     ToolTip="Zoom" />
 
@@ -166,9 +174,6 @@
 
           <Border Name="sideContainter"
                   Margin="8"
-                  Background="White"
-                  BorderBrush="Gray"
-                  BorderThickness="1"
                   CornerRadius="8"
                   HorizontalAlignment="Right">
             <Border.Style>
@@ -284,36 +289,20 @@
                           </ItemsControl>
 
 
-                          <Button Margin="4"
-                                  Command="{Binding AddUiCommand}">
+                          <Button x:Name="tabUiBtnAdd"
+                                  Margin="4"
+                                  Click="tabUiBtnAdd_Click">
                             <Button.Content>
                               <Image Source="/icons/add_FILL0_wght400_GRAD0_opsz48.png"
                                      Width="16"
                                      Height="16" />
                             </Button.Content>
                           </Button>
-                          <ListBox x:Name="lbUiStates"
+                          <ListBox x:Name="tabUiLbControllers"
                                    MinHeight="20"
-                                   Margin="4"
-                                   ItemsSource="{Binding UiStates}"
+                                   Margin="8"
                                    SelectionMode="Single"
                                    MouseDoubleClick="lbUiStates_MouseDoubleClick">
-                            <!--
-                              <ListBox.ItemTemplate>
-                                <DataTemplate DataType="{x:Type viewmodels:ControlUiState}">
-                                  <StackPanel Orientation="Horizontal">
-                                    <CheckBox
-                                        IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}},Path=IsSelected}"
-                                              VerticalAlignment="Center"
-                                              HorizontalAlignment="Center" />
-                                    <Label VerticalAlignment="Center"
-                                           HorizontalAlignment="Center"
-                                           Content="{Binding Name}" />
-                                  </StackPanel>
-                                </DataTemplate>
-                              </ListBox.ItemTemplate>
-                            -->
-
                           </ListBox>
                           <Button Margin="4"
                                   Click="Button_Click">
@@ -339,6 +328,7 @@
               </TabControl>
             </Expander>
           </Border>
+
         </Grid>
       </Grid>
 
@@ -354,6 +344,9 @@
                    Margin="8 0 4 0"
                    Width="200"
                    Text="{Binding Time}" />
+        <TextBlock x:Name="uiStatus"
+                   Margin="4 0 4 0"
+                   MinWidth="250" />
         <TextBlock x:Name="keymapInfo"
                    Margin="4 0 4 0"
                    MinWidth="250"

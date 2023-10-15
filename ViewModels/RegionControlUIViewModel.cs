@@ -178,8 +178,8 @@ namespace taskmaker_wpf.ViewModels {
 
         public string Name { get; set; }
 
-        private NodeState_v1[] _nodes = new NodeState_v1[0];
-        public NodeState_v1[] Nodes {
+        private NodeState[] _nodes = new NodeState[0];
+        public NodeState[] Nodes {
             get { return _nodes; }
             set { SetProperty(ref _nodes, value); }
         }
@@ -200,7 +200,7 @@ namespace taskmaker_wpf.ViewModels {
         }
     }
 
-    public class NodeState_v1 : ObservableObject {
+    public class NodeState : ObservableObject {
         private int _id;
         public int Id {
             get { return _id; }
@@ -213,7 +213,7 @@ namespace taskmaker_wpf.ViewModels {
             set { SetProperty(ref _value, value); }
         }
 
-        public NodeState_v1(int id, Point value) {
+        public NodeState(int id, Point value) {
             Id = id;
             Value = value;
         }

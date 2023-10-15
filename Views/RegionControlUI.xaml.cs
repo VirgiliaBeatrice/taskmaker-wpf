@@ -21,12 +21,17 @@ using System.Windows.Controls.Primitives;
 using NLog;
 using taskmaker_wpf.Views.Widget;
 using CommunityToolkit.Mvvm.Messaging;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace taskmaker_wpf.Views {
     /// <summary>
     /// Interaction logic for RegionControlUI.xaml
     /// </summary>
     public partial class RegionControlUI : UserControl {
+
+        public UiMode Mode { get; set; } = UiMode.Default;
+        public string UiStatus { get; set; } = "";
+        public List<ControlUiState> Uis { get; set; } = new List<ControlUiState>();
         private ILogger logger => LogManager.GetCurrentClassLogger();
 
         public RegionControlUI() {
@@ -109,52 +114,55 @@ namespace taskmaker_wpf.Views {
         }
 
         private void ChangeMode(UiMode mode) {
-            var view = FindName("view") as MultiView;
+            var tbUiStatus = FindName("uiStatus") as TextBlock;
 
-            var ui = view.Controllers.First();
+            var ui = multiView.Controllers.FirstOrDefault();
+            //var ui = view.Controllers.First();
+            ui.UiMode = mode;
+            //ui?.GoToState(mode);
 
-            ui?.GoToState(mode);
-        }
+            Mode = mode;
 
-        private void Button_Click_Add(object sender, RoutedEventArgs e) {
-            ChangeMode(UiMode.Add);
-        }
-
-        private void Button_Click_Remove(object sender, RoutedEventArgs e) {
-            ChangeMode(UiMode.Remove);
-        }
-
-        private void Button_Click_Pan(object sender, RoutedEventArgs e) {
-            ChangeMode(UiMode.Pan);
-        }
-
-        private void Button_Click_Zoom(object sender, RoutedEventArgs e) {
-            var view = FindName("view") as MultiView;
-
-            var ui = view.Controllers.First();
-
-            ui?.GoToState(UiMode.Zoom);
+            UiStatus = mode.ToString();
+            tbUiStatus.Text = UiStatus;
         }
 
         private void ToolBar_Click(object sender, RoutedEventArgs e) {
             var btn = sender as Button;
 
-            if (btn.Name == "toolbarSelect") {
-                ChangeMode(UiMode.Default);
-            }
-            else if (btn.Name == "toolbarAdd") {
-                ChangeMode(UiMode.Add);
+            switch (btn.Name) {
+                case "tbBtnPan":
+                    ChangeMode(UiMode.Pan);
+                    break;
+                case "tbBtnZoom":
+                    ChangeMode(UiMode.Zoom);
+                    break;
+                default:
+                    break;
             }
 
+            if (btn.Name == "tbBtnSelect") {
+                ChangeMode(UiMode.Default);
+            }
+            else if (btn.Name == "tbBtnAdd") {
+                ChangeMode(UiMode.Add);
+            }
+            else if (btn.Name == "tbBtnRm") {
+                ChangeMode(UiMode.Remove);
+            }
+            else if (btn.Name == "tbBtnMove") {
+                ChangeMode(UiMode.Move);
+            }
+            else if (btn.Name == "tbBtnAssign") {
+                ChangeMode(UiMode.Assign);
+            }
         }
 
         private void lbUiStates_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
-            var view = FindName("view") as MultiView;
-            var vm = DataContext as RegionControlUIViewModel;
             var list = sender as ListBox;
 
             if (e.LeftButton == MouseButtonState.Pressed) {
-                view.Invalidate(new [] { list.SelectedItem as ControlUiState });
+                multiView.OpenUiController(list.SelectedItem as ControlUiState);
 
                 // Send a ShowMessageBoxMessage to inform success
                 var msg = new ShowMessageBoxMessage() {
@@ -164,6 +172,17 @@ namespace taskmaker_wpf.Views {
 
                 WeakReferenceMessenger.Default.Send(msg);
             }
+        }
+
+        private void tabUiBtnAdd_Click(object sender, RoutedEventArgs e) {
+            var ui = new ControlUiState {
+                Id = Uis.Count + 1,
+                Name = $"ControlUi_{Uis.Count + 1}",
+            };
+
+            Uis.Add(ui);
+
+            tabUiLbControllers.ItemsSource = Uis;
         }
     }
 }
