@@ -12,17 +12,35 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using taskmaker_wpf.ViewModels;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using Path = System.Windows.Shapes.Path;
 using Point = System.Windows.Point;
 using Rectangle = System.Windows.Shapes.Rectangle;
 
 namespace taskmaker_wpf.Views.Widget {
+
+    public static class Evelations {
+        public static DropShadowEffect Lv1 = new DropShadowEffect {
+            Color = Colors.Black,
+            Direction = 270,
+            ShadowDepth = 1,
+            BlurRadius = 8,
+            Opacity = 0.32,
+        };
+
+        public static DropShadowEffect Lv3 = new DropShadowEffect {
+            Color = Colors.Black,
+            Direction = 270,
+            ShadowDepth = 6,
+            BlurRadius = 8,
+            Opacity = 0.32,
+        };
+    }
 
     public enum UiElementState {
         Default = 0,
@@ -165,6 +183,23 @@ namespace taskmaker_wpf.Views.Widget {
             while (target != null && !(target is T));
             return target as T;
         }
+
+        public static T FindParentOfType<T>(DependencyObject child) where T : DependencyObject {
+            DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+
+            // Return null if reached the end of the visual tree
+            if (parentObject == null) return null;
+
+            // Check if the parent is of the desired type
+            if (parentObject is T parent) {
+                return parent;
+            }
+            else {
+                // Recursively call the function to move further up the visual tree
+                return FindParentOfType<T>(parentObject);
+            }
+        }
+
     }
     public class ActivedState : BaseState {
 
@@ -385,11 +420,11 @@ namespace taskmaker_wpf.Views.Widget {
     }
 
     public abstract class BaseUiState {
-        public BaseUiState(UiController_v1 parent) {
+        public BaseUiState(UiController parent) {
             Parent = parent;
         }
 
-        public UiController_v1 Parent { get; set; }
+        public UiController Parent { get; set; }
         public virtual void SetFlags() {
         }
     }
@@ -399,68 +434,9 @@ namespace taskmaker_wpf.Views.Widget {
         public string Type { get; set; }
     }
 
-    public class DefaultNodeState : BaseState {
-
-        public DefaultNodeState(StatefulWidget widget) : base(widget) {
-        }
-
-        public override void SetContainer() {
-        }
-
-        public override void SetFlag() {
-            var node = Parent as NodeShape;
-
-            node.IsSelected = false;
-        }
-
-        public override void SetOverlay() {
-            var node = Parent as NodeShape;
-            var overlay = node.Overlay as Grid;
-            var shape = overlay.Children.OfType<Ellipse>().First();
-            var icon = overlay.Children.OfType<SvgIcon>().First();
-
-            icon.Visibility = Visibility.Hidden;
-            shape.Opacity = 0;
-        }
-    }
-
-    public class DefaultState : BaseState {
-
-        public DefaultState(StatefulWidget parent) : base(parent) {
-        }
-
-        public override void SetContainer() {
-            var grid = Parent.Container as Grid;
-
-            // Set background color
-            //grid.Background
-        }
-
-        public override void SetFlag() {
-            var widget = Parent as RelationWidget;
-
-            widget.IsSelected = false;
-        }
-
-        public override void SetOverlay() {
-            var grid = Parent.Overlay as Grid;
-            var widget = Parent as RelationWidget;
-            var overlay = grid.Children.OfType<Rectangle>().First();
-            var icon = grid.Children.OfType<SvgIcon>().First();
-
-            // Set color
-            overlay.Fill = Brushes.White;
-            // Set opacity
-            overlay.Opacity = 0.0;
-
-            //if (widget.)
-            //icon.Visibility = Visibility.Hidden;
-        }
-    }
-
     public class DefaultUiState : BaseUiState {
 
-        public DefaultUiState(UiController_v1 parent) : base(parent) {
+        public DefaultUiState(UiController parent) : base(parent) {
         }
 
         public override void SetFlags() {
@@ -468,421 +444,81 @@ namespace taskmaker_wpf.Views.Widget {
         }
     }
 
-    public class HoverNodeState : BaseState {
+    public class Snackbar : UserControl {
+        private string icon = "";
+        private string supportingText = "";
+        private Label _text;
+        private Label _icon;
 
-        public HoverNodeState(NodeShape node) : base(node) {
+        public string Icon {
+            get => icon;
+            set {
+                icon = value;
+
+                _icon.Content = icon;
+            }
         }
+        public string SupportingText { get => supportingText; set {
+                supportingText = value;
 
-        public override void SetContainer() {
-        }
+                _text.Content = supportingText;
+            } }
 
-        public override void SetFlag() {
-        }
+        public Snackbar() {
+            var invSurfaceColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F5EFF7"));
+            var invPrimary = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#322F35"));
 
-        public override void SetOverlay() {
-            var node = Parent as NodeShape;
-            var overlay = node.Overlay as Grid;
-            var shape = overlay.Children.OfType<Ellipse>().First();
-            var icon = overlay.Children.OfType<SvgIcon>().First();
+            invSurfaceColor.Freeze();
+            invPrimary.Freeze();
 
-            icon.Visibility = Visibility.Hidden;
-            shape.Opacity = 0.08;
-        }
-    }
+            Effect = Evelations.Lv3;
 
-    public class HoverState : BaseState {
-
-        public HoverState(StatefulWidget parent) : base(parent) {
-        }
-
-        public override void SetContainer() {
-            var grid = Parent.Container as Grid;
-
-            // Set color
-            //grid.Background
-
-            // Set opacity
-        }
-
-        public override void SetFlag() {
-        }
-
-        public override void SetOverlay() {
-            var grid = Parent.Overlay as Grid;
-            var overlay = grid.Children.OfType<Rectangle>().First();
-            var icon = grid.Children.OfType<SvgIcon>().First();
-
-            // Set color
-            overlay.Fill = Brushes.White;
-            // Set opacity
-            overlay.Opacity = 0.08;
-
-            //icon.Visibility = Visibility.Hidden;
-        }
-    }
-
-    public class IKTemplate : UserControl {
-        // Using a DependencyProperty as the backing store for Origin.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty OriginProperty =
-            DependencyProperty.Register("Origin", typeof(Point), typeof(IKTemplate), new PropertyMetadata(new Point(), OnPropertyChanged));
-
-        // Using a DependencyProperty as the backing store for Transform.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty TransformProperty =
-            DependencyProperty.Register("Transform", typeof(Matrix), typeof(IKTemplate), new PropertyMetadata(Matrix.Identity, OnPropertyChanged));
-
-        public double Distance = 0;
-        public int Length = 300;
-        private Canvas _canvas;
-        private int _mode = 1;
-        private int _numSegments = 12;
-        private Action OnTick;
-        private Point p1;
-        private Point p2;
-        private Point p3;
-        private int step = 0;
-        private DispatcherTimer timer;
-        public IKTemplate() {
-            _canvas = new Canvas() {
-                Width = 400,
-                Height = 400,
-                //Background = Brushes.Tomato,
-                Visibility = Visibility.Visible,
+            var container = new StackPanel {
+                Orientation = Orientation.Horizontal,
+                Height = 48
+            };
+            var shape = new Border {
+                CornerRadius = new CornerRadius(4),
+                Background = invPrimary,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+            _text = new Label {
+                Content = "Supporting text",
+                Margin = new Thickness(12, 0, 12, 0),
+                Foreground = invSurfaceColor,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+            _icon = new Label {
+                Content = "\ue7c9",
+                Margin = new Thickness(16, 0, 0, 0),
+                FontFamily = new FontFamily("Segoe Fluent Icons"),
+                FontSize = 24,
+                Foreground = invSurfaceColor,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+            var close = new Label {
+                Content = "Hide",
+                Margin = new Thickness(12, 0, 12, 0),
+                Foreground = invSurfaceColor,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
             };
 
-            Canvas.SetLeft(this, 0);
-            Canvas.SetTop(this, 0);
-            Panel.SetZIndex(this, 10);
-
-            Content = _canvas;
-
-            OnTick += () => { };
-        }
-
-        public Point Origin {
-            get { return (Point)GetValue(OriginProperty); }
-            set { SetValue(OriginProperty, value); }
-        }
-
-        public int Step { get => step; set => step = value; }
-        public Matrix Transform {
-            get { return (Matrix)GetValue(TransformProperty); }
-            set { SetValue(TransformProperty, value); }
-        }
-
-        public Matrix TRS { get; set; } = Matrix.Identity;
-        private ILogger logger => LogManager.GetCurrentClassLogger();
-        public static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            //(d as IKTemplate).InvalidateVisual();
-            (d as IKTemplate).Invalidate();
-        }
-        public static double PerpendicularLength(Point a, Point c, Point d) {
-            double dx = d.X - c.X;
-            double dy = d.Y - c.Y;
-            double numerator = Math.Abs(dy * a.X - dx * a.Y + d.X * c.Y - d.Y * c.X);
-            double denominator = Math.Sqrt(dx * dx + dy * dy);
-            double length = numerator / denominator;
-            return length;
-        }
-
-        public Point[] CreateTrajectory(double radius, int numSegments) {
-            var start = new Point();
-            var points = new List<Point>() { start };
-
-            for (int i = 0; i <= numSegments; i++) {
-                var angle = i * (360 / numSegments);
-                var point = new Point(Math.Cos(angle * Math.PI / 180) * radius, Math.Sin(angle * Math.PI / 180) * radius);
-
-                points.Add(point);
-            }
-
-            return points.ToArray();
-        }
-
-        public Point[] GetTrajectoryPoints(double radius, int numSegments) {
-            var points = new List<Point>();
-            var start = new Point();
-
-            points.Add(start);
-            // generate numPoints points
-            // all points are on a circle with radius 100
-            for (int i = 0; i <= numSegments; i++) {
-                var angle = i * (360 / numSegments);
-                var point = new Point(Math.Cos(angle * Math.PI / 180) * radius, Math.Sin(angle * Math.PI / 180) * radius);
-
-                points.Add(point);
-            }
-
-            return points.ToArray();
-        }
-
-        public void Invalidate(int step = -1) {
-            _canvas.Children.Clear();
-
-            //var offset = Transform.Transform(new Point(0, 0));
-
-            //_canvas.RenderTransform = new MatrixTransform(new Matrix(1, 0, 0, -1, Origin.X, Origin.Y));
-
-            //create new TRS matrix
-            //var matrix = new Matrix();
-            //matrix.Translate(Origin.X, Origin.Y);
-            //matrix.Scale(1, -1);
-            //_canvas.RenderTransform = new MatrixTransform(matrix);
-
-            var normalizedT = new Matrix(1, 0, 0, -1, Origin.X, Origin.Y);
-
-            var mat = new Matrix(1, 0, 0, -1, Origin.X, Origin.Y);
-            mat.Append(TRS);
-
-            _canvas.RenderTransform = new MatrixTransform(mat);
-
-            MakePoints();
-            //DrawTriangle(p1, p2, p3);
-
-            // calculate d that is the distance from origin o to the line p1 and p2
-            var d = PerpendicularLength(new Point(), p1, p2) / _mode;
-
-            Distance = d;
-
-            MakeTangentCircle(d);
-
-            if (step != -1)
-                DrawTrajectoryWithStep(d, _numSegments, step);
-            else
-                DrawTrajectory(d, _numSegments);
-
-            var points = CreateTrajectory(d, _numSegments);
-
-            if (step == -1) {
-                var circles = points.ToList().Select(e => DrawPoint(e, Brushes.WhiteSmoke, 4));
-
-                circles.ToList().ForEach(e => _canvas.Children.Add(e));
-            }
-            else {
-                var circles = points.ToList().Select((e, i) => DrawPoint(e, i == step ? Brushes.Black : Brushes.WhiteSmoke, 4));
-
-                circles.ToList().ForEach(e => _canvas.Children.Add(e));
-            }
-
-            //for (var i = 0; i < points.Length; i ++) {
-            //    var label = new TextBlock() {
-            //        Background = Brushes.White,
-            //        FontSize = 12,
-            //        Text = i.ToString(),
-            //    };
-
-            //    var t = Matrix.Identity;
-            //    mat.Scale(-1, -1);
-            //    label.RenderTransform = new MatrixTransform(t);
-
-            //    Canvas.SetLeft(label, points[i].X);
-            //    Canvas.SetTop(label, points[i].Y);
-
-            //    _canvas.Children.Add(label);
-            //}
-            //InvalidateVisual();
-        }
-
-        // save png
-        public void Save(string filename) {
-            var rootVisual = Content as Visual;
-            var rtb = new RenderTargetBitmap((int)800, (int)800, 96, 96, PixelFormats.Pbgra32);
-
-            rtb.Render(_canvas);
-
-            var encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(rtb));
-
-            using (var stream = File.Create(filename)) {
-                encoder.Save(stream);
-            }
-        }
-        public void Start(Action action, int numSegments, int mode = 1) {
-            Step = 0;
-
-            timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(3);
-            timer.Tick += Timer_Tick;
-            _mode = mode;
-
-            OnTick = action;
-            _numSegments = numSegments;
-
-            timer.Start();
-        }
-
-        private Shape DrawPoint(Point point, Brush color, double radius) {
-            // Create a new Ellipse object
-            Ellipse ellipse = new Ellipse();
-
-            // Set the center point and radius of the ellipse
-            // the radius is 4
-            ellipse.Width = radius * 2;
-            ellipse.Height = radius * 2;
-            //ellipse.Margin = new Thickness(point.X - 4, point.Y - 4, 0, 0);
-
-            // Set the fill color of the ellipse
-            ellipse.Fill = color;
-            ellipse.StrokeThickness = 2;
-            ellipse.Stroke = Brushes.Black;
-
-            Canvas.SetLeft(ellipse, point.X - radius);
-            Canvas.SetTop(ellipse, point.Y - radius);
-
-            // Add the ellipse to the canvas
-            return ellipse;
-        }
-
-        private void DrawTrajectory(double radius, int numPoints) {
-            //var line = new ArrowLine(new Point(0,0), new Point(300, 0));
-
-            //_canvas.Children.Add(line);
-
-            var start = new Point();
-
-            ArrowLine line;
-            //var numberOfPoints = 12;
-            // generate 36 points
-            // all points are on a circle with radius 100
-            for (int i = 0; i <= numPoints; i++) {
-                var angle = i * (360 / numPoints);
-                var point = new Point(Math.Cos(angle * Math.PI / 180) * radius, Math.Sin(angle * Math.PI / 180) * radius);
-
-                line = new ArrowLine(start, point) {
-                    Stroke = new SolidColorBrush(GetColorWithGradient(Colors.Blue, Colors.Violet, i, numPoints + 1))
-                };
-                _canvas.Children.Add(line);
-
-                start = point;
-            }
-
-            //line = new ArrowLine(start, new Point()) {
-            //    Stroke = new SolidColorBrush(GetColorWithGradient(Colors.Red, Colors.Yellow, 37, numPoints + 1))
-            //};
-            //_canvas.Children.Add(line);
-        }
-
-        private void DrawTrajectoryWithStep(double radius, int numSegments, int step) {
-            var points = CreateTrajectory(radius, numSegments);
-
-            for (int i = 1; i <= step; i++) {
-                var line = new ArrowLine(points[i - 1], points[i]) {
-                    Stroke = new SolidColorBrush(GetColorWithGradient(Colors.Blue, Colors.Violet, i, points.Length))
-                };
-                _canvas.Children.Add(line);
-            }
-        }
-
-        // Method to draw a triangle from three points
-        private void DrawTriangle(Point p1, Point p2, Point p3) {
-            // Create a new Path object
-            System.Windows.Shapes.Path path = new System.Windows.Shapes.Path();
-            // Create a StreamGeometry to use to specify my Path
-            StreamGeometry geometry = new StreamGeometry();
-            using (StreamGeometryContext ctx = geometry.Open()) {
-                ctx.BeginFigure(p1, true /* is filled */, true /* is closed */);
-                ctx.LineTo(p2, true /* is stroked */, false /* is smooth join */);
-                ctx.LineTo(p3, true /* is stroked */, false /* is smooth join */);
-            }
-            // Freeze the geometry (make it unmodifiable)
-            // for additional performance benefits
-            geometry.Freeze();
-            // specify the shape (triangle) of the path using the StreamGeometry
-            path.Data = geometry;
-
-            // set the fill color of the triangle
-            // the fill color have 60% opacity
-            var fillColor = Color.FromArgb(128, Brushes.Linen.Color.R, Brushes.Linen.Color.G, Brushes.Linen.Color.B);
-
-            path.Fill = new SolidColorBrush(fillColor);
-
-            // set the border of the triangle
-            path.Stroke = Brushes.Black;
-            path.StrokeThickness = 2;
-            // Add the path to the canvas
-            _canvas.Children.Add(path);
-        }
-
-        private Color GetColorWithGradient(Color startColor, Color endColor, int step, int numSteps) {
-            double redIncrement = (endColor.R - startColor.R) / (double)(numSteps);
-            double greenIncrement = (endColor.G - startColor.G) / (double)(numSteps);
-            double blueIncrement = (endColor.B - startColor.B) / (double)(numSteps);
-
-            //Color[] gradientColors = new Color[numSteps];
-            //for (int i = 0; i < numSteps; i++) {
-            //    byte red = (byte)(startColor.R + i * redIncrement);
-            //    byte green = (byte)(startColor.G + i * greenIncrement);
-            //    byte blue = (byte)(startColor.B + i * blueIncrement);
-            //    gradientColors[i] = Color.FromRgb(red, green, blue);
-            //}
-
-            byte red = (byte)(startColor.R + step * redIncrement);
-            byte green = (byte)(startColor.G + step * greenIncrement);
-            byte blue = (byte)(startColor.B + step * blueIncrement);
-
-            return Color.FromRgb(red, green, blue);
-        }
-
-        private void MakePoints() {
-            // variable o is the origin
-            var o = new Point(0, 0);
-
-            // three point variables are p1, p2, p3
-            // p1 is (0, 100)
-            // the radius of the circle is 100
-            // the center of the circle is (0, 0)
-
-            p1 = new Point(0, Length);
-
-            p2 = RotatePoint(p1, 120);
-            p3 = RotatePoint(p1, -120);
-
-            // draw points on _canvas
-            _canvas.Children.Add(DrawPoint(o, Brushes.Transparent, 8));
-            //_canvas.Children.Add(DrawPoint(p1, Brushes.Black, 8));
-            //_canvas.Children.Add(DrawPoint(p2, Brushes.Green, 8));
-            //_canvas.Children.Add(DrawPoint(p3, Brushes.Blue, 8));
-        }
-
-        // Method to make a tangent circle with three points
-        // the center of circle is the origin
-        private void MakeTangentCircle(double radius) {
-            var circle = new Ellipse {
-                Width = radius * 2,
-                Height = radius * 2,
-                Stroke = Brushes.Teal,
-                StrokeThickness = 2,
+            close.MouseLeftButtonUp += (_, e) => {
+                Visibility = Visibility.Hidden;
             };
 
-            Canvas.SetLeft(circle, -radius);
-            Canvas.SetTop(circle, -radius);
-
-            _canvas.Children.Add(circle);
-        }
-
-        private Point RotatePoint(Point p, double degree) {
-            var radian = degree * Math.PI / 180.0;
-
-            double rotatedX = Math.Cos(radian) * p.X - Math.Sin(radian) * p.Y;
-            double rotatedY = Math.Sin(radian) * p.X + Math.Cos(radian) * p.Y;
-
-            return new Point(rotatedX, rotatedY);
-        }
-
-        private void Timer_Tick(object sender, EventArgs e) {
-            //var points = GetTrajectoryPoints(Distance, 12);
-
-            //logger.Info($"Step: {step}");
-            Invalidate(Step++);
-
-            OnTick?.Invoke();
-
-            // segment + 1 = points + 1 = points with origin
-            if (Step == _numSegments + 1 + 1) {
-                timer.Stop();
-                return;
-            }
+            Content = shape;
+            shape.Child = container;
+            container.Children.Add(_icon);
+            container.Children.Add(_text);
+            container.Children.Add(close);
         }
     }
+
 
     public class MultiView : UserControl {
 
@@ -895,51 +531,12 @@ namespace taskmaker_wpf.Views.Widget {
         public static readonly DependencyProperty MaxColumnCountProperty =
             DependencyProperty.Register("MaxColumnCount", typeof(int), typeof(MultiView), new FrameworkPropertyMetadata(2));
 
-        public List<UiController_v1> Controllers { get; set; } = new List<UiController_v1>();
+        public List<UiController> Controllers { get; set; } = new List<UiController>();
 
         public MultiView() : base() {
             var grid = new Grid() {
                 Name = "Multiview_Grid",
             };
-
-            //var infoContainer = new Grid();
-
-            //var expander = new Expander() {
-            //    Header = "Info",
-            //};
-
-            //infoContainer.Children.Add(expander);
-
-            //var toolPanel = new StackPanel() {
-            //    Background = Brushes.AliceBlue,
-            //    Orientation = Orientation.Vertical,
-            //    Width = 200,
-            //    Height = 400,
-            //    HorizontalAlignment = HorizontalAlignment.Left,
-            //    VerticalAlignment = VerticalAlignment.Top,
-            //    //Opacity = 0.5
-            //};
-
-            //toolPanel.MouseEnter += (_, ev) => {
-            //    toolPanel.Opacity = 1;
-            //};
-
-            //toolPanel.MouseLeave += (_, ev) => {
-            //    toolPanel.Opacity = 0.5;
-            //};
-
-            //var statusInfo = new Label {
-            //    Content = "TEST"
-            //};
-
-            //toolPanel.Children.Add(statusInfo);
-
-            //expander.Content = toolPanel;
-            //var icon = new SvgIcon() {
-            //    Width = 200,
-            //    Height = 200,
-            //    UriSource = new Uri(@"icons/done.svg", UriKind.Relative),
-            //};
 
             Scroll = new ScrollViewer() {
                 Focusable = false,
@@ -949,17 +546,8 @@ namespace taskmaker_wpf.Views.Widget {
             };
 
             grid.Children.Add(Scroll);
-            //grid.Children.Add(infoContainer);
 
             Content = grid;
-
-            Viewer = new NodeRelationViewer(this) {
-                VerticalAlignment = VerticalAlignment.Top,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
-
-            Panel.SetZIndex(Viewer, 10);
-            ((Grid)Content).Children.Add(Viewer);
         }
 
         public ICommand BindCommand {
@@ -975,7 +563,7 @@ namespace taskmaker_wpf.Views.Widget {
         public ControlUiState[] UiStates { get; set; }
 
         //public Dictionary<int, NodeInfo[]> Candidates { get; set; } = new Dictionary<int, NodeInfo[]>();
-        public NodeRelationViewer Viewer { get; set; }
+        //public NodeRelationViewer Viewer { get; set; }
 
         public void Bind(int[] index) {
             BindCommand.Execute(index);
@@ -984,49 +572,11 @@ namespace taskmaker_wpf.Views.Widget {
             //Console.WriteLine("A binding data has prepared.");
         }
 
-        //public void Invalidate(ControlUiState[] states) {
-        //    UiStates = states;
-
-        //    Layout();
-        //    InvalidateViewer();
-        //}
-
         public void OpenUiController(ControlUiState ui) {
             Layout(ui);
         }
 
-        public void InvalidateViewer() {
-            //var locked = new List<NodeInfo>();
-            //var unlocked = new List<NodeInfo[]>();
-
-            //foreach (var c in Controllers) {
-            //    if (c.SelectedNode == null)
-            //        unlocked.Add(c.NodeInfos);
-            //    //view.Candidates.Add(c.UiState.Id, c.UiState.Nodes.Select(e => new NodeInfo { Location = e.Value, NodeId = e.Id, UiId = c.UiState.Id }).ToArray());
-            //    else
-            //        locked.Add(c.SelectedNode.Node);
-            //    //view.Candidates.Add(c.UiState.Id, new NodeInfo[] { c.SelectedNode.Node });
-            //}
-
-            //if (locked.Count > 0) {
-            //    var temp = locked.Select(e => new NodeInfo[] { e }).Concat(unlocked).OrderBy(e => e.First().UiId).ToArray();
-            //    var combinations = Helper.GetCombinations(temp);
-            //    var vm = (RegionControlUIViewModel)DataContext;
-
-            //    var combinationStatus = vm.GetTensorStatus(
-            //        combinations.Select(e => e.Select(e1 => e1.NodeId).ToArray()).ToArray());
-
-            //    Viewer.Locked = locked;
-            //    Viewer.Combinations = combinations.Zip(combinationStatus, (combination, status) => new NodeRelation(combination) { HasValue = status }).ToArray();
-
-            //    Viewer.Visibility = Visibility.Visible;
-            //    Viewer.InvalidateState();
-            //}
-            //else {
-            //    Viewer.Visibility = Visibility.Collapsed;
-            //    Viewer.InvalidateState();
-            //}
-        }
+        public void InvalidateViewer() { }
 
         public void Layout(ControlUiState state) {
             var grid = new Grid() {
@@ -1036,7 +586,7 @@ namespace taskmaker_wpf.Views.Widget {
 
             Scroll.Content = grid;
 
-            var ui = new UiController_v1 {
+            var ui = new UiController {
                 VerticalAlignment = VerticalAlignment.Stretch,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 Margin = new Thickness(16, 16, 8, 16),
@@ -1073,7 +623,7 @@ namespace taskmaker_wpf.Views.Widget {
             Controllers.Clear();
 
             if (UiStates.Count() == 1) {
-                var ui = new UiController_v1 {
+                var ui = new UiController {
                     VerticalAlignment = VerticalAlignment.Stretch,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     Margin = new Thickness(16, 16, 8, 16),
@@ -1122,7 +672,7 @@ namespace taskmaker_wpf.Views.Widget {
 
                     //};
 
-                    var ui = new UiController_v1 {
+                    var ui = new UiController {
                         Margin = new Thickness(2),
                         VerticalAlignment = VerticalAlignment.Stretch,
                         HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -1148,483 +698,175 @@ namespace taskmaker_wpf.Views.Widget {
                 }
             }
         }
-
-        public void Select(NodeInfo[] nodes) {
-            UnSelect();
-
-            foreach (var node in nodes) {
-                Select(node.UiId, node.NodeId);
-            }
-        }
-
-        public void Select(int uiId, int nodeId) {
-            //var controller = Controllers.Find(e => e.UiState.Id == uiId);
-
-            //controller.Select(nodeId);
-        }
-
-        public void UnSelect() {
-            //foreach (var c in Controllers) {
-            //    c.UnSelect();
-            //}
-        }
-
-        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e) {
-            if (Focus()) {
-                e.Handled = true;
-            }
-            base.OnMouseLeftButtonUp(e);
-        }
-
-        private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
-            if (d is MultiView view) {
-                //var uis = args.NewValue as ControlUiState[];
-
-                //view.Layout();
-                //view.InvalidateViewer();
-            }
-        }
-        private void Ui_NotifyStatus(object sender, NotifyStatusEventArgs e) {
-        }
     }
 
-    public class NodeRelation {
-        public readonly NodeInfo[] Nodes;
-        public NodeRelation(NodeInfo[] nodes) {
-            Nodes = nodes;
-        }
-
-        public bool HasValue { get; set; }
-        public NodeInfo this[int index] {
-            get => Nodes[index];
-        }
-
-        public override string ToString() {
-            return $"[{string.Join(",", Nodes.Select(e => $"{e.UiId}({e.NodeId})"))}]";
-        }
-    }
-    public class NodeRelationViewer : UserControl {
-
-        // Using a DependencyProperty as the backing store for Combinations.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty CombinationsProperty =
-            DependencyProperty.Register("Combinations", typeof(IEnumerable<NodeRelation>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeRelation[0], OnPropertyChanged));
-
-        // Using a DependencyProperty as the backing store for Locked.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty LockedProperty =
-            DependencyProperty.Register("Locked", typeof(IEnumerable<NodeInfo>), typeof(NodeRelationViewer), new PropertyMetadata(new NodeInfo[0]));
-
-        public NodeRelationViewer(MultiView parent) {
-            View = parent;
-
-            Margin = new Thickness(0, 10, 0, 0);
-            Background = new SolidColorBrush(Colors.White);
-
-            InvalidateState();
-        }
-
-        public IEnumerable<NodeRelation> Combinations {
-            get { return (IEnumerable<NodeRelation>)GetValue(CombinationsProperty); }
-            set { SetValue(CombinationsProperty, value); }
-        }
-
-        public bool IsWaitToBind { get; set; } = false;
-
-        public IEnumerable<NodeInfo> Locked {
-            get { return (IEnumerable<NodeInfo>)GetValue(LockedProperty); }
-            set { SetValue(LockedProperty, value); }
-        }
-        public List<RelationWidget> Relations { get; set; } = new List<RelationWidget>();
-
-        public MultiView View { get; set; }
-
-        public void InvalidateState() {
-            Layout();
-
-            if (IsWaitToBind)
-                Relations[0].GoToState(UiElementState.Activated);
-        }
-
-        public void Layout() {
-            Relations.Clear();
-
-            var a = Locked;
-            var b = Combinations;
-
-            var grid = new Grid() { };
-
-            grid.ColumnDefinitions.Add(new ColumnDefinition() {
-                Width = GridLength.Auto,
-            });
-            grid.ColumnDefinitions.Add(new ColumnDefinition() {
-                Width = GridLength.Auto,
-            });
-            grid.ColumnDefinitions.Add(new ColumnDefinition() {
-                Width = GridLength.Auto,
-                MinWidth = 20
-            });
-
-            var panel0 = new StackPanel {
-                Orientation = Orientation.Horizontal,
-            };
-            var panel1 = new StackPanel {
-                Orientation = Orientation.Horizontal,
-            };
-            var split = new Line {
-                X1 = 0,
-                X2 = 0,
-                Y1 = 0,
-                Y2 = 20,
-                Stroke = new SolidColorBrush(Colors.Black),
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Top,
-                Margin = new Thickness(2),
-            };
-
-            for (int i = 0; i < a.Count(); i++) {
-                var fill = ColorManager.GetTintedColor(ColorManager.Palette[a.ElementAt(i).UiId], 2);
-
-                var circle = new Ellipse() {
-                    Width = 20,
-                    Height = 20,
-                    Stroke = new SolidColorBrush(Colors.Black),
-                    Fill = new SolidColorBrush(fill),
-                    Margin = new Thickness(2),
-                    ToolTip = $"{a.ElementAt(i).UiId}({a.ElementAt(i).NodeId})"
-                };
-
-                panel0.Children.Add(circle);
-            }
-
-            foreach (var item in b) {
-                var rect = new RelationWidget(item) {
-                    Margin = new Thickness(2),
-                    ToolTip = item.ToString(),
-                };
-
-                rect.MouseDoubleClick += Rect_MouseDoubleClick;
-                rect.MouseLeftButtonDown += Rect_MouseLeftButtonDown;
-                rect.MouseLeftButtonUp += Rect_MouseLeftButtonUp;
-                //var rect = new Rectangle() {
-                //    Width = 20,
-                //    Height = 20,
-                //    Fill = ColorPalette[4],
-                //    Margin = new Thickness(2),
-                //    //Opacity = item.HasValue ? 1.0 : 0.6,
-                //    ToolTip = item.ToString()
-                //};
-
-                panel1.Children.Add(rect);
-                Relations.Add(rect);
-            }
-
-            Grid.SetColumn(panel0, 0);
-            Grid.SetColumn(split, 1);
-            Grid.SetColumn(panel1, 2);
-
-            grid.Children.Add(panel0);
-            grid.Children.Add(split);
-            grid.Children.Add(panel1);
-
-            var scroll = new ScrollViewer {
-                Width = Width,
-                Content = grid,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
-                Focusable = false,
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-            };
-
-            Content = scroll;
-        }
-
-        public void Select(NodeInfo[] nodes) {
-            var parent = LogicalTreeHelperExtensions.FindAncestor<MultiView>(this);
-
-            parent.Select(nodes);
-        }
-
-        private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
-            if (d is NodeRelationViewer viewer) {
-                //viewer.Layout();
-                var relations = args.NewValue as NodeRelation[];
-
-                if (relations.Length == 1) {
-                    viewer.IsWaitToBind = true;
-                    //viewer.View.SetSelectedNodeIndices(relations[0].Nodes.Select(e => e.NodeId).ToArray());
-                }
-                else {
-                    viewer.IsWaitToBind = false;
-                }
-
-                //if ((bool)args.NewValue == true)
-                //    viewer.Visibility= Visibility.Visible;
-                //else
-                //    viewer.Visibility= Visibility.Collapsed;
-            }
-        }
-        private void Rect_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
-            var relationWidget = sender as RelationWidget;
-
-            if (Combinations.Count() == 1) {
-                Console.WriteLine("Bind!");
-            }
-        }
-
-        private void Rect_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
-            var r = sender as RelationWidget;
-
-            r.CaptureMouse();
-
-            if (!IsWaitToBind) {
-                if (r.State == UiElementState.Hover)
-                    r.GoToState(UiElementState.Pressed);
-            }
-            else {
-                if (r.State == UiElementState.Activated)
-                    r.GoToState(UiElementState.Pressed);
-            }
-        }
-
-        private void Rect_MouseLeftButtonUp(object sender, MouseButtonEventArgs args) {
-            var r = sender as RelationWidget;
-
-            r.ReleaseMouseCapture();
-
-            if (!IsWaitToBind) {
-                if (r.State == UiElementState.Pressed) {
-                    var parent = this;
-
-                    parent.Select(r.Relation.Nodes);
-
-                    r.GoToState(UiElementState.Default);
-                }
-            }
-            else {
-                if (r.State == UiElementState.Pressed) {
-                    var parent = LogicalTreeHelperExtensions.FindAncestor<MultiView>(this);
-                    var index = Combinations.First().Nodes.Select(e => e.NodeId).ToArray();
-
-                    parent.Bind(index);
-
-                    r.GoToState(UiElementState.Default);
-                }
-            }
-        }
-    }
-
-    public class NodeShape : StatefulWidget {
-        public static readonly RoutedEvent ClickedEvent = EventManager.RegisterRoutedEvent("Clicked", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(NodeShape));
-        // Using a DependencyProperty as the backing store for Node.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty NodeProperty =
-            DependencyProperty.Register("Node", typeof(NodeInfo), typeof(NodeShape), new PropertyMetadata(new NodeInfo(), OnPropertyChanged));
-
+    public class NodeShape : ContentControl {
+        public UIElement Container { get; set; }
+        public Ellipse StateLayer { get; set; }
         public Image checkIcon;
-        public UIElement overlay;
         public Color PrimaryColor;
-        public UiElementState state = UiElementState.Default;
-        private Matrix _transform = Matrix.Identity;
+        public UiElementState _state = UiElementState.Default;
+        public Point Position {
+            get => position;
+            set {
+                position = value;
+
+                SetPosition(position.X, position.Y);
+            }
+        }
 
         public NodeShape(int nodeId) {
             NodeId = nodeId;
+            PrimaryColor = ColorManager.GetTintedColor(ColorManager.Palette[0], 2);
 
-            InitializeComponents();
-            Invalidate();
-        }
+            Container = new Grid();
+            var shape = new Ellipse {
+                Width = 40,
+                Height = 40,
+                Fill = new SolidColorBrush(PrimaryColor),
+                Stroke = new SolidColorBrush(Colors.DarkGray),
+                StrokeThickness = 1,
+            };
 
-        public event RoutedEventHandler Clicked {
-            add { AddHandler(ClickedEvent, value); }
-            remove { RemoveHandler(ClickedEvent, value); }
+            StateLayer = new Ellipse {
+                Width = 40,
+                Height = 40,
+                Fill = new SolidColorBrush(Colors.Black),
+                Visibility = Visibility.Hidden,
+                Opacity = 0.08
+            };
+
+            (Container as Grid).Children.Add(shape);
+            (Container as Grid).Children.Add(StateLayer);
+
+            Content = Container;
+
+            //InitializeComponents();
+            //Invalidate();
         }
 
         public bool IsSelected { get; set; } = false;
 
-        public NodeInfo Node {
-            get { return (NodeInfo)GetValue(NodeProperty); }
-            set { SetValue(NodeProperty, value); }
-        }
-
         public int NodeId { get; set; }
 
-        public Matrix Transform {
-            get => _transform;
-            set {
-                var prevT = _transform;
-                _transform = value;
+        private void SetPosition(double x, double y) {
+            double halfWidth = 40 / 2;
+            double halfHeight = 40 / 2;
 
-                if (prevT != _transform) {
-                    Invalidate();
-                }
-            }
-        }
-        public static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            if (d is NodeShape widget) {
-                widget.Invalidate();
-            }
+            Canvas.SetLeft(this, x - halfWidth);
+            Canvas.SetTop(this, y - halfHeight);
         }
 
-        //    parent.Select(NodeId);
-        //    //RaiseEvent(new RoutedEventArgs(ClickedEvent));
-        //}
-        public override void GoToState(UiElementState state) {
+        public void GoToState(UiElementState state) {
+            _state = state;
+
             switch (state) {
                 case UiElementState.Default:
-                    _state = new DefaultNodeState(this);
+                    StateLayer.Visibility = Visibility.Hidden;
+                    Effect = null;
                     break;
-
                 case UiElementState.Hover:
-                    _state = new HoverNodeState(this);
+                    HandleHover();
                     break;
-
                 case UiElementState.Focus:
                     break;
-
                 case UiElementState.Selected:
-                    _state = new SelectedNodeState(this);
                     break;
-
                 case UiElementState.Activated:
                     break;
-
                 case UiElementState.Pressed:
+                    HandlePressed();
                     break;
-
                 case UiElementState.Dragged:
+                    HandleDragged();
+                    break;
+                default:
                     break;
             }
-
-            base.GoToState(state);
         }
 
-        public void Invalidate() {
-            InvalidateContent();
-            InvalidateTransform();
+        private void HandleDragged() {
+            StateLayer.Visibility = Visibility.Visible;
+            StateLayer.Fill = new SolidColorBrush(Colors.White);
+            StateLayer.Opacity = 0.16;
+            Effect = Evelations.Lv3;
         }
+
+        private void HandleHover() {
+            StateLayer.Visibility = Visibility.Visible;
+            StateLayer.Fill = new SolidColorBrush(Colors.Black);
+            StateLayer.Opacity = 0.08;
+            Effect = Evelations.Lv1;
+        }
+
+        private void HandlePressed() {
+            StateLayer.Visibility = Visibility.Visible;
+            StateLayer.Fill = new SolidColorBrush(Colors.White);
+            StateLayer.Opacity = 0.12;
+            Effect = null;
+            // Create a scale transform and assign it to the Ellipse's RenderTransform
+            ScaleTransform transform = new ScaleTransform();
+            RenderTransform = transform;
+            RenderTransformOrigin = new Point(0.5, 0.5); // Center the transform
+
+            // Create the animation
+            DoubleAnimation scaleAnimation = new DoubleAnimation {
+                From = 1,
+                To = 1.2,  // Scale factor (1.2 means 120% of original size)
+                Duration = TimeSpan.FromMilliseconds(100), // Duration to scale up
+                AutoReverse = true // Reverse the animation back to original size
+            };
+
+            // Apply the animation to the ScaleX and ScaleY properties
+            transform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleAnimation);
+            transform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleAnimation);
+        }
+
 
         protected override void OnMouseEnter(MouseEventArgs e) {
             base.OnMouseEnter(e);
 
-            if (_state is DefaultNodeState) {
-                GoToState(UiElementState.Hover);
-            }
+            GoToState(UiElementState.Hover);
         }
 
         protected override void OnMouseLeave(MouseEventArgs e) {
             base.OnMouseLeave(e);
 
-            if (_state is HoverNodeState) {
-                GoToState(UiElementState.Default);
+            GoToState(UiElementState.Default);
+        }
+
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e) {
+            base.OnMouseLeftButtonDown(e);
+
+            GoToState(UiElementState.Pressed);
+        }
+
+        protected override void OnMouseMove(MouseEventArgs e) {
+            base.OnMouseMove(e);
+
+            if (_state == UiElementState.Pressed) {
+                GoToState(UiElementState.Dragged);
+            }
+            else if (_state == UiElementState.Dragged) {
             }
         }
 
-        private void InitializeComponents() {
-            _state = new DefaultNodeState(this);
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e) {
+            base.OnMouseLeftButtonUp(e);
 
-            InitializeOverlay();
-            InitializeContent();
-
-            Content = Container;
-        }
-        private void InitializeContent() {
-            PrimaryColor = ColorManager.GetTintedColor(ColorManager.Palette[Node.UiId], 2);
-
-            var container = new Grid();
-
-            // add DropShadowEffect on container
-            Effect = new DropShadowEffect {
-                Color = Colors.Black,
-                Direction = 270,
-                ShadowDepth = 4,
-                BlurRadius = 8,
-                Opacity = 0.32,
-            };
-
-            var content = new Ellipse {
-                Width = 20,
-                Height = 20,
-                Stroke = Brushes.Black,
-                Fill = new SolidColorBrush(PrimaryColor),
-                StrokeThickness = 1.0,
-            };
-
-            container.Children.Add(content);
-            container.Children.Add(Overlay);
-
-            ToolTip = $"Node[{Node.NodeId}]-({Node.Location.X}, {Node.Location.Y})";
-
-            RenderOptions.SetEdgeMode(content, EdgeMode.Unspecified);
-            RenderOptions.SetBitmapScalingMode(content, BitmapScalingMode.HighQuality);
-
-            Container = container;
+            GoToState(UiElementState.Default);
         }
 
-        private void InitializeOverlay() {
-            var overlay = new Grid();
+        //private void InitializeComponents() {
+        //    InitializeOverlay();
+        //    InitializeContent();
 
-            var shape = new Ellipse {
-                Width = 20,
-                Height = 20,
-                Fill = new SolidColorBrush(Colors.Black),
-                Opacity = 0.0,
-            };
-
-            var icon = new SvgIcon {
-                Width = 12,
-                Height = 12,
-                Fill = new SolidColorBrush(Colors.Black),
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                UriSource = new Uri(@"/icons/done.svg", UriKind.Relative),
-                Visibility = Visibility.Hidden
-            };
-
-            overlay.Children.Add(shape);
-            overlay.Children.Add(icon);
-
-            Overlay = overlay;
-        }
-
-        private void InvalidateContent() {
-            PrimaryColor = ColorManager.GetTintedColor(ColorManager.Palette[Node.UiId], 2);
-            ToolTip = $"Node[{Node.NodeId}]-({Node.Location.X}, {Node.Location.Y})";
-
-            var shape = (Container as Grid).Children.OfType<Ellipse>().First();
-
-            shape.Fill = new SolidColorBrush(PrimaryColor);
-        }
-
-        private void InvalidateTransform() {
-            var p = Node.Location;
-            var tP = Transform.Transform(p);
-
-            Canvas.SetLeft(this, tP.X - 20 / 2);
-            Canvas.SetTop(this, tP.Y - 20 / 2);
-        }
-        //protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e) {
-        //    base.OnMouseLeftButtonDown(e);
+        //    Content = Container;
         //}
 
-        //protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e) {
-        //    base.OnMouseLeftButtonUp(e);
 
-        //    if (_state is HoverNodeState && !IsSelected) {
-        //        GoToState(UiElementState.Selected);
-        //    }
-        //    else if (_state is SelectedNodeState && IsSelected) {
-        //        GoToState(UiElementState.Default);
-        //    }
-
-        //    var parent = LogicalTreeHelperExtensions.FindAncestor<UiController>(this);
-    }
-
-    public class NotifyStatusEventArgs : EventArgs {
-        public NotifyStatusEventArgs(string status) {
-            Status = status;
-        }
-
-        public NotifyStatusEventArgs() {
-        }
-
-        public string Status { get; set; }
+        private Point position;
+        private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
     }
 
     public class PointerWidget : UserControl {
@@ -1677,225 +919,6 @@ namespace taskmaker_wpf.Views.Widget {
 
             Canvas.SetLeft(this, tP.X - 10 / 2);
             Canvas.SetTop(this, tP.Y - 10 / 2);
-        }
-    }
-
-    public class PressedState : BaseState {
-
-        public PressedState(StatefulWidget parent) : base(parent) {
-        }
-
-        public override void SetContainer() {
-            var grid = Parent.Container as Grid;
-
-            // Set color
-            //grid.Background
-
-            // Set opacity
-        }
-
-        public override void SetFlag() {
-        }
-
-        public override void SetOverlay() {
-            var grid = Parent.Overlay as Grid;
-            var overlay = grid.Children.OfType<Rectangle>().First();
-            var icon = grid.Children.OfType<SvgIcon>().First();
-
-            // Set color
-            overlay.Fill = Brushes.DarkRed;
-            // Set opacity
-            overlay.Opacity = 0.12;
-
-            //icon.Visibility = Visibility.Hidden;
-        }
-    }
-
-    public class RelationWidget : StatefulWidget {
-        public RelationWidget(NodeRelation relation) {
-            Relation = relation;
-
-            var content = new Rectangle {
-                Width = 20,
-                Height = 20,
-                Fill = new SolidColorBrush(ColorManager.Palette.Last()),
-            };
-
-            Container = new Grid { };
-            //Overlay = new Border { };
-
-            var overlayContainer = new Grid();
-
-            var overlay = new Rectangle {
-                Width = 20,
-                Height = 20,
-                Fill = new SolidColorBrush(Colors.White),
-                Opacity = 0.0
-            };
-            var icon = new SvgIcon {
-                Width = 12,
-                Height = 12,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                UriSource = new Uri(@"icons/done.svg", UriKind.Relative),
-                Fill = new SolidColorBrush(Colors.White),
-                Visibility = Relation.HasValue ? Visibility.Visible : Visibility.Hidden,
-            };
-
-            overlayContainer.Children.Add(overlay);
-            overlayContainer.Children.Add(icon);
-
-            Overlay = overlayContainer;
-
-            (Container as Grid).Children.Add(content);
-            (Container as Grid).Children.Add(Overlay);
-
-            Content = Container;
-
-            MouseEnter += (s, e) => {
-                var widget = s as RelationWidget;
-
-                if (widget.State == UiElementState.Default) {
-                    GoToState(UiElementState.Hover);
-                }
-            };
-
-            MouseLeave += (s, e) => {
-                var widget = s as RelationWidget;
-
-                if (widget.State == UiElementState.Hover) {
-                    GoToState(UiElementState.Default);
-                }
-            };
-
-            //MouseLeftButtonDown += (s, e) => {
-            //    var widget = s as RelationWidget;
-
-            //    CaptureMouse();
-            //    if (widget.State == UiElementState.Hover)
-            //        GoToState(UiElementState.Pressed);
-            //    else if (widget.State == UiElementState.Selected) {
-            //        GoToState(UiElementState.Activated);
-            //    }
-            //};
-
-            //MouseLeftButtonUp += (s, e) => {
-            //    var widget = s as RelationWidget;
-
-            //    if (widget.State == UiElementState.Pressed) {
-            //        GoToState(UiElementState.Selected);
-
-            //        var parent = LogicalTreeHelperExtensions.FindAncestor<NodeRelationViewer>(this);
-
-            //        parent.Select(Relation.Nodes);
-            //        //if (!IsSelected)
-            //        //    GoToState(UiElementState.Default);
-            //    }
-            //    else if (widget.State == UiElementState.Activated) {
-            //        var parent = LogicalTreeHelperExtensions.FindAncestor<MultiView>(this);
-
-            //        parent.Bind();
-
-            //        GoToState(UiElementState.Default);
-            //    }
-
-            //    ReleaseMouseCapture();
-            //};
-
-            PreviewKeyDown += (s, e) => {
-            };
-        }
-
-        public bool IsSelected { get; set; } = false;
-
-        //public bool HasValue { get; set; } = false;
-        public NodeRelation Relation { get; set; }
-        public override void GoToState(UiElementState state) {
-            switch (state) {
-                case UiElementState.Default:
-                    _state = new DefaultState(this);
-                    break;
-
-                case UiElementState.Hover:
-                    _state = new HoverState(this);
-                    break;
-
-                case UiElementState.Focus:
-                    break;
-
-                case UiElementState.Selected:
-                    _state = new SelectedState(this);
-                    break;
-
-                case UiElementState.Activated:
-                    _state = new ActivedState(this);
-                    break;
-
-                case UiElementState.Pressed:
-                    _state = new PressedState(this);
-                    break;
-
-                case UiElementState.Dragged:
-                    break;
-
-                default:
-                    break;
-            }
-
-            base.GoToState(state);
-        }
-    }
-
-    public class SelectedNodeState : BaseState {
-
-        public SelectedNodeState(NodeShape node) : base(node) {
-        }
-
-        public override void SetContainer() {
-        }
-
-        public override void SetFlag() {
-            var node = Parent as NodeShape;
-
-            node.IsSelected = true;
-        }
-
-        public override void SetOverlay() {
-            var node = Parent as NodeShape;
-            var overlay = node.Overlay as Grid;
-            var shape = overlay.Children.OfType<Ellipse>().First();
-            var icon = overlay.Children.OfType<SvgIcon>().First();
-
-            icon.Visibility = Visibility.Visible;
-            shape.Opacity = 0.12;
-        }
-    }
-
-    public class SelectedState : BaseState {
-
-        public SelectedState(StatefulWidget parent) : base(parent) {
-        }
-
-        public override void SetContainer() {
-        }
-
-        public override void SetFlag() {
-            var widget = Parent as RelationWidget;
-
-            widget.IsSelected = true;
-        }
-
-        public override void SetOverlay() {
-            var grid = Parent.Overlay as Grid;
-            var overlay = grid.Children.OfType<Rectangle>().First();
-            var icon = grid.Children.OfType<SvgIcon>().First();
-
-            // Set color
-            overlay.Fill = Brushes.Red;
-            // Set opacity
-            overlay.Opacity = 0.12;
-
-            //icon.Visibility = Visibility.Visible;
         }
     }
 
@@ -2020,18 +1043,9 @@ namespace taskmaker_wpf.Views.Widget {
             _state.SetFlag();
         }
     }
-    public class TraceUiState : BaseUiState {
-
-        public TraceUiState(UiController_v1 parent) : base(parent) {
-        }
-
-        public override void SetFlags() {
-            //Parent.Pointer.Visibility = Visibility.Visible;
-        }
-    }
 
 
-    public class UiController_v1 : UserControl {
+    public class UiController : UserControl {
 
         // Fields to store the start position for panning
         private Point? _panStartPoint = null;
@@ -2039,36 +1053,55 @@ namespace taskmaker_wpf.Views.Widget {
 
         public ScrollViewer Viewer { get; set; }
         public Canvas Canvas { get; set; }
+        public Grid Indicator { get; set; }
         public ScaleTransform ScaleT { get; set; } = new ScaleTransform();
         public TranslateTransform CenteringT = new TranslateTransform();
         public ScaleTransform FlipYT = new ScaleTransform(1, -1);
-        public UiMode UiMode { get; set; } = UiMode.Default;
-
+        public UiMode UiMode {
+            get => uiMode;
+            set {
+                uiMode = value;
+                ChangeUiMode(UiMode);
+            }
+        }
         private Ellipse circle;
         private Rectangle box;
         private TextBlock billboard;
-        public UiController_v1() {
-            Background = new SolidColorBrush(Colors.LightBlue);
+        private UiMode uiMode = UiMode.Default;
+        private NodeShape _moveTarget;
+        private Point _moveStartMousePosition;
+        private Point _moveStartTargetPostion;
+
+        public List<NodeShape> Nodes { get; set; } = new List<NodeShape>();
+
+        public UiController() {
+            //Background = new SolidColorBrush(Colors.LightBlue);
             IsHitTestVisible = true;
 
             Viewer = new ScrollViewer {
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                IsHitTestVisible = false,
             };
 
             Canvas = new Canvas {
-                Background = new SolidColorBrush(Colors.LightGray),
+                //Background = new SolidColorBrush(Colors.LightGray),
             };
 
-            //Canvas.MouseWheel += HandleZoom;
-            //Canvas.MouseLeftButtonDown += StartPan;
-            //Canvas.MouseLeftButtonUp += EndPan;
-            //Canvas.MouseMove += PerformPan;
-            MouseWheel += Canvas_MouseWheel;
-            MouseLeftButtonDown += Canvas_MouseLeftButtonDown;
-            MouseLeftButtonUp += Canvas_MouseLeftButtonUp;
-            MouseMove += Canvas_MouseMove;
+            Indicator = new Grid {
+                Visibility = Visibility.Hidden
+            };
+            Indicator.Children.Add(new Ellipse {
+                Width = 20,
+                Height = 20,
+                Fill = Brushes.White,
+                Stroke = Brushes.Gray,
+                Opacity = 0.32,
+            });
+
+            PreviewMouseWheel += Canvas_PreviewMouseWheel;
+            PreviewMouseLeftButtonDown += Canvas_PreviewMouseLeftButtonDown;
+            PreviewMouseLeftButtonUp += Canvas_PreviewMouseLeftButtonUp;
+            PreviewMouseMove += Canvas_PreviewMouseMove;
 
             // add a circle sign at origin
             circle = new Ellipse() {
@@ -2109,19 +1142,53 @@ namespace taskmaker_wpf.Views.Widget {
             Canvas.Children.Add(box);
             Canvas.Children.Add(billboard);
 
+            Canvas.Children.Add(Indicator);
+
             Viewer.Content = Canvas;
             Content = Viewer;
+
         }
 
-        private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
-            switch (UiMode) {
+        public void ChangeUiMode(UiMode mode) {
+            switch (mode) {
                 case UiMode.Default:
                     break;
                 case UiMode.Add:
+                    Indicator.Visibility = Visibility.Visible;
                     break;
                 case UiMode.Remove:
                     break;
                 case UiMode.Move:
+                    break;
+                case UiMode.Assign:
+                    break;
+                case UiMode.Build:
+                    break;
+                case UiMode.Trace:
+                    break;
+                case UiMode.Drag:
+                    break;
+                case UiMode.Pan:
+                    break;
+                case UiMode.Zoom:
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void Canvas_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+            switch (UiMode) {
+                case UiMode.Default:
+                    break;
+                case UiMode.Add:
+                    Indicator.Visibility = Visibility.Hidden;
+                    break;
+                case UiMode.Remove:
+                    PerformRemove(sender, e);
+                    break;
+                case UiMode.Move:
+                    EndMove(sender, e);
                     break;
                 case UiMode.Assign:
                     break;
@@ -2141,15 +1208,17 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
-        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+        private void Canvas_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
             switch (UiMode) {
                 case UiMode.Default:
                     break;
                 case UiMode.Add:
+                    PerformAdd(sender, e);
                     break;
                 case UiMode.Remove:
                     break;
                 case UiMode.Move:
+                    StartMove(sender, e);
                     break;
                 case UiMode.Assign:
                     break;
@@ -2169,7 +1238,7 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
-        private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e) {
+        private void Canvas_PreviewMouseWheel(object sender, MouseWheelEventArgs e) {
             switch (UiMode) {
                 case UiMode.Default:
                     break;
@@ -2197,16 +1266,18 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
-        private void Canvas_MouseMove(object sender, MouseEventArgs e) {
+        private void Canvas_PreviewMouseMove(object sender, MouseEventArgs e) {
             switch (UiMode) {
                 case UiMode.Default:
 
                     break;
                 case UiMode.Add:
+                    ShowAddPointer(sender, e);
                     break;
                 case UiMode.Remove:
                     break;
                 case UiMode.Move:
+                    PerformMove(sender, e);
                     break;
                 case UiMode.Assign:
                     break;
@@ -2226,6 +1297,49 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
+        private void StartMove(object sender, MouseButtonEventArgs e) {
+            var currentPosition = e.GetPosition(Canvas);
+            var result = VisualTreeHelper.HitTest(Canvas, currentPosition);
+
+            if (result != null && result.VisualHit is Ellipse hit) {
+                var parent = VisualTreeHelperExtensions.FindParentOfType<NodeShape>(hit);
+
+                if (parent != null) {
+                    _moveTarget = parent;
+                    _moveStartMousePosition = currentPosition;
+                    _moveStartTargetPostion = parent.Position;
+                }
+            }
+        }
+
+        private void PerformMove(object sender, MouseEventArgs e) {
+            if (_moveTarget != null) {
+                var currentPosition = e.GetPosition(Canvas);
+                var offset = currentPosition - _moveStartMousePosition;
+
+                _moveTarget.Position = _moveStartTargetPostion + offset;
+            }
+        }
+
+        private void EndMove(object sender, MouseButtonEventArgs e) {
+            _moveTarget = null;
+        }
+
+        private void PerformRemove(object sender, MouseButtonEventArgs e) {
+            var currentPosition = e.GetPosition(Canvas);
+
+            var result = VisualTreeHelper.HitTest(Canvas, currentPosition);
+
+            if (result != null && result.VisualHit is Ellipse hit) {
+                var parent = VisualTreeHelperExtensions.FindParentOfType<NodeShape>(hit);
+
+                if (parent != null) {
+                    Canvas.Children.Remove(parent);
+                    Nodes.Remove(parent);
+                }
+            }
+        }
+
         private void SetPosition(UIElement element, double x, double y) {
             double halfWidth = element.DesiredSize.Width / 2;
             double halfHeight = element.DesiredSize.Height / 2;
@@ -2242,26 +1356,17 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo) {
-            //var g = new TransformGroup();
             CenteringT = new TranslateTransform(sizeInfo.NewSize.Width / 2, sizeInfo.NewSize.Height / 2);
             FlipYT.CenterX = sizeInfo.NewSize.Width / 2;
             FlipYT.CenterY = sizeInfo.NewSize.Height / 2;
 
-            //g.Children.Add(CenteringT);
-            //g.Children.Add(FlipYT);
-
-            //Canvas.RenderTransform = g;
-
-            SetPosition(circle, 0, 0);
-            SetPosition(box, 0, 0);
-            SetPosition(billboard, 0, 100);
-
-            InvalidatePosition();
+            InvalidateTransform();
+            InvaldatePosition();
 
             base.OnRenderSizeChanged(sizeInfo);
         }
 
-        private void InvalidatePosition() {
+        private void InvalidateTransform() {
             var g = new TransformGroup();
 
             g.Children.Add(CenteringT);
@@ -2269,12 +1374,30 @@ namespace taskmaker_wpf.Views.Widget {
             g.Children.Add(ScaleT);
 
             Canvas.RenderTransform = g;
+        }
 
+        private void InvaldatePosition() {
+
+            Nodes.ForEach(e => SetPosition(e, e.Position.X, e.Position.Y));
             SetPosition(circle, 0, 0);
             SetPosition(box, 0, 0);
             SetPosition(billboard, 0, 100);
+        }
 
-            InvalidateVisual();
+        private void ShowAddPointer(object sender, MouseEventArgs e) {
+            var currentPosition = e.GetPosition(Canvas);
+
+            SetPosition(Indicator, currentPosition.X, currentPosition.Y);
+        }
+
+        private void PerformAdd(object sender, MouseButtonEventArgs e) {
+            var currentPosition = e.GetPosition(Canvas);
+            var newNode = new NodeShape(Nodes.Count + 1) {
+                Position = currentPosition
+            };
+
+            Nodes.Add(newNode);
+            Canvas.Children.Add(newNode);
         }
 
         private void HandleZoom(object sender, MouseWheelEventArgs e) {
@@ -2296,7 +1419,7 @@ namespace taskmaker_wpf.Views.Widget {
             ScaleT.CenterX = Canvas.RenderSize.Width / 2;
             ScaleT.CenterY = Canvas.RenderSize.Height / 2;
 
-            InvalidatePosition();
+            InvalidateTransform();
         }
 
         private void StartPan(object sender, MouseButtonEventArgs e) {
@@ -2320,7 +1443,7 @@ namespace taskmaker_wpf.Views.Widget {
                 CenteringT.X -= newOffset.X;
                 CenteringT.Y -= newOffset.Y;
 
-                InvalidatePosition();
+                InvalidateTransform();
 
                 //Canvas.SetLeft(Canvas, newOffset.X);
                 //Canvas.SetTop(Canvas, newOffset.Y);
@@ -2334,943 +1457,6 @@ namespace taskmaker_wpf.Views.Widget {
         }
     }
 
-
-    //public class UiController : UserControl {
-
-    //    // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
-    //    public static readonly DependencyProperty CommandProperty =
-    //        DependencyProperty.Register("Command", typeof(ICommand), typeof(UiController), new PropertyMetadata((ICommand)null));
-
-    //    // Using a DependencyProperty as the backing store for HasExterior.  This enables animation, styling, binding, etc...
-    //    public static readonly DependencyProperty HasExteriorProperty =
-    //        DependencyProperty.Register("HasExterior", typeof(bool), typeof(UiController), new PropertyMetadata(true));
-
-    //    // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
-    //    public static readonly DependencyProperty UiStateProperty =
-    //        DependencyProperty.Register("UiState", typeof(ControlUiState), typeof(UiController), new FrameworkPropertyMetadata(default(ControlUiState), OnUiStatePropertyChanged));
-
-    //    // Using a DependencyProperty as the backing store for VMTemp.  This enables animation, styling, binding, etc...
-    //    public static readonly DependencyProperty VMTempProperty =
-    //        DependencyProperty.Register("VMTemp", typeof(object), typeof(UiController), new PropertyMetadata(null));
-
-    //    internal static readonly DependencyPropertyKey SelectedNodePropertyKey = DependencyProperty.RegisterReadOnly("SelectedNode", typeof(NodeShape), typeof(UiController), new FrameworkPropertyMetadata(null, OnSelectedNodePropertyChanged));
-
-    //    // add a logger
-    //    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
-
-    //    private Canvas _canvas;
-    //    private Label _expInfo;
-    //    private Point _origin = new Point();
-    //    private Label _status;
-    //    private int capturedFinger = -1;
-    //    private bool isDragging;
-    //    private UiMode mode = UiMode.Default;
-    //    private Point mousePosition;
-    //    private Matrix Normalized = Matrix.Identity;
-    //    private Matrix Offset = Matrix.Identity;
-    //    private Matrix Scale = Matrix.Identity;
-    //    private Point start;
-    //    private Matrix startMat;
-    //    private int step = 0;
-    //    private DispatcherTimer timer;
-    //    private Matrix Transform = Matrix.Identity;
-    //    private Matrix Translate = Matrix.Identity;
-    //    public UiController() {
-    //        Pointer.Visibility = Visibility.Collapsed;
-    //        Panel.SetZIndex(Pointer, 25);
-
-    //        State = new DefaultUiState(this);
-    //        Focusable = true;
-    //        Visibility = Visibility.Visible;
-
-    //        //MouseEnter += (s, e) => {
-    //        //    var el = Keyboard.Focus(s as IInputElement);
-
-    //        //    //Console.WriteLine(el);
-    //        //};
-
-    //        var border = new Border {
-    //            //BorderBrush = new SolidColorBrush(Colors.DarkGray),
-    //            //BorderThickness = new Thickness(1),
-    //        };
-
-    //        var container = new Grid {
-    //            //Background = Brushes.Azure,
-    //            ClipToBounds = true,
-    //            HorizontalAlignment = HorizontalAlignment.Stretch,
-    //            VerticalAlignment = VerticalAlignment.Stretch,
-    //            //Width = 400,
-    //            //Height = 400,
-    //        };
-
-    //        // stackpanel with vertical direction
-    //        var stackPanel = new StackPanel {
-    //            Orientation = Orientation.Vertical,
-    //        };
-
-    //        _status = new Label() {
-    //            Content = mode.ToString()
-    //        };
-    //        _expInfo = new Label() {
-    //            Content = "Exp: null"
-    //        };
-
-    //        _canvas = new Canvas() {
-    //            Background = Brushes.White,
-    //            SnapsToDevicePixels = true,
-    //            UseLayoutRounding = true,
-    //        };
-
-    //        var axisX = new Arrow {
-    //            Name = "AxisX",
-    //            Start = new Point(0, 0),
-    //            End = new Point(100, 0),
-    //            Stroke = Brushes.Red
-    //        };
-
-    //        var axisY = new Arrow {
-    //            Name = "AxisY",
-    //            Start = new Point(0, 0),
-    //            End = new Point(0, 100),
-    //            Stroke = Brushes.Green
-    //        };
-
-    //        _canvas.Children.Add(axisX);
-    //        _canvas.Children.Add(axisY);
-
-    //        stackPanel.Children.Add(_status);
-    //        stackPanel.Children.Add(_expInfo);
-
-    //        _canvas.Children.Add(stackPanel);
-    //        _canvas.Children.Add(Pointer);
-
-    //        // Show hint of IKTemplate
-    //        //CreateIKTemplate();
-
-    //        container.Children.Add(_canvas);
-
-    //        border.Child = container;
-    //        Content = border;
-
-    //        container.SizeChanged += (s, e) => {
-    //            var cCenter = new Point(e.NewSize.Width / 2.0, e.NewSize.Height / 2.0);
-
-    //            Normalized.SetIdentity();
-    //            Normalized.Scale(1, -1);
-
-    //            Normalized.Translate(cCenter.X, cCenter.Y);
-    //            //var pCenter = new Point(e.PreviousSize.Width / 2.0, e.PreviousSize.Height / 2.0);
-
-    //            //var diff = cCenter - pCenter;
-
-    //            //Offset = Matrix.Identity;
-    //            //Offset.Translate(diff.X, diff.Y);
-
-    //            //var ik = _canvas.Children.OfType<IKTemplate>().First();
-
-    //            //ik.Origin = cCenter;
-
-    //            _origin = cCenter;
-
-    //            InvalidateTransform();
-    //            //Save("test1.png");
-    //        };
-
-    //        TouchDown += (s, e) => {
-    //            var finger = e.TouchDevice.Id;
-
-    //            if (capturedFinger == -1) {
-    //                capturedFinger = finger;
-    //                CaptureTouch(e.TouchDevice);
-    //                e.Handled = true;
-    //            }
-    //        };
-
-    //        TouchMove += (s, e) => {
-    //            var finger = e.TouchDevice.Id;
-
-    //            if (capturedFinger == finger) {
-    //                var point = e.GetTouchPoint(_canvas).Position;
-
-    //                var invMat = Transform;
-    //                invMat.Invert();
-
-    //                var vm = DataContext as RegionControlUIViewModel;
-    //                var result = VisualTreeHelper.HitTest(_canvas, point);
-
-    //                if (result.VisualHit is VoronoiShape) {
-    //                }
-    //                if (result != null) {
-    //                    //_logger.Debug("dududu");
-
-    //                    if (mode == UiMode.Trace)
-    //                        vm.Interpolate(UiState, invMat.Transform(point), HasExterior);
-    //                    //else if (mode == UiMode.Drag)
-    //                    //    vm.UpdateControlUiValue(UiState, invMat.Transform(point));
-    //                }
-
-    //                e.Handled = true;
-    //            }
-    //        };
-
-    //        TouchUp += (s, e) => {
-    //            var finger = e.TouchDevice.Id;
-
-    //            if (capturedFinger == finger) {
-    //                ReleaseTouchCapture(e.TouchDevice);
-    //                capturedFinger = -1;
-
-    //                e.Handled = true;
-    //            }
-    //        };
-
-    //        // Pan
-    //        MouseDown += (s, e) => {
-    //            if (mode == UiMode.Add) {
-    //                CaptureMouse();
-
-    //                var point = e.GetPosition(_canvas);
-    //                var invMat = Transform;
-
-    //                invMat.Invert();
-    //                mousePosition = invMat.Transform(point);
-    //            }
-    //            else if (mode == UiMode.Pan) {
-    //                CaptureMouse();
-
-    //                isDragging = true;
-    //                start = e.GetPosition(_canvas);
-    //                startMat = Translate;
-    //            }
-    //            else if (mode == UiMode.Trace || mode == UiMode.Drag) {
-    //                CaptureMouse();
-
-    //                start = e.GetPosition(_canvas);
-
-    //                Pointer.Location = start;
-    //                isDragging = true;
-    //            }
-    //        };
-
-    //        MouseMove += (s, e) => {
-    //            if (mode == UiMode.Pan) {
-    //                if (isDragging) {
-    //                    var curr = e.GetPosition(_canvas);
-    //                    var vector = (curr - start);
-
-    //                    var tMat = Matrix.Parse(startMat.ToString());
-    //                    tMat.Translate(vector.X, vector.Y);
-
-    //                    Translate = tMat;
-
-    //                    InvalidateTransform();
-    //                }
-    //            }
-    //            else if (mode == UiMode.Trace || mode == UiMode.Drag) {
-    //                if (isDragging) {
-    //                    var curr = e.GetPosition(_canvas);
-    //                    var mat = Transform;
-    //                    var invMat = Transform;
-    //                    invMat.Invert();
-
-    //                    // pointer in local
-    //                    var tCurr = invMat.Transform(curr);
-
-    //                    if (UiState.Nodes.Length == 2) {
-    //                        // P1 = P0 + k * V
-
-    //                        double _clamp(double value, double min, double max) {
-    //                            if (value > max)
-    //                                return max;
-    //                            else if (value < min)
-    //                                return min;
-    //                            else return value;
-    //                        }
-
-    //                        var nodes = UiState.Nodes.OrderBy(e0 => e0.Value.X).Select(e0 => e0.Value).ToArray();
-    //                        var v = nodes[1] - nodes[0];
-    //                        var range = nodes.Select(e0 => e0.X).ToArray();
-    //                        var x = _clamp(tCurr.X, range[0], range[1]);
-
-    //                        var k = (x - nodes[0].X) / v.Length;
-
-    //                        var p = nodes[0] + v * k;
-
-    //                        // Pointer in screen
-    //                        Pointer.Location = mat.Transform(p);
-    //                        //var f = diff.Y > 0 ? 0.1 ;
-    //                        //var line = UiState.Nodes[0].Value - UiState.Nodes[1].Value;
-    //                        //var p = UiState.Nodes[0].Value + line * f;
-    //                        //Pointer.Location = curr;
-    //                    }
-    //                    else {
-    //                        Pointer.Location = curr;
-    //                        if (VMTemp == null) {
-    //                            var vm = DataContext as RegionControlUIViewModel;
-    //                            var result = VisualTreeHelper.HitTest(_canvas, curr);
-
-    //                            if (result.VisualHit is VoronoiShape) {
-    //                            }
-    //                            if (result != null) {
-    //                                //var state = LogicalTreeHelperExtensions.FindAncestor<IRegionShape>(result.VisualHit)?.State;
-
-    //                                if (mode == UiMode.Trace)
-    //                                    vm.Interpolate(UiState, invMat.Transform(curr), HasExterior);
-    //                                else if (mode == UiMode.Drag)
-    //                                    vm.UpdateControlUiValue(UiState, invMat.Transform(curr));
-    //                            }
-    //                        }
-    //                        else if (VMTemp != null) {
-    //                            var vm = VMTemp as RegionControlUIViewModel;
-    //                            var result = VisualTreeHelper.HitTest(_canvas, curr);
-    //                            var state = (LogicalTreeHelperExtensions.FindAncestor<IRegionShape>(result.VisualHit))?.State;
-
-    //                            if (mode == UiMode.Trace)
-    //                                vm.Interpolate(UiState, invMat.Transform(curr), HasExterior);
-    //                            else if (mode == UiMode.Drag)
-    //                                vm.UpdateControlUiValue(UiState, invMat.Transform(curr));
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //        };
-
-    //        MouseUp += (s, e) => {
-    //            if (mode == UiMode.Add) {
-    //                OnAddNode(mousePosition);
-    //                GoToState(UiMode.Default);
-
-    //                ReleaseMouseCapture();
-    //            }
-    //            else if (mode == UiMode.Pan) {
-    //                var curr = e.GetPosition(_canvas);
-    //                var vector = (curr - start);
-
-    //                var tMat = Matrix.Parse(startMat.ToString());
-    //                tMat.Translate(vector.X, vector.Y);
-
-    //                Translate = tMat;
-
-    //                isDragging = false;
-    //                InvalidateTransform();
-
-    //                ReleaseMouseCapture();
-    //                GoToState(UiMode.Default);
-    //            }
-    //            else if (mode == UiMode.Trace || mode == UiMode.Drag) {
-    //                var last = e.GetPosition(_canvas);
-
-    //                isDragging = false;
-    //                Pointer.Location = last;
-
-    //                ReleaseMouseCapture();
-    //            }
-    //        };
-
-    //        PreviewMouseWheel += (s, e) => {
-    //            if (Keyboard.Modifiers == ModifierKeys.Control) {
-    //                var pivot = e.GetPosition(_canvas);
-    //                var scale = e.Delta > 0 ? 1.25 : 1 / 1.25;
-
-    //                Scale.ScaleAt(scale, scale, pivot.X, pivot.Y);
-
-    //                InvalidateTransform();
-    //            }
-    //            else if (Keyboard.Modifiers == ModifierKeys.Alt) {
-    //                var pivot = new Point(_canvas.ActualWidth / 2, _canvas.ActualHeight / 2);
-    //                var scale = e.Delta > 0 ? 1.25 : 1 / 1.25;
-
-    //                Scale.ScaleAt(scale, scale, pivot.X, pivot.Y);
-
-    //                InvalidateTransform();
-    //            }
-    //        };
-
-    //        PreviewKeyDown += (s, e) => {
-    //            if (e.Key == Key.R) {
-    //                Translate = Matrix.Identity;
-    //                Scale = Matrix.Identity;
-
-    //                InvalidateTransform();
-    //            }
-    //            else if (e.Key == Key.B) {
-    //                OnBuild();
-    //            }
-    //            else if (e.Key == Key.D1) {
-    //                GoToState(UiMode.Add);
-    //            }
-    //            else if (e.Key == Key.D2) {
-    //                GoToState(UiMode.Pan);
-    //            }
-    //            else if (e.Key == Key.D3) {
-    //                GoToState(UiMode.Trace);
-    //            }
-    //            else if (e.Key == Key.D4) {
-    //                GoToState(UiMode.Drag);
-    //            }
-    //            else if (e.Key == Key.D5) {
-    //                Save("screenshot.png");
-    //            }
-    //            else if (e.Key == Key.D6) {
-    //                Evaluate(1);
-    //            }
-    //            else if (e.Key == Key.D7) {
-    //                Evaluate(2);
-    //            }
-    //            else if (e.Key == Key.D0) {
-    //                MakeTemplateNodes();
-    //            }
-    //            else if (e.Key == Key.D9) {
-    //                MakeTemplateNodesWithOrigin();
-    //            }
-    //            else if (e.Key == Key.F1) {
-    //                HasExterior = !HasExterior;
-    //                InvalidateRegion();
-    //                InvalidateTransform();
-    //            }
-    //            else if (e.Key == Key.F5) {
-    //                InvalidateRegion();
-    //                InvalidateTransform();
-    //            }
-    //            else if (e.Key == Key.Escape) {
-    //                GoToState(UiMode.Default);
-    //                isDragging = false;
-    //            }
-    //        };
-
-    //        Keyboard.AddPreviewKeyDownHandler(this, (s, e) => {
-    //            //Console.WriteLine($"Keydown, {e.Key}");
-    //        });
-    //    }
-
-    //    public event EventHandler<NotifyStatusEventArgs> NotifyStatus;
-
-    //    public ICommand Command {
-    //        get { return (ICommand)GetValue(CommandProperty); }
-    //        set { SetValue(CommandProperty, value); }
-    //    }
-
-    //    public bool HasExterior {
-    //        get { return (bool)GetValue(HasExteriorProperty); }
-    //        set { SetValue(HasExteriorProperty, value); }
-    //    }
-
-    //    public NodeInfo[] NodeInfos => UiState.Nodes.Select(e => new NodeInfo {
-    //        Location = e.Value,
-    //        NodeId = e.Id,
-    //        UiId = UiState.Id
-    //    }).ToArray();
-
-    //    public NodeShape[] NodeVisuals { get; set; } = new NodeShape[0];
-    //    public PointerWidget Pointer { get; set; } = new PointerWidget();
-
-    //    public NodeShape SelectedNode => (NodeShape)GetValue(SelectedNodePropertyKey.DependencyProperty);
-    //    public BaseUiState State { get; set; }
-    //    public ControlUiState UiState {
-    //        get { return (ControlUiState)GetValue(UiStateProperty); }
-    //        set { SetValue(UiStateProperty, value); }
-    //    }
-
-    //    public object VMTemp {
-    //        get { return (object)GetValue(VMTempProperty); }
-    //        set { SetValue(VMTempProperty, value); }
-    //    }
-
-    //    private double distance => IKTemplate.PerpendicularLength(new Point(), new Point(0, 300), RotatePoint(new Point(0, 300), 120));
-
-    //    public void Evaluate(int mode) {
-    //        var ik = _canvas.Children.OfType<IKTemplate>().First();
-
-    //        if (mode == 1) {
-    //            ik.Start(() => {
-    //                var info = new StringBuilder();
-
-    //                // get current timestamp and append into info
-    //                info.Append(DateTime.Now.ToShortTimeString() + " ");
-
-    //                var ik = _canvas.Children.OfType<IKTemplate>().First();
-
-    //                var vm = DataContext as RegionControlUIViewModel;
-
-    //                info.Append($"{ik.Step} ");
-
-    //                var points = ik.CreateTrajectory(ik.Distance, 36);
-    //                var p = points[ik.Step - 1];
-    //                info.Append($"{p} ");
-
-    //                vm.Interpolate(UiState, p, false);
-
-    //                _expInfo.Content = info;
-    //            }, 36, mode = 1);
-    //        }
-    //        else if (mode == 2) {
-    //            ik.Start(() => {
-    //                var info = new StringBuilder();
-
-    //                // get current timestamp and append into info
-    //                info.Append(DateTime.Now.ToShortTimeString() + " ");
-
-    //                var ik = _canvas.Children.OfType<IKTemplate>().First();
-
-    //                var vm = DataContext as RegionControlUIViewModel;
-
-    //                info.Append($"{ik.Step} ");
-
-    //                var points = ik.CreateTrajectory(ik.Distance, 36 / 2);
-    //                var p = points[ik.Step - 1];
-    //                info.Append($"p[{ik.Step - 1}]{p} ");
-
-    //                vm.Interpolate(UiState, p, false);
-
-    //                _expInfo.Content = info;
-    //            }, 36 / 2, mode = 2);
-    //        }
-
-    //        //timer = new DispatcherTimer();
-
-    //        //timer.Interval = TimeSpan.FromSeconds(2);
-
-    //        //timer.Tick += Timer_Tick;
-
-    //        //timer.Start();
-
-    //        //step = 0;
-    //    }
-
-    //    public void GoToState(UiMode mode) {
-    //        this.mode = mode;
-
-    //        switch (mode) {
-    //            case UiMode.Default:
-    //                State = new DefaultUiState(this);
-    //                break;
-
-    //            case UiMode.Add:
-    //                break;
-
-    //            case UiMode.Remove:
-    //                break;
-
-    //            case UiMode.Build:
-    //                break;
-
-    //            case UiMode.Trace:
-    //                State = new TraceUiState(this);
-    //                break;
-
-    //            case UiMode.Drag:
-    //                State = new TraceUiState(this);
-    //                break;
-
-    //            case UiMode.Pan:
-    //                break;
-
-    //            case UiMode.Zoom:
-    //                break;
-
-    //            default:
-    //                break;
-    //        }
-
-    //        // State operation
-    //        State.SetFlags();
-
-    //        NotifyStatus?.Invoke(this, new NotifyStatusEventArgs(mode.ToString()));
-    //        _status.Content = mode.ToString();
-    //    }
-
-    //    public void InvalidateNode() {
-    //        var nodeInfos = UiState.Nodes.Select(e => new NodeInfo() { Location = e.Value, NodeId = e.Id, UiId = UiState.Id }).ToArray();
-
-    //        // Clear nodes
-    //        var nodes = _canvas.Children.OfType<NodeShape>().ToArray();
-
-    //        foreach (var shape in nodes) {
-    //            _canvas.Children.Remove(shape);
-    //        }
-
-    //        foreach (var item in nodeInfos) {
-    //            var nodeShape = new NodeShape(item.NodeId) {
-    //                VerticalAlignment = VerticalAlignment.Stretch,
-    //                HorizontalAlignment = HorizontalAlignment.Stretch,
-    //            };
-
-    //            nodeShape.MouseLeftButtonDown += NodeShape_MouseLeftButtonDown;
-    //            nodeShape.MouseLeftButtonUp += NodeShape_MouseLeftButtonUp;
-
-    //            //nodeShape.Clicked += (s, ev) => {
-    //            //    if (s is NodeShape n) {
-    //            //        if (n.State == UiElementState.Selected)
-    //            //            SetValue(SelectedNodePropertyKey, n);
-    //            //        else
-    //            //            SetValue(SelectedNodePropertyKey, null);
-
-    //            //        foreach(var node in _canvas.Children.OfType<NodeShape>().Where(e => e != s)) {
-    //            //            node.Reset();
-    //            //        }
-    //            //    }
-    //            //};
-
-    //            //Canvas.SetLeft(nodeShape, item.Location.X - 20 / 2);
-    //            //Canvas.SetTop(nodeShape, item.Location.Y - 20 / 2);
-    //            nodeShape.Transform = Transform;
-    //            Panel.SetZIndex(nodeShape, 10);
-
-    //            _canvas.Children.Add(nodeShape);
-
-    //            nodeShape.SetBinding(
-    //                NodeShape.NodeProperty,
-    //                new Binding() {
-    //                    Source = item
-    //                });
-    //        }
-
-    //        NodeVisuals = _canvas.Children.OfType<NodeShape>().ToArray();
-    //    }
-
-    //    public void InvalidateRegion() {
-    //        var simplexStates = UiState.Regions.OfType<SimplexState>();
-    //        var voronoiStates = UiState.Regions.OfType<VoronoiState>();
-
-    //        var simplices = _canvas.Children.OfType<SimplexShape>().ToArray();
-    //        foreach (var shape in simplices) {
-    //            _canvas.Children.Remove(shape);
-    //        }
-
-    //        foreach (var item in simplexStates) {
-    //            var shape = new SimplexShape(UiState.Id, item) {
-    //                Points = item.Points,
-    //            };
-
-    //            Panel.SetZIndex(shape, 5);
-
-    //            _canvas.Children.Add(shape);
-    //        }
-
-    //        var voronois = _canvas.Children.OfType<VoronoiShape>().ToArray();
-    //        foreach (var shape in voronois) {
-    //            _canvas.Children.Remove(shape);
-    //        }
-
-    //        if (HasExterior) {
-    //            foreach (var item in voronoiStates) {
-    //                var shape = new VoronoiShape(UiState.Id, item) {
-    //                    Points = item.Points,
-    //                };
-
-    //                Panel.SetZIndex(shape, 5);
-
-    //                _canvas.Children.Add(shape);
-    //            }
-    //        }
-    //    }
-
-    //    public void Save(string filename) {
-    //        var rootVisual = Content as Visual;
-    //        var rtb = new RenderTargetBitmap((int)ActualWidth, (int)ActualHeight, 96, 96, PixelFormats.Pbgra32);
-
-    //        rtb.Render(rootVisual);
-
-    //        var encoder = new PngBitmapEncoder();
-    //        encoder.Frames.Add(BitmapFrame.Create(rtb));
-
-    //        using (var stream = File.Create(filename)) {
-    //            encoder.Save(stream);
-    //        }
-    //    }
-
-    //    public void Select(int nodeId) {
-    //        var target = NodeVisuals.Where(e => e.NodeId == nodeId).First();
-
-    //        target.GoToState(UiElementState.Selected);
-    //        SetValue(SelectedNodePropertyKey, target);
-    //    }
-
-    //    public void UnSelect() {
-    //        NodeVisuals.ToList().ForEach(e => e.GoToState(UiElementState.Default));
-    //        SetValue(SelectedNodePropertyKey, null);
-    //    }
-
-    //    private static void OnSelectedNodePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-    //        var parent = VisualTreeHelper.GetParent(d as Visual);
-
-    //        while (parent != null && !typeof(MultiView).IsInstanceOfType(parent)) {
-    //            parent = VisualTreeHelper.GetParent(parent);
-    //        }
-
-    //        if (parent is MultiView v) {
-    //            v.InvalidateViewer();
-    //            //Console.WriteLine("Some property changed.");
-    //        }
-    //    }
-    //    private static void OnUiStatePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args) {
-    //        var ui = (UiController)d;
-    //        var state = (ControlUiState)args.NewValue;
-
-    //        state.PropertyChanged += (s, e) => {
-    //            if (e.PropertyName == "Nodes") {
-    //                ui.InvalidateNode();
-    //            }
-    //            else if (e.PropertyName == "Regions") {
-    //                ui.InvalidateRegion();
-    //            }
-
-    //            ui.InvalidateTransform();
-    //        };
-
-    //        ui.InvalidateNode();
-    //        ui.InvalidateRegion();
-
-    //        ui.InvalidateTransform();
-    //    }
-    //    private void CreateIKTemplate() {
-    //        var template = new IKTemplate() {
-    //            Name = "IK",
-    //            Width = 400,
-    //            Height = 400,
-    //            Visibility = Visibility.Visible,
-    //        };
-
-    //        //var o = new Point(0, 0);
-
-    //        //var radius = Math.Sin(30.0 * Math.PI / 180.0) * 100.0;
-
-    //        //var p1 = new Point(0, 100);
-    //        //var p2 = new Point {
-    //        //    X = -Math.Cos(60.0 * Math.PI / 180.0),
-    //        //    Y = -radius
-    //        //};
-    //        //var p3 = new Point {
-    //        //    X = Math.Cos(60.0 * Math.PI / 180.0),
-    //        //    Y = radius
-    //        //};
-
-    //        //var p1Shape = DrawPoint(p1);
-    //        //var p2Shape = DrawPoint(p2);
-    //        //var p3Shape = DrawPoint(p3);
-
-    //        //var circle = new Ellipse() {
-    //        //    Width = radius * 2,
-    //        //    Height = radius * 2,
-    //        //    StrokeThickness = 2,
-    //        //    Stroke = Brushes.Black
-    //        //};
-
-    //        //var centroid = new Point(o.X - radius, o.Y - radius);
-
-    //        //_canvas.Children.Add(circle);
-    //        //_canvas.Children.Add(p1Shape);
-    //        //_canvas.Children.Add(p2Shape);
-    //        //_canvas.Children.Add(p3Shape);
-    //        _canvas.Children.Add(template);
-    //    }
-
-    //    private void DrawLineWithArrowCap(Point startPoint, Point endPoint, Canvas canvas) {
-    //        // Create a new line object
-    //        Line line = new Line();
-
-    //        // Set the start and end points of the line
-    //        line.X1 = startPoint.X;
-    //        line.Y1 = startPoint.Y;
-    //        line.X2 = endPoint.X;
-    //        line.Y2 = endPoint.Y;
-
-    //        // Set the line thickness and color
-    //        line.StrokeThickness = 2;
-    //        line.Stroke = Brushes.Black;
-
-    //        // Create an arrow cap at the end of the line
-    //        double angle = Math.Atan2(endPoint.Y - startPoint.Y, endPoint.X - startPoint.X) * 180 / Math.PI;
-    //        Polyline arrowCap = new Polyline();
-    //        arrowCap.Points.Add(new Point(-10, -5));
-    //        arrowCap.Points.Add(new Point(0, 0));
-    //        arrowCap.Points.Add(new Point(-10, 5));
-    //        arrowCap.RenderTransform = new RotateTransform(angle, endPoint.X, endPoint.Y);
-    //        arrowCap.Fill = Brushes.Black;
-
-    //        // Add the line and arrow cap to the canvas
-    //        canvas.Children.Add(line);
-    //        canvas.Children.Add(arrowCap);
-    //    }
-
-    //    private Shape DrawPoint(Point point) {
-    //        // Create a new Ellipse object
-    //        Ellipse ellipse = new Ellipse();
-
-    //        // Set the center point and radius of the ellipse
-    //        Canvas.SetLeft(ellipse, point.X - 2);
-    //        Canvas.SetTop(ellipse, point.Y - 2);
-    //        ellipse.Width = 4;
-    //        ellipse.Height = 4;
-
-    //        // Set the fill color of the ellipse
-    //        ellipse.Fill = Brushes.Black;
-
-    //        // Add the ellipse to the canvas
-    //        return ellipse;
-    //    }
-
-    //    private void InvalidateTransform() {
-    //        Transform.SetIdentity();
-    //        Transform.Append(Normalized);
-    //        Transform.Append(Translate);
-    //        Transform.Append(Scale);
-
-    //        //Transform.
-    //        //Transform = Offset * Translate * Scale;
-
-    //        var x = _canvas.Children.OfType<Arrow>().Where(e => e.Name == "AxisX").First();
-    //        var y = _canvas.Children.OfType<Arrow>().Where(e => e.Name == "AxisY").First();
-
-    //        x.Transform = Transform;
-    //        y.Transform = Transform;
-
-    //        //var ik = _canvas.Children.OfType<IKTemplate>().First();
-
-    //        //ik.Origin = _origin;
-
-    //        var trs = Matrix.Identity;
-    //        trs.Append(Translate);
-    //        trs.Append(Scale);
-
-    //        //ik.TRS = trs;
-
-    //        //ik.Invalidate();
-    //        //ik.Origin = new Point(ActualWidth / 2, ActualHeight / 2);
-
-    //        // Invalidate widgets
-    //        //Pointer.Transform = Transform;
-
-    //        // Invalidate all nodes transformation
-    //        foreach (var node in _canvas.Children.OfType<NodeShape>()) {
-    //            node.Transform = Transform;
-    //            //var point = node.Node.Location;
-    //            //var tPoint = Transform.Transform(point);
-
-    //            //Canvas.SetLeft(node, tPoint.X - 20 / 2);
-    //            //Canvas.SetTop(node, tPoint.Y - 20 / 2);
-    //        }
-
-    //        foreach (var simplex in _canvas.Children.OfType<SimplexShape>()) {
-    //            simplex.Transform = Transform;
-
-    //            //simplex.Invalidate();
-    //        }
-
-    //        foreach (var voronoi in _canvas.Children.OfType<VoronoiShape>()) {
-    //            voronoi.Transform = Transform;
-
-    //            //voronoi.Invalidate();
-    //        }
-    //    }
-
-    //    private void MakeTemplateNodes() {
-    //        var p1 = new Point(0, 300);
-
-    //        var p2 = RotatePoint(p1, 120);
-    //        var p3 = RotatePoint(p1, -120);
-
-    //        OnAddNode(p1);
-    //        OnAddNode(p2);
-    //        OnAddNode(p3);
-
-    //        HasExterior = false;
-    //    }
-
-    //    private void MakeTemplateNodesWithOrigin() {
-    //        var p1 = new Point(0, 300);
-
-    //        var p2 = RotatePoint(p1, 120);
-    //        var p3 = RotatePoint(p1, -120);
-
-    //        var o = new Point();
-
-    //        OnAddNode(o);
-    //        OnAddNode(p1);
-    //        OnAddNode(p2);
-    //        OnAddNode(p3);
-
-    //        HasExterior = false;
-    //    }
-
-    //    private void NodeShape_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
-    //        var nodeShape = sender as NodeShape;
-
-    //        nodeShape.CaptureMouse();
-    //    }
-
-    //    private void NodeShape_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
-    //        var nodeShape = sender as NodeShape;
-
-    //        nodeShape.ReleaseMouseCapture();
-
-    //        if (nodeShape.State == UiElementState.Hover) {
-    //            UnSelect();
-    //            Select(nodeShape.NodeId);
-    //        }
-    //        else if (nodeShape.State == UiElementState.Selected) {
-    //            UnSelect();
-    //        }
-    //    }
-    //    //private void OnAddNode(Point point) {
-    //    //    var param = new CommandParameter();
-
-    //    //    param.Payload = new object[] {
-    //    //        point,
-    //    //        UiState.Id
-    //    //    };
-    //    //    param.Type = "AddNode";
-
-    //    //    Command.Execute(param);
-    //    //}
-
-    //    private void OnAddNode(Point point) {
-    //        var nodes = UiState.Nodes.ToList();
-
-    //        nodes.Add(new NodeState(nodes.Count + 1, point));
-
-    //        UiState.Nodes = nodes.ToArray();
-
-    //        InvalidateNode();
-    //        _logger.Info("UiController added a new node.");
-    //    }
-
-    //    private void OnBuild() {
-    //        var param = new CommandParameter() {
-    //            Payload = new object[] {
-    //                UiState.Id
-    //            },
-    //            Type = "Build",
-    //        };
-
-    //        Command.Execute(param);
-    //    }
-
-    //    private Point RotatePoint(Point p, double degree) {
-    //        var radian = degree * Math.PI / 180.0;
-
-    //        double rotatedX = Math.Cos(radian) * p.X - Math.Sin(radian) * p.Y;
-    //        double rotatedY = Math.Sin(radian) * p.X + Math.Cos(radian) * p.Y;
-
-    //        return new Point(rotatedX, rotatedY);
-    //    }
-    //    private void Timer_Tick(object sender, EventArgs e) {
-    //        var ik = _canvas.Children.OfType<IKTemplate>().First();
-
-    //        var points = ik.GetTrajectoryPoints(distance, 12);
-
-    //        var vm = DataContext as RegionControlUIViewModel;
-
-    //        if (step == points.Length) {
-    //            timer.Stop();
-    //            return;
-    //        }
-
-    //        ik.Invalidate(step);
-
-    //        //_logger.Info($"Interpolated! {p}");
-    //    }
-    //}
     public class VoronoiShape : UserControl, IRegionShape {
         // Using a DependencyProperty as the backing store for Points.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty PointsProperty =

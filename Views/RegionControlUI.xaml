@@ -329,6 +329,12 @@
             </Expander>
           </Border>
 
+          <w:Snackbar x:Name="snackbar"
+                      Margin="16"
+                      VerticalAlignment="Bottom"
+                      HorizontalAlignment="Center"
+                      />
+
         </Grid>
       </Grid>
 

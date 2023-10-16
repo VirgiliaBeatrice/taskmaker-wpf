@@ -21,9 +21,19 @@ using System.Windows.Controls.Primitives;
 using NLog;
 using taskmaker_wpf.Views.Widget;
 using CommunityToolkit.Mvvm.Messaging;
-using System.Windows.Forms.DataVisualization.Charting;
 
 namespace taskmaker_wpf.Views {
+    public static class Icons {
+        public static string Select => "\ue7c9";
+        public static string Control => "\ue7c9";
+        public static string Add => "\ue7c9";
+        public static string Remove => "\ue7c9";
+        public static string Move => "\ue7c9";
+        public static string Assign => "\ue7c9";
+        public static string Pan => "\ue7c9";
+        public static string Zoom => "\ue7c9";
+    }
+
     /// <summary>
     /// Interaction logic for RegionControlUI.xaml
     /// </summary>
@@ -131,31 +141,57 @@ namespace taskmaker_wpf.Views {
             var btn = sender as Button;
 
             switch (btn.Name) {
+                case "tbBtnSelect":
+                    ChangeMode(UiMode.Default);
+                    snackbar.Icon = Icons.Select;
+                    snackbar.SupportingText = "Select";
+                    break;
+                case "tbBtnAdd":
+                    ChangeMode(UiMode.Add);
+                    snackbar.Icon = Icons.Add;
+                    snackbar.SupportingText = "Add";
+                    break;
+                case "tbBtnRm":
+                    ChangeMode(UiMode.Remove);
+                    snackbar.Icon = Icons.Remove;
+                    snackbar.SupportingText = "Remove";
+                    break;
                 case "tbBtnPan":
                     ChangeMode(UiMode.Pan);
+                    snackbar.Icon = Icons.Pan;
+                    snackbar.SupportingText = "Pan";
                     break;
                 case "tbBtnZoom":
                     ChangeMode(UiMode.Zoom);
+                    snackbar.Icon = Icons.Zoom;
+                    snackbar.SupportingText = "Zoom";
+                    break;
+                case "tbBtnMove":
+                    snackbar.Icon = Icons.Move;
+                    snackbar.SupportingText = "Move";
+                    ChangeMode(UiMode.Move);
                     break;
                 default:
                     break;
             }
 
-            if (btn.Name == "tbBtnSelect") {
-                ChangeMode(UiMode.Default);
-            }
-            else if (btn.Name == "tbBtnAdd") {
-                ChangeMode(UiMode.Add);
-            }
-            else if (btn.Name == "tbBtnRm") {
-                ChangeMode(UiMode.Remove);
-            }
-            else if (btn.Name == "tbBtnMove") {
-                ChangeMode(UiMode.Move);
-            }
-            else if (btn.Name == "tbBtnAssign") {
-                ChangeMode(UiMode.Assign);
-            }
+            snackbar.Visibility = Visibility.Visible;
+
+            //if (btn.Name == "tbBtnSelect") {
+            //    ChangeMode(UiMode.Default);
+            //}
+            //else if (btn.Name == "tbBtnAdd") {
+            //    ChangeMode(UiMode.Add);
+            //}
+            //else if (btn.Name == "tbBtnRm") {
+            //    ChangeMode(UiMode.Remove);
+            //}
+            //else if (btn.Name == "tbBtnMove") {
+            //    ChangeMode(UiMode.Move);
+            //}
+            //else if (btn.Name == "tbBtnAssign") {
+            //    ChangeMode(UiMode.Assign);
+            //}
         }
 
         private void lbUiStates_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
