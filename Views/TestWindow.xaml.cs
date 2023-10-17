@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+﻿using AutoMapper;
+using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using Prism.Events;
 using System;
@@ -17,13 +18,16 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using taskmaker_wpf.Domain;
+using taskmaker_wpf.Services;
 using taskmaker_wpf.ViewModels;
+using taskmaker_wpf.Views.Widget;
 
 namespace taskmaker_wpf.Views {
     /// <summary>
     /// Interaction logic for TestWindow.xaml
     /// </summary>
-    public partial class TestWindow : Window, IRecipient<ShowMessageBoxMessage> {
+    public partial class TestWindow : Window, IRecipient<ShowMessageBoxMessage>, IRecipient<ShowDialogMessage> {
+        private readonly MotorService _motorSrv;
         private IEventAggregator _eventAggregator;
         private SystemInteractorBus _systemBus;
         private static readonly FieldInfo _menuDropAlignmentField;
@@ -50,13 +54,15 @@ namespace taskmaker_wpf.Views {
             }
         }
 
-        public TestWindow(IEventAggregator @event, SystemInteractorBus systemBus) {
+        public TestWindow(IEventAggregator @event, SystemInteractorBus systemBus, MotorService motorSrv) {
+            _motorSrv = motorSrv;
             _eventAggregator = @event;
             _systemBus = systemBus;
             InitializeComponent();
 
             // Register ShowMessageBox message
-            WeakReferenceMessenger.Default.Register(this);
+            WeakReferenceMessenger.Default.Register<ShowMessageBoxMessage>(this);
+            WeakReferenceMessenger.Default.Register<ShowDialogMessage>(this);
         }
 
         private void Window_PreviewKeyUp(object sender, KeyEventArgs e) {
@@ -111,6 +117,29 @@ namespace taskmaker_wpf.Views {
 
             msg.Reply(result);
         }
+
+        public void Receive(ShowDialogMessage msg) {
+            Scrim.Visibility = Visibility.Visible;
+            Dialog.Visibility = Visibility.Visible;
+
+            var motors = _motorSrv.Motors.Select(e => new MotorState {
+                Id = e.Id,
+                NuibotBoardId = e.NuibotBoardId,
+                NuibotMotorId = e.NuibotMotorId,
+                Name = e.Name,
+                Max = e.Max,
+                Min = e.Min,
+                Value = e.Value,
+            }).ToArray();
+
+            var dialog = new DialogController() {
+                Motors = motors,
+            };
+            Dialog.Child = dialog;
+
+
+            //msg.Reply(true);
+        }
     }
 
     public class SystemSaveEvent : PubSubEvent {
@@ -126,5 +155,8 @@ namespace taskmaker_wpf.Views {
         public string Caption { get; set; }
         public MessageBoxButton Button { get; set; }
         public MessageBoxImage Icon { get; set; }
+    }
+
+    public class ShowDialogMessage : AsyncRequestMessage<bool> {
     }
 }

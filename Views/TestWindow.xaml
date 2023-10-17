@@ -76,15 +76,24 @@
             Background="Black" 
             Opacity="0.32"
             Visibility="Hidden" />
-
+    
     <Border x:Name="Dialog"
             Visibility="Hidden"
             CornerRadius="8"
             Background="white"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Width="200"
-            MaxHeight="200">
+            MaxHeight="1500"
+            MaxWidth="1500"
+            >
+      <Border.Effect>
+        <DropShadowEffect BlurRadius="8"
+                          Color="Black"
+                          ShadowDepth="8"
+                          Opacity="0.32" 
+                          Direction="270"
+                          />
+      </Border.Effect>
       <StackPanel Orientation="Vertical" Margin="24">
         <Label Content="&#xe9e9;"
                FontFamily="Segoe Fluent Icons"

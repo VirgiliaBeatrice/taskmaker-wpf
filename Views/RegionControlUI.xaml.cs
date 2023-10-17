@@ -195,6 +195,11 @@ namespace taskmaker_wpf.Views {
                     snackbar.SupportingText = "Move";
                     ChangeMode(UiMode.Move);
                     break;
+                case "tbBtnAssign":
+                    snackbar.Icon = Icons.Assign;
+                    snackbar.SupportingText = "Assign";
+                    ChangeMode(UiMode.Assign);
+                    break;
                 case "tbBtnReset":
                     snackbar.Icon = Icons.Reset;
                     snackbar.SupportingText = "Reset Pan/Zoom";

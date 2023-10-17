@@ -1,0 +1,54 @@
+﻿<UserControl x:Class="taskmaker_wpf.Views.Widget.SliderController_v1"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:taskmaker_wpf.Views.Widget"
+             mc:Ignorable="d">
+  <Grid>
+    <StackPanel Orientation="Vertical" Margin="24">
+      <TextBlock 
+        d:Text="Controller"
+        Text="{Binding LabelText, RelativeSource={RelativeSource AncestorType=local:SliderController_v1}, UpdateSourceTrigger=PropertyChanged}"
+                 HorizontalAlignment="Center"
+        FontSize="16"
+                 Margin="0 0 0 24"
+                 />
+      <TextBlock Text="Max"
+                 Margin="0 0 0 12"
+                 HorizontalAlignment="Center" />
+      <local:NumericUpDown Value="{Binding Max, RelativeSource={RelativeSource AncestorType=local:SliderController_v1}, UpdateSourceTrigger=PropertyChanged}"
+                           Margin="0 0 0 24"
+                           HorizontalAlignment="Center" />
+      <Grid Margin="0 0 0 24">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="80" />
+          <ColumnDefinition Width="60" />
+        </Grid.ColumnDefinitions>
+
+        <Slider Grid.Column="0"
+          Orientation="Vertical"
+                MinHeight="400"
+                Value="{Binding Value, RelativeSource={RelativeSource AncestorType={x:Type local:SliderController_v1}}, UpdateSourceTrigger=PropertyChanged}"
+                HorizontalAlignment="Center" />
+        <TextBlock Grid.Column="1"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Center"
+                   d:Text="10000"
+                   Text="{Binding Value, StringFormat='{}{0:D}', RelativeSource={RelativeSource AncestorType={x:Type local:SliderController_v1}}, UpdateSourceTrigger=PropertyChanged}"
+                   TextAlignment="Center"
+                   Margin="12,0,0,0" />
+
+      </Grid>
+
+      <TextBlock Text="Min"
+                 Margin="0 0 0 12"
+                 HorizontalAlignment="Center" />
+      <local:NumericUpDown Value="{Binding Min, RelativeSource={RelativeSource AncestorType=local:SliderController_v1}, UpdateSourceTrigger=PropertyChanged}"
+                           Margin="0 0 0 0"
+                           HorizontalAlignment="Center" />
+    </StackPanel>
+
+
+  </Grid>
+</UserControl>

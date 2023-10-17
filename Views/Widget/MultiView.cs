@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using NLog;
 using SharpVectors.Converters;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using taskmaker_wpf.ViewModels;
+using Unity;
 using Path = System.Windows.Shapes.Path;
 using Point = System.Windows.Point;
 using Rectangle = System.Windows.Shapes.Rectangle;
@@ -450,15 +452,6 @@ namespace taskmaker_wpf.Views.Widget {
         public string Type { get; set; }
     }
 
-    public class DefaultUiState : BaseUiState {
-
-        public DefaultUiState(UiController parent) : base(parent) {
-        }
-
-        public override void SetFlags() {
-            //Parent.Pointer.Visibility = Visibility.Collapsed;
-        }
-    }
 
     public class Snackbar : UserControl {
         private string icon = "";
@@ -739,6 +732,9 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
+        private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
+        private UiController ui;
+
         public NodeShape(int nodeId) {
             NodeId = nodeId;
             PrimaryColor = ColorManager.GetTintedColor(ColorManager.Palette[0], 2);
@@ -764,6 +760,10 @@ namespace taskmaker_wpf.Views.Widget {
             (Container as Grid).Children.Add(StateLayer);
 
             Content = Container;
+
+            Loaded += (_, _) => {
+                ui = VisualTreeHelperExtensions.FindParentOfType<UiController>(this);
+            };
 
             //RenderTransform = new ScaleTransform(1, -1);
             //InitializeComponents();
@@ -845,6 +845,14 @@ namespace taskmaker_wpf.Views.Widget {
             // Apply the animation to the ScaleX and ScaleY properties
             transform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleAnimation);
             transform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleAnimation);
+
+            // Actions
+            if (ui.UiMode == UiMode.Assign) {
+                // send dialog message to window
+                var msg = new ShowDialogMessage();
+
+                WeakReferenceMessenger.Default.Send(msg);
+            }
         }
 
 
@@ -891,7 +899,6 @@ namespace taskmaker_wpf.Views.Widget {
 
 
         private Point position;
-        private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
     }
 
     public class PointerWidget : UserControl {
@@ -1075,6 +1082,7 @@ namespace taskmaker_wpf.Views.Widget {
         // Fields to store the start position for panning
         private Point? _panStartPoint = null;
         private Point _originalContentOffset;
+        private Grid _grid;
 
         public ScrollViewer Viewer { get; set; }
         public Canvas Canvas { get; set; }
@@ -1098,7 +1106,6 @@ namespace taskmaker_wpf.Views.Widget {
         private Point _moveStartTargetPostion;
 
         private RegionControlUI _regionUi = null;
-
         public List<NodeShape> Nodes { get; set; } = new List<NodeShape>();
 
         public UiController() {
@@ -1111,6 +1118,8 @@ namespace taskmaker_wpf.Views.Widget {
 
             //Background = new SolidColorBrush(Colors.LightBlue);
             IsHitTestVisible = true;
+
+            _grid = new Grid();
 
             Viewer = new ScrollViewer {
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
@@ -1136,6 +1145,7 @@ namespace taskmaker_wpf.Views.Widget {
             PreviewMouseLeftButtonDown += Canvas_PreviewMouseLeftButtonDown;
             PreviewMouseLeftButtonUp += Canvas_PreviewMouseLeftButtonUp;
             PreviewMouseMove += Canvas_PreviewMouseMove;
+            PreviewKeyUp += UiController_PreviewKeyUp;
 
             // add a circle sign at origin
             circle = new Ellipse() {
@@ -1179,8 +1189,19 @@ namespace taskmaker_wpf.Views.Widget {
             Canvas.Children.Add(Indicator);
 
             Viewer.Content = Canvas;
-            Content = Viewer;
 
+            _grid.Children.Add(Viewer);
+
+            Content = _grid;
+
+        }
+
+        private void UiController_PreviewKeyUp(object sender, KeyEventArgs e) {
+            // when Key.Esc was triggered, reset the ui mode, using switch snippet
+
+            if (e.Key == Key.Escape) {
+                ChangeUiMode(UiMode.Default);
+            }
         }
 
         public void ChangeUiMode(UiMode mode) {
@@ -1219,6 +1240,10 @@ namespace taskmaker_wpf.Views.Widget {
 
             if (_regionUi != null)
                 _regionUi.UiStatusText = mode.ToString();
+        }
+
+        public void ExitFromCurrentUiMode() {
+            ChangeUiMode(UiMode.Default);
         }
 
         private void Canvas_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
