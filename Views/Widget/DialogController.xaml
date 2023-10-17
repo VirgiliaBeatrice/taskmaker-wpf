@@ -83,7 +83,9 @@
         <Button Content="Cancel"
                 Padding="24 0 24 0"
                 VerticalAlignment="Center"
-                HorizontalAlignment="Center" />
+                HorizontalAlignment="Center"
+                Click="Button_Click"
+                />
       </StackPanel>
     </StackPanel>
   </Border>

@@ -73,17 +73,17 @@
     </DockPanel>
 
     <Border x:Name="Scrim"
-            Background="Black" 
+            Background="Black"
             Opacity="0.32"
             Visibility="Hidden" />
-    
+
     <Border x:Name="Dialog"
             Visibility="Hidden"
             CornerRadius="8"
             Background="white"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            MaxHeight="1500"
+            MaxHeight="1000"
             MaxWidth="1500"
             >
       <Border.Effect>

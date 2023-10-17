@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,6 +36,10 @@ namespace taskmaker_wpf.Views.Widget
         public DialogController()
         {
             InitializeComponent();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e) {
+            WeakReferenceMessenger.Default.Send(new CloseDialogMessage());
         }
     }
 }

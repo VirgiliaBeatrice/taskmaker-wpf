@@ -15,6 +15,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using taskmaker_wpf.Domain;
@@ -26,7 +27,7 @@ namespace taskmaker_wpf.Views {
     /// <summary>
     /// Interaction logic for TestWindow.xaml
     /// </summary>
-    public partial class TestWindow : Window, IRecipient<ShowMessageBoxMessage>, IRecipient<ShowDialogMessage> {
+    public partial class TestWindow : Window, IRecipient<ShowMessageBoxMessage>, IRecipient<ShowDialogMessage>, IRecipient<CloseDialogMessage> {
         private readonly MotorService _motorSrv;
         private IEventAggregator _eventAggregator;
         private SystemInteractorBus _systemBus;
@@ -63,6 +64,7 @@ namespace taskmaker_wpf.Views {
             // Register ShowMessageBox message
             WeakReferenceMessenger.Default.Register<ShowMessageBoxMessage>(this);
             WeakReferenceMessenger.Default.Register<ShowDialogMessage>(this);
+            WeakReferenceMessenger.Default.Register<CloseDialogMessage>(this);
         }
 
         private void Window_PreviewKeyUp(object sender, KeyEventArgs e) {
@@ -122,6 +124,20 @@ namespace taskmaker_wpf.Views {
             Scrim.Visibility = Visibility.Visible;
             Dialog.Visibility = Visibility.Visible;
 
+            // make a animation to transit visibility
+            var fadeIn = new Storyboard();
+            var animation = new DoubleAnimation(0, 0.32, new Duration(TimeSpan.FromSeconds(0.25)));
+            var animation1 = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.25)));
+
+            //Storyboard.SetTarget(animation, Scrim);
+            //Storyboard.SetTarget(animation, Dialog);
+            //Storyboard.SetTargetProperty(animation, new PropertyPath(OpacityProperty));
+            //fadeIn.Children.Add(animation);
+
+            //Scrim.BeginAnimation(OpacityProperty, animation);
+            //Dialog.BeginAnimation(OpacityProperty, animation1);
+
+
             var motors = _motorSrv.Motors.Select(e => new MotorState {
                 Id = e.Id,
                 NuibotBoardId = e.NuibotBoardId,
@@ -136,9 +152,13 @@ namespace taskmaker_wpf.Views {
                 Motors = motors,
             };
             Dialog.Child = dialog;
+        }
 
+        public void Receive(CloseDialogMessage message) {
+            Scrim.Visibility = Visibility.Hidden;
+            Dialog.Visibility = Visibility.Hidden;
 
-            //msg.Reply(true);
+            Dialog.Child = null;
         }
     }
 
@@ -159,4 +179,6 @@ namespace taskmaker_wpf.Views {
 
     public class ShowDialogMessage : AsyncRequestMessage<bool> {
     }
+
+    public class CloseDialogMessage { }
 }
