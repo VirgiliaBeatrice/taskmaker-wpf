@@ -75,7 +75,8 @@
 
       <Grid Grid.Row="0">
 
-        <Grid VerticalAlignment="Stretch">
+        <Grid x:Name="uiArea"
+          VerticalAlignment="Stretch">
           <w:MultiView x:Name="multiView"
                        Focusable="True"
                        Width="auto"

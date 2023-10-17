@@ -39,9 +39,21 @@ namespace taskmaker_wpf.Views {
     /// Interaction logic for RegionControlUI.xaml
     /// </summary>
     public partial class RegionControlUI : UserControl {
-
         public UiMode Mode { get; set; } = UiMode.Default;
-        public string UiStatus { get; set; } = "";
+
+        //public string UiStatus
+
+        private string _uiStatusText;
+
+        public string UiStatusText {
+            get { return _uiStatusText; }
+            set { _uiStatusText = value;
+
+                uiStatus.Text = _uiStatusText;
+            }
+        }
+
+
         public List<ControlUiState> Uis { get; set; } = new List<ControlUiState>();
         private ILogger logger => LogManager.GetCurrentClassLogger();
 
@@ -133,11 +145,8 @@ namespace taskmaker_wpf.Views {
                 //var ui = view.Controllers.First();
                 ui.UiMode = mode;
                 //ui?.GoToState(mode);
-
                 Mode = mode;
 
-                UiStatus = mode.ToString();
-                tbUiStatus.Text = UiStatus;
             }
             else {
                 // send no selected ui message

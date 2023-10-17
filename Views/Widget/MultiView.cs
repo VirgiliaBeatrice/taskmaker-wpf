@@ -201,6 +201,21 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
+        public static T FindParentByName<T>(DependencyObject child, string name) where T : FrameworkElement {
+            DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+
+            // If we reach the top of the visual tree, return null
+            if (parentObject == null) return null;
+
+            // Check if the parent object is of the specified type and matches the name
+            if (parentObject is T parent && parent.Name == name) {
+                return parent;
+            }
+            else {
+                // Recursively call this function to check the next level up
+                return FindParentByName<T>(parentObject, name);
+            }
+        }
     }
     public class ActivedState : BaseState {
 
@@ -1082,9 +1097,18 @@ namespace taskmaker_wpf.Views.Widget {
         private Point _moveStartMousePosition;
         private Point _moveStartTargetPostion;
 
+        private RegionControlUI _regionUi = null;
+
         public List<NodeShape> Nodes { get; set; } = new List<NodeShape>();
 
         public UiController() {
+            Loaded += (_, e) => {
+                _regionUi = VisualTreeHelperExtensions.FindParentOfType<RegionControlUI>(this);
+
+                _regionUi.UiStatusText = UiMode.ToString();
+            };
+            //_regionUi = VisualTreeHelperExtensions.FindParentOfType<RegionControlUI>(this);
+
             //Background = new SolidColorBrush(Colors.LightBlue);
             IsHitTestVisible = true;
 
@@ -1192,6 +1216,9 @@ namespace taskmaker_wpf.Views.Widget {
                 default:
                     break;
             }
+
+            if (_regionUi != null)
+                _regionUi.UiStatusText = mode.ToString();
         }
 
         private void Canvas_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
