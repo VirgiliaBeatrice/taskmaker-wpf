@@ -62,7 +62,8 @@ namespace taskmaker_wpf.Views.Widget {
         Trace,
         Drag,
         Pan,
-        Zoom
+        Zoom,
+        Reset,
     }
 
     public interface IRegionShape {
@@ -499,8 +500,8 @@ namespace taskmaker_wpf.Views.Widget {
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
             };
-            var close = new Label {
-                Content = "Hide",
+            var close = new TextBlock {
+                Text = "Hide",
                 Margin = new Thickness(12, 0, 12, 0),
                 Foreground = invSurfaceColor,
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -509,6 +510,14 @@ namespace taskmaker_wpf.Views.Widget {
 
             close.MouseLeftButtonUp += (_, e) => {
                 Visibility = Visibility.Hidden;
+            };
+
+            close.MouseEnter += (_, e) => {
+                close.TextDecorations = TextDecorations.Underline;
+            };
+
+            close.MouseLeave += (_, e) => {
+                close.TextDecorations = null;
             };
 
             Content = shape;
@@ -741,6 +750,7 @@ namespace taskmaker_wpf.Views.Widget {
 
             Content = Container;
 
+            //RenderTransform = new ScaleTransform(1, -1);
             //InitializeComponents();
             //Invalidate();
         }
@@ -1171,6 +1181,13 @@ namespace taskmaker_wpf.Views.Widget {
                 case UiMode.Pan:
                     break;
                 case UiMode.Zoom:
+                    break;
+                case UiMode.Reset:
+                    ScaleT.ScaleX = 1;
+                    ScaleT.ScaleY = 1;
+                    CenteringT.X = RenderSize.Width / 2;
+                    CenteringT.Y = RenderSize.Height / 2;
+                    InvalidateTransform();
                     break;
                 default:
                     break;

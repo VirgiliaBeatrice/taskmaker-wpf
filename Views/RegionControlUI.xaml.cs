@@ -25,13 +25,14 @@ using CommunityToolkit.Mvvm.Messaging;
 namespace taskmaker_wpf.Views {
     public static class Icons {
         public static string Select => "\ue7c9";
-        public static string Control => "\ue7c9";
-        public static string Add => "\ue7c9";
-        public static string Remove => "\ue7c9";
-        public static string Move => "\ue7c9";
-        public static string Assign => "\ue7c9";
-        public static string Pan => "\ue7c9";
-        public static string Zoom => "\ue7c9";
+        public static string Control => "\uec61";
+        public static string Add => "\uecc8";
+        public static string Remove => "\uecc9";
+        public static string Move => "\ue759";
+        public static string Assign => "\ue71b";
+        public static string Pan => "\uece9";
+        public static string Zoom => "\uece8";
+        public static string Reset => "\ue777";
     }
 
     /// <summary>
@@ -127,19 +128,33 @@ namespace taskmaker_wpf.Views {
             var tbUiStatus = FindName("uiStatus") as TextBlock;
 
             var ui = multiView.Controllers.FirstOrDefault();
-            //var ui = view.Controllers.First();
-            ui.UiMode = mode;
-            //ui?.GoToState(mode);
 
-            Mode = mode;
+            if (ui != null) {
+                //var ui = view.Controllers.First();
+                ui.UiMode = mode;
+                //ui?.GoToState(mode);
 
-            UiStatus = mode.ToString();
-            tbUiStatus.Text = UiStatus;
+                Mode = mode;
+
+                UiStatus = mode.ToString();
+                tbUiStatus.Text = UiStatus;
+            }
+            else {
+                // send no selected ui message
+                var msg = new ShowMessageBoxMessage() {
+                    Caption = "Error",
+                    Message = "No selected UI",
+                    Icon = MessageBoxImage.Error
+                };
+
+                WeakReferenceMessenger.Default.Send(msg);
+            }
         }
 
         private void ToolBar_Click(object sender, RoutedEventArgs e) {
             var btn = sender as Button;
 
+            // TODO: add all modes.
             switch (btn.Name) {
                 case "tbBtnSelect":
                     ChangeMode(UiMode.Default);
@@ -171,27 +186,16 @@ namespace taskmaker_wpf.Views {
                     snackbar.SupportingText = "Move";
                     ChangeMode(UiMode.Move);
                     break;
+                case "tbBtnReset":
+                    snackbar.Icon = Icons.Reset;
+                    snackbar.SupportingText = "Reset Pan/Zoom";
+                    ChangeMode(UiMode.Reset);
+                    break;
                 default:
                     break;
             }
 
             snackbar.Visibility = Visibility.Visible;
-
-            //if (btn.Name == "tbBtnSelect") {
-            //    ChangeMode(UiMode.Default);
-            //}
-            //else if (btn.Name == "tbBtnAdd") {
-            //    ChangeMode(UiMode.Add);
-            //}
-            //else if (btn.Name == "tbBtnRm") {
-            //    ChangeMode(UiMode.Remove);
-            //}
-            //else if (btn.Name == "tbBtnMove") {
-            //    ChangeMode(UiMode.Move);
-            //}
-            //else if (btn.Name == "tbBtnAssign") {
-            //    ChangeMode(UiMode.Assign);
-            //}
         }
 
         private void lbUiStates_MouseDoubleClick(object sender, MouseButtonEventArgs e) {

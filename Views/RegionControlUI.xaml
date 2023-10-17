@@ -85,22 +85,20 @@
           <StackPanel Orientation="Vertical"
                       VerticalAlignment="Top"
                       HorizontalAlignment="Left"
-                      Margin="8">
+                      Margin="16">
             <StackPanel.Resources>
               <Style TargetType="Button"
                      BasedOn="{StaticResource roundedBtn}">
                 <Setter Property="Width"
-                        Value="32" />
+                        Value="40" />
                 <Setter Property="Height"
-                        Value="32" />
+                        Value="40" />
                 <Setter Property="Margin"
                         Value="0 4 0 4" />
-                <Setter Property="Padding"
-                        Value="4" />
                 <Setter Property="FontFamily"
-                        Value="Segoe Fluent Icons" />
+                        Value="Segoe Fluent Icons, Segoe UI" />
                 <Setter Property="FontSize"
-                        Value="16" />
+                        Value="24" />
               </Style>
             </StackPanel.Resources>
             <Button ToolTip="Select"
@@ -114,6 +112,8 @@
             <Button Content="&#xec61;"
                     Foreground="Green"
                     Click="ToolBar_Click"
+                    VerticalContentAlignment="Center"
+                    HorizontalContentAlignment="Center"
                     ToolTip="Build" />
             <Separator />
             <Button Content="&#xecc8;"
@@ -141,6 +141,10 @@
                     Name="tbBtnZoom"
                     Click="ToolBar_Click"
                     ToolTip="Zoom" />
+            <Button Content="&#xe777;"
+                    Name="tbBtnReset"
+                    Click="ToolBar_Click"
+                    ToolTip="Reset" />
 
           </StackPanel>
 
@@ -332,8 +336,7 @@
           <w:Snackbar x:Name="snackbar"
                       Margin="16"
                       VerticalAlignment="Bottom"
-                      HorizontalAlignment="Center"
-                      />
+                      HorizontalAlignment="Center" />
 
         </Grid>
       </Grid>
