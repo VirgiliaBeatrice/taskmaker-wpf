@@ -550,6 +550,9 @@ namespace taskmaker_wpf.Views.Widget {
 
         public List<UiController> Controllers { get; set; } = new List<UiController>();
 
+        public double[][] ActuationaValues => Controllers.First()?.GetActuationValues();
+        public double[][] PositionValues => Controllers.First()?.GetPositionValues();
+
         public MultiView() : base() {
             var grid = new Grid() {
                 Name = "Multiview_Grid",
@@ -590,6 +593,7 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public void OpenUiController(ControlUiState ui) {
+            // Single Ui
             Layout(ui);
         }
 
@@ -733,7 +737,10 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
-        private UiController ui;
+
+        public UiController Ui { get; set; }
+
+        public double[] ActuationValue { get; set; } = Array.Empty<double>();
 
         public NodeShape(int nodeId) {
             NodeId = nodeId;
@@ -762,12 +769,38 @@ namespace taskmaker_wpf.Views.Widget {
             Content = Container;
 
             Loaded += (_, _) => {
-                ui = VisualTreeHelperExtensions.FindParentOfType<UiController>(this);
+                Ui = VisualTreeHelperExtensions.FindParentOfType<UiController>(this);
             };
 
-            //RenderTransform = new ScaleTransform(1, -1);
+            // initialize ActuationValue to double[6] and fill with Nan
+            ActuationValue = new double[6];
+
+            for (int i = 0; i < ActuationValue.Length; i++) {
+                ActuationValue[i] = double.NaN;
+            }
+
+
+            RenderTransform = new ScaleTransform(1, -1);
             //InitializeComponents();
             //Invalidate();
+        }
+
+        private void UpdateInfo() {
+            var sb = new StringBuilder();
+
+            sb.AppendLine("Id:");
+            sb.AppendLine($"  {NodeId}");
+            sb.AppendLine($"Position:");
+            sb.AppendLine($"  {Position}");
+            sb.AppendLine("Actuation:");
+            sb.AppendLine($"  {string.Join(",", ActuationValue)}");
+
+            Ui.RegionUi.infoPanel.Info = sb.ToString();
+            //Ui.RegionUi.infoPanel.Visibility = Visibility.Visible;
+        }
+
+        private void HideInfo() {
+            Ui.RegionUi.infoPanel.Visibility = Visibility.Collapsed;
         }
 
         public bool IsSelected { get; set; } = false;
@@ -779,7 +812,7 @@ namespace taskmaker_wpf.Views.Widget {
             double halfHeight = 40 / 2;
 
             Canvas.SetLeft(this, x - halfWidth);
-            Canvas.SetTop(this, y - halfHeight);
+            Canvas.SetTop(this, y + halfHeight);
         }
 
         public void GoToState(UiElementState state) {
@@ -789,9 +822,11 @@ namespace taskmaker_wpf.Views.Widget {
                 case UiElementState.Default:
                     StateLayer.Visibility = Visibility.Hidden;
                     Effect = null;
+                    //HideInfo();
                     break;
                 case UiElementState.Hover:
                     HandleHover();
+                    UpdateInfo();
                     break;
                 case UiElementState.Focus:
                     break;
@@ -830,26 +865,40 @@ namespace taskmaker_wpf.Views.Widget {
             StateLayer.Opacity = 0.12;
             Effect = null;
             // Create a scale transform and assign it to the Ellipse's RenderTransform
-            ScaleTransform transform = new ScaleTransform();
-            RenderTransform = transform;
-            RenderTransformOrigin = new Point(0.5, 0.5); // Center the transform
+            //ScaleTransform transform = new ScaleTransform();
+            //RenderTransform = transform;
+            //RenderTransformOrigin = new Point(0.5, 0.5); // Center the transform
 
-            // Create the animation
-            DoubleAnimation scaleAnimation = new DoubleAnimation {
-                From = 1,
-                To = 1.2,  // Scale factor (1.2 means 120% of original size)
-                Duration = TimeSpan.FromMilliseconds(100), // Duration to scale up
-                AutoReverse = true // Reverse the animation back to original size
-            };
+            //// Create the animation
+            //DoubleAnimation scaleAnimationX = new DoubleAnimation {
+            //    From = 1,
+            //    To = 1.2,  // Scale factor (1.2 means 120% of original size)
+            //    Duration = TimeSpan.FromMilliseconds(100), // Duration to scale up
+            //    AutoReverse = true // Reverse the animation back to original size
+            //};
 
-            // Apply the animation to the ScaleX and ScaleY properties
-            transform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleAnimation);
-            transform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleAnimation);
+
+            //// Create the animation
+            //DoubleAnimation scaleAnimationY = new DoubleAnimation {
+            //    From = -1,
+            //    To = -1.2,  // Scale factor (1.2 means 120% of original size)
+            //    Duration = TimeSpan.FromMilliseconds(100), // Duration to scale up
+            //    AutoReverse = true // Reverse the animation back to original size
+            //};
+            //// Apply the animation to the ScaleX and ScaleY properties
+            //transform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleAnimationX);
+            //transform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleAnimationY);
 
             // Actions
-            if (ui.UiMode == UiMode.Assign) {
+            if (Ui.UiMode == UiMode.Assign) {
                 // send dialog message to window
                 var msg = new ShowDialogMessage();
+
+                WeakReferenceMessenger.Default.Register<AssignActuationValuesMessage>(this, (r, m) => {
+                    ActuationValue = m.Values;
+
+                    WeakReferenceMessenger.Default.Unregister<AssignActuationValuesMessage>(r);
+                });
 
                 WeakReferenceMessenger.Default.Send(msg);
             }
@@ -1105,14 +1154,17 @@ namespace taskmaker_wpf.Views.Widget {
         private Point _moveStartMousePosition;
         private Point _moveStartTargetPostion;
 
-        private RegionControlUI _regionUi = null;
+        public RegionControlUI RegionUi { get; set; }
+        public MultiView MultiView { get; set; }
+
         public List<NodeShape> Nodes { get; set; } = new List<NodeShape>();
 
         public UiController() {
             Loaded += (_, e) => {
-                _regionUi = VisualTreeHelperExtensions.FindParentOfType<RegionControlUI>(this);
+                RegionUi = VisualTreeHelperExtensions.FindParentOfType<RegionControlUI>(this);
+                MultiView = VisualTreeHelperExtensions.FindParentOfType<MultiView>(this);
 
-                _regionUi.UiStatusText = UiMode.ToString();
+                RegionUi.UiStatusText = UiMode.ToString();
             };
             //_regionUi = VisualTreeHelperExtensions.FindParentOfType<RegionControlUI>(this);
 
@@ -1196,6 +1248,15 @@ namespace taskmaker_wpf.Views.Widget {
 
         }
 
+        // Single controller
+        public double[][] GetActuationValues() {
+            return Nodes.Select(e => e.ActuationValue).ToArray();
+        }
+
+        public double[][] GetPositionValues() {
+            return Nodes.Select(e => new double[] { e.Position.X, e.Position.Y }).ToArray();
+        }
+
         private void UiController_PreviewKeyUp(object sender, KeyEventArgs e) {
             // when Key.Esc was triggered, reset the ui mode, using switch snippet
 
@@ -1238,8 +1299,8 @@ namespace taskmaker_wpf.Views.Widget {
                     break;
             }
 
-            if (_regionUi != null)
-                _regionUi.UiStatusText = mode.ToString();
+            if (RegionUi != null)
+                RegionUi.UiStatusText = mode.ToString();
         }
 
         public void ExitFromCurrentUiMode() {

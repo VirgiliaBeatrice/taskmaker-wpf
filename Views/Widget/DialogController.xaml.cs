@@ -14,6 +14,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using taskmaker_wpf.ViewModels;
+using Messenger = CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger;
+
 
 namespace taskmaker_wpf.Views.Widget
 {
@@ -32,14 +34,21 @@ namespace taskmaker_wpf.Views.Widget
             DependencyProperty.Register("Motors", typeof(MotorState[]), typeof(DialogController), new PropertyMetadata(default));
 
 
-
         public DialogController()
         {
             InitializeComponent();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e) {
-            WeakReferenceMessenger.Default.Send(new CloseDialogMessage());
+        private void ButtonOK_Click(object sender, RoutedEventArgs e) {
+            Messenger.Default.Send(new DialogResultMessage() {
+                Result = true
+            });
+        }
+
+        private void ButtonCancel_Click(object sender, RoutedEventArgs e) {
+            Messenger.Default.Send(new DialogResultMessage() {
+                Result = false
+            });
         }
     }
 }

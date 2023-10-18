@@ -13,6 +13,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms.DataVisualization.Charting;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -22,12 +23,13 @@ using taskmaker_wpf.Domain;
 using taskmaker_wpf.Services;
 using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Views.Widget;
+using Messenger = CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger;
 
 namespace taskmaker_wpf.Views {
     /// <summary>
     /// Interaction logic for TestWindow.xaml
     /// </summary>
-    public partial class TestWindow : Window, IRecipient<ShowMessageBoxMessage>, IRecipient<ShowDialogMessage>, IRecipient<CloseDialogMessage> {
+    public partial class TestWindow : Window, IRecipient<ShowMessageBoxMessage>, IRecipient<ShowDialogMessage>, IRecipient<DisplayDialogMessage> {
         private readonly MotorService _motorSrv;
         private IEventAggregator _eventAggregator;
         private SystemInteractorBus _systemBus;
@@ -62,9 +64,9 @@ namespace taskmaker_wpf.Views {
             InitializeComponent();
 
             // Register ShowMessageBox message
-            WeakReferenceMessenger.Default.Register<ShowMessageBoxMessage>(this);
-            WeakReferenceMessenger.Default.Register<ShowDialogMessage>(this);
-            WeakReferenceMessenger.Default.Register<CloseDialogMessage>(this);
+            Messenger.Default.Register<ShowMessageBoxMessage>(this);
+            Messenger.Default.Register<ShowDialogMessage>(this);
+            Messenger.Default.Register<DisplayDialogMessage>(this);
         }
 
         private void Window_PreviewKeyUp(object sender, KeyEventArgs e) {
@@ -152,9 +154,24 @@ namespace taskmaker_wpf.Views {
                 Motors = motors,
             };
             Dialog.Child = dialog;
+
+            Messenger.Default.Register<DialogResultMessage>(this, (r, m) => {
+                if (m.Result) {
+                    var values = _motorSrv.Motors.Select(e => e.Value[0]).ToArray();
+
+                    Messenger.Default.Send(new AssignActuationValuesMessage(values));
+                }
+                else {
+
+                }
+
+                Messenger.Default.Send(new DisplayDialogMessage() { Show = false });
+                Messenger.Default.Unregister<DialogResultMessage>(r);
+            });
+
         }
 
-        public void Receive(CloseDialogMessage message) {
+        public void Receive(DisplayDialogMessage message) {
             Scrim.Visibility = Visibility.Hidden;
             Dialog.Visibility = Visibility.Hidden;
 
@@ -177,8 +194,26 @@ namespace taskmaker_wpf.Views {
         public MessageBoxImage Icon { get; set; }
     }
 
-    public class ShowDialogMessage : AsyncRequestMessage<bool> {
+    public class ShowDialogMessage : RequestMessage<double[][]> {
     }
 
-    public class CloseDialogMessage { }
+    public class ShowMotorControllerDialogMessage : ShowDialogMessage {
+        public int Id { get; set; } = -1;
+    }
+
+    public class DisplayDialogMessage {
+        public bool Show { get; set; }
+    }
+
+    public class DialogResultMessage {
+        public bool Result { get; set; }
+    }
+
+    public class AssignActuationValuesMessage {
+        public double[] Values { get; private set; }
+
+        public AssignActuationValuesMessage(double[] values) {
+            Values = values;
+        }
+    }
 }

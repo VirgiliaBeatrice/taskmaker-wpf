@@ -43,32 +43,32 @@
                                      LabelText="0"
                                      Max="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[0].Max}"
                                      Min="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[0].Min}"
-                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[0].Value}" />
+                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[0].Value[0]}" />
           <local:SliderController_v1 Grid.Column="1"
                                      VerticalAlignment="Center"
                                      Max="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[1].Max}"
                                      Min="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[1].Min}"
-                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[1].Value}" />
+                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[1].Value[0]}" />
           <local:SliderController_v1 Grid.Column="2"
                                      VerticalAlignment="Center"
                                      Max="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[2].Max}"
                                      Min="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[2].Min}"
-                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[2].Value}" />
+                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[2].Value[0]}" />
           <local:SliderController_v1 Grid.Column="4"
                                      VerticalAlignment="Center"
                                      Max="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[3].Max}"
                                      Min="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[3].Min}"
-                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[3].Value}" />
+                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[3].Value[0]}" />
           <local:SliderController_v1 Grid.Column="5"
                                      VerticalAlignment="Center"
                                      Max="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[4].Max}"
                                      Min="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[4].Min}"
-                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[4].Value}" />
+                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[4].Value[0]}" />
           <local:SliderController_v1 Grid.Column="6"
                                      VerticalAlignment="Center"
                                      Max="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[5].Max}"
                                      Min="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[5].Min}"
-                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[5].Value}" />
+                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[5].Value[0]}" />
 
         </Grid>
       </Viewbox>
@@ -78,13 +78,15 @@
                 Margin="0 0 12 0"
                 Padding="24 0 24 0"
                 VerticalAlignment="Center"
-                HorizontalAlignment="Center" />
+                HorizontalAlignment="Center"
+                Click="ButtonOK_Click"
+                />
 
         <Button Content="Cancel"
                 Padding="24 0 24 0"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center"
-                Click="Button_Click"
+                Click="ButtonCancel_Click"
                 />
       </StackPanel>
     </StackPanel>

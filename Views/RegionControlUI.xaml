@@ -76,7 +76,7 @@
       <Grid Grid.Row="0">
 
         <Grid x:Name="uiArea"
-          VerticalAlignment="Stretch">
+              VerticalAlignment="Stretch">
           <w:MultiView x:Name="multiView"
                        Focusable="True"
                        Width="auto"
@@ -146,35 +146,20 @@
                     Name="tbBtnReset"
                     Click="ToolBar_Click"
                     ToolTip="Reset" />
+            <Button Content="&#xea1f;"
+                    Name="tbBtnShowInfoPanel"
+                    Click="ToolBar_Click"
+                    ToolTip="Show InfoPanel" />
 
           </StackPanel>
 
 
-          <Border x:Name="infoContainer"
-                  Visibility="Hidden"
-                  Margin="8"
-                  Background="DimGray"
-                  BorderBrush="Gray"
-                  BorderThickness="1"
-                  CornerRadius="8"
-                  HorizontalAlignment="Left"
-                  VerticalAlignment="Bottom"
-                  MouseEnter="Border_MouseEnter"
-                  MouseLeave="Border_MouseLeave">
-            <Border.Effect>
-              <DropShadowEffect Color="Black"
-                                Direction="270"
-                                ShadowDepth="1"
-                                Opacity="0.32"
-                                BlurRadius="5" />
-            </Border.Effect>
-            <StackPanel Orientation="Vertical">
-              <Label Content="AA"
-                     Foreground="White" />
-              <Label Content="BB"
-                     Foreground="White" />
-            </StackPanel>
-          </Border>
+
+          <w:InfoPanel x:Name="infoPanel" Margin="16"
+                       Visibility="Collapsed"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Bottom" />
+
 
 
           <Border Name="sideContainter"

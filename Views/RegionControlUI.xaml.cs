@@ -53,6 +53,8 @@ namespace taskmaker_wpf.Views {
             }
         }
 
+        public InfoPanel InfoPanel => infoPanel;
+
 
         public List<ControlUiState> Uis { get; set; } = new List<ControlUiState>();
         private ILogger logger => LogManager.GetCurrentClassLogger();
@@ -201,9 +203,16 @@ namespace taskmaker_wpf.Views {
                     ChangeMode(UiMode.Assign);
                     break;
                 case "tbBtnReset":
-                    snackbar.Icon = Icons.Reset;
-                    snackbar.SupportingText = "Reset Pan/Zoom";
+                    //snackbar.Icon = Icons.Reset;
+                    //snackbar.SupportingText = "Reset Pan/Zoom";
                     ChangeMode(UiMode.Reset);
+                    break;
+                case "tbBtnShowInfoPanel":
+                    if (infoPanel.Visibility == Visibility.Visible)
+                        infoPanel.Visibility = Visibility.Collapsed;
+                    else
+                        infoPanel.Visibility = Visibility.Visible;
+
                     break;
                 default:
                     break;

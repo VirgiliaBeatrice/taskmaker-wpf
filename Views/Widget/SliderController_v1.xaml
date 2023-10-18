@@ -35,7 +35,7 @@
                    HorizontalAlignment="Left"
                    VerticalAlignment="Center"
                    d:Text="10000"
-                   Text="{Binding Value, StringFormat='{}{0:D}', RelativeSource={RelativeSource AncestorType={x:Type local:SliderController_v1}}, UpdateSourceTrigger=PropertyChanged}"
+                   Text="{Binding Value, RelativeSource={RelativeSource AncestorType={x:Type local:SliderController_v1}}, UpdateSourceTrigger=PropertyChanged}"
                    TextAlignment="Center"
                    Margin="12,0,0,0" />
 
