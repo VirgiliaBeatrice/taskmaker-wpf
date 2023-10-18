@@ -9,9 +9,7 @@
              xmlns:w="clr-namespace:taskmaker_wpf.Views.Widget"
              d:DataContext="{d:DesignInstance Type=viewmodels:RegionControlUIViewModel}"
              mc:Ignorable="d"
-             prism:ViewModelLocator.AutoWireViewModel="True"
-             d:DesignHeight="450"
-             d:DesignWidth="800">
+             prism:ViewModelLocator.AutoWireViewModel="True">
   <UserControl.InputBindings>
   </UserControl.InputBindings>
   <UserControl.Resources>

@@ -39,6 +39,19 @@ namespace taskmaker_wpf.Views {
     /// Interaction logic for RegionControlUI.xaml
     /// </summary>
     public partial class RegionControlUI : UserControl {
+
+
+        public ControlUiState UiState {
+            get { return (ControlUiState)GetValue(UiStateProperty); }
+            set { SetValue(UiStateProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for UiState.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty UiStateProperty =
+            DependencyProperty.Register("UiState", typeof(ControlUiState), typeof(RegionControlUI), new PropertyMetadata(default));
+
+            
+
         public UiMode Mode { get; set; } = UiMode.Default;
 
         //public string UiStatus
@@ -79,6 +92,10 @@ namespace taskmaker_wpf.Views {
 
             //task.Start();
         }
+
+        public void UpdateUiState() {
+            UiState = multiView.Controllers[0].ToState();
+        }   
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e) {
             //Console.WriteLine(skElement.Focusable);

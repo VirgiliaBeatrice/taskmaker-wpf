@@ -169,56 +169,34 @@ namespace taskmaker_wpf.ViewModels {
         }
     }
 
-    public class ControlUiState : ObservableObject, IInputPortState {
+    public class ControlUiState {
         private int _id;
-        public int Id {
-            get { return _id; }
-            set { SetProperty(ref _id, value); }
-        }
-
-        public string Name { get; set; }
-
+        private string _name;
         private NodeState[] _nodes = new NodeState[0];
-        public NodeState[] Nodes {
-            get { return _nodes; }
-            set { SetProperty(ref _nodes, value); }
-        }
-
         private BaseRegionState[] _regions;
-        public BaseRegionState[] Regions {
-            get { return _regions; }
-            set { SetProperty(ref _regions, value); }
-        }
 
-        public bool IsSelected { get; set; } = false;
+        public NodeState[] Nodes { get => _nodes; set => _nodes = value; }
+        public BaseRegionState[] Regions { get => _regions; set => _regions = value; }
+        public int Id { get => _id; set => _id = value; }
+        public string Name { get => _name; set => _name = value; }
+
+        public ControlUiState() { }
 
         public object Clone() {
             return (ControlUiState)MemberwiseClone();
         }
-        public override string ToString() {
-            return Name;
-        }
     }
 
-    public class NodeState : ObservableObject {
+    public class NodeState {
         private int _id;
-        public int Id {
-            get { return _id; }
-            set { SetProperty(ref _id, value); }
-        }
-
         private Point _value = new Point();
-        public Point Value {
-            get { return _value; }
-            set { SetProperty(ref _value, value); }
-        }
+
+        public int Id { get => _id; set => _id = value; }
+        public Point Value { get => _value; set => _value = value; }
 
         public NodeState(int id, Point value) {
             Id = id;
             Value = value;
-        }
-        public override string ToString() {
-            return $"Node[{Id}] - ({Value})";
         }
     }
 
@@ -281,6 +259,9 @@ namespace taskmaker_wpf.ViewModels {
 
         [ObservableProperty]
         private string _numOfNodesOfSelectedUis = "0";
+
+        [ObservableProperty]
+        private ControlUiState _primaryUi;
 
         public TimeSpan Time => _evaSrv.Time;
 
@@ -748,6 +729,7 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext) {
+
             //UiState = navigationContext.Parameters["ui"] as ControlUiState;
             //InvalidateUi();
             //InvalidateMap();

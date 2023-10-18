@@ -5,18 +5,19 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:taskmaker_wpf.Views.Widget"
              mc:Ignorable="d" 
-             d:DesignHeight="200" d:DesignWidth="200">
+             d:DesignHeight="400" d:DesignWidth="400">
   
   <Border x:Name="container"
-          MaxWidth="200"
-          MaxHeight="200"
+          MaxWidth="400"
+          MaxHeight="400"
           Background="#322F35"
           CornerRadius="8"
           MouseEnter="Border_MouseEnter"
           MouseLeave="Border_MouseLeave">
     <StackPanel Orientation="Vertical" Margin="12">
       <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=local:InfoPanel}, Path=Info}"
-                 Foreground="#F5EFF7" />
+                 Foreground="#F5EFF7"
+                 TextTrimming="CharacterEllipsis" />
     </StackPanel>
   </Border>
 </UserControl>

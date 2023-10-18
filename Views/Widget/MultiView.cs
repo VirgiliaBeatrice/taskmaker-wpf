@@ -607,7 +607,7 @@ namespace taskmaker_wpf.Views.Widget {
 
             Scroll.Content = grid;
 
-            var ui = new UiController {
+            var ui = new UiController(0) {
                 VerticalAlignment = VerticalAlignment.Stretch,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 Margin = new Thickness(16, 16, 8, 16),
@@ -628,97 +628,97 @@ namespace taskmaker_wpf.Views.Widget {
             Controllers.Add(ui);
         }
 
-        public void Layout() {
-            //if (ItemsSource == null) return;
-            if (UiStates == null) return;
+        //public void Layout() {
+        //    //if (ItemsSource == null) return;
+        //    if (UiStates == null) return;
 
-            //var items = ItemsSource.Cast<object>().ToList();
-            var grid = new Grid() {
-                Name = "Multiview_SubGrid",
-                Visibility = Visibility.Visible
-            };
+        //    //var items = ItemsSource.Cast<object>().ToList();
+        //    var grid = new Grid() {
+        //        Name = "Multiview_SubGrid",
+        //        Visibility = Visibility.Visible
+        //    };
 
-            var vm = DataContext as RegionControlUIViewModel;
+        //    var vm = DataContext as RegionControlUIViewModel;
 
-            Scroll.Content = grid;
-            Controllers.Clear();
+        //    Scroll.Content = grid;
+        //    Controllers.Clear();
 
-            if (UiStates.Count() == 1) {
-                var ui = new UiController {
-                    VerticalAlignment = VerticalAlignment.Stretch,
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    Margin = new Thickness(16, 16, 8, 16),
-                };
+        //    if (UiStates.Count() == 1) {
+        //        var ui = new UiController {
+        //            VerticalAlignment = VerticalAlignment.Stretch,
+        //            HorizontalAlignment = HorizontalAlignment.Stretch,
+        //            Margin = new Thickness(16, 16, 8, 16),
+        //        };
 
-                var textblock = new TextBlock {
-                    Text = UiStates[0].ToString(),
-                    FontSize = 42,
-                    Foreground = Brushes.DimGray,
-                    VerticalAlignment = VerticalAlignment.Bottom,
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                };
+        //        var textblock = new TextBlock {
+        //            Text = UiStates[0].ToString(),
+        //            FontSize = 42,
+        //            Foreground = Brushes.DimGray,
+        //            VerticalAlignment = VerticalAlignment.Bottom,
+        //            HorizontalAlignment = HorizontalAlignment.Right,
+        //        };
 
-                grid.Children.Add(ui);
-                grid.Children.Add(textblock);
+        //        grid.Children.Add(ui);
+        //        grid.Children.Add(textblock);
 
-                Controllers.Add(ui);
-            }
-            else if (UiStates.Count() == 0) {
-                var textblock = new TextBlock {
-                    Text = "NULL",
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    Margin = new Thickness(2),
-                };
+        //        Controllers.Add(ui);
+        //    }
+        //    else if (UiStates.Count() == 0) {
+        //        var textblock = new TextBlock {
+        //            Text = "NULL",
+        //            VerticalAlignment = VerticalAlignment.Center,
+        //            HorizontalAlignment = HorizontalAlignment.Center,
+        //            Margin = new Thickness(2),
+        //        };
 
-                grid.Children.Add(textblock);
-            }
-            else {
-                int remainder, quotient = Math.DivRem(UiStates.Count(), MaxColumnCount, out remainder);
+        //        grid.Children.Add(textblock);
+        //    }
+        //    else {
+        //        int remainder, quotient = Math.DivRem(UiStates.Count(), MaxColumnCount, out remainder);
 
-                for (int i = 0; i < (remainder == 0 ? quotient : quotient + 1); i++) {
-                    grid.RowDefinitions.Add(new RowDefinition() { MinHeight = 400 });
-                }
+        //        for (int i = 0; i < (remainder == 0 ? quotient : quotient + 1); i++) {
+        //            grid.RowDefinitions.Add(new RowDefinition() { MinHeight = 400 });
+        //        }
 
-                for (int i = 0; i < MaxColumnCount; i++) {
-                    grid.ColumnDefinitions.Add(new ColumnDefinition());
-                }
+        //        for (int i = 0; i < MaxColumnCount; i++) {
+        //            grid.ColumnDefinitions.Add(new ColumnDefinition());
+        //        }
 
-                for (int i = 0; i < UiStates.Count(); i++) {
-                    int r, q = Math.DivRem(i, MaxColumnCount, out r);
+        //        for (int i = 0; i < UiStates.Count(); i++) {
+        //            int r, q = Math.DivRem(i, MaxColumnCount, out r);
 
-                    //var item = new Button() {
-                    //    Content = $"TEST{q}{r}",
-                    //    Margin = new Thickness(2),
+        //            //var item = new Button() {
+        //            //    Content = $"TEST{q}{r}",
+        //            //    Margin = new Thickness(2),
 
-                    //};
+        //            //};
 
-                    var ui = new UiController {
-                        Margin = new Thickness(2),
-                        VerticalAlignment = VerticalAlignment.Stretch,
-                        HorizontalAlignment = HorizontalAlignment.Stretch,
-                    };
-                    var textblock = new TextBlock {
-                        Text = UiStates[i].ToString(),
-                        FontSize = 42,
-                        Foreground = Brushes.DimGray,
-                        VerticalAlignment = VerticalAlignment.Bottom,
-                        HorizontalAlignment = HorizontalAlignment.Right,
-                    };
+        //            var ui = new UiController(0) {
+        //                Margin = new Thickness(2),
+        //                VerticalAlignment = VerticalAlignment.Stretch,
+        //                HorizontalAlignment = HorizontalAlignment.Stretch,
+        //            };
+        //            var textblock = new TextBlock {
+        //                Text = UiStates[i].ToString(),
+        //                FontSize = 42,
+        //                Foreground = Brushes.DimGray,
+        //                VerticalAlignment = VerticalAlignment.Bottom,
+        //                HorizontalAlignment = HorizontalAlignment.Right,
+        //            };
 
-                    Grid.SetColumn(ui, r);
-                    Grid.SetRow(ui, q);
+        //            Grid.SetColumn(ui, r);
+        //            Grid.SetRow(ui, q);
 
-                    Grid.SetColumn(textblock, r);
-                    Grid.SetRow(textblock, q);
+        //            Grid.SetColumn(textblock, r);
+        //            Grid.SetRow(textblock, q);
 
-                    grid.Children.Add(ui);
-                    grid.Children.Add(textblock);
+        //            grid.Children.Add(ui);
+        //            grid.Children.Add(textblock);
 
-                    Controllers.Add(ui);
-                }
-            }
-        }
+        //            Controllers.Add(ui);
+        //        }
+        //    }
+        //}
     }
 
     public class NodeShape : ContentControl {
@@ -783,6 +783,10 @@ namespace taskmaker_wpf.Views.Widget {
             RenderTransform = new ScaleTransform(1, -1);
             //InitializeComponents();
             //Invalidate();
+        }
+
+        public NodeState ToState() {
+            return new NodeState(NodeId, Position);
         }
 
         private void UpdateInfo() {
@@ -864,30 +868,6 @@ namespace taskmaker_wpf.Views.Widget {
             StateLayer.Fill = new SolidColorBrush(Colors.White);
             StateLayer.Opacity = 0.12;
             Effect = null;
-            // Create a scale transform and assign it to the Ellipse's RenderTransform
-            //ScaleTransform transform = new ScaleTransform();
-            //RenderTransform = transform;
-            //RenderTransformOrigin = new Point(0.5, 0.5); // Center the transform
-
-            //// Create the animation
-            //DoubleAnimation scaleAnimationX = new DoubleAnimation {
-            //    From = 1,
-            //    To = 1.2,  // Scale factor (1.2 means 120% of original size)
-            //    Duration = TimeSpan.FromMilliseconds(100), // Duration to scale up
-            //    AutoReverse = true // Reverse the animation back to original size
-            //};
-
-
-            //// Create the animation
-            //DoubleAnimation scaleAnimationY = new DoubleAnimation {
-            //    From = -1,
-            //    To = -1.2,  // Scale factor (1.2 means 120% of original size)
-            //    Duration = TimeSpan.FromMilliseconds(100), // Duration to scale up
-            //    AutoReverse = true // Reverse the animation back to original size
-            //};
-            //// Apply the animation to the ScaleX and ScaleY properties
-            //transform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleAnimationX);
-            //transform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleAnimationY);
 
             // Actions
             if (Ui.UiMode == UiMode.Assign) {
@@ -939,79 +919,22 @@ namespace taskmaker_wpf.Views.Widget {
             GoToState(UiElementState.Default);
         }
 
-        //private void InitializeComponents() {
-        //    InitializeOverlay();
-        //    InitializeContent();
-
-        //    Content = Container;
-        //}
-
-
         private Point position;
     }
 
-    public class PointerWidget : UserControl {
-        private Matrix _transform = Matrix.Identity;
-        private Point location = new Point();
 
-        public PointerWidget() {
-        }
+    public class SimplexShape : UserControl {
+        private int id;
+        private Point[] points;
 
-        public Point Location {
-            get => location;
-            set {
-                location = value;
+        public int Id { get => id; init => id = value; }
+        public Point[] Points { get => points; init => points = value; }
 
-                Invalidate();
-            }
-        }
+        public UiController Ui { get; set; }
 
-        public Matrix Transform {
-            get => _transform;
-            set {
-                var prevT = _transform;
-                _transform = value;
-
-                if (prevT != _transform) {
-                    Invalidate();
-                }
-            }
-        }
-        public void Invalidate() {
-            InvalidateContent();
-            InvalidateTransform();
-        }
-
-        public void InvalidateContent() {
-            var circle = new Ellipse {
-                Width = 10,
-                Height = 10,
-                Fill = new SolidColorBrush(Colors.Blue),
-                Stroke = new SolidColorBrush(Colors.Black),
-                StrokeThickness = 1,
-            };
-
-            Content = circle;
-        }
-
-        public void InvalidateTransform() {
-            var p = Location;
-            var tP = Transform.Transform(p);
-
-            Canvas.SetLeft(this, tP.X - 10 / 2);
-            Canvas.SetTop(this, tP.Y - 10 / 2);
-        }
-    }
-
-    public class SimplexShape : UserControl, IRegionShape {
-        // Using a DependencyProperty as the backing store for Points.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty PointsProperty =
-            DependencyProperty.Register("Points", typeof(IEnumerable<Point>), typeof(SimplexShape), new FrameworkPropertyMetadata(null, OnPointsPropertyChanged));
-
-        private Matrix _transform = Matrix.Identity;
-        public SimplexShape(int uiId, BaseRegionState state) {
-            UiId = uiId;
-            State = state;
+        public SimplexShape(int id, Point[] points) {
+            Id = id;
+            Points = points;
 
             MouseEnter += (s, e) => {
                 var v = s as SimplexShape;
@@ -1026,29 +949,16 @@ namespace taskmaker_wpf.Views.Widget {
 
                 path.Opacity = 0.3;
             };
+
+            Loaded += (_, _) => {
+                Ui = VisualTreeHelperExtensions.FindParentOfType<UiController>(this);
+            };
+
+            Initialize();
         }
 
-        public IEnumerable<Point> Points {
-            get { return (IEnumerable<Point>)GetValue(PointsProperty); }
-            set { SetValue(PointsProperty, value); }
-        }
-
-        public BaseRegionState State { get; set; }
-        public Matrix Transform {
-            get => _transform;
-            set {
-                var prevT = _transform;
-                _transform = value;
-
-                if (prevT != _transform) {
-                    Invalidate();
-                }
-            }
-        }
-
-        public int UiId { get; set; }
-        public void Invalidate() {
-            var points = Points.Select(e => Transform.Transform(e)).ToArray();
+        public void Initialize() {
+            var points = Points;
 
             // 3-simplex
             if (points.Length == 3) {
@@ -1062,7 +972,7 @@ namespace taskmaker_wpf.Views.Widget {
                 pathFig.Segments.Add(new LineSegment { Point = points[2] });
                 pathFig.Segments.Add(new LineSegment { Point = points[0] });
 
-                var fill = ColorManager.GetTintedColor(ColorManager.Palette[UiId], 2);
+                var fill = ColorManager.GetTintedColor(ColorManager.Palette[0], 2);
 
                 var path = new Path {
                     Fill = new SolidColorBrush(fill),
@@ -1098,12 +1008,6 @@ namespace taskmaker_wpf.Views.Widget {
 
                 Content = path;
             }
-        }
-
-        private static void OnPointsPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            var shape = (SimplexShape)d;
-
-            shape.Invalidate();
         }
     }
 
@@ -1158,8 +1062,12 @@ namespace taskmaker_wpf.Views.Widget {
         public MultiView MultiView { get; set; }
 
         public List<NodeShape> Nodes { get; set; } = new List<NodeShape>();
+        public List<SimplexShape> Simplices { get; set; }
+        public int Id { get; }
 
-        public UiController() {
+        public UiController(int id) {
+            Id = id;
+
             Loaded += (_, e) => {
                 RegionUi = VisualTreeHelperExtensions.FindParentOfType<RegionControlUI>(this);
                 MultiView = VisualTreeHelperExtensions.FindParentOfType<MultiView>(this);
@@ -1301,10 +1209,6 @@ namespace taskmaker_wpf.Views.Widget {
 
             if (RegionUi != null)
                 RegionUi.UiStatusText = mode.ToString();
-        }
-
-        public void ExitFromCurrentUiMode() {
-            ChangeUiMode(UiMode.Default);
         }
 
         private void Canvas_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
@@ -1483,6 +1387,14 @@ namespace taskmaker_wpf.Views.Widget {
             Canvas.SetLeft(element, x - halfWidth);
             Canvas.SetTop(element, y - halfHeight);
 
+        }
+
+        public ControlUiState ToState() {
+            return new ControlUiState {
+                Id = Id,
+                Name = $"Control Ui {Id}",
+                Nodes = Nodes.Select(e => e.ToState()).ToArray(),
+            };
         }
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo) {
