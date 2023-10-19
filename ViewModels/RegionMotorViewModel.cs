@@ -20,7 +20,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using taskmaker_wpf.Domain;
+using taskmaker_wpf.Entity;
 using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Services;
 using taskmaker_wpf.Views;
@@ -62,24 +62,18 @@ namespace taskmaker_wpf.ViewModels {
 
         [RelayCommand]
         public void RemoveMotor(MotorState state) {
-            var input = _mapper.Map<MotorEntity>(state);
-
-            _motorSrv.RemoveMotor(input);
-
-            InvalidateMotors();
+            _motorSrv.Delete(state.Id);
         }
 
         [RelayCommand]
         public void AddMotor() {
-            _motorSrv.AddMotor();
+            _motorSrv.Create(new MotorEntity());
 
             InvalidateMotors();
         }
 
         [RelayCommand]
         async public void Initialize() {
-            _motorSrv.Initialize();
-
             var result = await WeakReferenceMessenger.Default.Send(new ShowMessageBoxMessage {
                 Message = "Initialized all motors for experiments!",
                 Caption = "Initialize",
@@ -159,21 +153,21 @@ namespace taskmaker_wpf.ViewModels {
 
         public void UpdateMotor(MotorState state) {
             var motor = _mapper.Map<MotorEntity>(state);
-            _motorSrv.UpdateMotor(ref motor);
+            _motorSrv.Update(motor);
 
             _mapper.Map(motor, state);
         }
-        public void UpdateMotorValue(MotorState state, double newValue) {
-            var motor = _mapper.Map<MotorEntity>(state);
-            _motorSrv.UpdateMotorValue(ref motor, newValue);
+        //public void UpdateMotorValue(MotorState state, double newValue) {
+        //    var motor = _mapper.Map<MotorEntity>(state);
+        //    _motorSrv.UpdateMotorValue(ref motor, newValue);
 
-            _mapper.Map(motor, state);
-        }
+        //    _mapper.Map(motor, state);
+        //}
 
         public void InvalidateMotors() {
-            var output = _motorSrv.InvalidateMotors();
+            //var output = _motorSrv.InvalidateMotors();
 
-            MotorStates = _mapper.Map<MotorState[]>(output);
+            //MotorStates = _mapper.Map<MotorState[]>(output);
         }
 
 

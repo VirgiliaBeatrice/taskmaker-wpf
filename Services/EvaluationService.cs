@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using taskmaker_wpf.Entity;
 using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Views;
 
@@ -73,41 +74,35 @@ namespace taskmaker_wpf.Services
         }
 
         public void Initialize() {
-            // confirm initialization of motors
-            if (_motorSrv.Motors.Count == 0) {
-                var msg = new ShowMessageBoxMessage {
-                    Message = "No motors found. Please connect motors and restart the application.",
-                    Caption = "Error",
-                    Button = MessageBoxButton.OK,
-                    Icon = MessageBoxImage.Error
-                };
+            // Create List<MotorEntity> with 6 motors
+            var motors = Enumerable.Range(0, 6)
+                                   .Select(_ => _motorSrv.Create(new MotorEntity()))
+                                   .ToArray();
 
-                WeakReferenceMessenger.Default.Send(msg);
-            } else {
-                var motors = _motorSrv.Motors;
+            motors[0].NuibotBoardId = 0;
+            motors[0].NuibotMotorId = 0;
+            motors[1].NuibotBoardId = 0;
+            motors[1].NuibotMotorId = 1;
+            motors[2].NuibotBoardId = 0;
+            motors[2].NuibotMotorId = 2;
+            motors[3].NuibotBoardId = 1;
+            motors[3].NuibotMotorId = 0;
+            motors[4].NuibotBoardId = 1;
+            motors[4].NuibotMotorId = 1;
+            motors[5].NuibotBoardId = 1;
+            motors[5].NuibotMotorId = 2;
 
-                // Add ui and map
-                var ui = _uiSrv.AddUi();
-                var map = _uiSrv.AddMap();
+            for (int i = 0; i < motors.Count(); i++) {
+                var motor = motors[i];
+                motor.Max = 10000;
+                motor.Min = -10000;
 
-                // Bind motors to ui
-                _uiSrv.BindMotorsToUi(
-                    ref map, 
-                    new[] { InPlug.Create(ui) }, 
-                    motors.Select(OutPlug.Create).ToArray());
-
-                var msg = new ShowMessageBoxMessage {
-                    Message = "Evaluation session initialized.",
-                    Caption = "Success",
-                    Button = MessageBoxButton.OK,
-                    Icon = MessageBoxImage.Information
-                };
-
-                WeakReferenceMessenger.Default.Send(msg);
+                _motorSrv.Update(motor);
             }
+
+            // Create ui
+            var ui = _uiSrv.Create(new ControlUiEntity() {
+                Name = "Default" });
         }
-
-
     }
-
 }

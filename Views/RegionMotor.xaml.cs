@@ -57,8 +57,10 @@ namespace taskmaker_wpf.Views {
             var vm = DataContext as RegionMotorViewModel;
 
             e.Handled = true;
-            if (e.NewValue != e.OldValue)
-                vm.UpdateMotorValue(state, e.NewValue);
+            if (e.NewValue != e.OldValue) {
+
+            }
+                //vm.UpdateMotorValue(state, e.NewValue);
         }
 
         private void Button_Click(object sender, RoutedEventArgs e) {

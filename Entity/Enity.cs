@@ -19,7 +19,7 @@ using System.Windows.Media;
 using taskmaker_wpf.Views.Widget;
 using System.Drawing.Drawing2D;
 
-namespace taskmaker_wpf.Domain {
+namespace taskmaker_wpf.Entity {
     public interface IEntity {
         int Id { get; set; }
         string Name { get; set; }
@@ -48,9 +48,12 @@ namespace taskmaker_wpf.Domain {
     }
 
     public class BaseEntity : IEntity {
-        public int Id { get; set; }
+        public int Id { get; set; } = -1;
         public string Name { get; set; }
 
+        public BaseEntity() {
+            Name = GetType().Name + "_";
+        }
         public override string ToString() {
             return GetType().Name + "_" + Name;
         }
@@ -73,48 +76,40 @@ namespace taskmaker_wpf.Domain {
             }
         }
 
-
-        // For NLinearMap, InSockets
-        public InPlug[] InSockets { get; set; } = Array.Empty<InPlug>();
-
-        // For NLinearMap, OutSockets
-        public OutPlug[] OutSockets { get; set; } = Array.Empty<OutPlug>();
-        
-
         protected double[] tensor => Tensor.isnan().any() ? null : Tensor.GetData<double>();
 
         public (int, int) GetCurrentStatus() {
             return (Tensor.size - np.count_nonzero(np.isnan(Tensor)), Tensor.size);
         }
 
-        public void Initialize(int[] basisDims) {
-            if (OutSockets.Length == 0 || InSockets.Length == 0) return;
+        //public void Initialize(int[] basisDims) {
+        //    if (OutSockets.Length == 0 || InSockets.Length == 0) return;
 
-            var targetDim = OutSockets.Select(e => e.Dimension).Sum();
-            //var basisDims = InputPorts.Select(e => e.BasisCount).ToArray();
+        //    var targetDim = OutSockets.Select(e => e.Dimension).Sum();
+        //    //var basisDims = InputPorts.Select(e => e.BasisCount).ToArray();
 
-            Shape = new int[] { targetDim }.Concat(basisDims).ToArray();
-            Tensor = np.empty(Shape);
+        //    Shape = new int[] { targetDim }.Concat(basisDims).ToArray();
+        //    Tensor = np.empty(Shape);
 
-            Tensor.fill(np.nan);
+        //    Tensor.fill(np.nan);
 
-            IsDirty = false;
-        }
+        //    IsDirty = false;
+        //}
 
 
-        public void Initialize() {
-            if (OutSockets.Length == 0 || InSockets.Length == 0) return;
+        //public void Initialize() {
+        //    if (OutSockets.Length == 0 || InSockets.Length == 0) return;
 
-            var targetDim = OutSockets.Select(e => e.Dimension).Sum();
-            var basisDims = InSockets.Select(e => e.BasisCount).ToArray();
+        //    var targetDim = OutSockets.Select(e => e.Dimension).Sum();
+        //    var basisDims = InSockets.Select(e => e.BasisCount).ToArray();
 
-            Shape = new int[] { targetDim }.Concat(basisDims).ToArray();
-            Tensor = np.empty(Shape);
+        //    Shape = new int[] { targetDim }.Concat(basisDims).ToArray();
+        //    Tensor = np.empty(Shape);
 
-            Tensor.fill(np.nan);
+        //    Tensor.fill(np.nan);
 
-            IsDirty = false;
-        }
+        //    IsDirty = false;
+        //}
 
         public void SetValue(int[] indices, double[] value) {
             // only 1 bary
@@ -356,6 +351,7 @@ namespace taskmaker_wpf.Domain {
                 .ToArray();
         }
 
+        // Should be in View's logic
         private void InitializeGeometry() {
             var path = new GraphicsPath();
 
@@ -471,47 +467,15 @@ namespace taskmaker_wpf.Domain {
     }
 
 
-    public class ControlUiEntity : BaseEntity, IInputPort, IOutputPort {
-        private double[] inputValue = new double[2];
-        private NodeEntity[] nodes;
+    public class ControlUiEntity : BaseEntity {
+        private NodeEntity[] nodes = new NodeEntity[0];
+        private BaseRegionEntity[] regions = new BaseRegionEntity[0];
 
-        public NodeEntity[] Nodes { get => nodes;
-            set {
-                nodes = value;
-
-                InvalidateInPlug();
-            }
-        }
-        public BaseRegionEntity[] Regions { get; set; }
-        public NLinearMapEntity Map { get; set; }
+        public BaseRegionEntity[] Regions { get => regions; set => regions = value; }
+        public NodeEntity[] Nodes { get => nodes; set => nodes = value; }
 
         public double[] Value { get; set; } = new double[2];
 
-        public double[] OutputValue { get; set; } = new double[2];
-        public double[] InputValue {
-            get => inputValue;
-            set {
-                inputValue = value;
-
-                OutputValue = inputValue;
-            }
-        }
-
-        public void InvalidateInPlug() {
-            if (Map != null) {
-                var plug = InPlug.Create(this);
-                var idx = Map.InSockets.ToList().IndexOf(plug);
-
-                Map.InSockets[idx] = plug;
-            }
-        }
-
-        public void InvalidateValue() {
-            Value = new double[] {
-                Nodes.Select(e => e.Value.X).Average(),
-                Nodes.Select(e => e.Value.Y).Average(),
-            };
-        }
 
         public void Build() {
             var nodes = Nodes.OrderBy(e => e.Id).ToArray();
@@ -591,17 +555,11 @@ namespace taskmaker_wpf.Domain {
         }
     }
 
-    public class MotorEntity : BaseEntity, IOutputPort {
+    public class MotorEntity : BaseEntity {
         public double[] Value { get; set; } = new double[1];
         public int Min { get; set; } = -10000;
         public int Max { get; set; } = 10000;
         public int NuibotBoardId { get; set; } = -1;
         public int NuibotMotorId { get; set; } = -1;
-
-        public int ThresholdMin { get; set; } = -10000;
-        public int ThresholdMax { get; set; } = 10000;
-        public bool IsClamped { get; set; } = false;
-
-        public SolidColorBrush Color { get; set; } = Brushes.Black;
     }
 }

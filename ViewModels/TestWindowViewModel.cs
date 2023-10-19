@@ -11,7 +11,7 @@ using taskmaker_wpf.Services;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using taskmaker_wpf.Domain;
+using taskmaker_wpf.Entity;
 
 namespace taskmaker_wpf.ViewModels {
     public class TestWindowViewModel : BindableBase {

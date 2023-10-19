@@ -19,7 +19,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using taskmaker_wpf.Domain;
+using taskmaker_wpf.Entity;
 using taskmaker_wpf.Services;
 using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Views.Widget;
@@ -32,7 +32,6 @@ namespace taskmaker_wpf.Views {
     public partial class TestWindow : Window, IRecipient<ShowMessageBoxMessage>, IRecipient<ShowDialogMessage>, IRecipient<DisplayDialogMessage> {
         private readonly MotorService _motorSrv;
         private IEventAggregator _eventAggregator;
-        private SystemInteractorBus _systemBus;
         private static readonly FieldInfo _menuDropAlignmentField;
 
         static TestWindow() {
@@ -57,10 +56,9 @@ namespace taskmaker_wpf.Views {
             }
         }
 
-        public TestWindow(IEventAggregator @event, SystemInteractorBus systemBus, MotorService motorSrv) {
+        public TestWindow(IEventAggregator @event, MotorService motorSrv) {
             _motorSrv = motorSrv;
             _eventAggregator = @event;
-            _systemBus = systemBus;
             InitializeComponent();
 
             // Register ShowMessageBox message
@@ -85,8 +83,6 @@ namespace taskmaker_wpf.Views {
                 if (result == true) {
                     // Save document
                     string filename = dlg.FileName;
-
-                    _systemBus.Handle(new SaveRequest() { FileName = filename }, out bool res);
                 }
 
                 //_eventAggregator.GetEvent<SystemSaveEvent>().Publish();
@@ -108,7 +104,6 @@ namespace taskmaker_wpf.Views {
                 if (result == true) {
                     // Open document
                     string filename = dialog.FileName;
-                    _systemBus.Handle(new LoadRequest() { FileName = filename }, out bool res);
                     _eventAggregator.GetEvent<SystemLoadedEvent>().Publish();
                 }
 
@@ -140,7 +135,7 @@ namespace taskmaker_wpf.Views {
             //Dialog.BeginAnimation(OpacityProperty, animation1);
 
 
-            var motors = _motorSrv.Motors.Select(e => new MotorState {
+            var motors = _motorSrv.GetAll().Select(e => new MotorState {
                 Id = e.Id,
                 NuibotBoardId = e.NuibotBoardId,
                 NuibotMotorId = e.NuibotMotorId,
@@ -157,7 +152,7 @@ namespace taskmaker_wpf.Views {
 
             Messenger.Default.Register<DialogResultMessage>(this, (r, m) => {
                 if (m.Result) {
-                    var values = _motorSrv.Motors.Select(e => e.Value[0]).ToArray();
+                    var values = _motorSrv.GetAll().Select(e => e.Value[0]).ToArray();
 
                     Messenger.Default.Send(new AssignActuationValuesMessage(values));
                 }

@@ -14,7 +14,7 @@ using taskmaker_wpf.Views;
 //using CMessageBox = taskmaker_wpf.Views.MessageBox;
 using AutoMapper;
 using taskmaker_wpf.Data;
-using taskmaker_wpf.Domain;
+using taskmaker_wpf.Entity;
 using Prism.Events;
 using Microsoft.Extensions.Logging;
 using NLog;
@@ -120,16 +120,8 @@ namespace taskmaker_wpf {
             //containerRegistry.RegisterSingleton<IUseCase, ListTargetUseCase>("ListTargetUseCase");
             //containerRegistry.RegisterSingleton<IUseCase, BuildRegionUseCase>("BuildRegionUseCase");
 
-
-            containerRegistry.Register<SystemInteractorBus>();
-
-            // Register Interactor Bus
-            containerRegistry.RegisterSingleton<MotorInteractorBus>();
-            containerRegistry.RegisterSingleton<ControlUiInteractorBus>();
-            containerRegistry.RegisterSingleton<NLinearMapInteractorBus>();
-
             //containerRegistry.Register<IPresenter>(() => Container.Resolve<TargetsPanelViewModel>());
-            containerRegistry.Register<IPresenter>(() => Container.Resolve<RegionControlUIViewModel>());
+            //containerRegistry.Register<IPresenter>(() => Container.Resolve<RegionControlUIViewModel>());
 
             // Register messagebox
             //containerRegistry.RegisterDialog<CMessageBox, MessageBoxViewModel>("standard");
@@ -140,6 +132,7 @@ namespace taskmaker_wpf {
             containerRegistry.RegisterForNavigation<RegionSettings>();
             containerRegistry.RegisterForNavigation<RegionControlUI>();
             containerRegistry.RegisterForNavigation<RegionSlider>();
+            containerRegistry.RegisterForNavigation<RegionControlUIViewModel>();
 
             ViewModelLocationProvider.Register<RegionSlider>(Container.Resolve<RegionMotorViewModel>);
 

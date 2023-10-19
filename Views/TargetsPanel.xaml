@@ -66,8 +66,7 @@
         </Button>
         <Button DockPanel.Dock="Right"
                 Width="20"
-                Height="20"
-                Click="btnRefresh_Click">
+                Height="20">
           <Button.Content>
             <Image Width="12"
                    Height="12"
@@ -77,7 +76,6 @@
 
         <Button x:Name="btnAdd"
                 DockPanel.Dock="Right"
-                Command="{Binding AddMapCommand}"
                 Width="20"
                 Height="20">
           <Button.Content>
@@ -93,7 +91,7 @@
 
       <Expander Margin="0 5 0 5"
                 Header="Details">
-        <ContentControl Content="{Binding SelectedMap}">
+        <ContentControl>
           <ContentControl.ContentTemplate>
             <DataTemplate DataType="{x:Type vm:NLinearMapState}">
               <StackPanel Orientation="Vertical"
@@ -106,16 +104,6 @@
                            MaxWidth="100" />
 
                 </StackPanel>
-                <GroupBox Margin="2"
-                          Header="In Sockets">
-                  <ListBox ItemsSource="{Binding InSockets}">
-                  </ListBox>
-                </GroupBox>
-                <GroupBox Margin="2"
-                          Header="Out Sockets">
-                  <ListBox ItemsSource="{Binding OutSockets}">
-                  </ListBox>
-                </GroupBox>
               </StackPanel>
             </DataTemplate>
           </ContentControl.ContentTemplate>
@@ -131,8 +119,7 @@
                 BorderThickness="1"
                 Margin="0 5 0 5"
                 Header="Valid Plugs"
-                IsExpanded="False"
-                Expanded="Expander_Expanded">
+                IsExpanded="False">
         <StackPanel>
           <Expander IsExpanded="True"
                     Margin="10"
@@ -216,7 +203,7 @@
 
           <Button Width="100"
                   Margin="2"
-                  Click="btnUpdateSockets_Clicked">
+                  >
 
             <Button.Content>
               <Image Source="{svgc:SvgImage Source=/icons/check.svg}"

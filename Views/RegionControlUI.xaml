@@ -78,8 +78,7 @@
           <w:MultiView x:Name="multiView"
                        Focusable="True"
                        Width="auto"
-                       MaxColumnCount="2"
-                       BindCommand="{Binding BindCommand}" />
+                       MaxColumnCount="2" />
 
           <StackPanel Orientation="Vertical"
                       VerticalAlignment="Top"
@@ -251,35 +250,9 @@
                                 Expanded="Expander_Expanded">
                         <StackPanel Margin="4"
                                     Orientation="Vertical">
-                          <ItemsControl ItemsSource="{Binding SelectedUis}">
-                            <ItemsControl.ItemTemplate>
-                              <DataTemplate DataType="{x:Type viewmodels:ControlUiState}">
-                                <GroupBox Header="Details">
-                                  <StackPanel Orientation="Vertical">
-                                    <StackPanel Orientation="Horizontal">
-                                      <Label Content="Name"
-                                             FontWeight="Bold" />
-                                      <Label Content="{Binding Name}" />
-                                    </StackPanel>
-
-                                    <StackPanel Orientation="Horizontal">
-                                      <Label Content="Num. Of Nodes"
-                                             FontWeight="Bold" />
-                                      <Label Content="{Binding Nodes.Length}" />
-                                    </StackPanel>
-
-                                  </StackPanel>
-
-                                </GroupBox>
-
-                              </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                          </ItemsControl>
-
-
                           <Button x:Name="tabUiBtnAdd"
                                   Margin="4"
-                                  Click="tabUiBtnAdd_Click">
+                                  Command="{Binding CreateUiCommand}">
                             <Button.Content>
                               <Image Source="/icons/add_FILL0_wght400_GRAD0_opsz48.png"
                                      Width="16"
@@ -290,14 +263,9 @@
                                    MinHeight="20"
                                    Margin="8"
                                    SelectionMode="Single"
+                                   ItemsSource="{Binding UiStates}"
                                    MouseDoubleClick="lbUiStates_MouseDoubleClick">
                           </ListBox>
-                          <Button Margin="4"
-                                  Click="Button_Click">
-                            <Button.Content>
-                              Open
-                            </Button.Content>
-                          </Button>
                         </StackPanel>
 
                       </Expander>

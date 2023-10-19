@@ -334,7 +334,7 @@ namespace taskmaker_wpf.Views.Widget {
 
             var state = slider.DataContext as MotorState;
 
-            vm.UpdateMotorValue(state, e.NewValue);
+            //vm.UpdateMotorValue(state, e.NewValue);
         }
 
         private void Box_TouchUp(object sender, TouchEventArgs e) {
@@ -357,7 +357,7 @@ namespace taskmaker_wpf.Views.Widget {
                     //slider.Value = 
                     var motorValue = value * (slider.Maximum - slider.Minimum) + slider.Minimum;
                     
-                    ViewModel.UpdateMotorValue(State, motorValue);
+                    //ViewModel.UpdateMotorValue(State, motorValue);
 
                     //logger.Debug("Percentage: {0}; Value: {1}", value.ToString("P"), slider.Value.ToString("F2"));
                 }

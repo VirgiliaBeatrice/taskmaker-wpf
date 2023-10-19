@@ -53,64 +53,6 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
-        private void lbMaps_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            if (e.AddedItems.Count != 0) {
-                var selectedMap = e.AddedItems[0] as NLinearMapState;
-                var vm = DataContext as RegionControlUIViewModel;
-
-                vm.SelectedMap = selectedMap;
-            }
-
-            //if (e.RemovedItems.Count != 0) {
-            //    var selectedMap = e.RemovedItems[0] as NLinearMapState;
-            //    var vm = DataContext as RegionControlUIViewModel;
-
-            //    vm.SelectedMap = null; ;
-            //}
-        }
-
-        private void Button_Click_1(object sender, RoutedEventArgs e) {
-        }
-
-        private void btnRefresh_Click(object sender, RoutedEventArgs e) {
-            var vm = (sender as Button).DataContext as RegionControlUIViewModel;
-
-            vm.Invalidate();
-        }
-
-        private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
-            var state = (sender as Slider).DataContext as MotorState;
-            var vm = DataContext as RegionControlUIViewModel;
-
-            vm.UpdateMotor(state);
-        }
-
-        private void btnOpenCompactUi_Click(object sender, RoutedEventArgs e) {
-            var parent = (StackPanel)VisualTreeHelper.GetParent(sender as UIElement);
-            var popup = parent.Children.OfType<Popup>().First();
-
-            if (popup != null) {
-                popup.IsOpen = !popup.IsOpen;
-
-                popup.Focus();
-            }
-        }
-
-        private void Expander_Expanded(object sender, RoutedEventArgs e) {
-            var vm = DataContext as RegionControlUIViewModel;
-
-            vm?.InvalidateValidPlugs();
-        }
-
-        private void Button_Click_3(object sender, RoutedEventArgs e) {
-            var state = (sender as Button).DataContext as MotorState;
-
-            state.Value = new double[1] { 0 };
-
-            var vm = DataContext as RegionControlUIViewModel;
-
-            vm.UpdateMotor(state);
-        }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e) {
             var checkbox = sender as CheckBox;
@@ -128,20 +70,6 @@ namespace taskmaker_wpf.Views.Widget {
                 //var vm
             }
 
-        }
-
-        private void btnUpdateSockets_Clicked(object sender, RoutedEventArgs e) {
-            var vm = DataContext as RegionControlUIViewModel;
-
-            var lbInPlugs = FindName("lbInPlugs") as ListBox;
-            var inPlugs = lbInPlugs.SelectedItems.Cast<InPlug>().ToArray();
-
-            vm.UpdateSocket(vm.SelectedMap, inPlugs);
-
-            var lbOutPlugs = FindName("lbOutPlugs") as ListBox;
-            var outPlugs = lbOutPlugs.SelectedItems.Cast<OutPlug>().ToArray();
-
-            vm.UpdateSocket(vm.SelectedMap, outPlugs);
         }
     }
 }

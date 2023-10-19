@@ -1,125 +1,75 @@
-﻿using NLog;
+﻿using AutoMapper.Features;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using taskmaker_wpf.Domain;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Forms;
+using taskmaker_wpf.Entity;
 using taskmaker_wpf.ViewModels;
 
-namespace taskmaker_wpf.Services
-{
-    public class UIService {
+namespace taskmaker_wpf.Services {
+    public class BaseEntityManager<T> where T : BaseEntity {
+        protected readonly Dictionary<int, T> entities = new Dictionary<int, T>();
+        private int nextId = 1;
+
+        public virtual T Create(T entity) {
+            entity.Id = nextId++;
+            entities[entity.Id] = entity;
+            return entity;
+        }
+
+        public virtual T Read(int id) {
+            entities.TryGetValue(id, out var entity);
+            return entity;
+        }
+
+        public virtual bool Update(T entity) {
+            if (entities.ContainsKey(entity.Id)) {
+                entities[entity.Id] = entity;
+
+                return true;
+            }
+            return false;
+        }
+
+        public virtual bool Delete(int id) {
+            return entities.Remove(id);
+        }
+
+        public virtual T[] GetAll() {
+            return entities.Values.ToArray();
+        }
+    }
+
+    public class UiUpdatedMessage {
+        public ControlUiEntity Entity { get; set; }
+    }
+
+    public class UIService : BaseEntityManager<ControlUiEntity> {
         private readonly Logger logger = LogManager.GetCurrentClassLogger();
-        private readonly NLinearMapInteractorBus _mapBus;
-        private readonly ControlUiInteractorBus _uiBus;
+        //private readonly NLinearMapInteractorBus _mapBus;
+        //private readonly ControlUiInteractorBus _uiBus;
 
-        public List<ControlUiEntity> UIs { get; set; } = new List<ControlUiEntity>();
+        public UIService() {
 
-        public UIService(
-            NLinearMapInteractorBus mapBus,
-            ControlUiInteractorBus uiBus) {
             logger.Info("UI Service started");
-            _mapBus = mapBus;
-            _uiBus = uiBus;
         }
 
-        public void AddNode(ControlUiEntity ui, Point p) {
-            var targetIdx = UIs.FindIndex(e => e == ui);
-            var req = new AddNodeRequest {
-                UiId = ui.Id,
-                Value = p
-            };
+        public override bool Update(ControlUiEntity entity) {
+            var result = base.Update(entity);
 
-            _uiBus.Handle(req, out ControlUiEntity output);
+            //WeakReferenceMessenger.Default.Send(new UiUpdatedMessage() { Entity = entity });
 
-            UIs[targetIdx] = output;
-
-            logger.Info("Added node {0}", output.Id);
-        }
-
-        public void RemoveNode(ControlUiEntity ui, int nodeId) {
-            var targetIdx = UIs.FindIndex(e => e == ui);
-            var req = new DeleteNodeRequest {
-                UiId = ui.Id,
-                NodeId = nodeId
-            };
-
-            _uiBus.Handle(req, out bool _);
-
-            var req1 = new ListControlUiRequest {
-                Id = ui.Id
-            };
-
-            _uiBus.Handle(req1, out ui);
-
-            UIs[targetIdx] = ui;
-
-            logger.Info("Removed node {0}", ui.Id);
-        }
-
-        public void MoveNode() {
-            throw new NotImplementedException();
-        }
-
-        public void AssignValues() {
-            throw new NotImplementedException();
-        }
-
-        public ControlUiEntity AddUi() {
-            var req = new AddControlUiRequest();
-
-            _uiBus.Handle(req, out ControlUiEntity output);
-            UIs.Add(output);
-
-            logger.Info("Added UI {0}", output.Id);
-
-            return output;
-        }
-
-        public void RemoveUi(ControlUiEntity ui) {
-            var req = new DeleteControlUiRequest {
-                Id = ui.Id
-            };
-
-            _uiBus.Handle(req, out bool _);
-
-            UIs.Remove(ui);
-        }
-
-        public NLinearMapEntity AddMap() {
-            var req = new AddNLinearMapRequest();
-
-            _mapBus.Handle(req, out NLinearMapEntity output);
-
-            return output;
-        }
-
-        public NLinearMapEntity[] ListMaps() {
-            var req = new ListNLinearMapRequest();
-
-            _mapBus.Handle(req, out NLinearMapEntity[] output);
-
-            return output;
-        }
-
-        public void BindMotorsToUi(ref NLinearMapEntity map, InPlug[] inPlugs, OutPlug[] outPlugs) {
-            var req = new UpdateNLinearMapRequest {
-                Id = map.Id,
-                PropertyType = "UpdateInputs",
-                PropertyValue = inPlugs,
-            };
-
-            _mapBus.Handle(req, out map);
-
-            req = new UpdateNLinearMapRequest {
-                Id = map.Id,
-                PropertyType = "UpdateOutputs",
-                PropertyValue = outPlugs,
-            };
-
-            _mapBus.Handle(req, out map);
+            return result;
         }
     }
 }

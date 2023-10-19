@@ -4,7 +4,7 @@ using System.Windows;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using taskmaker_wpf.Domain;
+using taskmaker_wpf.Entity;
 using taskmaker_wpf.Model.Data;
 using AutoMapper;
 using taskmaker_wpf.Services;
@@ -37,9 +37,6 @@ namespace taskmaker_wpf.Data {
         public double[] Tensor { get; set; }
         public int[] Shape { get; set; }
 
-        public OutPlug[] OutputPorts { get; set; }
-        public InPlug[] InputPorts { get; set; }
-
         public bool IsDirty { get; set; } = false;
 
         //public static implicit operator SerilizableMapEntity(NLinearMapEntity e) => new SerilizableMapEntity(e);
@@ -57,8 +54,6 @@ namespace taskmaker_wpf.Data {
                 IsDirty = false;
             }
 
-            OutputPorts = entity.OutSockets;
-            InputPorts = entity.InSockets;
             Id= entity.Id;
             Name = entity.Name;
             IsDirty = false;
@@ -71,8 +66,6 @@ namespace taskmaker_wpf.Data {
                 Name = Name,
                 Tensor = Tensor != null ? np.array(Tensor).reshape(Shape) : null,
                 Shape = Shape,
-                OutSockets = OutputPorts,
-                InSockets = InputPorts,
                 IsDirty = IsDirty
             };
         }

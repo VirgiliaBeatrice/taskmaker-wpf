@@ -6,7 +6,7 @@ using System.Text;
 using System.Timers;
 using NLog;
 using PCController;
-using taskmaker_wpf.Domain;
+using taskmaker_wpf.Entity;
 
 namespace taskmaker_wpf.Services {
     public class SerialService {

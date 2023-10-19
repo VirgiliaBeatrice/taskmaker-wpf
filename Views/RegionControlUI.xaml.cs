@@ -84,18 +84,23 @@ namespace taskmaker_wpf.Views {
             //Console.WriteLine(np.pi);
             logger.Info(np.pi);
 
-            //var task = new Task<bool>(() => {
-            //    Console.WriteLine(np.pi);
+            Loaded += RegionControlUI_Loaded;
 
-            //    return true;
-            //});
-
-            //task.Start();
         }
 
-        public void UpdateUiState() {
-            UiState = multiView.Controllers[0].ToState();
-        }   
+        private void RegionControlUI_Loaded(object sender, RoutedEventArgs e) {
+            var vm = DataContext as RegionControlUIViewModel;
+
+            if (vm != null) {
+                var uiStatesBind = new Binding("UiStates") {
+                    Source = vm,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                    Mode = BindingMode.OneWay
+                };
+
+                multiView.SetBinding(MultiView.UiStatesProperty, uiStatesBind);
+            }
+        }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e) {
             //Console.WriteLine(skElement.Focusable);
@@ -114,7 +119,7 @@ namespace taskmaker_wpf.Views {
         private void Expander_Expanded(object sender, RoutedEventArgs e) {
             var vm = DataContext as RegionControlUIViewModel;
 
-            vm?.Invalidate();
+            //vm?.Invalidate();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e) {
@@ -124,7 +129,7 @@ namespace taskmaker_wpf.Views {
             // find listbox according to the x:Name
             var lb = FindName("lbUiStates") as ListBox;
 
-            vm.SelectedUis = lb.SelectedItems.Cast<ControlUiState>().ToArray();
+            //vm.SelectedUis = lb.SelectedItems.Cast<ControlUiState>().ToArray();
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e) {
@@ -158,7 +163,7 @@ namespace taskmaker_wpf.Views {
         private void ChangeMode(UiMode mode) {
             var tbUiStatus = FindName("uiStatus") as TextBlock;
 
-            var ui = multiView.Controllers.FirstOrDefault();
+            var ui = multiView.Controllers.FirstOrDefault().Value;
 
             if (ui != null) {
                 //var ui = view.Controllers.First();
@@ -242,7 +247,7 @@ namespace taskmaker_wpf.Views {
             var list = sender as ListBox;
 
             if (e.LeftButton == MouseButtonState.Pressed) {
-                multiView.OpenUiController(list.SelectedItem as ControlUiState);
+                multiView.OpenUiController((list.SelectedItem as ControlUiState).Id);
 
                 // Send a ShowMessageBoxMessage to inform success
                 var msg = new ShowMessageBoxMessage() {
@@ -252,17 +257,6 @@ namespace taskmaker_wpf.Views {
 
                 WeakReferenceMessenger.Default.Send(msg);
             }
-        }
-
-        private void tabUiBtnAdd_Click(object sender, RoutedEventArgs e) {
-            var ui = new ControlUiState {
-                Id = Uis.Count + 1,
-                Name = $"ControlUi_{Uis.Count + 1}",
-            };
-
-            Uis.Add(ui);
-
-            tabUiLbControllers.ItemsSource = Uis;
         }
     }
 }
