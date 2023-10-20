@@ -414,42 +414,38 @@ namespace taskmaker_wpf.Views.Widget {
             //var control = sender as MultiView;
 
             if (e.Action == NotifyCollectionChangedAction.Add) {
-                var ui = e.NewItems[0] as ControlUiState;
+                foreach(var item in e.NewItems) {
+                    var ui = item as ControlUiState;
 
-                ui.PropertyChanged += Ui_PropertyChanged;
+                    ui.PropertyChanged += Ui_PropertyChanged;
+                }
+            }
+            else if (e.Action == NotifyCollectionChangedAction.Remove) {
+                foreach (var item in e.OldItems) {
+                    var ui = item as ControlUiState;
+
+                    ui.PropertyChanged -= Ui_PropertyChanged;
+                }
             }
 
         }
 
         private void Ui_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
             var uiState = sender as ControlUiState;
-            var control = Controllers[uiState.Id];
+            var control = sender as MultiView;
 
             if (e.PropertyName == nameof(ControlUiState.Nodes)) {
-
-                // Clear all new nodes.
-                foreach(var node in control.Nodes) {
-                    control.Canvas.Children.Remove(node);
+                if (Controllers.TryGetValue(uiState.Id, out var controller)) {
+                    controller.InvalidateNodes();
                 }
-
-                control.Nodes.Clear();
-
-                // Add nodes
-                foreach (var node in uiState.Nodes) {
-                    var nodeShape = new NodeShape(node.Id) {
-                        Position = node.Value,
-                    };
-
-                    control.Nodes.Add(nodeShape);
-                    control.Canvas.Children.Add(nodeShape);
+            }
+            else if (e.PropertyName == nameof(ControlUiState.Regions)) {
+                if (Controllers.TryGetValue(uiState.Id, out var controller)) {
+                    //controller.InvalidateNodes();
+                    controller.InvalidateRegion();
                 }
             }
         }
-
-
-        // Using a DependencyProperty as the backing store for MaxRowCount.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty MaxColumnCountProperty =
-            DependencyProperty.Register("MaxColumnCount", typeof(int), typeof(MultiView), new FrameworkPropertyMetadata(2));
 
         public Dictionary<int, UiController> Controllers { get; set; } = new Dictionary<int, UiController>();
 
@@ -473,11 +469,6 @@ namespace taskmaker_wpf.Views.Widget {
             Content = _grid;
         }
 
-        public int MaxColumnCount {
-            get { return (int)GetValue(MaxColumnCountProperty); }
-            set { SetValue(MaxColumnCountProperty, value); }
-        }
-
         private readonly Grid _grid;
 
         private ScrollViewer _scroll;
@@ -492,10 +483,14 @@ namespace taskmaker_wpf.Views.Widget {
             Controllers[state.Id] = uiController;
 
             Layout(state);
+
+            uiController.InvalidateNodes();
+            uiController.Invalidate();
         }
 
         public void Close() {
             _scroll.Content = null;
+            Controllers.Clear();
         }
 
         public void Layout(ControlUiState state) {
@@ -516,98 +511,8 @@ namespace taskmaker_wpf.Views.Widget {
 
             grid.Children.Add(Controllers[state.Id]);
             grid.Children.Add(textblock);
+
+
         }
-
-        //public void Layout() {
-        //    //if (ItemsSource == null) return;
-        //    if (UiStates == null) return;
-
-        //    //var items = ItemsSource.Cast<object>().ToList();
-        //    var grid = new Grid() {
-        //        Name = "Multiview_SubGrid",
-        //        Visibility = Visibility.Visible
-        //    };
-
-        //    var vm = DataContext as RegionControlUIViewModel;
-
-        //    Scroll.Content = grid;
-        //    Controllers.Clear();
-
-        //    if (UiStates.Count() == 1) {
-        //        var ui = new UiController {
-        //            VerticalAlignment = VerticalAlignment.Stretch,
-        //            HorizontalAlignment = HorizontalAlignment.Stretch,
-        //            Margin = new Thickness(16, 16, 8, 16),
-        //        };
-
-        //        var textblock = new TextBlock {
-        //            Text = UiStates[0].ToString(),
-        //            FontSize = 42,
-        //            Foreground = Brushes.DimGray,
-        //            VerticalAlignment = VerticalAlignment.Bottom,
-        //            HorizontalAlignment = HorizontalAlignment.Right,
-        //        };
-
-        //        grid.Children.Add(ui);
-        //        grid.Children.Add(textblock);
-
-        //        Controllers.Add(ui);
-        //    }
-        //    else if (UiStates.Count() == 0) {
-        //        var textblock = new TextBlock {
-        //            Text = "NULL",
-        //            VerticalAlignment = VerticalAlignment.Center,
-        //            HorizontalAlignment = HorizontalAlignment.Center,
-        //            Margin = new Thickness(2),
-        //        };
-
-        //        grid.Children.Add(textblock);
-        //    }
-        //    else {
-        //        int remainder, quotient = Math.DivRem(UiStates.Count(), MaxColumnCount, out remainder);
-
-        //        for (int i = 0; i < (remainder == 0 ? quotient : quotient + 1); i++) {
-        //            grid.RowDefinitions.Add(new RowDefinition() { MinHeight = 400 });
-        //        }
-
-        //        for (int i = 0; i < MaxColumnCount; i++) {
-        //            grid.ColumnDefinitions.Add(new ColumnDefinition());
-        //        }
-
-        //        for (int i = 0; i < UiStates.Count(); i++) {
-        //            int r, q = Math.DivRem(i, MaxColumnCount, out r);
-
-        //            //var item = new Button() {
-        //            //    Content = $"TEST{q}{r}",
-        //            //    Margin = new Thickness(2),
-
-        //            //};
-
-        //            var ui = new UiController(0) {
-        //                Margin = new Thickness(2),
-        //                VerticalAlignment = VerticalAlignment.Stretch,
-        //                HorizontalAlignment = HorizontalAlignment.Stretch,
-        //            };
-        //            var textblock = new TextBlock {
-        //                Text = UiStates[i].ToString(),
-        //                FontSize = 42,
-        //                Foreground = Brushes.DimGray,
-        //                VerticalAlignment = VerticalAlignment.Bottom,
-        //                HorizontalAlignment = HorizontalAlignment.Right,
-        //            };
-
-        //            Grid.SetColumn(ui, r);
-        //            Grid.SetRow(ui, q);
-
-        //            Grid.SetColumn(textblock, r);
-        //            Grid.SetRow(textblock, q);
-
-        //            grid.Children.Add(ui);
-        //            grid.Children.Add(textblock);
-
-        //            Controllers.Add(ui);
-        //        }
-        //    }
-        //}
     }
 }

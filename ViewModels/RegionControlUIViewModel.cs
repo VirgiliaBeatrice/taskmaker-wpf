@@ -33,6 +33,7 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.Collections;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Messaging;
+using System.DirectoryServices;
 
 namespace taskmaker_wpf.ViewModels {
 
@@ -143,6 +144,7 @@ namespace taskmaker_wpf.ViewModels {
     }
 
     public partial class RegionControlUIViewModel : ObservableObject, INavigationAware {
+        private readonly IMapper _map;
         private readonly EvaluationService _evaluationSrv;
         private readonly MotorService _motorSrv;
         private readonly UIService _uiSrv;
@@ -150,6 +152,7 @@ namespace taskmaker_wpf.ViewModels {
         public ObservableCollection<ControlUiState> UiStates { get; private set; } = new();
 
         public RegionControlUIViewModel(EvaluationService evaluationService,MotorService motorService, UIService uIService) {
+
             _evaluationSrv = evaluationService;
             _motorSrv = motorService;
             _uiSrv = uIService;
@@ -186,7 +189,7 @@ namespace taskmaker_wpf.ViewModels {
             var entity = new ControlUiEntity {
                 Id = state.Id,
                 Name = state.Name,
-                Nodes = state.Nodes.Select(e => new NodeEntity { Id = e.Id, Value = e.Value }).ToArray(),
+                Nodes = state.Nodes.Select(e => new NodeEntity { Id = e.Id, Value = e.Value }).ToList(),
             };
 
             _uiSrv.Update(entity);
@@ -198,11 +201,36 @@ namespace taskmaker_wpf.ViewModels {
             var state = new ControlUiState(this) {
                 Id = entity.Id,
                 Name = entity.Name,
-                Nodes = entity.Nodes?.Select(e => new NodeState(e.Id, e.Value)).ToArray(),
+                Nodes = entity.Nodes.Select(e => new NodeState(e.Id, e.Value)).ToArray(),
+                Regions = MapFromEntity(entity.Regions.ToArray()),
             };
 
             UiStates.Add(state);
         }
+
+        [RelayCommand]
+        private void TryBuild(ControlUiState state) {
+            var entity = _uiSrv.Read(state.Id);
+
+            if (entity.Nodes.Count >= 3) {
+                entity.Build();
+
+                var newRegions = entity.Regions.Select(entity =>
+                {
+                    if (entity is SimplexRegionEntity) {
+                        return BaseRegionState.Create<SimplexRegionEntity, SimplexState>(entity as SimplexRegionEntity) as BaseRegionState;
+                    }
+                    else if (entity is VoronoiRegionEntity) {
+                        return BaseRegionState.Create<VoronoiRegionEntity, VoronoiState>(entity as VoronoiRegionEntity);
+                    }
+                    else
+                        throw new InvalidOperationException($"Unsupported entity type: {entity.GetType()}");
+                }).ToArray();
+
+                state.Regions = newRegions;
+            }
+        }
+
 
         [RelayCommand]
         private void CreateMap() {
@@ -211,11 +239,11 @@ namespace taskmaker_wpf.ViewModels {
 
         [RelayCommand]
         public void UpdateUi(ControlUiState state) {
-            var entity = new ControlUiEntity {
-                Id = state.Id,
-                Name = state.Name,
-                Nodes = state.Nodes.Select(e => new NodeEntity { Id = e.Id, Value = e.Value }).ToArray(),
-            };
+            var entity = _uiSrv.Read(state.Id);
+
+            entity.Id = state.Id;
+            entity.Name = state.Name;
+            entity.Nodes = state.Nodes.Select(e => new NodeEntity { Id = e.Id, Value = e.Value }).ToList();
 
             _uiSrv.Update(entity);
         }
@@ -231,6 +259,19 @@ namespace taskmaker_wpf.ViewModels {
         public void OnNavigatedTo(NavigationContext navigationContext) {
             //throw new NotImplementedException();
         }
+
+        private BaseRegionState[] MapFromEntity(BaseRegionEntity[] entities) {
+            return entities.Select(entity => {
+                if (entity is SimplexRegionEntity) {
+                    return BaseRegionState.Create<SimplexRegionEntity, SimplexState>(entity as SimplexRegionEntity) as BaseRegionState;
+                }
+                else if (entity is VoronoiRegionEntity) {
+                    return BaseRegionState.Create<VoronoiRegionEntity, VoronoiState>(entity as VoronoiRegionEntity);
+                }
+                else
+                    throw new InvalidOperationException($"Unsupported entity type: {entity.GetType()}");
+            }).ToArray();
+        }
     }
 
     public interface IRegionState {
@@ -241,21 +282,49 @@ namespace taskmaker_wpf.ViewModels {
     public class BaseRegionState : IRegionState {
         public int Id { get; set; }
         public string Name { get; set; }
+        public Point[] Vertices { get; set; } = new Point[0];
+
+        public override string ToString() {
+            return Name;
+        }
+
+        public static TOut Create<TIn, TOut>(TIn entity)
+            where TIn : BaseRegionEntity, new()
+            where TOut : BaseRegionState, new() {
+            // Checking if the given entity is of type SimplexRegionEntity
+            if (entity is SimplexRegionEntity simplexEntity) {
+                return SimplexState.Create(simplexEntity) as TOut;
+            }
+            // Add more type checks as necessary for other region entity types.
+            // Example:
+            else if (entity is VoronoiRegionEntity) {
+                return VoronoiState.Create(entity as VoronoiRegionEntity) as TOut;
+            }
+            else
+            // Handle the case where the entity type doesn't match any known state creation logic.
+                throw new InvalidOperationException($"No corresponding state type found for entity type {typeof(TIn)}");
+        }
     }
 
     public class SimplexState : BaseRegionState {
-        public Point[] Points { get; set; } = new Point[0];
-
-        public override string ToString() {
-            return Name;
+        public static SimplexState Create(SimplexRegionEntity entity) {
+            return new SimplexState() {
+                Id = entity.Id,
+                Name = entity.Name,
+                Vertices = entity.Vertices
+            };
         }
     }
-
 
     public class VoronoiState : BaseRegionState {
-        public Point[] Points { get; set; } = new Point[0];
-        public override string ToString() {
-            return Name;
+        // add a create method for VoronoiState
+        public static VoronoiState Create(VoronoiRegionEntity entity) {
+            return new VoronoiState() {
+                Id = entity.Id,
+                Name = entity.Name,
+                Vertices = entity.Vertices
+            };
         }
     }
+
 }

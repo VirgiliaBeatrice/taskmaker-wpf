@@ -77,8 +77,7 @@
               VerticalAlignment="Stretch">
           <w:MultiView x:Name="multiView"
                        Focusable="True"
-                       Width="auto"
-                       MaxColumnCount="2" />
+                       Width="auto" />
 
           <StackPanel Orientation="Vertical"
                       VerticalAlignment="Top"
@@ -213,8 +212,7 @@
 
                             </Style>
                           </StackPanel.Resources>
-                          <Button Content="&#xe777;"
-                                  Command="{Binding InitialzeCommand}" />
+                          <Button Content="&#xe777;" />
                           <Button Content="&#xe768;" />
                           <Button Content="&#xe769;">
                           </Button>

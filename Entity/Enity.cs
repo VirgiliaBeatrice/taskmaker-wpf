@@ -48,14 +48,20 @@ namespace taskmaker_wpf.Entity {
     }
 
     public class BaseEntity : IEntity {
-        public int Id { get; set; } = -1;
+        private int id = -1;
+
+        public int Id {
+            get => id;
+            set {
+                id = value;
+                Name = $"{GetType().Name}-{id}";
+            }
+        }
         public string Name { get; set; }
 
-        public BaseEntity() {
-            Name = GetType().Name + "_";
-        }
+        public BaseEntity() { }
         public override string ToString() {
-            return GetType().Name + "_" + Name;
+            return Name;
         }
     }
 
@@ -169,6 +175,7 @@ namespace taskmaker_wpf.Entity {
     [XmlInclude(typeof(SimplexRegionEntity))]
     [XmlInclude(typeof(VoronoiRegionEntity))]
     public abstract class BaseRegionEntity : BaseEntity {
+        public abstract Point[] Vertices { get; }
         public abstract double[] GetLambdas(Point pt, NodeEntity[] collection);
 
         public abstract BaseRegionEntity HitTest(Point pt);
@@ -194,7 +201,7 @@ namespace taskmaker_wpf.Entity {
 
     public class SimplexRegionEntity : BaseRegionEntity {
         public NodeEntity[] Nodes { get; set; }
-        public Point[] Vertices => Nodes.Select(x => x.Value).ToArray();
+        public override Point[] Vertices => Nodes.Select(x => x.Value).ToArray();
 
         public SimplexRegionEntity() { }
 
@@ -233,7 +240,8 @@ namespace taskmaker_wpf.Entity {
     [XmlInclude(typeof(SectoralVoronoiRegionEntity))]
     public class VoronoiRegionEntity : BaseRegionEntity {
         public double Factor { get; set; } = 200.0;
-        public Point[] Vertices { get; set; }
+        public override Point[] Vertices => _vertices;
+        protected Point[] _vertices;
         public SimplexRegionEntity[] Governors { get; set; }
 
         public VoronoiRegionEntity() { }
@@ -345,7 +353,7 @@ namespace taskmaker_wpf.Entity {
             var ray0 = it + np.dot(theta0, stdDir0) * Factor;
             var ray1 = it + np.dot(theta1, stdDir1) * Factor;
 
-            Vertices = (new NDarray[] { ray0, it, ray1 })
+            _vertices = (new NDarray[] { ray0, it, ray1 })
                 .Select(e => e.astype(np.int32).GetData<int>())
                 .Select(e => new Point(e[0], e[1]))
                 .ToArray();
@@ -450,7 +458,7 @@ namespace taskmaker_wpf.Entity {
                 return np.array(new double[] { e00, e01, e10, e11 }).reshape(2, 2);
             }
 
-            Vertices = new Point[] {
+            _vertices = new Point[] {
                 new Point(a.astype(np.int32).GetData<int>()[0], a.astype(np.int32).GetData<int>()[1]),
                 new Point(b.astype(np.int32).GetData<int>()[0], b.astype(np.int32).GetData<int>()[1]),
                 new Point(bP.astype(np.int32).GetData<int>()[0], bP.astype(np.int32).GetData<int>()[1]),
@@ -468,11 +476,11 @@ namespace taskmaker_wpf.Entity {
 
 
     public class ControlUiEntity : BaseEntity {
-        private NodeEntity[] nodes = new NodeEntity[0];
-        private BaseRegionEntity[] regions = new BaseRegionEntity[0];
+        private List<NodeEntity> nodes = new List<NodeEntity>();
+        private List<BaseRegionEntity> regions = new List<BaseRegionEntity>();
 
-        public BaseRegionEntity[] Regions { get => regions; set => regions = value; }
-        public NodeEntity[] Nodes { get => nodes; set => nodes = value; }
+        public List<BaseRegionEntity> Regions { get => regions; set => regions = value; }
+        public List<NodeEntity> Nodes { get => nodes; set => nodes = value; }
 
         public double[] Value { get; set; } = new double[2];
 
@@ -499,7 +507,7 @@ namespace taskmaker_wpf.Entity {
                     item.Name = $"{item.GetType()}-{item.Id}";
                 }
 
-                Regions = regions.ToArray();
+                Regions = regions.ToList();
             }
             else if (nodes.Length == 3) {
                 var simplex = new SimplexRegionEntity(nodes);
@@ -523,7 +531,7 @@ namespace taskmaker_wpf.Entity {
                     item.Name = $"{item.GetType()}-{item.Id}";
                 }
 
-                Regions = regions.ToArray();
+                Regions = regions.ToList();
             }
             else {
                 var simplices = QhullCSharp.RunDelaunay(input)
@@ -550,7 +558,7 @@ namespace taskmaker_wpf.Entity {
                     item.Name = $"{item.GetType()}-{item.Id}";
                 }
 
-                Regions = regions.ToArray();
+                Regions = regions.ToList();
             }
         }
     }

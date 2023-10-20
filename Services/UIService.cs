@@ -66,7 +66,6 @@ namespace taskmaker_wpf.Services {
 
         public override bool Update(ControlUiEntity entity) {
             var result = base.Update(entity);
-
             //WeakReferenceMessenger.Default.Send(new UiUpdatedMessage() { Entity = entity });
 
             return result;

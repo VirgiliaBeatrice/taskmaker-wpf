@@ -11,13 +11,25 @@ using Point = System.Windows.Point;
 
 namespace taskmaker_wpf.Views.Widget {
     public class VoronoiShape : UserControl {
-        // Using a DependencyProperty as the backing store for Points.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty PointsProperty =
-            DependencyProperty.Register("Points", typeof(IEnumerable<Point>), typeof(VoronoiShape), new FrameworkPropertyMetadata(null, OnPointsPropertyChanged));
+        private int _id;
 
-        private Matrix _transform = Matrix.Identity;
-        public VoronoiShape(int uiId, BaseRegionState state) {
-            UiId = uiId;
+        public int Id {
+            get { return _id; }
+            set { _id = value; }
+        }
+
+        private Point[] _vertices;
+
+        public Point[] Vertices {
+            get { return _vertices; }
+            set { _vertices = value; }
+        }
+
+        public UiController Ui { get; set; }
+
+        public VoronoiShape(int id, Point[] points) {
+            Id = id;
+            Vertices = points;
 
             MouseEnter += (s, e) => {
                 var v = s as VoronoiShape;
@@ -32,28 +44,14 @@ namespace taskmaker_wpf.Views.Widget {
 
                 path.Opacity = 1;
             };
+
+            Loaded += (_, _) => {
+                Ui = VisualTreeHelperExtensions.FindParentOfType<UiController>(this);
+            };
         }
 
-        public IEnumerable<Point> Points {
-            get { return (IEnumerable<Point>)GetValue(PointsProperty); }
-            set { SetValue(PointsProperty, value); }
-        }
-
-        public Matrix Transform {
-            get => _transform;
-            set {
-                var prevT = _transform;
-                _transform = value;
-
-                if (prevT != _transform) {
-                    Invalidate();
-                }
-            }
-        }
-
-        public int UiId { get; set; }
         public void Invalidate() {
-            var points = Points.Select(e => Transform.Transform(e)).ToArray();
+            var points = Vertices;
 
             if (points.Length == 3) {
                 var radius = (points[1] - points[0]).Length;
@@ -91,7 +89,7 @@ namespace taskmaker_wpf.Views.Widget {
                 pathFig.Segments.Add(new ArcSegment { Point = p0, Size = new Size(radius, radius), SweepDirection = SweepDirection.Counterclockwise });
                 pathFig.Segments.Add(new LineSegment { Point = o });
 
-                var fill = ColorManager.GetTintedColor(ColorManager.Palette[UiId], 2);
+                var fill = ColorManager.GetTintedColor(ColorManager.Palette[0], 2);
                 var radial = new RadialGradientBrush();
                 var radialRadius = (p0 - o).Length;
 
@@ -127,7 +125,7 @@ namespace taskmaker_wpf.Views.Widget {
                 pathFig.Segments.Add(new LineSegment { Point = points[3] });
                 pathFig.Segments.Add(new LineSegment { Point = points[0] });
 
-                var fill = ColorManager.GetTintedColor(ColorManager.Palette[UiId], 2);
+                var fill = ColorManager.GetTintedColor(ColorManager.Palette[0], 2);
                 var linear = new LinearGradientBrush();
 
                 linear.MappingMode = BrushMappingMode.Absolute;
@@ -147,12 +145,6 @@ namespace taskmaker_wpf.Views.Widget {
 
                 Content = path;
             }
-        }
-
-        private static void OnPointsPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            var shape = (VoronoiShape)d;
-
-            shape.Invalidate();
         }
     }
 }

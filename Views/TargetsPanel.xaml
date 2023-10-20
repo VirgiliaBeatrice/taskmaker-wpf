@@ -48,16 +48,13 @@
               <DropShadowEffect BlurRadius="10"
                                 Opacity="0.2" />
             </Border.Effect>
-            <ListBox x:Name="lbMaps"
-                     ItemsSource="{Binding MapStates}"
-                     SelectedItem="{Binding SelectedMap, Mode=TwoWay}" />
+            <ListBox x:Name="lbMaps"/>
           </Border>
         </Popup>
 
         <Button DockPanel.Dock="Right"
                 Width="20"
-                Height="20"
-                Command="{Binding InitializeMapCommand}">
+                Height="20">
           <Button.Content>
             <Image Width="12"
                    Height="12"
@@ -113,105 +110,6 @@
             </x:Array>
           </d:ContentControl.Content>
         </ContentControl>
-      </Expander>
-
-      <Expander BorderBrush="{x:Static SystemColors.ActiveBorderBrush}"
-                BorderThickness="1"
-                Margin="0 5 0 5"
-                Header="Valid Plugs"
-                IsExpanded="False">
-        <StackPanel>
-          <Expander IsExpanded="True"
-                    Margin="10"
-                    Header="In Plugs">
-            <ListBox x:Name="lbInPlugs"
-                     Margin="2"
-                     ItemsSource="{Binding ValidInPlugs}"
-                     SelectionMode="Multiple">
-              <ListBox.Style>
-                <Style TargetType="ListBox"
-                       BasedOn="{StaticResource {x:Type ListBox}}">
-                  <Style.Triggers>
-                    <DataTrigger Binding="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=HasItems}"
-                                 Value="False">
-                      <Setter Property="Visibility"
-                              Value="Collapsed" />
-
-                    </DataTrigger>
-                  </Style.Triggers>
-                </Style>
-              </ListBox.Style>
-              <ListBox.ItemTemplate>
-                <DataTemplate>
-                  <StackPanel HorizontalAlignment="Left"
-                              Margin="2"
-                              Orientation="Horizontal">
-                    <CheckBox
-                        IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}},Path=IsSelected}"
-                              VerticalAlignment="Center"
-                              HorizontalAlignment="Center" />
-                    <Label Margin="2"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center"
-                           Content="{Binding Name}" />
-                  </StackPanel>
-                </DataTemplate>
-              </ListBox.ItemTemplate>
-            </ListBox>
-          </Expander>
-
-          <Expander IsExpanded="True"
-                    Margin="10"
-                    Header="Out Plugs">
-
-            <ListBox SelectionMode="Multiple"
-                     x:Name="lbOutPlugs"
-                     Margin="2"
-                     ItemsSource="{Binding ValidOutPlugs}">
-              <ListBox.Style>
-                <Style TargetType="ListBox"
-                       BasedOn="{StaticResource {x:Type ListBox}}">
-                  <Style.Triggers>
-                    <DataTrigger Binding="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=HasItems}"
-                                 Value="False">
-                      <Setter Property="Visibility"
-                              Value="Collapsed" />
-
-                    </DataTrigger>
-                  </Style.Triggers>
-                </Style>
-              </ListBox.Style>
-              <ListBox.ItemTemplate>
-                <DataTemplate>
-                  <StackPanel HorizontalAlignment="Left"
-                              Margin="2"
-                              Orientation="Horizontal">
-                    <CheckBox
-                        IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}},Path=IsSelected}"
-                              VerticalAlignment="Center"
-                              HorizontalAlignment="Center" />
-                    <Label Margin="2"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center"
-                           Content="{Binding Name}" />
-                  </StackPanel>
-                </DataTemplate>
-              </ListBox.ItemTemplate>
-            </ListBox>
-
-          </Expander>
-
-          <Button Width="100"
-                  Margin="2"
-                  >
-
-            <Button.Content>
-              <Image Source="{svgc:SvgImage Source=/icons/check.svg}"
-                     Width="12"
-                     Height="12" />
-            </Button.Content>
-          </Button>
-        </StackPanel>
       </Expander>
     </StackPanel>
   </Grid>

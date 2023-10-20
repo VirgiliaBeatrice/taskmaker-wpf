@@ -81,10 +81,10 @@ namespace taskmaker_wpf {
                 cfg.CreateMap<BaseRegionEntity, BaseRegionState>();
                 cfg.CreateMap<SimplexRegionEntity, SimplexState>()
                     .IncludeBase<BaseRegionEntity, BaseRegionState>()
-                    .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices));
+                    .ForMember(d => d.Vertices, o => o.MapFrom(s => s.Vertices));
                 cfg.CreateMap<VoronoiRegionEntity, VoronoiState>()
                     .IncludeBase<BaseRegionEntity, BaseRegionState>()
-                    .ForMember(d => d.Points, o => o.MapFrom(s => s.Vertices));
+                    .ForMember(d => d.Vertices, o => o.MapFrom(s => s.Vertices));
             });
 
 

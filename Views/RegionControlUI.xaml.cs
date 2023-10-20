@@ -50,7 +50,18 @@ namespace taskmaker_wpf.Views {
         public static readonly DependencyProperty UiStateProperty =
             DependencyProperty.Register("UiState", typeof(ControlUiState), typeof(RegionControlUI), new PropertyMetadata(default));
 
-            
+
+
+        public ICommand TryBuild {
+            get { return (ICommand)GetValue(TryBuildProperty); }
+            set { SetValue(TryBuildProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for TryBuild.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TryBuildProperty =
+            DependencyProperty.Register("TryBuild", typeof(ICommand), typeof(RegionControlUI), new PropertyMetadata(null));
+
+
 
         public UiMode Mode { get; set; } = UiMode.Default;
 
@@ -67,6 +78,8 @@ namespace taskmaker_wpf.Views {
         }
 
         public InfoPanel InfoPanel => infoPanel;
+
+        private ControlUiState _selectedUiState;
 
 
         public List<ControlUiState> Uis { get; set; } = new List<ControlUiState>();
@@ -99,6 +112,12 @@ namespace taskmaker_wpf.Views {
                 };
 
                 multiView.SetBinding(MultiView.UiStatesProperty, uiStatesBind);
+
+                //var tryBuildCmdBinding = new Binding("TryBuildCommand") {
+                //    Source = vm,
+                //};
+
+                //multiView.SetBinding(RegionControlUI.TryBuildProperty, tryBuildCmdBinding);
             }
         }
 
@@ -120,44 +139,6 @@ namespace taskmaker_wpf.Views {
             var vm = DataContext as RegionControlUIViewModel;
 
             //vm?.Invalidate();
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e) {
-            // find all selected uis
-            var vm = DataContext as RegionControlUIViewModel;
-
-            // find listbox according to the x:Name
-            var lb = FindName("lbUiStates") as ListBox;
-
-            //vm.SelectedUis = lb.SelectedItems.Cast<ControlUiState>().ToArray();
-        }
-
-        private void CheckBox_Checked(object sender, RoutedEventArgs e) {
-            var uiState = (sender as CheckBox).DataContext as ControlUiState;
-
-            var lb = FindName("lbUiStates") as ListBox;
-
-            lb.SelectedItems.Add(uiState);
-        }
-
-        private void CheckBox_Unchecked(object sender, RoutedEventArgs e) {
-            var uiState = (sender as CheckBox).DataContext as ControlUiState;
-
-            var lb = FindName("lbUiStates") as ListBox;
-
-            lb.SelectedItems.Remove(uiState);
-        }
-
-        private void Border_MouseEnter(object sender, MouseEventArgs e) {
-            var br = (sender as Border);
-
-            br.Opacity = 1;
-        }
-
-        private void Border_MouseLeave(object sender, MouseEventArgs e) {
-            var br = sender as Border;
-
-            br.Opacity = 0.4;
         }
 
         private void ChangeMode(UiMode mode) {
@@ -187,12 +168,19 @@ namespace taskmaker_wpf.Views {
         private void ToolBar_Click(object sender, RoutedEventArgs e) {
             var btn = sender as Button;
 
+
             // TODO: add all modes.
             switch (btn.Name) {
                 case "tbBtnSelect":
                     ChangeMode(UiMode.Default);
                     snackbar.Icon = Icons.Select;
                     snackbar.SupportingText = "Select";
+
+
+                    if (DataContext is RegionControlUIViewModel vm) {
+                        if (_selectedUiState != null)
+                            vm.TryBuildCommand.Execute(_selectedUiState);
+                    }
                     break;
                 case "tbBtnAdd":
                     ChangeMode(UiMode.Add);
@@ -247,7 +235,9 @@ namespace taskmaker_wpf.Views {
             var list = sender as ListBox;
 
             if (e.LeftButton == MouseButtonState.Pressed) {
+                multiView.Close();
                 multiView.Open(list.SelectedItem as ControlUiState);
+                _selectedUiState = list.SelectedItem as ControlUiState;
 
                 // Send a ShowMessageBoxMessage to inform success
                 var msg = new ShowMessageBoxMessage() {

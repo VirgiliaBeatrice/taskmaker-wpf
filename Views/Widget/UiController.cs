@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using taskmaker_wpf.ViewModels;
+using static System.Windows.Forms.AxHost;
 using Point = System.Windows.Point;
 using Rectangle = System.Windows.Shapes.Rectangle;
 
@@ -45,7 +46,8 @@ namespace taskmaker_wpf.Views.Widget {
         public MultiView MultiView { get; set; }
 
         public List<NodeShape> Nodes { get; set; } = new List<NodeShape>();
-        public List<SimplexShape> Simplices { get; set; }
+        public List<SimplexShape> Simplices { get; set; } = new List<SimplexShape>();
+        public List<VoronoiShape> Voronois { get; set; } = new List<VoronoiShape>();
 
         public ControlUiState UiState { get; set; }
 
@@ -140,6 +142,65 @@ namespace taskmaker_wpf.Views.Widget {
 
         }
 
+        public void Invalidate() {
+            InvalidateNodes();
+            InvalidateRegion();
+        }
+
+        public void InvalidateNodes() {
+            // Clear all new nodes.
+            foreach (var node in Nodes) {
+                Canvas.Children.Remove(node);
+            }
+
+            Nodes.Clear();
+
+            // Add nodes
+            foreach (var node in UiState.Nodes) {
+                var nodeShape = new NodeShape(node.Id) {
+                    Position = node.Value,
+                };
+
+                Nodes.Add(nodeShape);
+                Canvas.Children.Add(nodeShape);
+            }
+        }
+
+        public void ClearRegion() {
+            foreach (var region in Simplices) {
+                Canvas.Children.Remove(region);
+            }
+            foreach (var region in Voronois) {
+                Canvas.Children.Remove(region);
+            }
+
+            Simplices.Clear();
+            Voronois.Clear();
+        }
+
+        public void InvalidateRegion() {
+            // clear all regions
+            ClearRegion();
+
+            // add regions
+            foreach (var region in UiState.Regions) {
+                if (region is SimplexState s) {
+                    var simplex = new SimplexShape(region.Id, region.Vertices);
+
+                    Simplices.Add(simplex);
+                    Canvas.Children.Add(simplex);
+                }
+                else if (region is VoronoiState v) {
+                    var voronoi = new VoronoiShape(region.Id, region.Vertices);
+
+                    Voronois.Add(voronoi);
+                    Canvas.Children.Add(voronoi);
+                }
+                else
+                    throw new InvalidOperationException();
+            }
+        }
+
         // Single controller
         public double[][] GetActuationValues() {
             return Nodes.Select(e => e.ActuationValue).ToArray();
@@ -163,10 +224,13 @@ namespace taskmaker_wpf.Views.Widget {
                     break;
                 case UiMode.Add:
                     Indicator.Visibility = Visibility.Visible;
+                    ClearRegion();
                     break;
                 case UiMode.Remove:
+                    ClearRegion();
                     break;
                 case UiMode.Move:
+                    ClearRegion();
                     break;
                 case UiMode.Assign:
                     break;
@@ -340,7 +404,20 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         private void EndMove(object sender, MouseButtonEventArgs e) {
-            _moveTarget = null;
+            if (_moveTarget != null) {
+                var id = _moveTarget.NodeId;
+                var position = _moveTarget.Position;
+
+                UiState.Nodes = UiState.Nodes.Select(e => {
+                    if (e.Id == id)
+                        return new NodeState { Id = id, Value = position };
+                    else
+                        return e;
+                }).ToArray();
+
+
+                _moveTarget = null;
+            }
         }
 
         private void PerformRemove(object sender, MouseButtonEventArgs e) {
@@ -352,8 +429,12 @@ namespace taskmaker_wpf.Views.Widget {
                 var parent = VisualTreeHelperExtensions.FindParentOfType<NodeShape>(hit);
 
                 if (parent != null) {
-                    Canvas.Children.Remove(parent);
-                    Nodes.Remove(parent);
+                    var id = parent.NodeId;
+
+                    UiState.Nodes = UiState.Nodes.Where(e => e.Id != id).ToArray();
+
+                    //Canvas.Children.Remove(parent);
+                    //Nodes.Remove(parent);
                 }
             }
         }
@@ -372,14 +453,6 @@ namespace taskmaker_wpf.Views.Widget {
             Canvas.SetTop(element, y - halfHeight);
 
         }
-
-        //public ControlUiState ToState() {
-        //    return new ControlUiState {
-        //        Id = Id,
-        //        Name = $"Control Ui {Id}",
-        //        Nodes = Nodes.Select(e => e.ToState()).ToArray(),
-        //    };
-        //}
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo) {
             CenteringT = new TranslateTransform(sizeInfo.NewSize.Width / 2, sizeInfo.NewSize.Height / 2);
