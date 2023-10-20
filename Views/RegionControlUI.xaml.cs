@@ -247,7 +247,7 @@ namespace taskmaker_wpf.Views {
             var list = sender as ListBox;
 
             if (e.LeftButton == MouseButtonState.Pressed) {
-                multiView.OpenUiController((list.SelectedItem as ControlUiState).Id);
+                multiView.Open(list.SelectedItem as ControlUiState);
 
                 // Send a ShowMessageBoxMessage to inform success
                 var msg = new ShowMessageBoxMessage() {

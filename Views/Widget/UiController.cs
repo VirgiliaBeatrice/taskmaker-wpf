@@ -99,15 +99,15 @@ namespace taskmaker_wpf.Views.Widget {
                 StrokeThickness = 1,
             };
 
-            box = new Rectangle {
-                Width = 100,
-                Height = 200,
-                Fill = Brushes.AliceBlue,
-                Opacity = 0.5
-            };
-            billboard = new TextBlock {
-                Text = "Y+"
-            };
+            //box = new Rectangle {
+            //    Width = 100,
+            //    Height = 200,
+            //    Fill = Brushes.AliceBlue,
+            //    Opacity = 0.5
+            //};
+            //billboard = new TextBlock {
+            //    Text = "Y+"
+            //};
 
             var axisX = new Arrow {
                 Name = "AxisX",
@@ -127,8 +127,8 @@ namespace taskmaker_wpf.Views.Widget {
             Canvas.Children.Add(axisY);
 
             Canvas.Children.Add(circle);
-            Canvas.Children.Add(box);
-            Canvas.Children.Add(billboard);
+            //Canvas.Children.Add(box);
+            //Canvas.Children.Add(billboard);
 
             Canvas.Children.Add(Indicator);
 
@@ -406,8 +406,8 @@ namespace taskmaker_wpf.Views.Widget {
 
             Nodes.ForEach(e => SetPosition(e, e.Position.X, e.Position.Y));
             SetPosition(circle, 0, 0);
-            SetPosition(box, 0, 0);
-            SetPosition(billboard, 0, 100);
+            //SetPosition(box, 0, 0);
+            //SetPosition(billboard, 0, 100);
         }
 
         private void ShowAddPointer(object sender, MouseEventArgs e) {
