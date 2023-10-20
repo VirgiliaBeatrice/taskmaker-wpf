@@ -98,6 +98,8 @@ namespace taskmaker_wpf.ViewModels {
         private int[] _keys;
         [ObservableProperty]
         private MapEntry<double[], double[]>[] _entries = new MapEntry<double[], double[]>[0];
+        [ObservableProperty]
+        private double[][] _values;
 
         public override string ToString() {
             return Name;
@@ -148,7 +150,6 @@ namespace taskmaker_wpf.ViewModels {
     }
 
     public partial class RegionControlUIViewModel : ObservableObject, INavigationAware {
-        private readonly IMapper _map;
         private readonly EvaluationService _evaluationSrv;
         private readonly MotorService _motorSrv;
         private readonly UIService _uiSrv;

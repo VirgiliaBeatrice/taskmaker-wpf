@@ -25,7 +25,6 @@ using System.Windows.Threading;
 using taskmaker_wpf.ViewModels;
 using Unity;
 using Point = System.Windows.Point;
-using Rectangle = System.Windows.Shapes.Rectangle;
 
 namespace taskmaker_wpf.Views.Widget {
 
@@ -69,80 +68,6 @@ namespace taskmaker_wpf.Views.Widget {
         Pan,
         Zoom,
         Reset,
-    }
-
-    public static class Helper {
-
-        //public static NodeInfo[][] Calc(NodeInfo[] a, NodeInfo[] b) {
-        //    var result = new List<NodeInfo[]>();
-
-        //    for (int i = 0; i < a.Length; i++) {
-        //        for (int j = 0; j < b.Length; j++) {
-        //            result.Add(new NodeInfo[] { a[i], b[j] });
-        //        }
-        //    }
-
-        //    return result.ToArray();
-        //}
-
-        //public static NodeInfo[][] Calc(NodeInfo[] a, NodeInfo[][] b) {
-        //    var result = new List<NodeInfo[]>();
-
-        //    for (int i = 0; i < a.Length; i++) {
-        //        for (int j = 0; j < b.Length; j++) {
-        //            result.Add(new NodeInfo[] { a[i] }.Concat(b[j]).ToArray());
-        //        }
-        //    }
-
-        //    return result.ToArray();
-        //}
-
-        //public static double Cross(this Vector a, Vector b) {
-        //    return a.X * b.Y - a.Y * b.X;
-        //}
-
-        //public static NodeInfo[][] GetCombinations(IEnumerable<NodeInfo[]> nodeSets) {
-        //    if (nodeSets.Count() == 1)
-        //        return nodeSets.ToArray();
-        //    else {
-        //        var a = nodeSets.Take(1).First();
-        //        var b = nodeSets.Skip(1).ToArray();
-
-        //        NodeInfo[][] result;
-
-        //        if (b.Count() > 1) {
-        //            result = Calc(a, GetCombinations(b));
-        //        }
-        //        else {
-        //            result = Calc(a, b.First());
-        //        }
-
-        //        return result;
-        //    }
-        //}
-
-        //public static (double, double) Intersect(Point[] lineA, Point[] lineB) {
-        //    var a = lineA[0];
-        //    var b = lineA[1];
-        //    var c = lineB[0];
-        //    var d = lineB[1];
-
-        //    var dir0 = b - a;
-        //    var dir1 = d - c;
-
-        //    if (dir0.Cross(dir1) == 0)
-        //        return (double.NaN, double.NaN);
-
-        //    // p = a + dir0 * t1 = c + dir1 * t2
-        //    // A * T = B
-        //    //var A = new Matrix() {
-        //    //}(2, 2, new float[] { dir0.X, dir1.X, dir0.Y, dir1.Y });
-        //    //var B = (c - a).ToVector();
-        //    //var T = A.Solve(B);
-
-        //    //return (T[0], T[1]);
-        //    return default;
-        //}
     }
 
     public static class LogicalTreeHelperExtensions {
