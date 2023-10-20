@@ -31,6 +31,7 @@ namespace taskmaker_wpf.Views.Widget {
             get => uiMode;
             set {
                 uiMode = value;
+
                 ChangeUiMode(UiMode);
             }
         }
@@ -91,7 +92,6 @@ namespace taskmaker_wpf.Views.Widget {
             PreviewMouseLeftButtonDown += Canvas_PreviewMouseLeftButtonDown;
             PreviewMouseLeftButtonUp += Canvas_PreviewMouseLeftButtonUp;
             PreviewMouseMove += Canvas_PreviewMouseMove;
-            PreviewKeyUp += UiController_PreviewKeyUp;
 
             // add a circle sign at origin
             circle = new Ellipse() {
@@ -210,15 +210,7 @@ namespace taskmaker_wpf.Views.Widget {
             return Nodes.Select(e => new double[] { e.Position.X, e.Position.Y }).ToArray();
         }
 
-        private void UiController_PreviewKeyUp(object sender, KeyEventArgs e) {
-            // when Key.Esc was triggered, reset the ui mode, using switch snippet
-
-            if (e.Key == Key.Escape) {
-                ChangeUiMode(UiMode.Default);
-            }
-        }
-
-        public void ChangeUiMode(UiMode mode) {
+        private void ChangeUiMode(UiMode mode) {
             switch (mode) {
                 case UiMode.Default:
                     break;

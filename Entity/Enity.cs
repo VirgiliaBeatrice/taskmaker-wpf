@@ -14,10 +14,10 @@ using System.Dynamic;
 using Numpy.Models;
 using System.Diagnostics;
 using System.Xml.Serialization;
-using System.Windows.Shapes;
 using System.Windows.Media;
 using taskmaker_wpf.Views.Widget;
-using System.Drawing.Drawing2D;
+using System.Security.Policy;
+using NLog;
 
 namespace taskmaker_wpf.Entity {
     public interface IEntity {
@@ -66,83 +66,109 @@ namespace taskmaker_wpf.Entity {
     }
 
     public class NLinearMapEntity : BaseEntity {
+        private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
+
+        public int[] Keys { get; set; } = new int[0];
+
         public NDarray Tensor { get; set; }
-        public int[] Shape { get; set; }
+        public int[] Shape => Tensor?.shape.Dimensions;
 
-        public bool IsDirty { get; set; } = true;
 
-        [XmlIgnore]
-        public bool IsFullySet {
-            get {
-                if (IsDirty)
-                    return false;
+        // Output: Motor/1 or UI/2
+        // Input: UI/2
+        public NLinearMapEntity(int[] shape) {
+            Tensor = np.empty(shape);
+
+            Tensor.fill(np.nan);
+        }
+
+        static NDarray ExpandAt(NDarray a, int axis, int idx, float fillValue) {
+            var end = a.shape[axis];
+            
+            // Slice array into two parts: before and after idx
+            var slice1 = new Slice(0, idx);
+            var slice2 = new Slice(idx, end - 1);
+
+            var slicesBefore = new Slice[a.ndim];
+            var slicesAfter = new Slice[a.ndim];
+
+            for (int i = 0; i < a.ndim; i++) {
+                if (i == axis) {
+                    slicesBefore[i] = slice1;
+                    slicesAfter[i] = slice2;
+                }
                 else {
-                    return !np.isnan(Tensor).any();
+                    slicesBefore[i] = Slice.All();
+                    slicesAfter[i] = Slice.All();
                 }
             }
+
+            var part1 = a[slicesBefore];
+            var part2 = a[slicesAfter];
+
+            // Create new array of the desired shape to insert
+            var newShape = new int[a.ndim];
+            for (int i = 0; i < a.ndim; i++) {
+                newShape[i] = a.shape[i];
+            }
+            newShape[axis] = 1;
+
+            var insertArray = np.full(new Shape(newShape), fillValue);
+
+            // Concatenate the three arrays together along the specified axis
+            return np.concatenate(new NDarray[] { part1, insertArray, part2 }, axis: axis);
         }
 
-        protected double[] tensor => Tensor.isnan().any() ? null : Tensor.GetData<double>();
-
-        public (int, int) GetCurrentStatus() {
-            return (Tensor.size - np.count_nonzero(np.isnan(Tensor)), Tensor.size);
+        public void ExpandAt(int axis, int idx) {
+            Tensor = ExpandAt(Tensor, axis, idx, np.nan);
         }
 
-        //public void Initialize(int[] basisDims) {
-        //    if (OutSockets.Length == 0 || InSockets.Length == 0) return;
+        static NDarray RemoveAt(NDarray a, int axis, int idx) {
+            // Slice array into two parts: before and after idx
+            var slice1 = new Slice(0, idx);
+            var slice2 = new Slice(idx + 1, a.shape[axis] - 1);
 
-        //    var targetDim = OutSockets.Select(e => e.Dimension).Sum();
-        //    //var basisDims = InputPorts.Select(e => e.BasisCount).ToArray();
+            var slicesBefore = new Slice[a.ndim];
+            var slicesAfter = new Slice[a.ndim];
 
-        //    Shape = new int[] { targetDim }.Concat(basisDims).ToArray();
-        //    Tensor = np.empty(Shape);
+            for (int i = 0; i < a.ndim; i++) {
+                if (i == axis) {
+                    slicesBefore[i] = slice1;
+                    slicesAfter[i] = slice2;
+                }
+                else {
+                    slicesBefore[i] = Slice.All();
+                    slicesAfter[i] = Slice.All();
+                }
+            }
 
-        //    Tensor.fill(np.nan);
+            var part1 = a[slicesBefore];
+            var part2 = a[slicesAfter];
 
-        //    IsDirty = false;
-        //}
+            // Concatenate the two arrays together along the specified axis
+            return np.concatenate(new NDarray[] { part1, part2 }, axis: axis);
+        }
 
-
-        //public void Initialize() {
-        //    if (OutSockets.Length == 0 || InSockets.Length == 0) return;
-
-        //    var targetDim = OutSockets.Select(e => e.Dimension).Sum();
-        //    var basisDims = InSockets.Select(e => e.BasisCount).ToArray();
-
-        //    Shape = new int[] { targetDim }.Concat(basisDims).ToArray();
-        //    Tensor = np.empty(Shape);
-
-        //    Tensor.fill(np.nan);
-
-        //    IsDirty = false;
-        //}
+        public void RemoveAt(int axis, int idx) {
+            Tensor = RemoveAt(Tensor, axis, idx);
+        }
 
         public void SetValue(int[] indices, double[] value) {
-            // only 1 bary
-            //Tensor[$":,{indices[0]}"] = np.atleast_2d(value);
+            // make slice
+            var slices = new Slice[Tensor.ndim];
 
-            // more than 1
-            var indexStr = $":,{string.Join(",", indices)}";
-            Tensor[indexStr] = value;
+            for (int i = 0; i < indices.Length; i++) {
+                if (indices[i] == -1)
+                    slices[i] = Slice.All();
+                else
+                    slices[i] = Slice.Index(indices[i]);
+            }
+
+            Tensor[slices] = np.array(value);
         }
 
-        public bool HasSet(int[] indices) {
-            var indexStr = $":,{string.Join(",", indices)}";
-
-            try {
-                return !np.isnan(Tensor[indexStr]).any();
-            }
-            catch (Exception e) {
-                Console.WriteLine(e);
-                return false;
-            }
-            //return Tensor[indexStr].GetData<double>().All(e => !double.IsNaN(e));
-        }
 
         public NDarray MapTo(double[][] lambdas) {
-            if (!IsFullySet)
-                return null;
-
             try {
                 NDarray kronProd = null;
                 //lambdas = np.atleast_2d(lambdas);
@@ -160,7 +186,7 @@ namespace taskmaker_wpf.Entity {
 
                 return w;
             } catch(Exception e) {
-                Console.WriteLine(e);
+                _logger.Error(e);
                 return np.zeros(1);
             }
         }
@@ -178,25 +204,6 @@ namespace taskmaker_wpf.Entity {
         public abstract Point[] Vertices { get; }
         public abstract double[] GetLambdas(Point pt, NodeEntity[] collection);
 
-        public abstract BaseRegionEntity HitTest(Point pt);
-
-        public static bool HitTest(Point[] polygon, Point pt) {
-            var result = false;
-
-            int j = polygon.Length - 1;
-
-            for (int i = 0; i < polygon.Count(); i++) {
-                if (polygon[i].Y < pt.Y && polygon[j].Y >= pt.Y || polygon[j].Y < pt.Y && polygon[i].Y >= pt.Y) {
-                    if (polygon[i].X + (pt.Y - polygon[i].Y) / (polygon[j].Y - polygon[i].Y) * (polygon[j].X - polygon[i].X) < pt.X) {
-                        result = !result;
-                    }
-                }
-
-                j = i;
-            }
-
-            return result;
-        }
     }
 
     public class SimplexRegionEntity : BaseRegionEntity {
@@ -207,10 +214,6 @@ namespace taskmaker_wpf.Entity {
 
         public SimplexRegionEntity(NodeEntity[] nodes) {
             Nodes = nodes;
-        }
-
-        public override BaseRegionEntity HitTest(Point pt) {
-            return HitTest(Vertices, pt) ? this : null;
         }
 
         public override double[] GetLambdas(Point pt, NodeEntity[] collection) {
@@ -245,10 +248,6 @@ namespace taskmaker_wpf.Entity {
         public SimplexRegionEntity[] Governors { get; set; }
 
         public VoronoiRegionEntity() { }
-
-        public override BaseRegionEntity HitTest(Point pt) {
-            return HitTest(Vertices, pt)? this : null;
-        }
 
         public override double[] GetLambdas(Point pt, NodeEntity[] collection) { throw new NotImplementedException(); }
 
@@ -311,20 +310,11 @@ namespace taskmaker_wpf.Entity {
 
         public SectoralVoronoiRegionEntity() { }
 
-        public override BaseRegionEntity HitTest(Point pt) {
-            return base.HitTest(pt);
-
-            //if (Geometry == null)
-            //    InitializeGeometry();
-
-            //return Geometry.FillContains(pt)? this : null;
-        }
-
         public SectoralVoronoiRegionEntity(NodeEntity[] nodes, SimplexRegionEntity[] simplices) {
             Governors = simplices;
             Invalidate(nodes);
 
-            InitializeGeometry();
+            //InitializeGeometry();
         }
 
         private void Invalidate(NodeEntity[] nodes) {
@@ -359,47 +349,47 @@ namespace taskmaker_wpf.Entity {
                 .ToArray();
         }
 
-        // Should be in View's logic
-        private void InitializeGeometry() {
-            var path = new GraphicsPath();
+        //// Should be in View's logic
+        //private void InitializeGeometry() {
+        //    var path = new GraphicsPath();
 
-            var radius = (Vertices[1] - Vertices[0]).Length;
-            var o = Vertices[1];
-            var p0 = Vertices[0];
-            var p1 = Vertices[2];
+        //    var radius = (Vertices[1] - Vertices[0]).Length;
+        //    var o = Vertices[1];
+        //    var p0 = Vertices[0];
+        //    var p1 = Vertices[2];
 
-            var p0o = (p0 - o);
-            var p1o = (p1 - o);
-            var dotProd = (p0o.X * p1o.X) + (p0o.Y * p1o.Y);
-            var alpha = Math.Abs(Math.Acos(dotProd / (p0o.Length * p1o.Length)));
+        //    var p0o = (p0 - o);
+        //    var p1o = (p1 - o);
+        //    var dotProd = (p0o.X * p1o.X) + (p0o.Y * p1o.Y);
+        //    var alpha = Math.Abs(Math.Acos(dotProd / (p0o.Length * p1o.Length)));
 
-            var midLen = (float)Math.Tan(alpha / 2.0f) * Math.Abs(p0o.Length);
+        //    var midLen = (float)Math.Tan(alpha / 2.0f) * Math.Abs(p0o.Length);
 
-            var op0 = o - p0;
+        //    var op0 = o - p0;
 
-            op0.Normalize();
-            //var op0 = Point.Normalize(o - p0);
-            var transform = System.Windows.Media.Matrix.Identity;
-            transform.Rotate(Math.PI * 90.0 / 180.0);
-            var midP0 = transform.Transform(op0);
-            //var midP0 = SKMatrix.CreateRotation((float)(Math.PI * 90.0 / 180.0)).MapVector(op0);
-            midP0 *= midLen;
+        //    op0.Normalize();
+        //    //var op0 = Point.Normalize(o - p0);
+        //    var transform = System.Windows.Media.Matrix.Identity;
+        //    transform.Rotate(Math.PI * 90.0 / 180.0);
+        //    var midP0 = transform.Transform(op0);
+        //    //var midP0 = SKMatrix.CreateRotation((float)(Math.PI * 90.0 / 180.0)).MapVector(op0);
+        //    midP0 *= midLen;
 
-            var mid = p0 + midP0;
+        //    var mid = p0 + midP0;
 
-            var pathGeo = new PathGeometry();
-            var pathFig = new PathFigure {
-                StartPoint = o,
-            };
+        //    var pathGeo = new PathGeometry();
+        //    var pathFig = new PathFigure {
+        //        StartPoint = o,
+        //    };
 
-            pathGeo.Figures.Add(pathFig);
+        //    pathGeo.Figures.Add(pathFig);
 
-            pathFig.Segments.Add(new LineSegment { Point = p1 });
-            pathFig.Segments.Add(new ArcSegment { Point = p0, Size = new Size(radius, radius), SweepDirection = SweepDirection.Counterclockwise });
-            pathFig.Segments.Add(new LineSegment { Point = o });
+        //    pathFig.Segments.Add(new LineSegment { Point = p1 });
+        //    pathFig.Segments.Add(new ArcSegment { Point = p0, Size = new Size(radius, radius), SweepDirection = SweepDirection.Counterclockwise });
+        //    pathFig.Segments.Add(new LineSegment { Point = o });
 
-            Geometry = pathGeo;
-        }
+        //    Geometry = pathGeo;
+        //}
 
         private double[] GetFactors(Point pt) {
             var a = np.array(Vertices[0].X, Vertices[0].Y);

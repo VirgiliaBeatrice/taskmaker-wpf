@@ -88,12 +88,16 @@ namespace taskmaker_wpf.ViewModels {
         }
     }
 
-    public class NLinearMapState {
-        public int Id { get; set; }
-        public string Name { get; set; }
+    public partial class NLinearMapState : ObservableObject {
+        [ObservableProperty]
+        private int _id;
+        [ObservableProperty]
+        private string _name;
 
-        public int[] Shape { get; set; }
-        public double[] Value { get; set; }
+        [ObservableProperty]
+        private int[] _keys;
+        [ObservableProperty]
+        private MapEntry<double[], double[]>[] _entries = new MapEntry<double[], double[]>[0];
 
         public override string ToString() {
             return Name;
@@ -148,16 +152,19 @@ namespace taskmaker_wpf.ViewModels {
         private readonly EvaluationService _evaluationSrv;
         private readonly MotorService _motorSrv;
         private readonly UIService _uiSrv;
+        private readonly MapService _mapSrv;
 
         public ObservableCollection<ControlUiState> UiStates { get; private set; } = new();
+        public ObservableCollection<NLinearMapEntity> MapStates { get; private set; } = new();
 
-        public RegionControlUIViewModel(EvaluationService evaluationService,MotorService motorService, UIService uIService) {
-
+        public RegionControlUIViewModel(EvaluationService evaluationService,MotorService motorService, UIService uIService, MapService mapService) {
+            _mapSrv = mapService;
             _evaluationSrv = evaluationService;
             _motorSrv = motorService;
             _uiSrv = uIService;
 
             UiStates.CollectionChanged += UiStates_CollectionChanged;
+            MapStates.CollectionChanged += MapStates_CollectionChanged;
 
             //WeakReferenceMessenger.Default.Register<UiUpdatedMessage>(this, (r, m) => {
             //    // TODO: unify the index start point
@@ -168,21 +175,35 @@ namespace taskmaker_wpf.ViewModels {
             //});
         }
 
-        private void UiStates_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) {
+        private void MapStates_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) {
             if (e.NewItems != null) {
                 foreach (INotifyPropertyChanged item in e.NewItems) {
-                    item.PropertyChanged += State_PropertyChanged;
+                    item.PropertyChanged += UiState_PropertyChanged;
                 }
             }
 
             if (e.OldItems != null) {
                 foreach (INotifyPropertyChanged item in e.OldItems) {
-                    item.PropertyChanged -= State_PropertyChanged;
+                    item.PropertyChanged -= UiState_PropertyChanged;
                 }
             }
         }
 
-        private void State_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+        private void UiStates_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) {
+            if (e.NewItems != null) {
+                foreach (INotifyPropertyChanged item in e.NewItems) {
+                    item.PropertyChanged += UiState_PropertyChanged;
+                }
+            }
+
+            if (e.OldItems != null) {
+                foreach (INotifyPropertyChanged item in e.OldItems) {
+                    item.PropertyChanged -= UiState_PropertyChanged;
+                }
+            }
+        }
+
+        private void UiState_PropertyChanged(object sender, PropertyChangedEventArgs e) {
             // Here, you can inform your model about the specific change
             // For example:
             var state = sender as ControlUiState;
@@ -193,6 +214,17 @@ namespace taskmaker_wpf.ViewModels {
             };
 
             _uiSrv.Update(entity);
+        }
+
+        private void MapState_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+            // Here, you can inform your model about the specific change
+            // For example:
+            var state = sender as NLinearMapState;
+            var entity = _mapSrv.Read(state.Id);
+
+            //entity.
+
+            //_mapSrv.Update(entity);
         }
 
         [RelayCommand]
@@ -234,7 +266,15 @@ namespace taskmaker_wpf.ViewModels {
 
         [RelayCommand]
         private void CreateMap() {
+            var entity = _mapSrv.Create(new NLinearMapEntity(new[] { 6, 0 }));
 
+            var state = new NLinearMapState() {
+                Id = entity.Id,
+                Name = entity.Name,
+                Keys = entity.Keys,
+            };
+
+            
         }
 
         [RelayCommand]

@@ -122,14 +122,9 @@ namespace taskmaker_wpf.Views {
             Dialog.Visibility = Visibility.Visible;
 
             // make a animation to transit visibility
-            var fadeIn = new Storyboard();
-            var animation = new DoubleAnimation(0, 0.32, new Duration(TimeSpan.FromSeconds(0.25)));
-            var animation1 = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.25)));
-
-            //Storyboard.SetTarget(animation, Scrim);
-            //Storyboard.SetTarget(animation, Dialog);
-            //Storyboard.SetTargetProperty(animation, new PropertyPath(OpacityProperty));
-            //fadeIn.Children.Add(animation);
+            //var fadeIn = new Storyboard();
+            //var animation = new DoubleAnimation(0, 0.32, new Duration(TimeSpan.FromSeconds(0.25)));
+            //var animation1 = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.25)));
 
             //Scrim.BeginAnimation(OpacityProperty, animation);
             //Dialog.BeginAnimation(OpacityProperty, animation1);

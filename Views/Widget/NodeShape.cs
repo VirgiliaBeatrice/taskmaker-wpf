@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using NLog;
+using SharpVectors.Converters;
 using System;
 using System.Text;
 using System.Windows;
@@ -14,7 +15,7 @@ namespace taskmaker_wpf.Views.Widget {
     public class NodeShape : ContentControl {
         public UIElement Container { get; set; }
         public Ellipse StateLayer { get; set; }
-        public Image checkIcon;
+        public SvgViewbox CheckIcon { get; set; }
         public Color PrimaryColor;
         public UiElementState _state = UiElementState.Default;
         public Point Position {
@@ -30,7 +31,6 @@ namespace taskmaker_wpf.Views.Widget {
 
         public UiController Ui { get; set; }
 
-        public double[] ActuationValue { get; set; } = Array.Empty<double>();
 
         public NodeShape(int nodeId) {
             NodeId = nodeId;
@@ -53,30 +53,32 @@ namespace taskmaker_wpf.Views.Widget {
                 Opacity = 0.08
             };
 
+            CheckIcon = new SvgViewbox() {
+                Width = 24,
+                Height = 24,
+                Source = new Uri("pack://application:,,,/taskmaker-wpf;component/icons/check.svg"),
+                Visibility = Visibility.Hidden,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+
+            
             (Container as Grid).Children.Add(shape);
             (Container as Grid).Children.Add(StateLayer);
+            (Container as Grid).Children.Add(CheckIcon);
+
 
             Content = Container;
+
+
 
             Loaded += (_, _) => {
                 Ui = VisualTreeHelperExtensions.FindParentOfType<UiController>(this);
             };
 
-            // initialize ActuationValue to double[6] and fill with Nan
-            ActuationValue = new double[6];
-
-            for (int i = 0; i < ActuationValue.Length; i++) {
-                ActuationValue[i] = double.NaN;
-            }
-
-
             RenderTransform = new ScaleTransform(1, -1);
             //InitializeComponents();
             //Invalidate();
-        }
-
-        public NodeState ToState() {
-            return new NodeState(NodeId, Position);
         }
 
         private void UpdateInfo() {
@@ -86,8 +88,6 @@ namespace taskmaker_wpf.Views.Widget {
             sb.AppendLine($"  {NodeId}");
             sb.AppendLine($"Position:");
             sb.AppendLine($"  {Position}");
-            sb.AppendLine("Actuation:");
-            sb.AppendLine($"  {string.Join(",", ActuationValue)}");
 
             Ui.RegionUi.infoPanel.Info = sb.ToString();
             //Ui.RegionUi.infoPanel.Visibility = Visibility.Visible;
@@ -109,12 +109,23 @@ namespace taskmaker_wpf.Views.Widget {
             Canvas.SetTop(this, y + halfHeight);
         }
 
+        public void Select(bool flag) {
+            if (flag) {
+                CheckIcon.Visibility = Visibility.Visible;
+            }
+            else {
+                CheckIcon.Visibility = Visibility.Hidden;
+
+            }
+        }
+
         public void GoToState(UiElementState state) {
             _state = state;
 
             switch (state) {
                 case UiElementState.Default:
                     StateLayer.Visibility = Visibility.Hidden;
+                    //CheckIcon.Visibility = Visibility.Hidden;
                     Effect = null;
                     //HideInfo();
                     break;
@@ -127,6 +138,7 @@ namespace taskmaker_wpf.Views.Widget {
                 case UiElementState.Selected:
                     break;
                 case UiElementState.Activated:
+                    //HandleActivated();
                     break;
                 case UiElementState.Pressed:
                     HandlePressed();
@@ -160,18 +172,18 @@ namespace taskmaker_wpf.Views.Widget {
             Effect = null;
 
             // Actions
-            if (Ui.UiMode == UiMode.Assign) {
-                // send dialog message to window
-                var msg = new ShowDialogMessage();
+            //if (Ui.UiMode == UiMode.Assign) {
+            //    // send dialog message to window
+            //    var msg = new ShowDialogMessage();
 
-                WeakReferenceMessenger.Default.Register<AssignActuationValuesMessage>(this, (r, m) => {
-                    ActuationValue = m.Values;
+            //    WeakReferenceMessenger.Default.Register<AssignActuationValuesMessage>(this, (r, m) => {
+            //        ActuationValue = m.Values;
 
-                    WeakReferenceMessenger.Default.Unregister<AssignActuationValuesMessage>(r);
-                });
+            //        WeakReferenceMessenger.Default.Unregister<AssignActuationValuesMessage>(r);
+            //    });
 
-                WeakReferenceMessenger.Default.Send(msg);
-            }
+            //    WeakReferenceMessenger.Default.Send(msg);
+            //}
         }
 
 

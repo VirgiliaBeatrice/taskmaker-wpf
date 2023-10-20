@@ -1,12 +1,18 @@
 ﻿using CommunityToolkit.Mvvm.Collections;
+using CommunityToolkit.Mvvm.Messaging;
+using Numpy;
 using SharpVectors.Converters;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -380,6 +386,14 @@ namespace taskmaker_wpf.Views.Widget {
         }
     }
 
+    public struct MapEntry<TInput, TOutput> {
+        public TInput Input { get; set; }
+        public TOutput Output { get; set; }
+
+        public override string ToString() {
+            return $"[{Input} -> {Output}]";
+        }
+    }
 
     public class MultiView : UserControl {
         public IEnumerable<ControlUiState> UiStates {
@@ -390,6 +404,50 @@ namespace taskmaker_wpf.Views.Widget {
         // Using a DependencyProperty as the backing store for UiStates.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty UiStatesProperty =
             DependencyProperty.Register("UiStates", typeof(IEnumerable<ControlUiState>), typeof(MultiView), new PropertyMetadata(null, OnUiStatesChanged));
+
+
+
+        public IEnumerable<NLinearMapState> NLinearMapStates {
+            get { return (IEnumerable<NLinearMapState>)GetValue(NLinearMapStatesProperty); }
+            set { SetValue(NLinearMapStatesProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for NLinearMapStates.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty NLinearMapStatesProperty =
+            DependencyProperty.Register("NLinearMapStates", typeof(IEnumerable<NLinearMapState>), typeof(MultiView), new PropertyMetadata(null, OnMapStatesChanged));
+
+        private static void OnMapStatesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            var control = d as MultiView;
+            var oldState = e.OldValue as ObservableCollection<ControlUiState>;
+            var newState = e.NewValue as ObservableCollection<ControlUiState>;
+
+            if (oldState != null) {
+                // Detach from the old dictionary's events.
+                oldState.CollectionChanged -= control.MapStates_CollectionChanged;
+            }
+
+            if (newState != null) {
+                // Attach to the new dictionary's events.
+                newState.CollectionChanged += control.MapStates_CollectionChanged;
+            }
+        }
+
+        private void MapStates_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
+            if (e.Action == NotifyCollectionChangedAction.Add) {
+                foreach (var item in e.NewItems) {
+                    var map = item as NLinearMapState;
+
+                    map.PropertyChanged += Map_PropertyChanged;
+                }
+            }
+            else if (e.Action == NotifyCollectionChangedAction.Remove) {
+                foreach (var item in e.OldItems) {
+                    var map = item as NLinearMapState;
+
+                    map.PropertyChanged -= Map_PropertyChanged;
+                }
+            }
+        }
 
         private static void OnUiStatesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
             var control = d as MultiView;
@@ -414,7 +472,7 @@ namespace taskmaker_wpf.Views.Widget {
             //var control = sender as MultiView;
 
             if (e.Action == NotifyCollectionChangedAction.Add) {
-                foreach(var item in e.NewItems) {
+                foreach (var item in e.NewItems) {
                     var ui = item as ControlUiState;
 
                     ui.PropertyChanged += Ui_PropertyChanged;
@@ -430,7 +488,17 @@ namespace taskmaker_wpf.Views.Widget {
 
         }
 
-        private void Ui_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
+
+        private void Map_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+            var mapState = sender as NLinearMapState;
+            var control = sender as MultiView;
+
+            if (e.PropertyName == nameof(NLinearMapState.Entries)) {
+
+            }
+        }
+
+        private void Ui_PropertyChanged(object sender, PropertyChangedEventArgs e) {
             var uiState = sender as ControlUiState;
             var control = sender as MultiView;
 
@@ -447,10 +515,22 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
-        public Dictionary<int, UiController> Controllers { get; set; } = new Dictionary<int, UiController>();
+        private UiMode uiMode;
 
-        public double[][] ActuationaValues => Controllers.Values.First()?.GetActuationValues();
-        public double[][] PositionValues => Controllers.Values.First()?.GetPositionValues();
+        public Dictionary<int, UiController> Controllers { get; set; } = new Dictionary<int, UiController>();
+        public Dictionary<int, NodeShape> SelectedNodes { get; set; } = new Dictionary<int, NodeShape>();
+        public Dictionary<int[], MapEntry<double[], double[]>> MapEntries { get; set; } = new Dictionary<int[], MapEntry<double[], double[]>>();
+
+        public UiMode UiMode {
+            get => uiMode;
+            set {
+                uiMode = value;
+
+                foreach (var controller in Controllers.Values) {
+                    controller.UiMode = uiMode;
+                }
+            }
+        }
 
         public MultiView() : base() {
             _grid = new Grid() {
@@ -467,6 +547,53 @@ namespace taskmaker_wpf.Views.Widget {
             _grid.Children.Add(_scroll);
 
             Content = _grid;
+
+            MouseDoubleClick += MultiView_MouseDoubleClick;
+        }
+
+        private void MultiView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) {
+            PerformSelection(e);
+
+            if (SelectedNodes.Values.All(v => v != null)) {
+                // Perform assignment with selected nodes
+                WeakReferenceMessenger.Default.Send(new ShowDialogMessage());
+            }
+            else {
+
+            }
+        }
+
+        private void PerformSelection(System.Windows.Input.MouseButtonEventArgs e) {
+            var position = e.GetPosition(this);
+
+            var result = VisualTreeHelper.HitTest(this, position);
+
+            if (result != null) {
+                var parent = VisualTreeHelperExtensions.FindParentOfType<NodeShape>(result.VisualHit);
+
+                if (parent != null) {
+                    // if node is already selected, deselect it
+                    // only one node could be selected simutaneously
+                    if (SelectedNodes[parent.Ui.UiState.Id] == parent) {
+                        SelectedNodes[parent.Ui.UiState.Id] = null;
+                        parent.Select(false);
+                    }
+                    else {
+                        // deselect all nodes
+                        foreach (var node in parent.Ui.Nodes) {
+                            if (node != null) {
+                                node.Select(false);
+                            }
+                        }
+
+                        // select node
+                        SelectedNodes[parent.Ui.UiState.Id] = parent;
+                        parent.Select(true);
+                    }
+
+
+                }
+            }
         }
 
         private readonly Grid _grid;
@@ -481,11 +608,16 @@ namespace taskmaker_wpf.Views.Widget {
             };
 
             Controllers[state.Id] = uiController;
+            SelectedNodes[state.Id] = null;
 
             Layout(state);
 
             uiController.InvalidateNodes();
             uiController.Invalidate();
+        }
+
+        private void InitializeMapEntries() {
+
         }
 
         public void Close() {
@@ -511,8 +643,6 @@ namespace taskmaker_wpf.Views.Widget {
 
             grid.Children.Add(Controllers[state.Id]);
             grid.Children.Add(textblock);
-
-
         }
     }
 }

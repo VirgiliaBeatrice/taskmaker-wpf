@@ -63,7 +63,7 @@ namespace taskmaker_wpf.Views {
 
 
 
-        public UiMode Mode { get; set; } = UiMode.Default;
+        public UiMode UiMode => multiView.UiMode;
 
         //public string UiStatus
 
@@ -87,18 +87,19 @@ namespace taskmaker_wpf.Views {
 
         public RegionControlUI() {
             InitializeComponent();
-
-            //_timer = new DispatcherTimer();
-            //_timer.Interval = TimeSpan.FromMilliseconds(16);
-            //_timer.Tick += _timer_Tick;
-
-            //_viewModel = DataContext as RegionControlUIViewModel;
-
-            //Console.WriteLine(np.pi);
             logger.Info(np.pi);
 
             Loaded += RegionControlUI_Loaded;
+            PreviewKeyUp += RegionControlUI_PreviewKeyUp;
 
+        }
+
+        private void RegionControlUI_PreviewKeyUp(object sender, KeyEventArgs e) {
+            switch (e.Key) {
+                case Key.Escape:
+                    ChangeMode(UiMode.Default);
+                    break;
+            }
         }
 
         private void RegionControlUI_Loaded(object sender, RoutedEventArgs e) {
@@ -112,26 +113,6 @@ namespace taskmaker_wpf.Views {
                 };
 
                 multiView.SetBinding(MultiView.UiStatesProperty, uiStatesBind);
-
-                //var tryBuildCmdBinding = new Binding("TryBuildCommand") {
-                //    Source = vm,
-                //};
-
-                //multiView.SetBinding(RegionControlUI.TryBuildProperty, tryBuildCmdBinding);
-            }
-        }
-
-        private void UserControl_Loaded(object sender, RoutedEventArgs e) {
-            //Console.WriteLine(skElement.Focusable);
-            //Keyboard.Focus(skElement);
-            //Console.WriteLine(Keyboard.FocusedElement);
-        }
-
-        private void ToggleButton_Click(object sender, RoutedEventArgs e) {
-            var popup = FindName("popup0") as Popup;
-
-            if (popup != null) {
-                popup.IsOpen = !popup.IsOpen;
             }
         }
 
@@ -141,19 +122,9 @@ namespace taskmaker_wpf.Views {
             //vm?.Invalidate();
         }
 
+
         private void ChangeMode(UiMode mode) {
-            var tbUiStatus = FindName("uiStatus") as TextBlock;
-
-            var ui = multiView.Controllers.FirstOrDefault().Value;
-
-            if (ui != null) {
-                //var ui = view.Controllers.First();
-                ui.UiMode = mode;
-                //ui?.GoToState(mode);
-                Mode = mode;
-
-            }
-            else {
+            if (multiView.Controllers.Count == 0) {
                 // send no selected ui message
                 var msg = new ShowMessageBoxMessage() {
                     Caption = "Error",
@@ -162,6 +133,40 @@ namespace taskmaker_wpf.Views {
                 };
 
                 WeakReferenceMessenger.Default.Send(msg);
+            }
+            else {
+                multiView.UiMode = mode;
+
+                switch (mode) {
+                    case UiMode.Default:
+                        if (DataContext is RegionControlUIViewModel vm) {
+                            if (_selectedUiState != null)
+                                vm.TryBuildCommand.Execute(_selectedUiState);
+                        }
+                        break;
+                    case UiMode.Add:
+                        break;
+                    case UiMode.Remove:
+                        break;
+                    case UiMode.Move:
+                        break;
+                    case UiMode.Assign:
+                        break;
+                    case UiMode.Build:
+                        break;
+                    case UiMode.Trace:
+                        break;
+                    case UiMode.Drag:
+                        break;
+                    case UiMode.Pan:
+                        break;
+                    case UiMode.Zoom:
+                        break;
+                    case UiMode.Reset:
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
@@ -175,12 +180,6 @@ namespace taskmaker_wpf.Views {
                     ChangeMode(UiMode.Default);
                     snackbar.Icon = Icons.Select;
                     snackbar.SupportingText = "Select";
-
-
-                    if (DataContext is RegionControlUIViewModel vm) {
-                        if (_selectedUiState != null)
-                            vm.TryBuildCommand.Execute(_selectedUiState);
-                    }
                     break;
                 case "tbBtnAdd":
                     ChangeMode(UiMode.Add);
