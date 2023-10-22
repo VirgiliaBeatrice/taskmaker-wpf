@@ -31,6 +31,10 @@ namespace taskmaker_wpf.Views.Widget {
 
         public UiController Ui { get; set; }
 
+        public NodeState State => new NodeState() {
+            Id = NodeId,
+            Value = Position,
+        };
 
         public NodeShape(int nodeId) {
             NodeId = nodeId;

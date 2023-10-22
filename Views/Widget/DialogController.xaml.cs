@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using taskmaker_wpf.Services;
 using taskmaker_wpf.ViewModels;
 using Messenger = CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger;
 
@@ -24,30 +25,44 @@ namespace taskmaker_wpf.Views.Widget
     /// </summary>
     public partial class DialogController : UserControl
     {
-        public MotorState[] Motors {
-            get { return (MotorState[])GetValue(MotorsProperty); }
-            set { SetValue(MotorsProperty, value); }
+
+
+        public ICommand CommitCommand {
+            get { return (ICommand)GetValue(CommitCommandProperty); }
+            set { SetValue(CommitCommandProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for Motors.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty MotorsProperty =
-            DependencyProperty.Register("Motors", typeof(MotorState[]), typeof(DialogController), new PropertyMetadata(default));
+        // Using a DependencyProperty as the backing store for CommitCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CommitCommandProperty =
+            DependencyProperty.Register("CommitCommand", typeof(ICommand), typeof(DialogController), new PropertyMetadata(null));
 
 
-        public DialogController()
-        {
+        private TestWindow parent;
+
+        public DialogController() {
             InitializeComponent();
+
+            Loaded += DialogController_Loaded;
+            Unloaded += DialogController_Unloaded;
+        }
+
+        private void DialogController_Unloaded(object sender, RoutedEventArgs e) {
+            CommitCommand?.Execute(null);
+        }
+
+        private void DialogController_Loaded(object sender, RoutedEventArgs e) {
+            parent = VisualTreeHelperExtensions.FindParentOfType<TestWindow>(this);
         }
 
         private void ButtonOK_Click(object sender, RoutedEventArgs e) {
-            Messenger.Default.Send(new DialogResultMessage() {
-                Result = true
+            parent.DialogTCS.SetResult(new DialogResult() {
+                Result = MessageBoxResult.OK,
             });
         }
 
         private void ButtonCancel_Click(object sender, RoutedEventArgs e) {
-            Messenger.Default.Send(new DialogResultMessage() {
-                Result = false
+            parent.DialogTCS.SetResult(new DialogResult() {
+                Result = MessageBoxResult.Cancel
             });
         }
     }

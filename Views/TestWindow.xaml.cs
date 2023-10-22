@@ -2,6 +2,8 @@
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using Prism.Events;
+using Prism.Ioc;
+using Prism.Unity;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,6 +17,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Forms.DataVisualization.Charting;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
@@ -29,10 +32,11 @@ namespace taskmaker_wpf.Views {
     /// <summary>
     /// Interaction logic for TestWindow.xaml
     /// </summary>
-    public partial class TestWindow : Window, IRecipient<ShowMessageBoxMessage>, IRecipient<ShowDialogMessage>, IRecipient<DisplayDialogMessage> {
+    public partial class TestWindow : Window, IRecipient<ShowMessageBoxMessage>, IRecipient<DialogRequestMessage>{
         private readonly MotorService _motorSrv;
         private IEventAggregator _eventAggregator;
         private static readonly FieldInfo _menuDropAlignmentField;
+        public TaskCompletionSource<DialogResult> DialogTCS;
 
         static TestWindow() {
             //フィールド情報を取得  
@@ -63,8 +67,8 @@ namespace taskmaker_wpf.Views {
 
             // Register ShowMessageBox message
             Messenger.Default.Register<ShowMessageBoxMessage>(this);
-            Messenger.Default.Register<ShowDialogMessage>(this);
-            Messenger.Default.Register<DisplayDialogMessage>(this);
+            Messenger.Default.Register<DialogRequestMessage>(this);
+            //Messenger.Default.Register<DisplayDialogMessage>(this);
         }
 
         private void Window_PreviewKeyUp(object sender, KeyEventArgs e) {
@@ -117,55 +121,64 @@ namespace taskmaker_wpf.Views {
             msg.Reply(result);
         }
 
-        public void Receive(ShowDialogMessage msg) {
+        public void Receive(DialogRequestMessage msg) {
+            msg.Reply(ShowDialogAsync());
+        }
+
+        private async Task<DialogResult> ShowDialogAsync() {
+            ShowModal();
+
+            var result = await WaitForDialogResult();
+
+            if (result.Result == MessageBoxResult.OK) {
+                result.Value = _motorSrv.GetAll().Select(e => e.Value).ToArray();
+            }
+
+            CloseModal();
+
+            return result;
+        }
+
+        public void ShowModal() {
             Scrim.Visibility = Visibility.Visible;
             Dialog.Visibility = Visibility.Visible;
 
-            // make a animation to transit visibility
-            //var fadeIn = new Storyboard();
-            //var animation = new DoubleAnimation(0, 0.32, new Duration(TimeSpan.FromSeconds(0.25)));
-            //var animation1 = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.25)));
-
-            //Scrim.BeginAnimation(OpacityProperty, animation);
-            //Dialog.BeginAnimation(OpacityProperty, animation1);
-
-
             var motors = _motorSrv.GetAll().Select(e => new MotorState {
                 Id = e.Id,
-                NuibotBoardId = e.NuibotBoardId,
-                NuibotMotorId = e.NuibotMotorId,
+                NuiBoardId = e.NuiBoardId,
+                NuiMotorId = e.NuiMotorId,
                 Name = e.Name,
                 Max = e.Max,
                 Min = e.Min,
                 Value = e.Value,
             }).ToArray();
 
+            var motorDialogViewModel = (Application.Current as App).Container.Resolve<MotorDialogViewModel>();
+
             var dialog = new DialogController() {
-                Motors = motors,
+                DataContext = motorDialogViewModel,
             };
+
+            Binding binding;
+            binding = new Binding("CommitCommand") {
+                Source = motorDialogViewModel,
+            };
+            dialog.SetBinding(DialogController.CommitCommandProperty, binding);
+
             Dialog.Child = dialog;
-
-            Messenger.Default.Register<DialogResultMessage>(this, (r, m) => {
-                if (m.Result) {
-                    var values = _motorSrv.GetAll().Select(e => e.Value[0]).ToArray();
-
-                    Messenger.Default.Send(new AssignActuationValuesMessage(values));
-                }
-                else {
-
-                }
-
-                Messenger.Default.Send(new DisplayDialogMessage() { Show = false });
-                Messenger.Default.Unregister<DialogResultMessage>(r);
-            });
-
         }
 
-        public void Receive(DisplayDialogMessage message) {
+        public void CloseModal() {
             Scrim.Visibility = Visibility.Hidden;
             Dialog.Visibility = Visibility.Hidden;
 
             Dialog.Child = null;
+        }
+
+        public Task<DialogResult> WaitForDialogResult() {
+            DialogTCS = new TaskCompletionSource<DialogResult>();
+
+            return DialogTCS.Task;
         }
     }
 
@@ -184,26 +197,12 @@ namespace taskmaker_wpf.Views {
         public MessageBoxImage Icon { get; set; }
     }
 
-    public class ShowDialogMessage : RequestMessage<double[][]> {
+    public class DialogRequestMessage : AsyncRequestMessage<DialogResult> {
+
     }
 
-    public class ShowMotorControllerDialogMessage : ShowDialogMessage {
-        public int Id { get; set; } = -1;
-    }
-
-    public class DisplayDialogMessage {
-        public bool Show { get; set; }
-    }
-
-    public class DialogResultMessage {
-        public bool Result { get; set; }
-    }
-
-    public class AssignActuationValuesMessage {
-        public double[] Values { get; private set; }
-
-        public AssignActuationValuesMessage(double[] values) {
-            Values = values;
-        }
+    public class DialogResult {
+        public MessageBoxResult Result { get; set; }
+        public object Value { get; set; }
     }
 }

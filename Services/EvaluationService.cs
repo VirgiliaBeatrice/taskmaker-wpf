@@ -79,18 +79,18 @@ namespace taskmaker_wpf.Services
                                    .Select(_ => _motorSrv.Create(new MotorEntity()))
                                    .ToArray();
 
-            motors[0].NuibotBoardId = 0;
-            motors[0].NuibotMotorId = 0;
-            motors[1].NuibotBoardId = 0;
-            motors[1].NuibotMotorId = 1;
-            motors[2].NuibotBoardId = 0;
-            motors[2].NuibotMotorId = 2;
-            motors[3].NuibotBoardId = 1;
-            motors[3].NuibotMotorId = 0;
-            motors[4].NuibotBoardId = 1;
-            motors[4].NuibotMotorId = 1;
-            motors[5].NuibotBoardId = 1;
-            motors[5].NuibotMotorId = 2;
+            motors[0].NuiBoardId = 0;
+            motors[0].NuiMotorId = 0;
+            motors[1].NuiBoardId = 0;
+            motors[1].NuiMotorId = 1;
+            motors[2].NuiBoardId = 0;
+            motors[2].NuiMotorId = 2;
+            motors[3].NuiBoardId = 1;
+            motors[3].NuiMotorId = 0;
+            motors[4].NuiBoardId = 1;
+            motors[4].NuiMotorId = 1;
+            motors[5].NuiBoardId = 1;
+            motors[5].NuiMotorId = 2;
 
             for (int i = 0; i < motors.Count(); i++) {
                 var motor = motors[i];
@@ -99,10 +99,6 @@ namespace taskmaker_wpf.Services
 
                 _motorSrv.Update(motor);
             }
-
-            // Create ui
-            var ui = _uiSrv.Create(new ControlUiEntity() {
-                Name = "Default" });
         }
     }
 }

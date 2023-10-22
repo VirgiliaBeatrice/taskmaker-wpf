@@ -19,6 +19,7 @@ using Prism.Events;
 using Microsoft.Extensions.Logging;
 using NLog;
 using Prism.Mvvm;
+using taskmaker_wpf.Views.Widget;
 
 namespace taskmaker_wpf {
     /// <summary>
@@ -70,11 +71,11 @@ namespace taskmaker_wpf {
                 //    .ForMember(d => d.IsSelected, o => o.Ignore())
                 //    .ReverseMap();
 
-                cfg.CreateMap<NLinearMapEntity, NLinearMapState>()
-                    .ForMember(d => d.Value, o => o.MapFrom(s => s.Tensor.GetData<double>()));
+                cfg.CreateMap<NLinearMapEntity, NLinearMapViewModel>()
+                    .ReverseMap();
                 cfg.CreateMap<MotorEntity, MotorState>()
                     .ReverseMap();
-                cfg.CreateMap<ControlUiEntity, ControlUiState>();
+                cfg.CreateMap<ControlUiEntity, ControlUiViewModel>();
                 
                 cfg.CreateMap<NodeEntity, NodeState>();
 
@@ -112,6 +113,10 @@ namespace taskmaker_wpf {
             //containerRegistry.Register<IRepository, ControlUiRepository>("2");
             //containerRegistry.Register<IRepository, NLinearMapRepository>("3");
             containerRegistry.RegisterSingleton<IRepository, ProjectRepository>();
+            containerRegistry.Register<DialogController>();
+
+            containerRegistry.Register<ControlUiViewModel>();
+            containerRegistry.Register<NLinearMapViewModel>();
 
             // Register IUseCase
             //containerRegistry.RegisterSingleton<IUseCase, MotorUseCase>("1");

@@ -22,7 +22,6 @@ namespace taskmaker_wpf.Views.Widget
     public partial class NumericUpDown : UserControl {
         public NumericUpDown() {
             InitializeComponent();
-            DataContext = this;
         }
 
         public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(

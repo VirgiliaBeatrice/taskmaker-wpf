@@ -18,9 +18,14 @@ namespace taskmaker_wpf.Services
         }
 
         public override bool Update(MotorEntity entity) {
-            serialService.Update(entity.NuibotBoardId, entity.NuibotMotorId, entity.Value[0]);
+            serialService.Update(entity.NuiBoardId, entity.NuiMotorId, entity.Value);
 
             return base.Update(entity);
+        }
+
+        public void ToSerial(MotorState state) {
+            //serialService.Update(state);
+            serialService.Update(state.NuiBoardId, state.NuiMotorId, state.Value);
         }
     }
 }

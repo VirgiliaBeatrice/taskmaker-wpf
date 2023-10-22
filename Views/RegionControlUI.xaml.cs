@@ -39,30 +39,6 @@ namespace taskmaker_wpf.Views {
     /// Interaction logic for RegionControlUI.xaml
     /// </summary>
     public partial class RegionControlUI : UserControl {
-
-
-        public ControlUiState UiState {
-            get { return (ControlUiState)GetValue(UiStateProperty); }
-            set { SetValue(UiStateProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for UiState.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty UiStateProperty =
-            DependencyProperty.Register("UiState", typeof(ControlUiState), typeof(RegionControlUI), new PropertyMetadata(default));
-
-
-
-        public ICommand TryBuild {
-            get { return (ICommand)GetValue(TryBuildProperty); }
-            set { SetValue(TryBuildProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for TryBuild.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty TryBuildProperty =
-            DependencyProperty.Register("TryBuild", typeof(ICommand), typeof(RegionControlUI), new PropertyMetadata(null));
-
-
-
         public UiMode UiMode => multiView.UiMode;
 
         //public string UiStatus
@@ -79,17 +55,16 @@ namespace taskmaker_wpf.Views {
 
         public InfoPanel InfoPanel => infoPanel;
 
-        private ControlUiState _selectedUiState;
+        private ControlUiViewModel _selectedUiState;
 
 
-        public List<ControlUiState> Uis { get; set; } = new List<ControlUiState>();
+        public List<ControlUiViewModel> Uis { get; set; } = new List<ControlUiViewModel>();
         private ILogger logger => LogManager.GetCurrentClassLogger();
 
         public RegionControlUI() {
             InitializeComponent();
             logger.Info(np.pi);
 
-            Loaded += RegionControlUI_Loaded;
             PreviewKeyUp += RegionControlUI_PreviewKeyUp;
 
         }
@@ -99,20 +74,6 @@ namespace taskmaker_wpf.Views {
                 case Key.Escape:
                     ChangeMode(UiMode.Default);
                     break;
-            }
-        }
-
-        private void RegionControlUI_Loaded(object sender, RoutedEventArgs e) {
-            var vm = DataContext as RegionControlUIViewModel;
-
-            if (vm != null) {
-                var uiStatesBind = new Binding("UiStates") {
-                    Source = vm,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
-                    Mode = BindingMode.OneWay
-                };
-
-                multiView.SetBinding(MultiView.UiStatesProperty, uiStatesBind);
             }
         }
 
@@ -139,10 +100,6 @@ namespace taskmaker_wpf.Views {
 
                 switch (mode) {
                     case UiMode.Default:
-                        if (DataContext is RegionControlUIViewModel vm) {
-                            if (_selectedUiState != null)
-                                vm.TryBuildCommand.Execute(_selectedUiState);
-                        }
                         break;
                     case UiMode.Add:
                         break;
@@ -234,9 +191,9 @@ namespace taskmaker_wpf.Views {
             var list = sender as ListBox;
 
             if (e.LeftButton == MouseButtonState.Pressed) {
-                multiView.Close();
-                multiView.Open(list.SelectedItem as ControlUiState);
-                _selectedUiState = list.SelectedItem as ControlUiState;
+                //multiView.Close();
+                //multiView.Open(list.SelectedItem as ControlUiViewModel);
+                //_selectedUiState = list.SelectedItem as ControlUiViewModel;
 
                 // Send a ShowMessageBoxMessage to inform success
                 var msg = new ShowMessageBoxMessage() {
@@ -246,6 +203,10 @@ namespace taskmaker_wpf.Views {
 
                 WeakReferenceMessenger.Default.Send(msg);
             }
+        }
+
+        private void tabMapLbMapStates_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
+
         }
     }
 }

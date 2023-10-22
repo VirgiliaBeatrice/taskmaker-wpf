@@ -7,6 +7,7 @@ using System.Timers;
 using NLog;
 using PCController;
 using taskmaker_wpf.Entity;
+using taskmaker_wpf.ViewModels;
 
 namespace taskmaker_wpf.Services {
     public class SerialService {
@@ -92,10 +93,10 @@ namespace taskmaker_wpf.Services {
                 Motors[boardId * 4 + motorId].position.Value = (int)value;
         }
         
-        public void Update(MotorEntity motor) {
+        public void Update(MotorState state) {
             if (IsConnected) {
 
-                var value = motor.Value[0];
+                var value = state.Value;
 
                 if (value > Max) {
                     value = Max;
@@ -111,8 +112,8 @@ namespace taskmaker_wpf.Services {
                     logger.Info("Clamped caused by safety limit (min)");
                 }
 
-                Motors[motor.NuibotBoardId * 4 + motor.NuibotMotorId].position.Value = (int)value;
-                _buffer[motor.NuibotBoardId * 4 + motor.NuibotMotorId] = (short)value;
+                Motors[state.NuiBoardId * 4 + state.NuiMotorId].position.Value = (int)value;
+                _buffer[state.NuiBoardId * 4 + state.NuiMotorId] = (short)value;
 
                 MessageQueue.Enqueue(_buffer);
             }

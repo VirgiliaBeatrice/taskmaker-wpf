@@ -89,7 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.0" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
     <PackageReference Include="Maikebing.System.Windows.Forms.DataVisualization" Version="5.0.1" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="4.4.0" />
     <PackageReference Include="NLog.Extensions.Logging" Version="5.2.0" />

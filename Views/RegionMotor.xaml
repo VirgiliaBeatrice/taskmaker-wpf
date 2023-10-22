@@ -39,38 +39,20 @@
                 Margin="4">
       <Button Margin="2"
               Content="[Exp.] Initialize"
-              Command="{Binding InitializeCommand}" />
+              Command="{Binding InitializeCommand}"
+              />
       <Button Margin="2"
-              Content="Add Motor"
-              Command="{Binding AddMotorCommand}" />
+              Content="Add Motor"/>
       <Button Margin="2"
-              Content="Remove Motor"
-              Click="Button_Click_1" />
+              Content="Remove Motor"/>
       <Button Margin="2"
-              Content="Save Changes"
-              Click="Button_Click_2">
-        <Button.Style>
-          <Style TargetType="Button">
-            <Style.Triggers>
-              <DataTrigger Binding="{Binding Path=HasModified}"
-                           Value="true">
-                <Setter Property="Content"
-                        Value="Save Changes*" />
-              </DataTrigger>
-              <DataTrigger Binding="{Binding Path=HasModified}"
-                           Value="false">
-                <Setter Property="Content"
-                        Value="Save Changes" />
-              </DataTrigger>
-            </Style.Triggers>
-          </Style>
-        </Button.Style>
+              Content="Save Changes">
       </Button>
     </StackPanel>
 
     <DataGrid Focusable="True"
               x:Name="dgMotors"
-              ItemsSource="{Binding MotorStates}"
+              ItemsSource="{Binding MotorVMs}"
               DockPanel.Dock="Top"
               AutoGenerateColumns="False">
       <DataGrid.Resources>
@@ -98,7 +80,7 @@
         <DataGridTextColumn Header="Max"
                             Binding="{Binding Max}" />
         <DataGridTextColumn Header="Value"
-                            Binding="{Binding Value[0],StringFormat=F4}" />
+                            Binding="{Binding Value,StringFormat=F4}" />
 
         <DataGridTemplateColumn Header="Controller"
                                 MinWidth="200">
@@ -106,17 +88,16 @@
             <DataTemplate>
               <Slider Minimum="{Binding Min}"
                       Maximum="{Binding Max}"
-                      Value="{Binding Value[0]}"
-                      ValueChanged="slider_ValueChanged" />
+                      Value="{Binding Value}" />
             </DataTemplate>
           </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>
 
         <DataGridTextColumn Header="Board Id"
-                            Binding="{Binding NuibotBoardId}" />
+                            Binding="{Binding NuiBoardId}" />
         <DataGridTextColumn Header="Motor Id"
-                            Binding="{Binding NuibotMotorId}" />
-
+                            Binding="{Binding NuiMotorId}" />
+        <!--
         <DataGridTemplateColumn Header="Color">
           <DataGridTemplateColumn.CellTemplate>
             <DataTemplate>
@@ -148,6 +129,7 @@
             </DataTemplate>
           </DataGridTemplateColumn.CellEditingTemplate>
         </DataGridTemplateColumn>
+        -->
 
         <DataGridTemplateColumn Header="Actions">
           <DataGridTemplateColumn.CellTemplate>

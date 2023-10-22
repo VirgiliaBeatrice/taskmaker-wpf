@@ -52,24 +52,5 @@ namespace taskmaker_wpf.Views.Widget {
                 popup.IsOpen = !popup.IsOpen;
             }
         }
-
-
-        private void CheckBox_Checked(object sender, RoutedEventArgs e) {
-            var checkbox = sender as CheckBox;
-
-            if (checkbox.IsChecked == null) {
-                return;
-            }
-            else if (checkbox.IsChecked == true) {
-                var vm = DataContext as RegionControlUIViewModel;
-
-                //vm.SelectedInplugs.Concat(checkbox.DataContext)
-                //vm?.InvalidateValidPorts();
-            }
-            else {
-                //var vm
-            }
-
-        }
     }
 }

@@ -31,46 +31,6 @@ namespace taskmaker_wpf.Data {
 
     }
 
-    public class SerializableMapEntity {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public double[] Tensor { get; set; }
-        public int[] Shape { get; set; }
-
-        public bool IsDirty { get; set; } = false;
-
-        //public static implicit operator SerilizableMapEntity(NLinearMapEntity e) => new SerilizableMapEntity(e);
-        public static explicit operator SerializableMapEntity(NLinearMapEntity e) => new SerializableMapEntity(e);
-        public static explicit operator NLinearMapEntity(SerializableMapEntity e) => e.ToEntity();
-
-        public SerializableMapEntity() { }
-
-        public SerializableMapEntity(NLinearMapEntity entity) {
-            if (entity.IsFullySet) {
-                Tensor = entity.Tensor.GetData<double>();
-                Shape = entity.Shape;
-            }
-            else {
-                IsDirty = false;
-            }
-
-            Id= entity.Id;
-            Name = entity.Name;
-            IsDirty = false;
-
-        }
-
-        public NLinearMapEntity ToEntity() {
-            return new NLinearMapEntity() {
-                Id = Id,
-                Name = Name,
-                Tensor = Tensor != null ? np.array(Tensor).reshape(Shape) : null,
-                Shape = Shape,
-                IsDirty = IsDirty
-            };
-        }
-    }
-
     public class ProjectDataObject {
         public List<MotorEntity> Motors { get; set; } = new List<MotorEntity>();
         public List<ControlUiEntity> Uis { get; set; } = new List<ControlUiEntity>();
@@ -78,15 +38,12 @@ namespace taskmaker_wpf.Data {
         [XmlIgnore]
         public List<NLinearMapEntity> Maps { get; set; } = new List<NLinearMapEntity>();
 
-        public List<SerializableMapEntity> SerialMaps { get; set; } = new List<SerializableMapEntity>();
 
 
         public void PreSerialize() {
-            SerialMaps = Maps.Select(e => (SerializableMapEntity)e).ToList(); 
         }
 
         public void AfterDeserialize() {
-            Maps = SerialMaps.Select(e => (NLinearMapEntity)e).ToList();
         }
 
     }

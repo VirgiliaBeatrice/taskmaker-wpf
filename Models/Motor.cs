@@ -38,7 +38,7 @@ namespace taskmaker_wpf.Model.Data {
     }
 
 
-    public class Motor : ITarget, IInspectable {
+    public class Motor : ITarget {
         private double _value;
         public double Value {
             get => _value;

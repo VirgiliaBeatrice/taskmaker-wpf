@@ -16,6 +16,7 @@ using System.Security.Policy;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
@@ -27,24 +28,6 @@ using Unity;
 using Point = System.Windows.Point;
 
 namespace taskmaker_wpf.Views.Widget {
-
-    public static class Evelations {
-        public static DropShadowEffect Lv1 = new DropShadowEffect {
-            Color = Colors.Black,
-            Direction = 270,
-            ShadowDepth = 1,
-            BlurRadius = 8,
-            Opacity = 0.32,
-        };
-
-        public static DropShadowEffect Lv3 = new DropShadowEffect {
-            Color = Colors.Black,
-            Direction = 270,
-            ShadowDepth = 6,
-            BlurRadius = 8,
-            Opacity = 0.32,
-        };
-    }
 
     public enum UiElementState {
         Default = 0,
@@ -70,6 +53,32 @@ namespace taskmaker_wpf.Views.Widget {
         Reset,
     }
 
+    public struct MapEntry {
+        public int[] Key { get; set; }
+        public double[] Value { get; set; }
+
+        public override string ToString() {
+            return $"[{Key} -> {Value}]";
+        }
+    }
+
+    public static class Evelations {
+        public static DropShadowEffect Lv1 = new DropShadowEffect {
+            Color = Colors.Black,
+            Direction = 270,
+            ShadowDepth = 1,
+            BlurRadius = 8,
+            Opacity = 0.32,
+        };
+
+        public static DropShadowEffect Lv3 = new DropShadowEffect {
+            Color = Colors.Black,
+            Direction = 270,
+            ShadowDepth = 6,
+            BlurRadius = 8,
+            Opacity = 0.32,
+        };
+    }
     public static class LogicalTreeHelperExtensions {
 
         public static T FindAncestor<T>(DependencyObject dependencyObject) where T : class {
@@ -96,22 +105,6 @@ namespace taskmaker_wpf.Views.Widget {
             return target as T;
         }
 
-        public static T FindParentOfType<T>(DependencyObject child) where T : DependencyObject {
-            DependencyObject parentObject = VisualTreeHelper.GetParent(child);
-
-            // Return null if reached the end of the visual tree
-            if (parentObject == null) return null;
-
-            // Check if the parent is of the desired type
-            if (parentObject is T parent) {
-                return parent;
-            }
-            else {
-                // Recursively call the function to move further up the visual tree
-                return FindParentOfType<T>(parentObject);
-            }
-        }
-
         public static T FindParentByName<T>(DependencyObject child, string name) where T : FrameworkElement {
             DependencyObject parentObject = VisualTreeHelper.GetParent(child);
 
@@ -125,6 +118,22 @@ namespace taskmaker_wpf.Views.Widget {
             else {
                 // Recursively call this function to check the next level up
                 return FindParentByName<T>(parentObject, name);
+            }
+        }
+
+        public static T FindParentOfType<T>(DependencyObject child) where T : DependencyObject {
+            DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+
+            // Return null if reached the end of the visual tree
+            if (parentObject == null) return null;
+
+            // Check if the parent is of the desired type
+            if (parentObject is T parent) {
+                return parent;
+            }
+            else {
+                // Recursively call the function to move further up the visual tree
+                return FindParentOfType<T>(parentObject);
             }
         }
     }
@@ -310,152 +319,34 @@ namespace taskmaker_wpf.Views.Widget {
             InvalidateVisual();
         }
     }
-
-    public struct MapEntry<TInput, TOutput> {
-        public TInput Input { get; set; }
-        public TOutput Output { get; set; }
-
-        public override string ToString() {
-            return $"[{Input} -> {Output}]";
-        }
-    }
-
     public class MultiView : UserControl {
-        public IEnumerable<ControlUiState> UiStates {
-            get { return (IEnumerable<ControlUiState>)GetValue(UiStatesProperty); }
-            set { SetValue(UiStatesProperty, value); }
+
+
+
+        public ICommand ExpandAtCommand {
+            get { return (ICommand)GetValue(ExpandAtCommandProperty); }
+            set { SetValue(ExpandAtCommandProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for UiStates.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty UiStatesProperty =
-            DependencyProperty.Register("UiStates", typeof(IEnumerable<ControlUiState>), typeof(MultiView), new PropertyMetadata(null, OnUiStatesChanged));
+        // Using a DependencyProperty as the backing store for ExpandAtCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ExpandAtCommandProperty =
+            DependencyProperty.Register("ExpandAtCommand", typeof(ICommand), typeof(MultiView), new PropertyMetadata(null));
 
 
 
-        public IEnumerable<NLinearMapState> NLinearMapStates {
-            get { return (IEnumerable<NLinearMapState>)GetValue(NLinearMapStatesProperty); }
-            set { SetValue(NLinearMapStatesProperty, value); }
-        }
+        // Using a DependencyProperty as the backing store for MapViewModel.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty MapViewModelProperty =
+            DependencyProperty.Register("MapViewModel", typeof(NLinearMapViewModel), typeof(MultiView), new PropertyMetadata(null));
 
-        // Using a DependencyProperty as the backing store for NLinearMapStates.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty NLinearMapStatesProperty =
-            DependencyProperty.Register("NLinearMapStates", typeof(IEnumerable<NLinearMapState>), typeof(MultiView), new PropertyMetadata(null, OnMapStatesChanged));
+        // Using a DependencyProperty as the backing store for UiViewModel.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty UiViewModelProperty =
+            DependencyProperty.Register("UiViewModel", typeof(ControlUiViewModel), typeof(MultiView), new PropertyMetadata(null, OnUiViewModelChanged));
 
-        private static void OnMapStatesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            var control = d as MultiView;
-            var oldState = e.OldValue as ObservableCollection<ControlUiState>;
-            var newState = e.NewValue as ObservableCollection<ControlUiState>;
+        private readonly Grid _grid;
 
-            if (oldState != null) {
-                // Detach from the old dictionary's events.
-                oldState.CollectionChanged -= control.MapStates_CollectionChanged;
-            }
-
-            if (newState != null) {
-                // Attach to the new dictionary's events.
-                newState.CollectionChanged += control.MapStates_CollectionChanged;
-            }
-        }
-
-        private void MapStates_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
-            if (e.Action == NotifyCollectionChangedAction.Add) {
-                foreach (var item in e.NewItems) {
-                    var map = item as NLinearMapState;
-
-                    map.PropertyChanged += Map_PropertyChanged;
-                }
-            }
-            else if (e.Action == NotifyCollectionChangedAction.Remove) {
-                foreach (var item in e.OldItems) {
-                    var map = item as NLinearMapState;
-
-                    map.PropertyChanged -= Map_PropertyChanged;
-                }
-            }
-        }
-
-        private static void OnUiStatesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            var control = d as MultiView;
-            var oldState = e.OldValue as ObservableCollection<ControlUiState>;
-            var newState = e.NewValue as ObservableCollection<ControlUiState>;
-
-            if (oldState != null) {
-                // Detach from the old dictionary's events.
-                oldState.CollectionChanged -= control.UiStates_CollectionChanged;
-            }
-
-            if (newState != null) {
-                // Attach to the new dictionary's events.
-                newState.CollectionChanged += control.UiStates_CollectionChanged;
-            }
-
-            // Optional: handle the change of the entire dictionary if needed.
-        }
-
-        private void UiStates_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
-            // Handle the change of the dictionary here.
-            //var control = sender as MultiView;
-
-            if (e.Action == NotifyCollectionChangedAction.Add) {
-                foreach (var item in e.NewItems) {
-                    var ui = item as ControlUiState;
-
-                    ui.PropertyChanged += Ui_PropertyChanged;
-                }
-            }
-            else if (e.Action == NotifyCollectionChangedAction.Remove) {
-                foreach (var item in e.OldItems) {
-                    var ui = item as ControlUiState;
-
-                    ui.PropertyChanged -= Ui_PropertyChanged;
-                }
-            }
-
-        }
-
-
-        private void Map_PropertyChanged(object sender, PropertyChangedEventArgs e) {
-            var mapState = sender as NLinearMapState;
-            var control = sender as MultiView;
-
-            if (e.PropertyName == nameof(NLinearMapState.Entries)) {
-
-            }
-        }
-
-        private void Ui_PropertyChanged(object sender, PropertyChangedEventArgs e) {
-            var uiState = sender as ControlUiState;
-            var control = sender as MultiView;
-
-            if (e.PropertyName == nameof(ControlUiState.Nodes)) {
-                if (Controllers.TryGetValue(uiState.Id, out var controller)) {
-                    controller.InvalidateNodes();
-                }
-            }
-            else if (e.PropertyName == nameof(ControlUiState.Regions)) {
-                if (Controllers.TryGetValue(uiState.Id, out var controller)) {
-                    //controller.InvalidateNodes();
-                    controller.InvalidateRegion();
-                }
-            }
-        }
+        private ScrollViewer _scroll;
 
         private UiMode uiMode;
-
-        public Dictionary<int, UiController> Controllers { get; set; } = new Dictionary<int, UiController>();
-        public Dictionary<int, NodeShape> SelectedNodes { get; set; } = new Dictionary<int, NodeShape>();
-        public Dictionary<int[], MapEntry<double[], double[]>> MapEntries { get; set; } = new Dictionary<int[], MapEntry<double[], double[]>>();
-
-        public UiMode UiMode {
-            get => uiMode;
-            set {
-                uiMode = value;
-
-                foreach (var controller in Controllers.Values) {
-                    controller.UiMode = uiMode;
-                }
-            }
-        }
 
         public MultiView() : base() {
             _grid = new Grid() {
@@ -472,85 +363,40 @@ namespace taskmaker_wpf.Views.Widget {
             _grid.Children.Add(_scroll);
 
             Content = _grid;
-
-            MouseDoubleClick += MultiView_MouseDoubleClick;
         }
 
-        private void MultiView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) {
-            PerformSelection(e);
+        public List<UiController> Controllers { get; set; } = new List<UiController>();
 
-            if (SelectedNodes.Values.All(v => v != null)) {
-                // Perform assignment with selected nodes
-                WeakReferenceMessenger.Default.Send(new ShowDialogMessage());
-            }
-            else {
+        public Dictionary<int[], MapEntry> MapEntries { get; set; } = new Dictionary<int[], MapEntry>();
 
-            }
+        public NLinearMapViewModel MapViewModel {
+            get { return (NLinearMapViewModel)GetValue(MapViewModelProperty); }
+            set { SetValue(MapViewModelProperty, value); }
         }
 
-        private void PerformSelection(System.Windows.Input.MouseButtonEventArgs e) {
-            var position = e.GetPosition(this);
+        public Dictionary<int, NodeShape> SelectedNodes { get; set; } = new Dictionary<int, NodeShape>();
 
-            var result = VisualTreeHelper.HitTest(this, position);
+        public UiMode UiMode {
+            get => uiMode;
+            set {
+                uiMode = value;
 
-            if (result != null) {
-                var parent = VisualTreeHelperExtensions.FindParentOfType<NodeShape>(result.VisualHit);
-
-                if (parent != null) {
-                    // if node is already selected, deselect it
-                    // only one node could be selected simutaneously
-                    if (SelectedNodes[parent.Ui.UiState.Id] == parent) {
-                        SelectedNodes[parent.Ui.UiState.Id] = null;
-                        parent.Select(false);
-                    }
-                    else {
-                        // deselect all nodes
-                        foreach (var node in parent.Ui.Nodes) {
-                            if (node != null) {
-                                node.Select(false);
-                            }
-                        }
-
-                        // select node
-                        SelectedNodes[parent.Ui.UiState.Id] = parent;
-                        parent.Select(true);
-                    }
-
-
+                foreach (var controller in Controllers) {
+                    controller.UiMode = uiMode;
                 }
             }
         }
 
-        private readonly Grid _grid;
-
-        private ScrollViewer _scroll;
-
-        public void Open(ControlUiState state) {
-            var uiController = new UiController(state) {
-                VerticalAlignment = VerticalAlignment.Stretch,
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                Margin = new Thickness(16, 16, 16, 16),
-            };
-
-            Controllers[state.Id] = uiController;
-            SelectedNodes[state.Id] = null;
-
-            Layout(state);
-
-            uiController.InvalidateNodes();
-            uiController.Invalidate();
+        public ControlUiViewModel UiViewModel {
+            get { return (ControlUiViewModel)GetValue(UiViewModelProperty); }
+            set { SetValue(UiViewModelProperty, value); }
         }
-
-        private void InitializeMapEntries() {
-
-        }
-
         public void Close() {
             _scroll.Content = null;
             Controllers.Clear();
         }
 
-        public void Layout(ControlUiState state) {
+        public void Layout() {
             var grid = new Grid() {
                 Name = "Multiview_SubGrid",
                 Visibility = Visibility.Visible
@@ -558,16 +404,94 @@ namespace taskmaker_wpf.Views.Widget {
 
             _scroll.Content = grid;
 
-            var textblock = new TextBlock {
-                Text = state.Name,
-                FontSize = 48,
-                Foreground = Brushes.DimGray,
-                VerticalAlignment = VerticalAlignment.Bottom,
-                HorizontalAlignment = HorizontalAlignment.Right,
+            //var textblock = new TextBlock {
+            //    Text = state.Name,
+            //    FontSize = 48,
+            //    Foreground = Brushes.DimGray,
+            //    VerticalAlignment = VerticalAlignment.Bottom,
+            //    HorizontalAlignment = HorizontalAlignment.Right,
+            //};
+
+            // single
+            grid.Children.Add(Controllers[0]);
+            //grid.Children.Add(textblock);
+        }
+
+        public void HandleTensorExpanding(UiController ui) {
+            var axis = Controllers.IndexOf(ui) + 1;
+            var index = ui.NodeShapes.Count;
+
+            var record = new TensorOperationRecord() {
+                Axis = axis,
+                Index = index,
             };
 
-            grid.Children.Add(Controllers[state.Id]);
-            grid.Children.Add(textblock);
+            ExpandAtCommand?.Execute(record);
+        }
+
+        public void Open() {
+            var uiController = new UiController() {
+                DataContext = UiViewModel,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                Margin = new Thickness(16, 16, 16, 16),
+            };
+
+            // data binding
+            Binding binding;
+
+            binding = new Binding("AddNodeCommand") {
+                Source = UiViewModel,
+            };
+            uiController.SetBinding(UiController.AddNodeCommandProperty, binding);
+
+            binding = new Binding("DeleteNodeCommand") {
+                Source = UiViewModel,
+            };
+            uiController.SetBinding(UiController.DeleteNodeCommandProperty, binding);
+
+            binding = new Binding("UpdateNodeCommand") {
+                Source = UiViewModel,
+            };
+            uiController.SetBinding(UiController.UpdateNodeCommandProperty, binding);
+
+            binding = new Binding("NodeStates") {
+                Source = UiViewModel,
+            };
+            uiController.SetBinding(UiController.NodeStatesProperty, binding);
+
+            binding = new Binding("RegionStates") {
+                Source = UiViewModel,
+            };
+            uiController.SetBinding(UiController.RegionStatesProperty, binding);
+
+            Controllers.Add(uiController);
+            Layout();
+        }
+
+        private static void OnUiViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            var control = d as MultiView;
+
+            control.Close();
+            control.Open();
+        }
+
+
+        public async void RequestMotorDialog() {
+            if (UiMode == UiMode.Assign && SelectedNodes.Values.All(v => v != null)) {
+                // Send dialog message
+                var result = await WeakReferenceMessenger.Default.Send(new DialogRequestMessage());
+
+                if (result.Result == MessageBoxResult.OK) {
+                    var entry = new MapEntry {
+                        Key = Controllers.Select(e => e.SelectedNode.NodeId).ToArray(),
+                        Value = result.Value as double[],
+                    };
+
+                    MapEntries[entry.Key] = entry;
+                }
+
+            }
         }
     }
 }

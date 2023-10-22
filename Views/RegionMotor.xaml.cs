@@ -52,56 +52,6 @@ namespace taskmaker_wpf.Views {
         }
 
 
-        private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
-            var state = (sender as Slider).DataContext as MotorState;
-            var vm = DataContext as RegionMotorViewModel;
-
-            e.Handled = true;
-            if (e.NewValue != e.OldValue) {
-
-            }
-                //vm.UpdateMotorValue(state, e.NewValue);
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e) {
-            var state = (sender as Button).DataContext as MotorState;
-            var vm = DataContext as RegionMotorViewModel;
-
-            vm.UpdateMotor(state);
-        }
-
-        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            var state = (sender as ComboBox).DataContext as MotorState;
-            var cb = sender as ComboBox;
-
-            if (cb.Name == "cbBoardId")
-                state.NuibotBoardId = (int)e.AddedItems[0];
-            else if (cb.Name == "cbMotorId")
-                state.NuibotMotorId = (int)e.AddedItems[0];
-        }
-
-        private void Button_Click_1(object sender, RoutedEventArgs e) {
-            var vm = DataContext as RegionMotorViewModel;
-            var dg = FindName("dgMotors") as DataGrid;
-
-            if (dg.SelectedItem is MotorState state) {
-                vm.RemoveMotor(state);
-            }
-        }
-
-        private void ComboBox_SelectionChanged_1(object sender, SelectionChangedEventArgs e) {
-
-        }
-
-        private void Button_Click_2(object sender, RoutedEventArgs e) {
-            var vm = DataContext as RegionMotorViewModel;
-            var dg = FindName("dgMotors") as DataGrid;
-
-            foreach(var state in vm.MotorStates) {
-                vm.UpdateMotor(state);
-            }
-        }
-
         private void root_PreviewKeyUp(object sender, KeyEventArgs e) {
             var vm = DataContext as RegionMotorViewModel;
 

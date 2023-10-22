@@ -4,6 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:taskmaker_wpf.Views.Widget"
+             xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels"
+             d:DataContext="{d:DesignInstance Type=viewmodels:MotorCollectionViewModel}"
              mc:Ignorable="d"
              d:DesignHeight="800"
              d:DesignWidth="1080">
@@ -14,8 +16,8 @@
     Background="White"
     Opacity="0.8"
     >
-    <StackPanel Orientation="Vertical">
-      <TextBlock Text="Motor Controller"
+    <DockPanel LastChildFill="True">
+      <TextBlock DockPanel.Dock="Top" Text="Motor Controller"
                  FontSize="48"
                  FontWeight="Bold" 
                  VerticalAlignment="Center"
@@ -23,57 +25,12 @@
                  Margin="0 0 0 24"
                  />
 
-      <Viewbox Margin="0 0 0 24">
 
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*" />
-            <ColumnDefinition Width="1*" />
-            <ColumnDefinition Width="1*" />
-
-            <ColumnDefinition Width="1.5*" />
-
-            <ColumnDefinition Width="1*" />
-            <ColumnDefinition Width="1*" />
-            <ColumnDefinition Width="1*" />
-          </Grid.ColumnDefinitions>
-
-          <local:SliderController_v1 Grid.Column="0"
-                                     VerticalAlignment="Center"
-                                     LabelText="0"
-                                     Max="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[0].Max}"
-                                     Min="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[0].Min}"
-                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[0].Value[0]}" />
-          <local:SliderController_v1 Grid.Column="1"
-                                     VerticalAlignment="Center"
-                                     Max="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[1].Max}"
-                                     Min="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[1].Min}"
-                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[1].Value[0]}" />
-          <local:SliderController_v1 Grid.Column="2"
-                                     VerticalAlignment="Center"
-                                     Max="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[2].Max}"
-                                     Min="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[2].Min}"
-                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[2].Value[0]}" />
-          <local:SliderController_v1 Grid.Column="4"
-                                     VerticalAlignment="Center"
-                                     Max="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[3].Max}"
-                                     Min="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[3].Min}"
-                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[3].Value[0]}" />
-          <local:SliderController_v1 Grid.Column="5"
-                                     VerticalAlignment="Center"
-                                     Max="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[4].Max}"
-                                     Min="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[4].Min}"
-                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[4].Value[0]}" />
-          <local:SliderController_v1 Grid.Column="6"
-                                     VerticalAlignment="Center"
-                                     Max="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[5].Max}"
-                                     Min="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[5].Min}"
-                                     Value="{Binding RelativeSource={RelativeSource AncestorType=local:DialogController}, Path=Motors[5].Value[0]}" />
-
-        </Grid>
-      </Viewbox>
-
-      <StackPanel Margin="0 0 12 0" Orientation="Horizontal" HorizontalAlignment="Right">
+      <StackPanel Margin="16"
+                  SnapsToDevicePixels="True"
+                  Orientation="Horizontal"
+                  HorizontalAlignment="Right"
+                  DockPanel.Dock="Bottom">
         <Button Content="Assign"
                 Margin="0 0 12 0"
                 Padding="24 0 24 0"
@@ -89,6 +46,28 @@
                 Click="ButtonCancel_Click"
                 />
       </StackPanel>
-    </StackPanel>
+
+
+      <Viewbox Margin="0 0 0 24"
+               DockPanel.Dock="Top">
+
+        <Grid>
+
+          <ItemsControl ItemsSource="{Binding MotorVMs}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <local:SliderController />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+
+          </ItemsControl>
+        </Grid>
+      </Viewbox>
+    </DockPanel>
   </Border>
 </UserControl>

@@ -68,10 +68,11 @@ namespace taskmaker_wpf.Entity {
     public class NLinearMapEntity : BaseEntity {
         private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
-        public int[] Keys { get; set; } = new int[0];
+        public int[] Keys { get; set; } = Array.Empty<int>();
 
         public NDarray Tensor { get; set; }
         public int[] Shape => Tensor?.shape.Dimensions;
+        public int? Dimension => Tensor?.ndim;
 
 
         // Output: Motor/1 or UI/2
@@ -167,6 +168,19 @@ namespace taskmaker_wpf.Entity {
             Tensor[slices] = np.array(value);
         }
 
+        public double[] GetValue(int[] indices) {
+            var slices = new Slice[Tensor.ndim];
+
+            for (int i = 0; i < indices.Length; i++) {
+                if (indices[i] == -1)
+                    slices[i] = Slice.All();
+                else
+                    slices[i] = Slice.Index(indices[i]);
+            }
+
+            return Tensor[slices].GetData<double>();
+        }
+
 
         public NDarray MapTo(double[][] lambdas) {
             try {
@@ -189,6 +203,33 @@ namespace taskmaker_wpf.Entity {
             catch (Exception e) {
                 _logger.Error(e);
                 return np.zeros(1);
+            }
+        }
+
+        public static IEnumerable<NDarray> GetValuesFromCombinations(NDarray array) {
+            foreach (var combo in GetCombinations(array)) {
+                yield return array[combo];
+            }
+        }
+
+        // Reusing the previously defined GetCombinations method
+        public static IEnumerable<int[]> GetCombinations(NDarray array) {
+            int nDims = array.ndim;
+            int[] shape = array.shape.Dimensions;
+            return GenerateCombinations(shape, 1);
+        }
+
+        private static IEnumerable<int[]> GenerateCombinations(int[] shape, int currentDim) {
+            if (currentDim >= shape.Length) {
+                yield return new int[shape.Length];
+                yield break;
+            }
+
+            for (int i = 0; i < shape[currentDim]; i++) {
+                foreach (var next in GenerateCombinations(shape, currentDim + 1)) {
+                    next[currentDim] = i;
+                    yield return next;
+                }
             }
         }
 
@@ -469,12 +510,44 @@ namespace taskmaker_wpf.Entity {
     public class ControlUiEntity : BaseEntity {
         private List<NodeEntity> nodes = new List<NodeEntity>();
         private List<BaseRegionEntity> regions = new List<BaseRegionEntity>();
+        private int nextIdx = 1;
 
         public List<BaseRegionEntity> Regions { get => regions; set => regions = value; }
-        public List<NodeEntity> Nodes { get => nodes; set => nodes = value; }
+        public List<NodeEntity> Nodes {
+            get => nodes; 
+            set {
+                nodes = value;
+            }
+        }
 
         public double[] Value { get; set; } = new double[2];
 
+
+        public NodeEntity Create() {
+            var node = new NodeEntity() { Id = nextIdx++, Value = new Point() };
+            Nodes.Add(node);
+
+            return node;
+        }
+        public NodeEntity Read(int idx) {
+            return Nodes.Where(e => e.Id == idx).FirstOrDefault();
+        }
+
+
+        public void Update(NodeEntity entity) {
+            // update node which its index property equals idx
+            var idx = nodes.FindIndex(e => e.Id == entity.Id);
+
+            if (idx != -1)
+                Nodes[idx] = entity;
+        }
+
+        public void Delete(int idx) {
+            // delete node which its index property equals idx
+            var node = Nodes.Where(e => e.Id == idx).FirstOrDefault();
+
+            Nodes.Remove(node);
+        }
 
         public void Build() {
             var nodes = Nodes.OrderBy(e => e.Id).ToArray();
@@ -555,10 +628,10 @@ namespace taskmaker_wpf.Entity {
     }
 
     public class MotorEntity : BaseEntity {
-        public double[] Value { get; set; } = new double[1];
-        public int Min { get; set; } = -10000;
-        public int Max { get; set; } = 10000;
-        public int NuibotBoardId { get; set; } = -1;
-        public int NuibotMotorId { get; set; } = -1;
+        public double Value { get; set; }
+        public double Min { get; set; } = -10000d;
+        public double Max { get; set; } = 10000d;
+        public int NuiBoardId { get; set; } = -1;
+        public int NuiMotorId { get; set; } = -1;
     }
 }

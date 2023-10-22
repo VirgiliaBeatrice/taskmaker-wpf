@@ -16,52 +16,73 @@ using Rectangle = System.Windows.Shapes.Rectangle;
 namespace taskmaker_wpf.Views.Widget {
     public class UiController : UserControl {
 
-        // Fields to store the start position for panning
-        private Point? _panStartPoint = null;
-        private Point _originalContentOffset;
+
+        public IEnumerable<BaseRegionState> RegionStates {
+            get { return (IEnumerable<BaseRegionState>)GetValue(RegionStatesProperty); }
+            set { SetValue(RegionStatesProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for RegionStates.  This enables animation, styling, binding, etc...
+        private static readonly DependencyProperty regionStatesProperty =
+            DependencyProperty.Register("RegionStates", typeof(IEnumerable<BaseRegionState>), typeof(UiController), new PropertyMetadata(Array.Empty<BaseRegionState>(), OnRegionStatesChanged
+                ));
+
+        private static void OnRegionStatesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            var control = d as UiController;
+
+            // handle DependencyPropertyChangedEventArgs
+            control.InvalidateRegion();
+        }
+
+        // Using a DependencyProperty as the backing store for AddNodeCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty AddNodeCommandProperty =
+            DependencyProperty.Register("AddNodeCommand", typeof(ICommand), typeof(UiController), new PropertyMetadata(null));
+
+        // Using a DependencyProperty as the backing store for DeleteNodeCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty DeleteNodeCommandProperty =
+            DependencyProperty.Register("DeleteNodeCommand", typeof(ICommand), typeof(UiController), new PropertyMetadata(null));
+
+        // Using a DependencyProperty as the backing store for Nodes.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty NodeStatesProperty =
+            DependencyProperty.Register("NodeStates", typeof(IEnumerable<NodeState>), typeof(UiController), new PropertyMetadata(Array.Empty<NodeState>(), OnNodeStatesChanged));
+
+        // Using a DependencyProperty as the backing store for UpdateNodeCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty UpdateNodeCommandProperty =
+            DependencyProperty.Register("UpdateNodeCommand", typeof(ICommand), typeof(UiController), new PropertyMetadata(null));
+
+        public TranslateTransform CenteringT = new();
+
+        public ScaleTransform FlipYT = new(1, -1);
+        public NodeShape SelectedNode { get; set; }
+
         private Grid _grid;
 
-        public ScrollViewer Viewer { get; set; }
-        public Canvas Canvas { get; set; }
-        public Grid Indicator { get; set; }
-        public ScaleTransform ScaleT { get; set; } = new ScaleTransform();
-        public TranslateTransform CenteringT = new TranslateTransform();
-        public ScaleTransform FlipYT = new ScaleTransform(1, -1);
-        public UiMode UiMode {
-            get => uiMode;
-            set {
-                uiMode = value;
-
-                ChangeUiMode(UiMode);
-            }
-        }
-        private Ellipse circle;
-        private Rectangle box;
-        private TextBlock billboard;
-        private UiMode uiMode = UiMode.Default;
-        private NodeShape _moveTarget;
         private Point _moveStartMousePosition;
+
         private Point _moveStartTargetPostion;
 
-        public RegionControlUI RegionUi { get; set; }
-        public MultiView MultiView { get; set; }
+        private NodeShape _moveTarget;
 
-        public List<NodeShape> Nodes { get; set; } = new List<NodeShape>();
-        public List<SimplexShape> Simplices { get; set; } = new List<SimplexShape>();
-        public List<VoronoiShape> Voronois { get; set; } = new List<VoronoiShape>();
+        private Point _originalContentOffset;
 
-        public ControlUiState UiState { get; set; }
+        // Fields to store the start position for panning
+        private Point? _panStartPoint = null;
 
-        public UiController(ControlUiState uiState) {
-            UiState = uiState;
+        private TextBlock billboard;
 
+        private Rectangle box;
+
+        private Ellipse circle;
+
+        private UiMode uiMode = UiMode.Default;
+
+        public UiController() {
             Loaded += (_, e) => {
                 RegionUi = VisualTreeHelperExtensions.FindParentOfType<RegionControlUI>(this);
                 MultiView = VisualTreeHelperExtensions.FindParentOfType<MultiView>(this);
 
                 RegionUi.UiStatusText = UiMode.ToString();
             };
-            //_regionUi = VisualTreeHelperExtensions.FindParentOfType<RegionControlUI>(this);
 
             //Background = new SolidColorBrush(Colors.LightBlue);
             IsHitTestVisible = true;
@@ -139,34 +160,59 @@ namespace taskmaker_wpf.Views.Widget {
             _grid.Children.Add(Viewer);
 
             Content = _grid;
-
         }
 
-        public void Invalidate() {
-            InvalidateNodes();
-            InvalidateRegion();
+        public ICommand AddNodeCommand {
+            get { return (ICommand)GetValue(AddNodeCommandProperty); }
+            set { SetValue(AddNodeCommandProperty, value); }
         }
 
-        public void InvalidateNodes() {
-            // Clear all new nodes.
-            foreach (var node in Nodes) {
-                Canvas.Children.Remove(node);
+        public Canvas Canvas { get; set; }
+
+        public ICommand DeleteNodeCommand {
+            get { return (ICommand)GetValue(DeleteNodeCommandProperty); }
+            set { SetValue(DeleteNodeCommandProperty, value); }
+        }
+
+        public Grid Indicator { get; set; }
+
+        public MultiView MultiView { get; set; }
+
+        public List<NodeShape> NodeShapes { get; set; } = new List<NodeShape>();
+
+        public IEnumerable<NodeState> NodeStates {
+            get { return (IEnumerable<NodeState>)GetValue(NodeStatesProperty); }
+            set { SetValue(NodeStatesProperty, value); }
+        }
+        public RegionControlUI RegionUi { get; set; }
+
+        public ScaleTransform ScaleT { get; set; } = new ScaleTransform();
+
+        public List<SimplexShape> Simplices { get; set; } = new List<SimplexShape>();
+
+        public UiMode UiMode {
+            get => uiMode;
+            set {
+                uiMode = value;
+
+                ChangeUiMode(UiMode);
             }
-
-            Nodes.Clear();
-
-            // Add nodes
-            foreach (var node in UiState.Nodes) {
-                var nodeShape = new NodeShape(node.Id) {
-                    Position = node.Value,
-                };
-
-                Nodes.Add(nodeShape);
-                Canvas.Children.Add(nodeShape);
-            }
         }
 
-        public void ClearRegion() {
+        public ControlUiViewModel UiState => (ControlUiViewModel)DataContext;
+
+        public ICommand UpdateNodeCommand {
+            get { return (ICommand)GetValue(UpdateNodeCommandProperty); }
+            set { SetValue(UpdateNodeCommandProperty, value); }
+        }
+
+        public ScrollViewer Viewer { get; set; }
+
+        public List<VoronoiShape> Voronois { get; set; } = new List<VoronoiShape>();
+
+        public static DependencyProperty RegionStatesProperty => regionStatesProperty;
+
+        public void ClearRegions() {
             foreach (var region in Simplices) {
                 Canvas.Children.Remove(region);
             }
@@ -178,20 +224,51 @@ namespace taskmaker_wpf.Views.Widget {
             Voronois.Clear();
         }
 
+        public void Invalidate() {
+            InvalidateNodeShapes();
+            InvalidateRegion();
+        }
+
+        public void InvalidateNodeShapes() {
+            // Clear all new nodes.
+            foreach (var node in NodeShapes) {
+                Canvas.Children.Remove(node);
+            }
+
+            NodeShapes.Clear();
+
+            // Add nodes
+            foreach (var nodeState in NodeStates) {
+                var nodeShape = new NodeShape(nodeState.Id) {
+                    Position = nodeState.Value,
+                };
+
+                Canvas.SetZIndex(nodeShape, 20);
+
+                NodeShapes.Add(nodeShape);
+                Canvas.Children.Add(nodeShape);
+            }
+        }
+
         public void InvalidateRegion() {
             // clear all regions
-            ClearRegion();
+            ClearRegions();
 
             // add regions
-            foreach (var region in UiState.Regions) {
+            foreach (var region in RegionStates) {
                 if (region is SimplexState s) {
-                    var simplex = new SimplexShape(region.Id, region.Vertices);
+                    var simplex = new SimplexShape(region.Id, region.Vertices) {
+                        Visibility = Visibility.Hidden
+                    };
 
                     Simplices.Add(simplex);
                     Canvas.Children.Add(simplex);
                 }
                 else if (region is VoronoiState v) {
-                    var voronoi = new VoronoiShape(region.Id, region.Vertices);
+                    var voronoi = new VoronoiShape(region.Id, region.Vertices) {
+                        Visibility = Visibility.Hidden
+
+                    };
 
                     Voronois.Add(voronoi);
                     Canvas.Children.Add(voronoi);
@@ -201,87 +278,46 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
-        // Single controller
-        public double[][] GetActuationValues() {
-            return Nodes.Select(e => e.ActuationValue).ToArray();
-        }
+        private void ShowRegions(bool v) {
+            if (v) {
+                foreach (var item in Simplices)
+                {
+                    item.Visibility = Visibility.Visible;
+                }
 
-        public double[][] GetPositionValues() {
-            return Nodes.Select(e => new double[] { e.Position.X, e.Position.Y }).ToArray();
-        }
-
-        private void ChangeUiMode(UiMode mode) {
-            switch (mode) {
-                case UiMode.Default:
-                    break;
-                case UiMode.Add:
-                    Indicator.Visibility = Visibility.Visible;
-                    ClearRegion();
-                    break;
-                case UiMode.Remove:
-                    ClearRegion();
-                    break;
-                case UiMode.Move:
-                    ClearRegion();
-                    break;
-                case UiMode.Assign:
-                    break;
-                case UiMode.Build:
-                    break;
-                case UiMode.Trace:
-                    break;
-                case UiMode.Drag:
-                    break;
-                case UiMode.Pan:
-                    break;
-                case UiMode.Zoom:
-                    break;
-                case UiMode.Reset:
-                    ScaleT.ScaleX = 1;
-                    ScaleT.ScaleY = 1;
-                    CenteringT.X = RenderSize.Width / 2;
-                    CenteringT.Y = RenderSize.Height / 2;
-                    InvalidateTransform();
-                    break;
-                default:
-                    break;
+                foreach (var item in Voronois)
+                {
+                    item.Visibility = Visibility.Visible;
+                }
             }
+            else {
+                foreach (var item in Simplices) {
+                    item.Visibility = Visibility.Hidden;
+                }
 
-            if (RegionUi != null)
-                RegionUi.UiStatusText = mode.ToString();
-        }
-
-        private void Canvas_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
-            switch (UiMode) {
-                case UiMode.Default:
-                    break;
-                case UiMode.Add:
-                    Indicator.Visibility = Visibility.Hidden;
-                    break;
-                case UiMode.Remove:
-                    PerformRemove(sender, e);
-                    break;
-                case UiMode.Move:
-                    EndMove(sender, e);
-                    break;
-                case UiMode.Assign:
-                    break;
-                case UiMode.Build:
-                    break;
-                case UiMode.Trace:
-                    break;
-                case UiMode.Drag:
-                    break;
-                case UiMode.Pan:
-                    EndPan(sender, e);
-                    break;
-                case UiMode.Zoom:
-                    break;
-                default:
-                    break;
+                foreach (var item in Voronois) {
+                    item.Visibility = Visibility.Hidden;
+                }
             }
         }
 
+        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo) {
+            CenteringT = new TranslateTransform(sizeInfo.NewSize.Width / 2, sizeInfo.NewSize.Height / 2);
+            FlipYT.CenterX = sizeInfo.NewSize.Width / 2;
+            FlipYT.CenterY = sizeInfo.NewSize.Height / 2;
+
+            InvalidateTransform();
+            InvaldatePosition();
+
+            base.OnRenderSizeChanged(sizeInfo);
+        }
+
+        private static void OnNodeStatesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            var control = d as UiController;
+
+            // handle DependencyPropertyChangedEventArgs
+            control.InvalidateNodeShapes();
+        }
         private void Canvas_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
             switch (UiMode) {
                 case UiMode.Default:
@@ -304,6 +340,68 @@ namespace taskmaker_wpf.Views.Widget {
                     break;
                 case UiMode.Pan:
                     StartPan(sender, e);
+                    break;
+                case UiMode.Zoom:
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void Canvas_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+            switch (UiMode) {
+                case UiMode.Default:
+                    break;
+                case UiMode.Add:
+                    break;
+                case UiMode.Remove:
+                    PerformDelete(sender, e);
+                    break;
+                case UiMode.Move:
+                    EndMove(sender, e);
+                    break;
+                case UiMode.Assign:
+                    PerformSelect(sender, e);
+                    break;
+                case UiMode.Build:
+                    break;
+                case UiMode.Trace:
+                    break;
+                case UiMode.Drag:
+                    break;
+                case UiMode.Pan:
+                    EndPan(sender, e);
+                    break;
+                case UiMode.Zoom:
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void Canvas_PreviewMouseMove(object sender, MouseEventArgs e) {
+            switch (UiMode) {
+                case UiMode.Default:
+
+                    break;
+                case UiMode.Add:
+                    MovePointer(sender, e);
+                    break;
+                case UiMode.Remove:
+                    break;
+                case UiMode.Move:
+                    PerformMove(sender, e);
+                    break;
+                case UiMode.Assign:
+                    break;
+                case UiMode.Build:
+                    break;
+                case UiMode.Trace:
+                    break;
+                case UiMode.Drag:
+                    break;
+                case UiMode.Pan:
+                    PerformPan(sender, e);
                     break;
                 case UiMode.Zoom:
                     break;
@@ -340,20 +438,24 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
-        private void Canvas_PreviewMouseMove(object sender, MouseEventArgs e) {
-            switch (UiMode) {
+        private void ChangeUiMode(UiMode mode) {
+            switch (mode) {
                 case UiMode.Default:
-
+                    ShowPointer(false);
+                    ShowRegions(true);
                     break;
                 case UiMode.Add:
-                    ShowAddPointer(sender, e);
+                    ShowPointer(true);
+                    ShowRegions(false);
                     break;
                 case UiMode.Remove:
+                    ShowRegions(false);
                     break;
                 case UiMode.Move:
-                    PerformMove(sender, e);
+                    ShowRegions(false);
                     break;
                 case UiMode.Assign:
+                    ShowRegions(false);
                     break;
                 case UiMode.Build:
                     break;
@@ -362,36 +464,30 @@ namespace taskmaker_wpf.Views.Widget {
                 case UiMode.Drag:
                     break;
                 case UiMode.Pan:
-                    PerformPan(sender, e);
                     break;
                 case UiMode.Zoom:
+                    break;
+                case UiMode.Reset:
+                    ScaleT.ScaleX = 1;
+                    ScaleT.ScaleY = 1;
+                    CenteringT.X = RenderSize.Width / 2;
+                    CenteringT.Y = RenderSize.Height / 2;
+                    InvalidateTransform();
                     break;
                 default:
                     break;
             }
+
+            if (RegionUi != null)
+                RegionUi.UiStatusText = mode.ToString();
         }
 
-        private void StartMove(object sender, MouseButtonEventArgs e) {
-            var currentPosition = e.GetPosition(Canvas);
-            var result = VisualTreeHelper.HitTest(Canvas, currentPosition);
-
-            if (result != null && result.VisualHit is Ellipse hit) {
-                var parent = VisualTreeHelperExtensions.FindParentOfType<NodeShape>(hit);
-
-                if (parent != null) {
-                    _moveTarget = parent;
-                    _moveStartMousePosition = currentPosition;
-                    _moveStartTargetPostion = parent.Position;
-                }
+        private void ShowPointer(bool v) {
+            if (v) {
+                Indicator.Visibility = Visibility.Visible;
             }
-        }
-
-        private void PerformMove(object sender, MouseEventArgs e) {
-            if (_moveTarget != null) {
-                var currentPosition = e.GetPosition(Canvas);
-                var offset = currentPosition - _moveStartMousePosition;
-
-                _moveTarget.Position = _moveStartTargetPostion + offset;
+            else {
+                Indicator.Visibility = Visibility.Hidden;
             }
         }
 
@@ -400,99 +496,18 @@ namespace taskmaker_wpf.Views.Widget {
                 var id = _moveTarget.NodeId;
                 var position = _moveTarget.Position;
 
-                UiState.Nodes = UiState.Nodes.Select(e => {
-                    if (e.Id == id)
-                        return new NodeState { Id = id, Value = position };
-                    else
-                        return e;
-                }).ToArray();
-
+                // Command: Update node
+                _moveTarget.Position = position;
+                UpdateNodeCommand?.Execute(_moveTarget.State);
 
                 _moveTarget = null;
             }
         }
 
-        private void PerformRemove(object sender, MouseButtonEventArgs e) {
-            var currentPosition = e.GetPosition(Canvas);
-
-            var result = VisualTreeHelper.HitTest(Canvas, currentPosition);
-
-            if (result != null && result.VisualHit is Ellipse hit) {
-                var parent = VisualTreeHelperExtensions.FindParentOfType<NodeShape>(hit);
-
-                if (parent != null) {
-                    var id = parent.NodeId;
-
-                    UiState.Nodes = UiState.Nodes.Where(e => e.Id != id).ToArray();
-
-                    //Canvas.Children.Remove(parent);
-                    //Nodes.Remove(parent);
-                }
-            }
-        }
-
-        private void SetPosition(UIElement element, double x, double y) {
-            double halfWidth = element.DesiredSize.Width / 2;
-            double halfHeight = element.DesiredSize.Height / 2;
-
-            if (element is TextBlock)
-                element.RenderTransform = new ScaleTransform(1, -1) {
-                    CenterX = halfWidth,
-                    CenterY = halfHeight
-                };
-
-            Canvas.SetLeft(element, x - halfWidth);
-            Canvas.SetTop(element, y - halfHeight);
-
-        }
-
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo) {
-            CenteringT = new TranslateTransform(sizeInfo.NewSize.Width / 2, sizeInfo.NewSize.Height / 2);
-            FlipYT.CenterX = sizeInfo.NewSize.Width / 2;
-            FlipYT.CenterY = sizeInfo.NewSize.Height / 2;
-
-            InvalidateTransform();
-            InvaldatePosition();
-
-            base.OnRenderSizeChanged(sizeInfo);
-        }
-
-        private void InvalidateTransform() {
-            var g = new TransformGroup();
-
-            g.Children.Add(CenteringT);
-            g.Children.Add(FlipYT);
-            g.Children.Add(ScaleT);
-
-            Canvas.RenderTransform = g;
-        }
-
-        private void InvaldatePosition() {
-
-            Nodes.ForEach(e => SetPosition(e, e.Position.X, e.Position.Y));
-            SetPosition(circle, 0, 0);
-            //SetPosition(box, 0, 0);
-            //SetPosition(billboard, 0, 100);
-        }
-
-        private void ShowAddPointer(object sender, MouseEventArgs e) {
-            var currentPosition = e.GetPosition(Canvas);
-
-            SetPosition(Indicator, currentPosition.X, currentPosition.Y);
-        }
-
-        private void PerformAdd(object sender, MouseButtonEventArgs e) {
-            var currentPosition = e.GetPosition(Canvas);
-            var newNode = new NodeShape(Nodes.Count + 1) {
-                Position = currentPosition
-            };
-
-            var nodes = UiState.Nodes;
-
-            UiState.Nodes = nodes.Append(new NodeState { Id = nodes.Length + 1, Value = currentPosition }).ToArray();
-
-            //Nodes.Add(newNode);
-            //Canvas.Children.Add(newNode);
+        private void EndPan(object sender, MouseButtonEventArgs e) {
+            ReleaseMouseCapture();
+            _panStartPoint = null;
+            Cursor = Cursors.Arrow;
         }
 
         private void HandleZoom(object sender, MouseWheelEventArgs e) {
@@ -517,11 +532,37 @@ namespace taskmaker_wpf.Views.Widget {
             InvalidateTransform();
         }
 
-        private void StartPan(object sender, MouseButtonEventArgs e) {
-            _panStartPoint = e.GetPosition(Canvas);
-            _originalContentOffset = new Point(ScaleT.ScaleX, ScaleT.ScaleY);
-            CaptureMouse(); // Ensure we get the MouseMove even if the cursor goes out of the Canvas
-            Cursor = Cursors.Hand;
+        private void InvaldatePosition() {
+
+            NodeShapes.ForEach(e => SetPosition(e, e.Position.X, e.Position.Y));
+            SetPosition(circle, 0, 0);
+            //SetPosition(box, 0, 0);
+            //SetPosition(billboard, 0, 100);
+        }
+
+        private void InvalidateTransform() {
+            var g = new TransformGroup();
+
+            g.Children.Add(CenteringT);
+            g.Children.Add(FlipYT);
+            g.Children.Add(ScaleT);
+
+            Canvas.RenderTransform = g;
+        }
+
+        private void PerformAdd(object sender, MouseButtonEventArgs e) {
+            var currentPosition = e.GetPosition(Canvas);
+
+            AddNodeCommand?.Execute(currentPosition);
+        }
+
+        private void PerformMove(object sender, MouseEventArgs e) {
+            if (_moveTarget != null) {
+                var currentPosition = e.GetPosition(Canvas);
+                var offset = currentPosition - _moveStartMousePosition;
+
+                _moveTarget.Position = _moveStartTargetPostion + offset;
+            }
         }
 
         private void PerformPan(object sender, MouseEventArgs e) {
@@ -545,10 +586,90 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
-        private void EndPan(object sender, MouseButtonEventArgs e) {
-            ReleaseMouseCapture();
-            _panStartPoint = null;
-            Cursor = Cursors.Arrow;
+        private void PerformDelete(object sender, MouseButtonEventArgs e) {
+            var currentPosition = e.GetPosition(Canvas);
+
+            var result = VisualTreeHelper.HitTest(Canvas, currentPosition);
+
+            if (result != null) {
+                var parent = VisualTreeHelperExtensions.FindParentOfType<NodeShape>(result.VisualHit);
+
+                if (parent != null) {
+                    // Command: Remove node
+                    DeleteNodeCommand?.Execute(parent.State);
+                }
+            }
+        }
+
+        private void PerformSelect(object sender, MouseButtonEventArgs e) {
+            var currentPosition = e.GetPosition(Canvas);
+
+            var result = VisualTreeHelper.HitTest(Canvas, currentPosition);
+
+            if (result != null) {
+                var parent = VisualTreeHelperExtensions.FindParentOfType<NodeShape>(result.VisualHit);
+
+                if (parent != null) {
+                    // Command: Remove node
+                    if (SelectedNode == parent) {
+                        SelectedNode = null;
+                        parent.Select(false);
+                    }
+                    else {
+                        foreach (var nodeShape in NodeShapes) {
+                            nodeShape.Select(false);
+                        }
+
+                        SelectedNode = parent;
+                        parent.Select(true);
+
+                        MultiView.RequestMotorDialog();
+                    }
+                }
+            }
+        }
+                    
+
+        private void SetPosition(UIElement element, double x, double y) {
+            double halfWidth = element.DesiredSize.Width / 2;
+            double halfHeight = element.DesiredSize.Height / 2;
+
+            if (element is TextBlock)
+                element.RenderTransform = new ScaleTransform(1, -1) {
+                    CenterX = halfWidth,
+                    CenterY = halfHeight
+                };
+
+            Canvas.SetLeft(element, x - halfWidth);
+            Canvas.SetTop(element, y - halfHeight);
+
+        }
+
+        private void MovePointer(object sender, MouseEventArgs e) {
+            var currentPosition = e.GetPosition(Canvas);
+
+            SetPosition(Indicator, currentPosition.X, currentPosition.Y);
+        }
+
+        private void StartMove(object sender, MouseButtonEventArgs e) {
+            var currentPosition = e.GetPosition(Canvas);
+            var result = VisualTreeHelper.HitTest(Canvas, currentPosition);
+
+            if (result != null) {
+                var parent = VisualTreeHelperExtensions.FindParentOfType<NodeShape>(result.VisualHit);
+
+                if (parent != null) {
+                    _moveTarget = parent;
+                    _moveStartMousePosition = currentPosition;
+                    _moveStartTargetPostion = parent.Position;
+                }
+            }
+        }
+        private void StartPan(object sender, MouseButtonEventArgs e) {
+            _panStartPoint = e.GetPosition(Canvas);
+            _originalContentOffset = new Point(ScaleT.ScaleX, ScaleT.ScaleY);
+            CaptureMouse(); // Ensure we get the MouseMove even if the cursor goes out of the Canvas
+            Cursor = Cursors.Hand;
         }
     }
 }

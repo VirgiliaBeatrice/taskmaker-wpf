@@ -77,7 +77,10 @@
               VerticalAlignment="Stretch">
           <w:MultiView x:Name="multiView"
                        Focusable="True"
-                       Width="auto" />
+                       Width="auto"
+                       UiViewModel="{Binding SelectedUiVM}"
+                       MapViewModel="{Binding SelectedMapVM}"
+                       />
 
           <StackPanel Orientation="Vertical"
                       VerticalAlignment="Top"
@@ -151,7 +154,8 @@
 
 
 
-          <w:InfoPanel x:Name="infoPanel" Margin="16"
+          <w:InfoPanel x:Name="infoPanel"
+                       Margin="16"
                        Visibility="Collapsed"
                        HorizontalAlignment="Left"
                        VerticalAlignment="Bottom" />
@@ -261,7 +265,8 @@
                                    MinHeight="20"
                                    Margin="8"
                                    SelectionMode="Single"
-                                   ItemsSource="{Binding UiStates}"
+                                   ItemsSource="{Binding UiVMs}"
+                                   SelectedItem="{Binding SelectedUiVM}"
                                    MouseDoubleClick="lbUiStates_MouseDoubleClick">
                           </ListBox>
                         </StackPanel>
@@ -273,9 +278,31 @@
 
                 </TabItem>
                 <TabItem Header="Map">
-                  <ScrollViewer VerticalScrollBarVisibility="Hidden">
-                    <w:TargetsPanel />
+                  <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16"
+                                Orientation="Vertical">
+                      <GroupBox Header="NLinearMap">
+                        <StackPanel Orientation="Vertical"
+                                    Margin="16">
+                          <Button Content="+"
+                                  Padding="12 0 12 0"
+                                  Margin="0 12 0 12"
+                                  Command="{Binding CreateMapCommand}"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center" />
+                          <ListBox x:Name="tabMapLbMapStates"
+                            MaxHeight="100"
+                                   MinHeight="100"
+                                   SelectionMode="Single"
+                                   ItemsSource="{Binding MapVMs}"
+                                   SelectedItem="{Binding SelectedMapVM}"
+                                   MouseDoubleClick="tabMapLbMapStates_MouseDoubleClick"
+                                   />
 
+
+                        </StackPanel>
+                      </GroupBox>
+                    </StackPanel>
                   </ScrollViewer>
                 </TabItem>
 
@@ -302,21 +329,21 @@
         <TextBlock x:Name="timer"
                    Margin="8 0 4 0"
                    Width="200"
-                   Text="{Binding Time}" />
+                   Text="Time" />
         <TextBlock x:Name="uiStatus"
                    Margin="4 0 4 0"
                    MinWidth="250" />
         <TextBlock x:Name="keymapInfo"
                    Margin="4 0 4 0"
                    MinWidth="250"
-                   Text="{Binding Path=KeymapInfo}" />
+                   Text="KeymapInfo" />
         <TextBlock x:Name="statusMsg"
                    Margin="4 0 4 0"
                    MinWidth="250"
-                   Text="{Binding Path=StatusMsg}" />
+                   Text="StatusMsg" />
         <TextBlock x:Name="systemInfo"
                    Margin="4 0 4 0"
-                   Text="{Binding Debug}" />
+                   Text="Debug" />
       </StackPanel>
     </Grid>
   </Border>

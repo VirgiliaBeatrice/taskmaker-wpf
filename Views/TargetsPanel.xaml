@@ -90,7 +90,7 @@
                 Header="Details">
         <ContentControl>
           <ContentControl.ContentTemplate>
-            <DataTemplate DataType="{x:Type vm:NLinearMapState}">
+            <DataTemplate DataType="{x:Type vm:NLinearMapViewModel}">
               <StackPanel Orientation="Vertical"
                           Margin="2">
                 <StackPanel Orientation="Horizontal">
@@ -106,7 +106,7 @@
           </ContentControl.ContentTemplate>
           <d:ContentControl.Content>
             <x:Array Type="{x:Type sys:Object}">
-              <vm:NLinearMapState Name="S0" />
+              <vm:NLinearMapViewModel Name="S0" />
             </x:Array>
           </d:ContentControl.Content>
         </ContentControl>
