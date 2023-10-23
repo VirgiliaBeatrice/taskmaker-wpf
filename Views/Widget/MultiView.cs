@@ -56,10 +56,11 @@ namespace taskmaker_wpf.Views.Widget {
 
     public struct MapEntry {
         public int[] Keys { get; set; }
+        public int[] Indices { get; set; }
         public double[] Value { get; set; }
 
         public override string ToString() {
-            return $"[{Keys} -> {Value}]";
+            return $"[({string.Join(",", Indices)}) -> [{string.Join(",", Value)}]]";
         }
     }
 
@@ -387,7 +388,8 @@ namespace taskmaker_wpf.Views.Widget {
 
         public Dictionary<NDKey, MapEntry> Entries { get; set; } = new Dictionary<NDKey, MapEntry>();
 
-        public Dictionary<int, NodeShape> SelectedNodes { get; set; } = new Dictionary<int, NodeShape>();
+        public NodeShape[] SelectedNodes => Controllers.Select(c => c.SelectedNode).ToArray();
+
         public RegionControlUIViewModel RegionViewModel => DataContext as RegionControlUIViewModel;
 
         public UiMode UiMode {
@@ -496,31 +498,30 @@ namespace taskmaker_wpf.Views.Widget {
 
 
         public async void RequestMotorDialog() {
-            if (UiMode == UiMode.Assign && SelectedNodes.Values.All(v => v != null)) {
+            if (UiMode == UiMode.Assign && SelectedNodes.All(v => v != null)) {
                 // Send dialog message
                 var result = await WeakReferenceMessenger.Default.Send(new DialogRequestMessage());
 
                 if (result.Result == MessageBoxResult.OK) {
                     // find index of selected node according to its ID
-                    var keys = new List<int>();
+                    var indices = new List<int>();
 
                     foreach (var item in Controllers) {
-                        var key = item.NodeStates.ToList().IndexOf(item.SelectedNode.State);
+                        var index = item.NodeStates.ToList().IndexOf(item.SelectedNode.State);
 
-                        keys.Add(key);
+                        indices.Add(index);
                     }
 
-
                     var entry = new MapEntry {
-                        Keys = keys.ToArray(),
+                        Indices = indices.ToArray(),
                         Value = result.Value as double[],
                     };
 
                     // Commit map entry
                     SessionViewModel.MapViewModel.SetValue(entry);
 
-                    var ndKey = new NDKey(keys.ToArray());
-                    Entries[ndKey] = entry;
+                    var key = new NDKey(SelectedNodes.Select(e => e.State.Id).ToArray());
+                    Entries[key] = entry;
                 }
 
             }
