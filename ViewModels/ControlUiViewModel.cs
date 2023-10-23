@@ -26,6 +26,38 @@ namespace taskmaker_wpf.ViewModels {
     }
 
 
+    public partial class ControlUiCollectionViewModel : ObservableObject {
+        private readonly UIService _uiSrv;
+
+        public ObservableCollection<ControlUiViewModel> VMs { get; private set; } = new();
+
+        public ControlUiCollectionViewModel(UIService uiSrv) {
+            _uiSrv = uiSrv;
+        }
+
+        [RelayCommand]
+        public void Fetch() {
+            VMs.Clear();
+            foreach(var entity in _uiSrv.GetAll()) {
+                var vm = new ControlUiViewModel(_uiSrv);
+
+                vm.FromEntity(entity);
+                VMs.Add(vm);
+            }
+        }
+
+
+        [RelayCommand]
+        public void Add() {
+            var entity = new ControlUiEntity();
+            var vm = new ControlUiViewModel(_uiSrv);
+
+            _uiSrv.Create(entity);
+            vm.FromEntity(entity);
+            VMs.Add(vm);
+        }
+    }
+
     public partial class ControlUiViewModel : ObservableObject {
         [ObservableProperty]
         private int _id;
@@ -36,10 +68,18 @@ namespace taskmaker_wpf.ViewModels {
         [ObservableProperty]
         private NodeState[] _nodeStates = Array.Empty<NodeState>();
 
-        private readonly ControlUiEntity _entity;
+        // TODO: unify to service
+        private readonly UIService _uiSrv;
+        private ControlUiEntity _entity;
 
-        public ControlUiViewModel(ControlUiEntity entity) {
-            _entity = entity;
+        partial void OnIdChanged(int value) {
+            if (value != -1) {
+                _entity = _uiSrv.Read(value);
+            }
+        }
+
+        public ControlUiViewModel(UIService uiSrv) {
+            _uiSrv = uiSrv;
         }
 
         [RelayCommand]
@@ -96,6 +136,12 @@ namespace taskmaker_wpf.ViewModels {
             }
 
             return regions.ToArray();
+        }
+
+        public void FromEntity(ControlUiEntity entity) {
+            Id = entity.Id;
+            Name = entity.Name;
+            NodeStates = entity.Nodes.Select(node => new NodeState(node.Id, node.Value)).ToArray();
         }
 
         public override string ToString() {

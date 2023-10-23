@@ -58,6 +58,8 @@ namespace taskmaker_wpf.Views.Widget
             parent.DialogTCS.SetResult(new DialogResult() {
                 Result = MessageBoxResult.OK,
             });
+
+            CommitCommand?.Execute(null);
         }
 
         private void ButtonCancel_Click(object sender, RoutedEventArgs e) {

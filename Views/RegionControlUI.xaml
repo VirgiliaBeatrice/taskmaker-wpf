@@ -78,8 +78,7 @@
           <w:MultiView x:Name="multiView"
                        Focusable="True"
                        Width="auto"
-                       UiViewModel="{Binding SelectedUiVM}"
-                       MapViewModel="{Binding SelectedMapVM}"
+                       SessionViewModel="{Binding SessionViewModel}"
                        />
 
           <StackPanel Orientation="Vertical"
@@ -194,6 +193,36 @@
 
               <TabControl Margin="4"
                           Width="250">
+                <TabItem Header="Session">
+                  <GroupBox Header="Session Operations">
+                    <StackPanel>
+                      <Button Content="+"
+                              Padding="24 0 24 0"
+                              Margin="12"
+                              HorizontalAlignment="Center" 
+                              Command="{Binding CreateSessionCommand}"
+                              />
+                      <Expander Header="Control UI" Margin="12">
+                        <ListBox Margin="12"
+                                 Height="100"
+                                 ItemsSource="{Binding UiVMs}" />
+                      </Expander>
+                      <Expander Header="Map" Margin="12" DataContext="{Binding SessionViewModel.MapViewModel}">
+                        <StackPanel Orientation="Vertical" Margin="12">
+                          <Label Content="Name" FontWeight="Bold"/>
+                          <Label Content="{Binding Name}" Margin="12 0 12 0"/>
+                          <Separator />
+                          <Label Content="Shape"
+                                 FontWeight="Bold" />
+                          <Label Content="{Binding Shape}"
+                                 Margin="12 0 12 0" />
+                          <Separator />
+                        </StackPanel>
+                      </Expander>
+                    </StackPanel>
+                  </GroupBox>
+                </TabItem>
+                
                 <TabItem Header="Evaluation">
                   <ScrollViewer VerticalScrollBarVisibility="Hidden">
                     <StackPanel Margin="4"
@@ -253,8 +282,7 @@
                         <StackPanel Margin="4"
                                     Orientation="Vertical">
                           <Button x:Name="tabUiBtnAdd"
-                                  Margin="4"
-                                  Command="{Binding CreateUiCommand}">
+                                  Margin="4">
                             <Button.Content>
                               <Image Source="/icons/add_FILL0_wght400_GRAD0_opsz48.png"
                                      Width="16"
@@ -266,7 +294,6 @@
                                    Margin="8"
                                    SelectionMode="Single"
                                    ItemsSource="{Binding UiVMs}"
-                                   SelectedItem="{Binding SelectedUiVM}"
                                    MouseDoubleClick="lbUiStates_MouseDoubleClick">
                           </ListBox>
                         </StackPanel>
@@ -287,15 +314,12 @@
                           <Button Content="+"
                                   Padding="12 0 12 0"
                                   Margin="0 12 0 12"
-                                  Command="{Binding CreateMapCommand}"
                                   HorizontalAlignment="Center"
                                   VerticalAlignment="Center" />
                           <ListBox x:Name="tabMapLbMapStates"
                             MaxHeight="100"
                                    MinHeight="100"
                                    SelectionMode="Single"
-                                   ItemsSource="{Binding MapVMs}"
-                                   SelectedItem="{Binding SelectedMapVM}"
                                    MouseDoubleClick="tabMapLbMapStates_MouseDoubleClick"
                                    />
 

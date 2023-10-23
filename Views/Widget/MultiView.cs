@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Messaging;
 using Numpy;
 using SharpVectors.Converters;
+using SharpVectors.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -54,11 +55,11 @@ namespace taskmaker_wpf.Views.Widget {
     }
 
     public struct MapEntry {
-        public int[] Key { get; set; }
+        public int[] Keys { get; set; }
         public double[] Value { get; set; }
 
         public override string ToString() {
-            return $"[{Key} -> {Value}]";
+            return $"[{Keys} -> {Value}]";
         }
     }
 
@@ -323,24 +324,41 @@ namespace taskmaker_wpf.Views.Widget {
 
 
 
-        public ICommand ExpandAtCommand {
-            get { return (ICommand)GetValue(ExpandAtCommandProperty); }
-            set { SetValue(ExpandAtCommandProperty, value); }
+        public SessionViewModel SessionViewModel {
+            get { return (SessionViewModel)GetValue(SessionViewModelProperty); }
+            set { SetValue(SessionViewModelProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for ExpandAtCommand.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ExpandAtCommandProperty =
-            DependencyProperty.Register("ExpandAtCommand", typeof(ICommand), typeof(MultiView), new PropertyMetadata(null));
+        // Using a DependencyProperty as the backing store for SessionViewModel.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SessionViewModelProperty =
+            DependencyProperty.Register("SessionViewModel", typeof(SessionViewModel), typeof(MultiView), new PropertyMetadata(null, OnSessionViewModelChanged));
 
+        private static void OnSessionViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            var control = d as MultiView;
 
+            if (e.NewValue != null) {
+                var vm = e.NewValue as SessionViewModel;
 
-        // Using a DependencyProperty as the backing store for MapViewModel.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty MapViewModelProperty =
-            DependencyProperty.Register("MapViewModel", typeof(NLinearMapViewModel), typeof(MultiView), new PropertyMetadata(null));
+                vm.UiViewModels.CollectionChanged += control.UiViewModels_CollectionChanged;
+                vm.MapViewModel.PropertyChanged += control.MapViewModel_PropertyChanged;
+            }
 
-        // Using a DependencyProperty as the backing store for UiViewModel.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty UiViewModelProperty =
-            DependencyProperty.Register("UiViewModel", typeof(ControlUiViewModel), typeof(MultiView), new PropertyMetadata(null, OnUiViewModelChanged));
+            if (e.OldValue != null) {
+                var vm = e.OldValue as SessionViewModel;
+
+                vm.UiViewModels.CollectionChanged -= control.UiViewModels_CollectionChanged;
+                vm.MapViewModel.PropertyChanged -= control.MapViewModel_PropertyChanged;
+            }
+        }
+
+        private void MapViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+            //throw new NotImplementedException();
+        }
+
+        private void UiViewModels_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
+            Close();
+            Open();
+        }
 
         private readonly Grid _grid;
 
@@ -367,14 +385,10 @@ namespace taskmaker_wpf.Views.Widget {
 
         public List<UiController> Controllers { get; set; } = new List<UiController>();
 
-        public Dictionary<int[], MapEntry> MapEntries { get; set; } = new Dictionary<int[], MapEntry>();
-
-        public NLinearMapViewModel MapViewModel {
-            get { return (NLinearMapViewModel)GetValue(MapViewModelProperty); }
-            set { SetValue(MapViewModelProperty, value); }
-        }
+        public Dictionary<NDKey, MapEntry> Entries { get; set; } = new Dictionary<NDKey, MapEntry>();
 
         public Dictionary<int, NodeShape> SelectedNodes { get; set; } = new Dictionary<int, NodeShape>();
+        public RegionControlUIViewModel RegionViewModel => DataContext as RegionControlUIViewModel;
 
         public UiMode UiMode {
             get => uiMode;
@@ -387,10 +401,7 @@ namespace taskmaker_wpf.Views.Widget {
             }
         }
 
-        public ControlUiViewModel UiViewModel {
-            get { return (ControlUiViewModel)GetValue(UiViewModelProperty); }
-            set { SetValue(UiViewModelProperty, value); }
-        }
+        public ControlUiViewModel UiViewModel { get; set; }
         public void Close() {
             _scroll.Content = null;
             Controllers.Clear();
@@ -417,63 +428,70 @@ namespace taskmaker_wpf.Views.Widget {
             //grid.Children.Add(textblock);
         }
 
-        public void HandleTensorExpanding(UiController ui) {
+        public void OnNodeAdded(UiController ui) {
             var axis = Controllers.IndexOf(ui) + 1;
-            var index = ui.NodeShapes.Count;
+            var index = ui.NodeStates == null ? 0 : ui.NodeStates.Count();
 
             var record = new TensorOperationRecord() {
                 Axis = axis,
                 Index = index,
             };
 
-            ExpandAtCommand?.Execute(record);
+            //ExpandAtCommand?.Execute(record);
+            SessionViewModel.MapViewModel.ExpandAt(record);
+        }
+
+        public void OnNodeDeleted(UiController ui) {
+            var axis = Controllers.IndexOf(ui) + 1;
+            var index = ui.NodeStates.Count();
+
+            var record = new TensorOperationRecord() {
+                Axis = axis,
+                Index = index,
+            };
+
+            //ExpandAtCommand?.Execute(record);
+            SessionViewModel.MapViewModel.RemoveAt(record);
         }
 
         public void Open() {
-            var uiController = new UiController() {
-                DataContext = UiViewModel,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                Margin = new Thickness(16, 16, 16, 16),
-            };
+            foreach(var uiViewModel in SessionViewModel.UiViewModels) {
+                // 1. Open Ui
+                var uiController = new UiController() {
+                    DataContext = uiViewModel,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    Margin = new Thickness(16, 16, 16, 16),
+                };
 
-            // data binding
-            Binding binding;
+                // data binding
+                Binding binding;
 
-            binding = new Binding("AddNodeCommand") {
-                Source = UiViewModel,
-            };
-            uiController.SetBinding(UiController.AddNodeCommandProperty, binding);
+                binding = new Binding("NodeStates") {
+                    Source = uiViewModel,
+                };
+                uiController.SetBinding(UiController.NodeStatesProperty, binding);
 
-            binding = new Binding("DeleteNodeCommand") {
-                Source = UiViewModel,
-            };
-            uiController.SetBinding(UiController.DeleteNodeCommandProperty, binding);
+                binding = new Binding("RegionStates") {
+                    Source = uiViewModel,
+                };
+                uiController.SetBinding(UiController.RegionStatesProperty, binding);
 
-            binding = new Binding("UpdateNodeCommand") {
-                Source = UiViewModel,
-            };
-            uiController.SetBinding(UiController.UpdateNodeCommandProperty, binding);
+                // Register messages
+                WeakReferenceMessenger.Default.Register<UiAddedMessage>(this, (r, m) => {
+                    OnNodeAdded(m.Sender as UiController);
+                });
+                WeakReferenceMessenger.Default.Register<UiDeletedMessage>(this, (r, m) => {
+                    OnNodeDeleted(m.Sender as UiController);
+                });
 
-            binding = new Binding("NodeStates") {
-                Source = UiViewModel,
-            };
-            uiController.SetBinding(UiController.NodeStatesProperty, binding);
+                // TODO: potential memory leak because of unregistering
 
-            binding = new Binding("RegionStates") {
-                Source = UiViewModel,
-            };
-            uiController.SetBinding(UiController.RegionStatesProperty, binding);
+                Controllers.Add(uiController);
 
-            Controllers.Add(uiController);
+            }
+
             Layout();
-        }
-
-        private static void OnUiViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            var control = d as MultiView;
-
-            control.Close();
-            control.Open();
         }
 
 
@@ -483,12 +501,26 @@ namespace taskmaker_wpf.Views.Widget {
                 var result = await WeakReferenceMessenger.Default.Send(new DialogRequestMessage());
 
                 if (result.Result == MessageBoxResult.OK) {
+                    // find index of selected node according to its ID
+                    var keys = new List<int>();
+
+                    foreach (var item in Controllers) {
+                        var key = item.NodeStates.ToList().IndexOf(item.SelectedNode.State);
+
+                        keys.Add(key);
+                    }
+
+
                     var entry = new MapEntry {
-                        Key = Controllers.Select(e => e.SelectedNode.NodeId).ToArray(),
+                        Keys = keys.ToArray(),
                         Value = result.Value as double[],
                     };
 
-                    MapEntries[entry.Key] = entry;
+                    // Commit map entry
+                    SessionViewModel.MapViewModel.SetValue(entry);
+
+                    var ndKey = new NDKey(keys.ToArray());
+                    Entries[ndKey] = entry;
                 }
 
             }

@@ -7,11 +7,14 @@ using Prism.Ioc;
 using Prism.Regions;
 using SkiaSharp;
 using System;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.DirectoryServices.ActiveDirectory;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Xml.Linq;
 using taskmaker_wpf.Entity;
@@ -21,6 +24,24 @@ using taskmaker_wpf.Views.Widget;
 
 
 namespace taskmaker_wpf.ViewModels {
+    public partial class SessionViewModel : ObservableObject {
+        public ObservableCollection<ControlUiViewModel> UiViewModels { get; init; }
+        public NLinearMapViewModel MapViewModel { get; init; }
+
+
+        private readonly EvaluationService _evaluationSrv;
+        private readonly MotorService _motorSrv;
+        private readonly UIService _uiSrv;
+        private readonly MapService _mapSrv;
+
+        public SessionViewModel(EvaluationService evaluationSrv, MotorService motorSrv, UIService uiSrv, MapService mapSrv) {
+            _evaluationSrv = evaluationSrv;
+            _motorSrv = motorSrv;
+            _uiSrv = uiSrv;
+            _mapSrv = mapSrv;
+        }
+    }
+
     public partial class RegionControlUIViewModel : ObservableObject, INavigationAware {
         private readonly EvaluationService _evaluationSrv;
         private readonly MotorService _motorSrv;
@@ -28,79 +49,110 @@ namespace taskmaker_wpf.ViewModels {
         private readonly MapService _mapSrv;
         private static IContainerProvider Container => (App.Current as Prism.PrismApplicationBase).Container;
 
-        public ObservableCollection<ControlUiViewModel> UiVMs { get; private set; } = new();
-        public ObservableCollection<NLinearMapViewModel> MapVMs { get; private set; } = new();
+        public ControlUiCollectionViewModel UiCollectionViewModel { get; private set; }
 
-        
+        public ObservableCollection<ControlUiViewModel> UiVMs => UiCollectionViewModel.VMs;
+
         [ObservableProperty]
-        private ControlUiViewModel _selectedUiVM;
-        [ObservableProperty]
-        private NLinearMapViewModel _selectedMapVM;
+        private SessionViewModel _sessionViewModel;
 
         public RegionControlUIViewModel(EvaluationService evaluationService,MotorService motorService, UIService uIService, MapService mapService) {
             _mapSrv = mapService;
             _evaluationSrv = evaluationService;
             _motorSrv = motorService;
             _uiSrv = uIService;
+
+            UiCollectionViewModel = new ControlUiCollectionViewModel(_uiSrv);
         }
 
         [RelayCommand]
-        private void CreateUi() {
-            var entity = _uiSrv.Create(new ControlUiEntity());
+        public void CreateSession() {
+            SessionViewModel = new SessionViewModel(_evaluationSrv, _motorSrv, _uiSrv, _mapSrv) {
+                UiViewModels = new ObservableCollection<ControlUiViewModel>(),
+                MapViewModel = new NLinearMapViewModel(_mapSrv)
+            };
 
-            var uiVM = Container.Resolve<ControlUiViewModel>();
+            // Init UIs
+            var entity = new ControlUiEntity();
+            var uiVM = new ControlUiViewModel(_uiSrv);
 
-            uiVM.Id = entity.Id;
-            uiVM.Name = entity.Name;
+            _uiSrv.Create(entity);
+            uiVM.FromEntity(entity);
 
-            UiVMs.Add(uiVM);
+            SessionViewModel.UiViewModels.Add(uiVM);
+
+            // Init Map
+            var mapEntity = new NLinearMapEntity(2, 6);
+            var mapVM = SessionViewModel.MapViewModel;
+
+            _mapSrv.Create(mapEntity);
+            mapVM.FromEntity(mapEntity);
+
+            Fetch();
         }
 
         [RelayCommand]
-        private void CreateMap() {
-            // TODO: hard coding
-            if (SelectedMapVM == null) {
-                // send message, no ui has been selected
-                var msg = new ShowMessageBoxMessage() {
-                    Message = "No ui has been selected.",
-                    Icon = MessageBoxImage.Error,
-                    Button = MessageBoxButton.OK,
-                    Caption = "Error"
-                };
-
-                WeakReferenceMessenger.Default.Send(msg);
-
-                return;
-            }
-
-            var entity = _mapSrv.Create(new NLinearMapEntity(new[] { 6, 0 }) {
-                Keys = new[] { SelectedUiVM.Id },
-            });
-
-            var mapVM = Container.Resolve<NLinearMapViewModel>();
-
-            mapVM.Id = entity.Id;
-            mapVM.Name = entity.Name;
-            mapVM.Keys = entity.Keys;
-            mapVM.Shape = entity.Shape;
-
-            MapVMs.Add(mapVM);
+        public void Fetch() {
+            UiCollectionViewModel.Fetch();
         }
 
+        //[RelayCommand]
+        //private void CreateUi() {
+        //    var entity = _uiSrv.Create(new ControlUiEntity());
+
+        //    var uiVM = Container.Resolve<ControlUiViewModel>();
+
+        //    uiVM.Id = entity.Id;
+        //    uiVM.Name = entity.Name;
+
+        //    UiVMs.Add(uiVM);
+        //}
+
+        //[RelayCommand]
+        //private void CreateMap() {
+        //    // TODO: hard coding
+        //    if (SelectedMapVM == null) {
+        //        // send message, no ui has been selected
+        //        var msg = new ShowMessageBoxMessage() {
+        //            Message = "No ui has been selected.",
+        //            Icon = MessageBoxImage.Error,
+        //            Button = MessageBoxButton.OK,
+        //            Caption = "Error"
+        //        };
+
+        //        WeakReferenceMessenger.Default.Send(msg);
+
+        //        return;
+        //    }
+
+        //    var entity = _mapSrv.Create(new NLinearMapEntity(new[] { 6, 0 }) {
+        //        Keys = new[] { SelectedUiVM.Id },
+        //    });
+
+        //    var mapVM = Container.Resolve<NLinearMapViewModel>();
+
+        //    mapVM.Id = entity.Id;
+        //    mapVM.Name = entity.Name;
+        //    mapVM.Keys = entity.Keys;
+        //    mapVM.Shape = entity.Shape;
+
+        //    MapVMs.Add(mapVM);
+        //}
+
+        //[RelayCommand]
+        //private void SetMapEntry(MapEntry entry) {
+        //    var mapState = SelectedMapVM;
+        //    var entity = _mapSrv.Read(mapState.Id);
+        //    var indices = new[] { -1 }.Concat(entry.Key).ToArray();
+
+        //    entity.SetValue(indices, entry.Value);
+
+        //    //UpdateMapState(entity, ref mapState);
+        //}
+
+
         [RelayCommand]
-        private void SetMapEntry(MapEntry entry) {
-            var mapState = SelectedMapVM;
-            var entity = _mapSrv.Read(mapState.Id);
-            var indices = new[] { -1 }.Concat(entry.Key).ToArray();
-
-            entity.SetValue(indices, entry.Value);
-
-            //UpdateMapState(entity, ref mapState);
-        }
-
-
-        [RelayCommand]
-        private async void RequestMotorDialog() {
+        private async Task RequestMotorDialog() {
             // Send dialog message
             var result = await WeakReferenceMessenger.Default.Send(new DialogRequestMessage());
         }

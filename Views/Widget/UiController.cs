@@ -12,6 +12,8 @@ using taskmaker_wpf.ViewModels;
 using static System.Windows.Forms.AxHost;
 using Point = System.Windows.Point;
 using Rectangle = System.Windows.Shapes.Rectangle;
+using Messenger = CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace taskmaker_wpf.Views.Widget {
     public class UiController : UserControl {
@@ -35,21 +37,22 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         // Using a DependencyProperty as the backing store for AddNodeCommand.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty AddNodeCommandProperty =
-            DependencyProperty.Register("AddNodeCommand", typeof(ICommand), typeof(UiController), new PropertyMetadata(null));
+        //public static readonly DependencyProperty AddNodeCommandProperty =
+        //    DependencyProperty.Register("AddNodeCommand", typeof(ICommand), typeof(UiController), new PropertyMetadata(null));
 
-        // Using a DependencyProperty as the backing store for DeleteNodeCommand.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty DeleteNodeCommandProperty =
-            DependencyProperty.Register("DeleteNodeCommand", typeof(ICommand), typeof(UiController), new PropertyMetadata(null));
+        //// Using a DependencyProperty as the backing store for DeleteNodeCommand.  This enables animation, styling, binding, etc...
+        //public static readonly DependencyProperty DeleteNodeCommandProperty =
+        //    DependencyProperty.Register("DeleteNodeCommand", typeof(ICommand), typeof(UiController), new PropertyMetadata(null));
 
         // Using a DependencyProperty as the backing store for Nodes.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty NodeStatesProperty =
             DependencyProperty.Register("NodeStates", typeof(IEnumerable<NodeState>), typeof(UiController), new PropertyMetadata(Array.Empty<NodeState>(), OnNodeStatesChanged));
 
         // Using a DependencyProperty as the backing store for UpdateNodeCommand.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty UpdateNodeCommandProperty =
-            DependencyProperty.Register("UpdateNodeCommand", typeof(ICommand), typeof(UiController), new PropertyMetadata(null));
+        //public static readonly DependencyProperty UpdateNodeCommandProperty =
+        //    DependencyProperty.Register("UpdateNodeCommand", typeof(ICommand), typeof(UiController), new PropertyMetadata(null));
 
+        public ControlUiViewModel ViewModel => DataContext as ControlUiViewModel;
         public TranslateTransform CenteringT = new();
 
         public ScaleTransform FlipYT = new(1, -1);
@@ -162,17 +165,17 @@ namespace taskmaker_wpf.Views.Widget {
             Content = _grid;
         }
 
-        public ICommand AddNodeCommand {
-            get { return (ICommand)GetValue(AddNodeCommandProperty); }
-            set { SetValue(AddNodeCommandProperty, value); }
-        }
+        //public ICommand AddNodeCommand {
+        //    get { return (ICommand)GetValue(AddNodeCommandProperty); }
+        //    set { SetValue(AddNodeCommandProperty, value); }
+        //}
 
         public Canvas Canvas { get; set; }
 
-        public ICommand DeleteNodeCommand {
-            get { return (ICommand)GetValue(DeleteNodeCommandProperty); }
-            set { SetValue(DeleteNodeCommandProperty, value); }
-        }
+        //public ICommand DeleteNodeCommand {
+        //    get { return (ICommand)GetValue(DeleteNodeCommandProperty); }
+        //    set { SetValue(DeleteNodeCommandProperty, value); }
+        //}
 
         public Grid Indicator { get; set; }
 
@@ -201,10 +204,10 @@ namespace taskmaker_wpf.Views.Widget {
 
         public ControlUiViewModel UiState => (ControlUiViewModel)DataContext;
 
-        public ICommand UpdateNodeCommand {
-            get { return (ICommand)GetValue(UpdateNodeCommandProperty); }
-            set { SetValue(UpdateNodeCommandProperty, value); }
-        }
+        //public ICommand UpdateNodeCommand {
+        //    get { return (ICommand)GetValue(UpdateNodeCommandProperty); }
+        //    set { SetValue(UpdateNodeCommandProperty, value); }
+        //}
 
         public ScrollViewer Viewer { get; set; }
 
@@ -315,9 +318,13 @@ namespace taskmaker_wpf.Views.Widget {
         private static void OnNodeStatesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
             var control = d as UiController;
 
+            if (e.NewValue == null)
+                control.NodeStates = Array.Empty<NodeState>();
+
             // handle DependencyPropertyChangedEventArgs
             control.InvalidateNodeShapes();
         }
+
         private void Canvas_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
             switch (UiMode) {
                 case UiMode.Default:
@@ -498,7 +505,7 @@ namespace taskmaker_wpf.Views.Widget {
 
                 // Command: Update node
                 _moveTarget.Position = position;
-                UpdateNodeCommand?.Execute(_moveTarget.State);
+                ViewModel.UpdateNode(_moveTarget.State);
 
                 _moveTarget = null;
             }
@@ -553,7 +560,11 @@ namespace taskmaker_wpf.Views.Widget {
         private void PerformAdd(object sender, MouseButtonEventArgs e) {
             var currentPosition = e.GetPosition(Canvas);
 
-            AddNodeCommand?.Execute(currentPosition);
+            ViewModel.AddNode(currentPosition);
+
+            Messenger.Default.Send(new UiAddedMessage() {
+                Sender = this
+            });
         }
 
         private void PerformMove(object sender, MouseEventArgs e) {
@@ -596,7 +607,11 @@ namespace taskmaker_wpf.Views.Widget {
 
                 if (parent != null) {
                     // Command: Remove node
-                    DeleteNodeCommand?.Execute(parent.State);
+                    ViewModel.DeleteNode(parent.State);
+
+                    WeakReferenceMessenger.Default.Send(new UiDeletedMessage {
+                        Sender = this
+                    });
                 }
             }
         }
@@ -671,5 +686,16 @@ namespace taskmaker_wpf.Views.Widget {
             CaptureMouse(); // Ensure we get the MouseMove even if the cursor goes out of the Canvas
             Cursor = Cursors.Hand;
         }
+    }
+
+    public record UiMessage { 
+        public object Sender { get; set; }
+    }
+
+    public record UiAddedMessage : UiMessage {
+    }
+
+    public record UiDeletedMessage : UiMessage {
+
     }
 }

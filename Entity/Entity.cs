@@ -75,6 +75,14 @@ namespace taskmaker_wpf.Entity {
         public int? Dimension => Tensor?.ndim;
 
 
+        public NLinearMapEntity(int dimension, int dimOfAxis0) {
+            var shape = Enumerable.Repeat(0, dimension).ToArray();
+            shape[0] = dimOfAxis0;
+
+            Tensor = np.empty(shape);
+            Tensor.fill(np.nan);
+        }
+
         // Output: Motor/1 or UI/2
         // Input: UI/2
         public NLinearMapEntity(int[] shape) {
@@ -157,15 +165,21 @@ namespace taskmaker_wpf.Entity {
         public void SetValue(int[] indices, double[] value) {
             // make slice
             var slices = new Slice[Tensor.ndim];
+            var shape = new List<int>();
 
             for (int i = 0; i < indices.Length; i++) {
                 if (indices[i] == -1)
                     slices[i] = Slice.All();
                 else
                     slices[i] = Slice.Index(indices[i]);
+
+                if (i == 0)
+                    shape.Add(value.Length);
+                else
+                    shape.Add(1);
             }
 
-            Tensor[slices] = np.array(value);
+            Tensor[slices] = np.array(value).reshape(shape.ToArray());
         }
 
         public double[] GetValue(int[] indices) {
