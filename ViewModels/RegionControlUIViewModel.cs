@@ -174,7 +174,7 @@ namespace taskmaker_wpf.ViewModels {
     public class BaseRegionState : IRegionState {
         public int Id { get; set; }
         public string Name { get; set; }
-        public Point[] Vertices { get; set; } = new Point[0];
+        public NodeState[] Vertices { get; set; } = new NodeState[0];
 
         public override string ToString() {
             return Name;
@@ -195,6 +195,17 @@ namespace taskmaker_wpf.ViewModels {
             else
             // Handle the case where the entity type doesn't match any known state creation logic.
                 throw new InvalidOperationException($"No corresponding state type found for entity type {typeof(TIn)}");
+        }
+
+        public static double[] GetLambdas(Point[] pts, Point pt, int[] indices, int length) {
+            var lambdas = Bary.GetLambdas(pts, pt);
+            var expandedLambdas = Enumerable.Repeat(0.0, length).ToArray();
+
+            for (var idx = 0; idx < lambdas.Length; idx++) {
+                expandedLambdas[indices[idx]] = lambdas[idx];
+            }
+
+            return expandedLambdas;
         }
     }
 

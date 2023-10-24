@@ -111,7 +111,7 @@ namespace taskmaker_wpf.Views {
                         break;
                     case UiMode.Build:
                         break;
-                    case UiMode.Trace:
+                    case UiMode.Control:
                         break;
                     case UiMode.Drag:
                         break;
@@ -136,6 +136,11 @@ namespace taskmaker_wpf.Views {
                 case "tbBtnSelect":
                     ChangeMode(UiMode.Default);
                     snackbar.Icon = Icons.Select;
+                    snackbar.SupportingText = "Select";
+                    break;
+                case "tbBtnControl":
+                    ChangeMode(UiMode.Control);
+                    snackbar.Icon = Icons.Control;
                     snackbar.SupportingText = "Select";
                     break;
                 case "tbBtnAdd":

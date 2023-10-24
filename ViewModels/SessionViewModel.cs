@@ -4,7 +4,9 @@ using CommunityToolkit.Mvvm.Messaging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Drawing;
 using System.Linq;
+using taskmaker_wpf.Entity;
 using taskmaker_wpf.Services;
 using taskmaker_wpf.Views.Widget;
 
@@ -24,6 +26,10 @@ namespace taskmaker_wpf.ViewModels {
         private int[] _selectedNodeIds;
         [ObservableProperty]
         private MapEntry[] _entries;
+        [ObservableProperty]
+        private Point[] _inputs;
+        [ObservableProperty]
+        private BaseRegionEntity[] _regions;
 
         private readonly EvaluationService _evaluationSrv;
         private readonly MotorService _motorSrv;
@@ -96,14 +102,6 @@ namespace taskmaker_wpf.ViewModels {
 
         [RelayCommand]
         public void GetValue() {
-            //for (int i = 0; i < UiViewModels.Count; i++) {
-            //    var selectedNode = SelectedNodeStates[i];
-            //    var selectedNodeIndex = Array.FindIndex(UiVMNodeStates[i], e => e.Id == selectedNode.Id);
-
-            //    SelectedNodeIndices[i] = selectedNodeIndex;
-            //    SelectedNodeIds[i] = selectedNode.Id;
-            //}
-
             var mapEntry = new MapEntry {
                 IDs = SelectedNodeIds,
                 Indices = SelectedNodeIndices,
@@ -141,6 +139,23 @@ namespace taskmaker_wpf.ViewModels {
 
             //Entries = entries;
             Entries = MapViewModel.MapEntries.ToArray();
+        }
+
+        [RelayCommand]
+        public void Interpolate() {
+            var lambdasCollection = new List<double[]>();
+            for (int i = 0; i < UiViewModels.Count; i++) {
+                var nodes = UiViewModels[i].NodeStates;
+                var input = UiViewModels[i].Input;
+                var region = UiViewModels[i].HitRegion;
+
+                var indices = region.Vertices.Select(e => Array.FindIndex(nodes, n => n.Id == e.Id)).ToArray();
+                var lambdas = BaseRegionState.GetLambdas(region.Vertices.Select(e => e.Value).ToArray(), input, indices, nodes.Length);
+
+                lambdasCollection.Add(lambdas);
+            }
+
+            MapViewModel.Interpolate(lambdasCollection.ToArray());
         }
 
         //public void SetEntry(MapEntry entry) {

@@ -260,7 +260,7 @@ namespace taskmaker_wpf.Views.Widget {
             // add regions
             foreach (var region in RegionStates) {
                 if (region is SimplexState s) {
-                    var simplex = new SimplexShape(region.Id, region.Vertices) {
+                    var simplex = new SimplexShape(region.Id, region.Vertices.Select(e => e.Value).ToArray()) {
                         Visibility = Visibility.Hidden
                     };
 
@@ -268,7 +268,7 @@ namespace taskmaker_wpf.Views.Widget {
                     Canvas.Children.Add(simplex);
                 }
                 else if (region is VoronoiState v) {
-                    var voronoi = new VoronoiShape(region.Id, region.Vertices) {
+                    var voronoi = new VoronoiShape(region.Id, region.Vertices.Select(e => e.Value).ToArray()) {
                         Visibility = Visibility.Hidden
 
                     };
@@ -283,13 +283,11 @@ namespace taskmaker_wpf.Views.Widget {
 
         private void ShowRegions(bool v) {
             if (v) {
-                foreach (var item in Simplices)
-                {
+                foreach (var item in Simplices) {
                     item.Visibility = Visibility.Visible;
                 }
 
-                foreach (var item in Voronois)
-                {
+                foreach (var item in Voronois) {
                     item.Visibility = Visibility.Visible;
                 }
             }
@@ -341,7 +339,7 @@ namespace taskmaker_wpf.Views.Widget {
                     break;
                 case UiMode.Build:
                     break;
-                case UiMode.Trace:
+                case UiMode.Control:
                     break;
                 case UiMode.Drag:
                     break;
@@ -372,7 +370,7 @@ namespace taskmaker_wpf.Views.Widget {
                     break;
                 case UiMode.Build:
                     break;
-                case UiMode.Trace:
+                case UiMode.Control:
                     break;
                 case UiMode.Drag:
                     break;
@@ -403,7 +401,7 @@ namespace taskmaker_wpf.Views.Widget {
                     break;
                 case UiMode.Build:
                     break;
-                case UiMode.Trace:
+                case UiMode.Control:
                     break;
                 case UiMode.Drag:
                     break;
@@ -431,7 +429,7 @@ namespace taskmaker_wpf.Views.Widget {
                     break;
                 case UiMode.Build:
                     break;
-                case UiMode.Trace:
+                case UiMode.Control:
                     break;
                 case UiMode.Drag:
                     break;
@@ -466,7 +464,7 @@ namespace taskmaker_wpf.Views.Widget {
                     break;
                 case UiMode.Build:
                     break;
-                case UiMode.Trace:
+                case UiMode.Control:
                     break;
                 case UiMode.Drag:
                     break;
@@ -509,6 +507,11 @@ namespace taskmaker_wpf.Views.Widget {
 
                 _moveTarget = null;
             }
+        }
+
+        private void EndControl(object sender, MouseButtonEventArgs e) {
+            var currentPosition = e.GetPosition(Canvas);
+            TestHitRegion(currentPosition);
         }
 
         private void EndPan(object sender, MouseButtonEventArgs e) {
@@ -569,6 +572,39 @@ namespace taskmaker_wpf.Views.Widget {
                 var offset = currentPosition - _moveStartMousePosition;
 
                 _moveTarget.Position = _moveStartTargetPostion + offset;
+            }
+        }
+
+        private void PerformControl(object sender, MouseEventArgs e) {
+            var currentPosition = e.GetPosition(Canvas);
+            TestHitRegion(currentPosition);
+
+            //ViewModel.Input = currentPosition;
+
+            //var result = VisualTreeHelper.HitTest(Canvas, currentPosition);
+            //if (result != null) {
+            //    var parent = VisualTreeHelperExtensions.FindParentOfType<SimplexShape>(result.VisualHit);
+
+            //    if (parent != null) {
+            //        // Command: Control node
+            //        ViewModel.HitRegion = parent.State;
+            //        //ViewModel.ControlNode(parent.State);
+            //    }
+            //}
+        }
+
+        private void TestHitRegion(Point p) {
+            ViewModel.Input = p;
+
+            var result = VisualTreeHelper.HitTest(Canvas, p);
+            if (result != null) {
+                var parent = VisualTreeHelperExtensions.FindParentOfType<SimplexShape>(result.VisualHit);
+
+                if (parent != null) {
+                    // Command: Control node
+                    ViewModel.HitRegion = parent.State;
+                    //ViewModel.ControlNode(parent.State);
+                }
             }
         }
 
@@ -637,7 +673,7 @@ namespace taskmaker_wpf.Views.Widget {
                 }
             }
         }
-                    
+
 
         private void SetPosition(UIElement element, double x, double y) {
             double halfWidth = element.DesiredSize.Width / 2;
@@ -674,6 +710,12 @@ namespace taskmaker_wpf.Views.Widget {
                 }
             }
         }
+
+        private void StartControl(object sender, MouseButtonEventArgs e) {
+            var currentPosition = e.GetPosition(Canvas);
+            TestHitRegion(currentPosition);
+        }
+
         private void StartPan(object sender, MouseButtonEventArgs e) {
             _panStartPoint = e.GetPosition(Canvas);
             _originalContentOffset = new Point(ScaleT.ScaleX, ScaleT.ScaleY);

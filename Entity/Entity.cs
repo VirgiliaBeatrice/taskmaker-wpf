@@ -20,6 +20,20 @@ using System.Security.Policy;
 using NLog;
 
 namespace taskmaker_wpf.Entity {
+    public record EvaluationEvent {
+        public DateTime Timestamp { get; init; }
+        public string Tag { get; init; }
+        public string Description { get; init; }
+
+        public static EvaluationEvent Tick(string tag, string desc) {
+            return new EvaluationEvent {
+                Timestamp = DateTime.Now,
+                Tag = tag,
+                Description = desc
+            };
+        }
+    }
+
     public interface IEntity {
         int Id { get; set; }
         string Name { get; set; }
@@ -67,9 +81,7 @@ namespace taskmaker_wpf.Entity {
 
     public class NLinearMapEntity : BaseEntity {
         private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
-
-        public int[] Keys { get; set; } = Array.Empty<int>();
-
+        public HashSet<MapEntry> MapEntries { get; set; } = new HashSet<MapEntry>();
         public NDarray Tensor { get; set; }
         public int[] Shape => Tensor?.shape.Dimensions;
         public int? Dimension => Tensor?.ndim;
@@ -206,7 +218,7 @@ namespace taskmaker_wpf.Entity {
         }
 
 
-        public NDarray MapTo(double[][] lambdas) {
+        public double[] MapTo(double[][] lambdas) {
             try {
                 NDarray kronProd = null;
                 //lambdas = np.atleast_2d(lambdas);
@@ -222,11 +234,11 @@ namespace taskmaker_wpf.Entity {
 
                 var w = np.dot(Tensor.reshape(Shape[0], -1), kronProd);
 
-                return w;
+                return w.GetData<double>();
             }
             catch (Exception e) {
                 _logger.Error(e);
-                return np.zeros(1);
+                return np.zeros(1).GetData<double>();
             }
         }
 
@@ -267,14 +279,24 @@ namespace taskmaker_wpf.Entity {
     [XmlInclude(typeof(SimplexRegionEntity))]
     [XmlInclude(typeof(VoronoiRegionEntity))]
     public abstract class BaseRegionEntity : BaseEntity {
-        public abstract Point[] Vertices { get; }
+        public abstract NodeState[] Vertices { get; }
         public abstract double[] GetLambdas(Point pt, NodeEntity[] collection);
 
+        public static double[] GetLambdas(Point[] pts, Point pt, int[] indices, int length) {
+            var lambdas = Bary.GetLambdas(pts, pt);
+            var expandedLambdas = Enumerable.Repeat(0.0, length).ToArray();
+
+            for (var idx = 0; idx < lambdas.Length; idx++) {
+                expandedLambdas[indices[idx]] = lambdas[idx];
+            }
+
+            return expandedLambdas;
+        }
     }
 
     public class SimplexRegionEntity : BaseRegionEntity {
         public NodeEntity[] Nodes { get; set; }
-        public override Point[] Vertices => Nodes.Select(x => x.Value).ToArray();
+        public override NodeState[] Vertices => Nodes.Select(x => new NodeState { Id = x.Id, Value = x.Value }).ToArray();
 
         public SimplexRegionEntity() { }
 
@@ -282,8 +304,19 @@ namespace taskmaker_wpf.Entity {
             Nodes = nodes;
         }
 
+        public int[] GetIndices(NodeEntity[] collection) {
+            return Nodes
+                .Select(e => {
+                    var target = collection.Where(e1 => e1.Id == e.Id).FirstOrDefault();
+
+                    return collection.ToList().IndexOf(target);
+                })
+                .ToArray();
+        }
+
+
         public override double[] GetLambdas(Point pt, NodeEntity[] collection) {
-            var lambdas = Bary.GetLambdas(Vertices, pt);
+            var lambdas = Bary.GetLambdas(Vertices.Select(e => e.Value).ToArray(), pt);
             var indices = Nodes
                 .Select(e => {
                     var target = collection.Where(e1 => e1.Id == e.Id).FirstOrDefault();
@@ -303,14 +336,15 @@ namespace taskmaker_wpf.Entity {
         public bool IsVertex(NodeEntity node) {
             return Nodes.Any(e => node == e);
         }
+
     }
 
     [XmlInclude(typeof(RectVoronoiRegionEntity))]
     [XmlInclude(typeof(SectoralVoronoiRegionEntity))]
     public class VoronoiRegionEntity : BaseRegionEntity {
         public double Factor { get; set; } = 200.0;
-        public override Point[] Vertices => _vertices;
-        protected Point[] _vertices;
+        public override NodeState[] Vertices => _vertices;
+        protected NodeState[] _vertices;
         public SimplexRegionEntity[] Governors { get; set; }
 
         public VoronoiRegionEntity() { }
@@ -412,6 +446,7 @@ namespace taskmaker_wpf.Entity {
             _vertices = (new NDarray[] { ray0, it, ray1 })
                 .Select(e => e.astype(np.int32).GetData<int>())
                 .Select(e => new Point(e[0], e[1]))
+                .Select(e => new NodeState { Value = e })
                 .ToArray();
         }
 
@@ -458,9 +493,9 @@ namespace taskmaker_wpf.Entity {
         //}
 
         private double[] GetFactors(Point pt) {
-            var a = np.array(Vertices[0].X, Vertices[0].Y);
-            var o = np.array(Vertices[1].X, Vertices[1].Y);
-            var b = np.array(Vertices[2].X, Vertices[2].Y);
+            var a = np.array(Vertices[0].Value.X, Vertices[0].Value.Y);
+            var o = np.array(Vertices[1].Value.X, Vertices[1].Value.Y);
+            var b = np.array(Vertices[2].Value.X, Vertices[2].Value.Y);
             var p = np.array(pt.X, pt.Y);
 
             var ao = a - o;
@@ -519,7 +554,7 @@ namespace taskmaker_wpf.Entity {
                 new Point(b.astype(np.int32).GetData<int>()[0], b.astype(np.int32).GetData<int>()[1]),
                 new Point(bP.astype(np.int32).GetData<int>()[0], bP.astype(np.int32).GetData<int>()[1]),
                 new Point(aP.astype(np.int32).GetData<int>()[0], aP.astype(np.int32).GetData<int>()[1]),
-            };
+            }.Select(e => new NodeState { Value = e }).ToArray();
 
             //return new NDarray[] { a, b, bP, aP };
         }

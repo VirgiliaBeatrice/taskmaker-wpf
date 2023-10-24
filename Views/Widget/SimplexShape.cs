@@ -1,5 +1,6 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Media;
+using taskmaker_wpf.ViewModels;
 using Path = System.Windows.Shapes.Path;
 using Point = System.Windows.Point;
 
@@ -10,6 +11,7 @@ namespace taskmaker_wpf.Views.Widget {
 
         public int Id { get => id; init => id = value; }
         public Point[] Points { get => points; init => points = value; }
+        public BaseRegionState State { get; init; }
 
         public UiController Ui { get; set; }
 

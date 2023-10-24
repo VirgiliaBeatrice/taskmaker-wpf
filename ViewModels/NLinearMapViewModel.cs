@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -50,6 +51,10 @@ namespace taskmaker_wpf.ViewModels {
         }
     }
 
+    public class MapOutputMessage {
+        public int Id { get; init; }
+        public double[] Output { get; init; }
+    }
 
     public partial class NLinearMapViewModel : ObservableObject {
         [ObservableProperty]
@@ -57,12 +62,20 @@ namespace taskmaker_wpf.ViewModels {
         [ObservableProperty]
         private string _name;
         [ObservableProperty]
-        private int[] _keys;
-        [ObservableProperty]
         private int[] _shape;
         [ObservableProperty]
         private int _dimension;
-        
+
+        [ObservableProperty]
+        private double[] _output;
+
+        partial void OnOutputChanged(double[] value) {
+            WeakReferenceMessenger.Default.Send(new MapOutputMessage() {
+                Id = Id,
+                Output = value
+            });
+        }
+
         public ObservableCollection<MapEntry> MapEntries { get; set; } = new ObservableCollection<MapEntry>();
 
         private readonly MapService _mapSrv;
@@ -124,6 +137,11 @@ namespace taskmaker_wpf.ViewModels {
             entry.Value = value;
         }
 
+        [RelayCommand]
+        public void Interpolate(double[][] lambdas) {
+            Output = Entity.MapTo(lambdas);
+        }
+
         //public MapEntry[] Fetch() {
         //    var entity = _mapSrv.Read(Id);
 
@@ -151,14 +169,12 @@ namespace taskmaker_wpf.ViewModels {
             return new NLinearMapEntity(Shape) {
                 Id = Id,
                 Name = Name,
-                Keys = Keys
             };
         }
 
         public void FromEntity(NLinearMapEntity entity) {
             Id = entity.Id;
             Name = entity.Name;
-            Keys = entity.Keys;
             Shape = entity.Shape;
             Dimension = entity.Dimension??0;
         }

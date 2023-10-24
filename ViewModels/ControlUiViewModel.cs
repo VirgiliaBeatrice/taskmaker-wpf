@@ -11,6 +11,7 @@ using System.Windows;
 using taskmaker_wpf.Entity;
 using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Services;
+using taskmaker_wpf.Views.Widget;
 
 namespace taskmaker_wpf.ViewModels {
     public struct NodeState {
@@ -23,6 +24,27 @@ namespace taskmaker_wpf.ViewModels {
         public NodeState(int id, Point value) {
             Id = id;
             Value = value;
+        }
+
+        public override bool Equals(object obj) {
+            if (obj == null || this.GetType() != obj.GetType()) {
+                return false;
+            }
+
+            var other = (NodeState)obj;
+            return this.Id == other.Id;
+        }
+
+        public override int GetHashCode() {
+            return Id.GetHashCode();
+        }
+
+        public static bool operator ==(NodeState left, NodeState right) {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(NodeState left, NodeState right) {
+            return !(left == right);
         }
     }
 
@@ -82,6 +104,10 @@ namespace taskmaker_wpf.ViewModels {
         private BaseRegionState[] _regionStates = Array.Empty<BaseRegionState>();
         [ObservableProperty]
         private NodeState[] _nodeStates = Array.Empty<NodeState>();
+        [ObservableProperty]
+        private Point _input = new Point();
+        [ObservableProperty]
+        private BaseRegionState _hitRegion;
 
         // TODO: unify to service
         private readonly UIService _uiSrv;

@@ -49,7 +49,7 @@ namespace taskmaker_wpf.Views.Widget {
         Move,
         Assign,
         Build,
-        Trace,
+        Control,
         Drag,
         Pan,
         Zoom,
