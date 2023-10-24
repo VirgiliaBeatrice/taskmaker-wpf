@@ -23,7 +23,7 @@ namespace taskmaker_wpf.Views.Widget {
             set {
                 position = value;
 
-                SetPosition(position.X, position.Y);
+                SetPosition();
             }
         }
 
@@ -60,7 +60,7 @@ namespace taskmaker_wpf.Views.Widget {
             CheckIcon = new SvgViewbox() {
                 Width = 24,
                 Height = 24,
-                Source = new Uri("pack://application:,,,/taskmaker-wpf;component/icons/check.svg"),
+                Source = new Uri("pack://application:,,,/icons/check.svg"),
                 Visibility = Visibility.Hidden,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
@@ -97,20 +97,16 @@ namespace taskmaker_wpf.Views.Widget {
             //Ui.RegionUi.infoPanel.Visibility = Visibility.Visible;
         }
 
-        private void HideInfo() {
-            Ui.RegionUi.infoPanel.Visibility = Visibility.Collapsed;
-        }
-
         public bool IsSelected { get; set; } = false;
 
         public int NodeId { get; set; }
 
-        private void SetPosition(double x, double y) {
+        public void SetPosition() {
             double halfWidth = 40 / 2;
             double halfHeight = 40 / 2;
 
-            Canvas.SetLeft(this, x - halfWidth);
-            Canvas.SetTop(this, y + halfHeight);
+            Canvas.SetLeft(this, Position.X - halfWidth);
+            Canvas.SetTop(this, Position.Y + halfHeight);
         }
 
         public void Select(bool flag) {

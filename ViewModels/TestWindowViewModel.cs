@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using taskmaker_wpf.Services;
 using System.Collections.ObjectModel;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using taskmaker_wpf.Entity;
 
 namespace taskmaker_wpf.ViewModels {

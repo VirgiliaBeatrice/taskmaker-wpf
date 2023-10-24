@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Windows;
 using taskmaker_wpf.Entity;
 using taskmaker_wpf.Model.Data;

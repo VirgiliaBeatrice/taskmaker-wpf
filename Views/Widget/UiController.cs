@@ -78,6 +78,7 @@ namespace taskmaker_wpf.Views.Widget {
         private Ellipse circle;
 
         private UiMode uiMode = UiMode.Default;
+        private bool _isControlStarted = false;
 
         public UiController() {
             Loaded += (_, e) => {
@@ -85,6 +86,7 @@ namespace taskmaker_wpf.Views.Widget {
                 MultiView = VisualTreeHelperExtensions.FindParentOfType<MultiView>(this);
 
                 RegionUi.UiStatusText = UiMode.ToString();
+                ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             };
 
             //Background = new SolidColorBrush(Colors.LightBlue);
@@ -125,15 +127,15 @@ namespace taskmaker_wpf.Views.Widget {
                 StrokeThickness = 1,
             };
 
-            //box = new Rectangle {
-            //    Width = 100,
-            //    Height = 200,
-            //    Fill = Brushes.AliceBlue,
-            //    Opacity = 0.5
-            //};
-            //billboard = new TextBlock {
-            //    Text = "Y+"
-            //};
+            box = new Rectangle {
+                Width = 100,
+                Height = 200,
+                Fill = Brushes.AliceBlue,
+                Opacity = 0.5
+            };
+            billboard = new TextBlock {
+                Text = "Y+"
+            };
 
             var axisX = new Arrow {
                 Name = "AxisX",
@@ -153,8 +155,8 @@ namespace taskmaker_wpf.Views.Widget {
             Canvas.Children.Add(axisY);
 
             Canvas.Children.Add(circle);
-            //Canvas.Children.Add(box);
-            //Canvas.Children.Add(billboard);
+            Canvas.Children.Add(box);
+            Canvas.Children.Add(billboard);
 
             Canvas.Children.Add(Indicator);
 
@@ -163,6 +165,16 @@ namespace taskmaker_wpf.Views.Widget {
             _grid.Children.Add(Viewer);
 
             Content = _grid;
+        }
+
+        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
+            if (e.PropertyName == "NodeStates") {
+                InvalidateNodeShapes();
+            }
+            else if (e.PropertyName == "RegionStates") {
+                InvalidateRegion();
+            }
+            //throw new NotImplementedException();
         }
 
         //public ICommand AddNodeCommand {
@@ -261,7 +273,8 @@ namespace taskmaker_wpf.Views.Widget {
             foreach (var region in RegionStates) {
                 if (region is SimplexState s) {
                     var simplex = new SimplexShape(region.Id, region.Vertices.Select(e => e.Value).ToArray()) {
-                        Visibility = Visibility.Hidden
+                        Visibility = Visibility.Hidden,
+                        DataContext = region,
                     };
 
                     Simplices.Add(simplex);
@@ -340,6 +353,7 @@ namespace taskmaker_wpf.Views.Widget {
                 case UiMode.Build:
                     break;
                 case UiMode.Control:
+                    StartControl(sender, e);
                     break;
                 case UiMode.Drag:
                     break;
@@ -371,6 +385,7 @@ namespace taskmaker_wpf.Views.Widget {
                 case UiMode.Build:
                     break;
                 case UiMode.Control:
+                    EndControl(sender, e);
                     break;
                 case UiMode.Drag:
                     break;
@@ -402,6 +417,7 @@ namespace taskmaker_wpf.Views.Widget {
                 case UiMode.Build:
                     break;
                 case UiMode.Control:
+                    PerformControl(sender, e);
                     break;
                 case UiMode.Drag:
                     break;
@@ -444,27 +460,38 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         private void ChangeUiMode(UiMode mode) {
+            // default actions
+            EnableNodeHitTest(true);
+            ShowPointer(false);
+            ShowRegions(true);
+
             switch (mode) {
                 case UiMode.Default:
-                    ShowPointer(false);
-                    ShowRegions(true);
+                    //EnableNodeHitTest(true);
+                    //ShowPointer(false);
+                    //ShowRegions(true);
                     break;
                 case UiMode.Add:
+                    //EnableNodeHitTest(true);
                     ShowPointer(true);
                     ShowRegions(false);
                     break;
                 case UiMode.Remove:
+                    //EnableNodeHitTest(true);
                     ShowRegions(false);
                     break;
                 case UiMode.Move:
+                    //EnableNodeHitTest(true);
                     ShowRegions(false);
                     break;
                 case UiMode.Assign:
+                    //EnableNodeHitTest(true);
                     ShowRegions(false);
                     break;
                 case UiMode.Build:
                     break;
                 case UiMode.Control:
+                    EnableNodeHitTest(false);
                     break;
                 case UiMode.Drag:
                     break;
@@ -485,6 +512,12 @@ namespace taskmaker_wpf.Views.Widget {
 
             if (RegionUi != null)
                 RegionUi.UiStatusText = mode.ToString();
+        }
+
+        private void EnableNodeHitTest(bool v) {
+            foreach (var node in NodeShapes) {
+                node.IsHitTestVisible = v;
+            }
         }
 
         private void ShowPointer(bool v) {
@@ -511,7 +544,13 @@ namespace taskmaker_wpf.Views.Widget {
 
         private void EndControl(object sender, MouseButtonEventArgs e) {
             var currentPosition = e.GetPosition(Canvas);
-            TestHitRegion(currentPosition);
+            if (_isControlStarted && e.ChangedButton == MouseButton.Left) {
+                _isControlStarted = false;
+                //TestHitRegion(currentPosition);
+            }
+            else if (e.ChangedButton == MouseButton.Right) {
+
+            }
         }
 
         private void EndPan(object sender, MouseButtonEventArgs e) {
@@ -544,10 +583,10 @@ namespace taskmaker_wpf.Views.Widget {
 
         private void InvaldatePosition() {
 
-            NodeShapes.ForEach(e => SetPosition(e, e.Position.X, e.Position.Y));
+            NodeShapes.ForEach(e => e.SetPosition());
             SetPosition(circle, 0, 0);
-            //SetPosition(box, 0, 0);
-            //SetPosition(billboard, 0, 100);
+            SetPosition(box, 0, 0);
+            SetPosition(billboard, 0, 100);
         }
 
         private void InvalidateTransform() {
@@ -577,24 +616,31 @@ namespace taskmaker_wpf.Views.Widget {
 
         private void PerformControl(object sender, MouseEventArgs e) {
             var currentPosition = e.GetPosition(Canvas);
-            TestHitRegion(currentPosition);
+            if (_isControlStarted && e.LeftButton == MouseButtonState.Pressed) {
 
-            //ViewModel.Input = currentPosition;
+                TestHitRegion(currentPosition);
 
-            //var result = VisualTreeHelper.HitTest(Canvas, currentPosition);
-            //if (result != null) {
-            //    var parent = VisualTreeHelperExtensions.FindParentOfType<SimplexShape>(result.VisualHit);
+                //ViewModel.Input = currentPosition;
 
-            //    if (parent != null) {
-            //        // Command: Control node
-            //        ViewModel.HitRegion = parent.State;
-            //        //ViewModel.ControlNode(parent.State);
-            //    }
-            //}
+                //var result = VisualTreeHelper.HitTest(Canvas, currentPosition);
+                //if (result != null) {
+                //    var parent = VisualTreeHelperExtensions.FindParentOfType<SimplexShape>(result.VisualHit);
+
+                //    if (parent != null) {
+                //        // Command: Control node
+                //        ViewModel.HitRegion = parent.State;
+                //        //ViewModel.ControlNode(parent.State);
+                //    }
+                //}
+                WeakReferenceMessenger.Default.Send(new UiControllerControlledMessage {
+                    Sender = this
+                });
+            }
         }
 
         private void TestHitRegion(Point p) {
             ViewModel.Input = p;
+            ViewModel.HitRegion = null;
 
             var result = VisualTreeHelper.HitTest(Canvas, p);
             if (result != null) {
@@ -713,7 +759,27 @@ namespace taskmaker_wpf.Views.Widget {
 
         private void StartControl(object sender, MouseButtonEventArgs e) {
             var currentPosition = e.GetPosition(Canvas);
-            TestHitRegion(currentPosition);
+            // if left button, then start control
+
+
+            if (e.ChangedButton == MouseButton.Left) {
+                _isControlStarted = true;
+            }
+            else if (!_isControlStarted && e.ChangedButton == MouseButton.Right) {
+                var result = VisualTreeHelper.HitTest(Canvas, currentPosition);
+
+                if (result != null) {
+                    var parent = VisualTreeHelperExtensions.FindParentOfType<NodeShape>(result.VisualHit);
+
+                    if (parent != null) {
+                        ViewModel.Input = parent.Position;
+
+                        WeakReferenceMessenger.Default.Send(new UiControllerControlledMessage {
+                            Sender = this
+                        });
+                    }
+                }
+            }
         }
 
         private void StartPan(object sender, MouseButtonEventArgs e) {
@@ -726,5 +792,8 @@ namespace taskmaker_wpf.Views.Widget {
 
     public class UiControllerSelectedMessage {
         public object Sender { get; init; }
+    }
+    public class UiControllerControlledMessage {
+        public object Sender { get; init ; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using NLog;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -69,7 +70,10 @@ namespace taskmaker_wpf.ViewModels {
         [ObservableProperty]
         private double[] _output;
 
+        private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
+
         partial void OnOutputChanged(double[] value) {
+            _logger.Debug($"Output changed: {string.Join(",", value)}");
             WeakReferenceMessenger.Default.Send(new MapOutputMessage() {
                 Id = Id,
                 Output = value

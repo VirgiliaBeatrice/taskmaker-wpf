@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NLog;
 using System;
-using System.Reactive;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;

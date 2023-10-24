@@ -24,5 +24,21 @@ namespace taskmaker_wpf.Views.Widget
         {
             InitializeComponent();
         }
+
+        private void Button_Click_Increase(object sender, RoutedEventArgs e) {
+            slider.Value++;
+        }
+
+        private void Button_Click_Decrease(object sender, RoutedEventArgs e) {
+            slider.Value--;
+        }
+
+        private void Button_MouseDown(object sender, MouseButtonEventArgs e) {
+
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e) {
+            slider.Value = 0;
+        }
     }
 }

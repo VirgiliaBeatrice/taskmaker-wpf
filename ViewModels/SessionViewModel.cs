@@ -149,6 +149,8 @@ namespace taskmaker_wpf.ViewModels {
                 var input = UiViewModels[i].Input;
                 var region = UiViewModels[i].HitRegion;
 
+                if (region == null) return;
+
                 var indices = region.Vertices.Select(e => Array.FindIndex(nodes, n => n.Id == e.Id)).ToArray();
                 var lambdas = BaseRegionState.GetLambdas(region.Vertices.Select(e => e.Value).ToArray(), input, indices, nodes.Length);
 

@@ -13,7 +13,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.DirectoryServices.ActiveDirectory;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Xml.Linq;

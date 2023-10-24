@@ -11,7 +11,7 @@ namespace taskmaker_wpf.Views.Widget {
 
         public int Id { get => id; init => id = value; }
         public Point[] Points { get => points; init => points = value; }
-        public BaseRegionState State { get; init; }
+        public BaseRegionState State => DataContext as BaseRegionState;
 
         public UiController Ui { get; set; }
 
@@ -38,6 +38,8 @@ namespace taskmaker_wpf.Views.Widget {
             };
 
             Initialize();
+
+            //RenderTransform = new ScaleTransform(1, -1);
         }
 
         public void Initialize() {

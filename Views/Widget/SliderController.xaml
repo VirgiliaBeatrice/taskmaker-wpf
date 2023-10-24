@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:taskmaker_wpf.Views.Widget"
              xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels"
+             xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
              d:DataContext="{d:DesignInstance Type=viewmodels:MotorViewModel}"
              mc:Ignorable="d">
   <Grid>
@@ -27,21 +28,34 @@
           <ColumnDefinition Width="60" />
         </Grid.ColumnDefinitions>
 
-        <Slider Grid.Column="0"
-                x:Name="slider"
-                Orientation="Vertical"
-                MinHeight="400"
-                Value="{Binding Value}"
-                Maximum="{Binding Max}"
-                Minimum="{Binding Min}"
-                HorizontalAlignment="Center" />
-        <TextBlock Grid.Column="1"
-                   HorizontalAlignment="Left"
-                   VerticalAlignment="Center"
-                   d:Text="10000"
-                   Text="{Binding Value, ElementName=slider}"
-                   TextAlignment="Center"
-                   Margin="12,0,0,0" />
+        <Border Grid.Column="0">
+          <Slider x:Name="slider"
+                  Orientation="Vertical"
+                  MinHeight="400"
+                  Value="{Binding Value}"
+                  Maximum="{Binding Max}"
+                  Minimum="{Binding Min}"
+                  HorizontalAlignment="Center" />
+        </Border>
+        <StackPanel Grid.Column="1"
+                    VerticalAlignment="Center">
+          <Button Content="▲"
+                  FontSize="8"
+                  Click="Button_Click_Increase" />
+          <TextBox Text="{Binding Value, ElementName=slider}" />
+          <Button Content="▼"
+                  FontSize="8"
+                  Click="Button_Click_Decrease" />
+          <Button Click="Button_Click"
+                  Padding="12"
+                  Margin="0,4,0,4">
+            <Image Source="{svgc:SvgImage Source=/icons/refresh.svg, AppName=taskmaker-wpf}"
+                   Height="16"
+                   Width="16"></Image>
+          </Button>
+        </StackPanel>
+
+
 
       </Grid>
 
