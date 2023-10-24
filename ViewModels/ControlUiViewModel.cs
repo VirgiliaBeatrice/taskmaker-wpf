@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using PCController;
 using System;
 using System.Collections.Generic;
@@ -58,6 +59,20 @@ namespace taskmaker_wpf.ViewModels {
         }
     }
 
+    public class UiViewModelNodeAddedMessage {
+        public ControlUiViewModel ViewModel { get; init; }
+    }
+
+    public class UiViewModelNodeDeletedMessage {
+        public ControlUiViewModel ViewModel { get; init; }
+        public int NodeIndex { get; init; }
+    }
+
+    public class UiViewModelNodeUpdatedMessage {
+        public ControlUiViewModel ViewModel { get; init; }
+    }
+
+
     public partial class ControlUiViewModel : ObservableObject {
         [ObservableProperty]
         private int _id;
@@ -93,6 +108,8 @@ namespace taskmaker_wpf.ViewModels {
                 _entity.Build();
                 RegionStates = MapFromRegionEntities();
             }
+
+            WeakReferenceMessenger.Default.Send(new UiViewModelNodeAddedMessage() { ViewModel = this });
         }
 
         [RelayCommand]
@@ -110,6 +127,8 @@ namespace taskmaker_wpf.ViewModels {
 
         [RelayCommand]
         public void DeleteNode(NodeState nodeState) {
+            var index = Array.FindIndex(NodeStates, node => node.Id == nodeState.Id);
+
             _entity.Delete(nodeState.Id);
 
             NodeStates = _entity.Nodes.Select(node => new NodeState(node.Id, node.Value)).ToArray();
@@ -118,6 +137,8 @@ namespace taskmaker_wpf.ViewModels {
                 _entity.Build();
                 RegionStates = MapFromRegionEntities();
             }
+
+            WeakReferenceMessenger.Default.Send(new UiViewModelNodeDeletedMessage() { ViewModel = this, NodeIndex = index });
         }
 
         private BaseRegionState[] MapFromRegionEntities() {

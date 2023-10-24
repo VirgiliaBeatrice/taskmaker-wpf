@@ -62,10 +62,11 @@ namespace taskmaker_wpf.ViewModels {
         private int[] _shape;
         [ObservableProperty]
         private int _dimension;
-        [ObservableProperty]
-        private MapEntry[] _entries;
+        
+        public ObservableCollection<MapEntry> MapEntries { get; set; } = new ObservableCollection<MapEntry>();
 
         private readonly MapService _mapSrv;
+        public NLinearMapEntity Entity => _mapSrv.Read(Id);
 
         public NLinearMapViewModel(MapService mapSrv) {
             _mapSrv = mapSrv;
@@ -79,7 +80,7 @@ namespace taskmaker_wpf.ViewModels {
 
             Shape = entity.Shape;
 
-            Fetch();
+            //Fetch();
         }
 
         [RelayCommand]
@@ -89,7 +90,6 @@ namespace taskmaker_wpf.ViewModels {
             entity.RemoveAt(record.Axis, record.Index);
 
             Shape = entity.Shape;
-            Fetch();
         }
 
 
@@ -99,7 +99,9 @@ namespace taskmaker_wpf.ViewModels {
             var entity = _mapSrv.Read(Id);
 
             entity.SetValue(new[] { -1 }.Concat(entry.Indices).ToArray(), entry.Value);
-            Fetch();
+
+            MapEntries.Remove(entry);
+            MapEntries.Add(entry);
         }
 
         [RelayCommand]
@@ -110,37 +112,40 @@ namespace taskmaker_wpf.ViewModels {
                 new[] { -1 }.Concat(entry.Indices).ToArray(), 
                 Enumerable.Repeat(double.NaN, 6).ToArray());
             
-            Fetch();
+            MapEntries.Remove(entry);
         }
 
-        [RelayCommand]
-        public void Fetch() {
+        public void GetValue(ref MapEntry entry) {
             var entity = _mapSrv.Read(Id);
 
-            var dim = entity.Shape[0];
-            
-            var shape = entity.Shape.Skip(1).ToArray();
+            var value = entity.GetValue(
+                new[] { -1 }.Concat(entry.Indices).ToArray());
 
-            // make all index combination of shape
-            var indices = Enumerable.Range(0, shape.Length)
-                .Select(i => Enumerable.Range(0, shape[i]))
-                .CartesianProduct()
-                .ToArray();
-            var values = indices.Select(e => entity.GetValue(new[] { -1 }.Concat(e).ToArray()))
-                .ToArray();
-
-            var entries = new List<MapEntry>();
-
-            for (int i = 0; i < indices.Length; i++) {
-                var entry = new MapEntry() {
-                    Indices = indices.ElementAt(i).ToArray(),
-                    Value = values[i]
-                };
-                entries.Add(entry);
-            }
-
-            Entries = entries.ToArray();
+            entry.Value = value;
         }
+
+        //public MapEntry[] Fetch() {
+        //    var entity = _mapSrv.Read(Id);
+
+
+        //    var indices = Enumerable.Range(1, Dimension)
+        //        .Select(i => Enumerable.Range(0, Shape[i]).ToArray())
+        //        .CartesianProduct()
+        //        .Select(e => e.ToArray())
+        //        .ToArray();
+
+        //    var values = indices.Select(e => entity.GetValue(new[] { -1 }.Concat(e).ToArray())).ToArray();
+
+        //    var entries = new List<MapEntry>();
+        //    for (int i = 0; i < indices.Length; i++) {
+        //        entries.Add(new MapEntry {
+        //            Indices = indices[i],
+        //            Value = values[i]
+        //        });
+        //    }
+
+        //    return entries.ToArray();
+        //}
 
         public NLinearMapEntity ToEntity() {
             return new NLinearMapEntity(Shape) {
@@ -154,7 +159,8 @@ namespace taskmaker_wpf.ViewModels {
             Id = entity.Id;
             Name = entity.Name;
             Keys = entity.Keys;
-            Shape = entity.Shape;        
+            Shape = entity.Shape;
+            Dimension = entity.Dimension??0;
         }
 
         public override string ToString() {

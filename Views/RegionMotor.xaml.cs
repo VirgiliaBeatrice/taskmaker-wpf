@@ -53,15 +53,22 @@ namespace taskmaker_wpf.Views {
 
 
         private void root_PreviewKeyUp(object sender, KeyEventArgs e) {
-            var vm = DataContext as RegionMotorViewModel;
-
-            if (e.Key == Key.F1) {
-                _evaSrv.Initialize();
-
-                // Popup a message box to inform succss
-                MessageBox.Show("Motors initialized successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-
+            switch(e.Key) {
+                case Key.D1:
+                    //_evaSrv.Initialize();
+                    //MessageBox.Show("Motors initialized successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    break;
             }
+
+            //var vm = DataContext as RegionMotorViewModel;
+
+            //if (e.Key == Key.F1) {
+            //    _evaSrv.Initialize();
+
+            //    // Popup a message box to inform succss
+            //    MessageBox.Show("Motors initialized successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            //}
         }
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e) {

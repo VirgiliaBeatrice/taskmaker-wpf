@@ -24,23 +24,6 @@ using taskmaker_wpf.Views.Widget;
 
 
 namespace taskmaker_wpf.ViewModels {
-    public partial class SessionViewModel : ObservableObject {
-        public ObservableCollection<ControlUiViewModel> UiViewModels { get; init; }
-        public NLinearMapViewModel MapViewModel { get; init; }
-
-
-        private readonly EvaluationService _evaluationSrv;
-        private readonly MotorService _motorSrv;
-        private readonly UIService _uiSrv;
-        private readonly MapService _mapSrv;
-
-        public SessionViewModel(EvaluationService evaluationSrv, MotorService motorSrv, UIService uiSrv, MapService mapSrv) {
-            _evaluationSrv = evaluationSrv;
-            _motorSrv = motorSrv;
-            _uiSrv = uiSrv;
-            _mapSrv = mapSrv;
-        }
-    }
 
     public partial class RegionControlUIViewModel : ObservableObject, INavigationAware {
         private readonly EvaluationService _evaluationSrv;

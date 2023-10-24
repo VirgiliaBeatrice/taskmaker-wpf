@@ -135,7 +135,7 @@ namespace taskmaker_wpf.Entity {
         static NDarray RemoveAt(NDarray a, int axis, int idx) {
             // Slice array into two parts: before and after idx
             var slice1 = new Slice(0, idx);
-            var slice2 = new Slice(idx + 1, a.shape[axis] - 1);
+            var slice2 = new Slice(idx, a.shape[axis] - 1);
 
             var slicesBefore = new Slice[a.ndim];
             var slicesAfter = new Slice[a.ndim];
@@ -193,6 +193,16 @@ namespace taskmaker_wpf.Entity {
             }
 
             return Tensor[slices].GetData<double>();
+        }
+
+        private void AddToEntries(MapEntry entry) {
+            //if (Entries.Where(e => e.Indices == entry.Indices).Any()) {
+            //    var idx = Entries.FindIndex(e => e.Indices == entry.Indices);
+            //    Entries[idx] = entry;
+            //}
+            //else {
+            //    Entries.Add(entry);
+            //}
         }
 
 

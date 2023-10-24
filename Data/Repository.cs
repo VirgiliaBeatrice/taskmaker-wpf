@@ -169,59 +169,7 @@ namespace taskmaker_wpf.Data {
         }
     }
 
-    //public class MotorRepository {
-    //    public IDataSource DataSource {
-    //        get;
-    //        private set;
-    //    }
-    //    private IMapper _mapper;
-    //    private readonly SerialService _serial;
 
-    //    public MotorRepository(IDataSource dataSource, MapperConfiguration config, SerialService serial) {
-    //        DataSource = dataSource;
-    //        _mapper = config.CreateMapper();
-    //        _serial = serial;
-    //    }
-
-    //    public void Add<T>(T item) {
-    //        var src = DataSource as LocalDataSource;
-
-    //        src.Add(_mapper.Map<MotorDTO>(item));
-    //    }
-
-    //    public void Delete<T>(T item) {
-    //        var src = DataSource as LocalDataSource;
-
-    //        src.Remove(_mapper.Map<MotorDTO>(item));
-    //    }
-
-    //    public T Find<T>(int id) {
-    //        var src = DataSource as LocalDataSource;
-
-    //        src.Find<MotorDTO>(id);
-
-    //        return default(T);
-    //    }
-
-    //    public IEnumerable<T> FindAll<T>() {
-    //        var src = DataSource as LocalDataSource;
-
-    //        var dto = src.FindAllOfType<MotorDTO>().FirstOrDefault();
-    //        var entity = _mapper.Map<MotorEntity>(dto);
-    //        return src.FindAllOfType<MotorDTO>().Select(e => _mapper.Map<MotorEntity>(e)).Cast<T>();
-    //    }
-
-    //    public void Update<T>(T item) {
-    //        var src = DataSource as LocalDataSource;
-    //        var motor = item as MotorEntity;
-
-    //        src.Update(_mapper.Map<MotorDTO>(motor));
-    //        _serial.Update(motor.BoardId, motor.MotorId, motor.Value[0]);
-
-    //        //
-    //         _serial.SendToNuibot();
-    //    }
-    //}
 
     [Serializable]
     public class MotorDTO {

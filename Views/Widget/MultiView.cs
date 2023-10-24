@@ -10,10 +10,12 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Policy;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -55,13 +57,43 @@ namespace taskmaker_wpf.Views.Widget {
     }
 
     public struct MapEntry {
-        public int[] Keys { get; set; }
-        public int[] Indices { get; set; }
-        public double[] Value { get; set; }
+        public MapEntry() { }
+
+        public int[] Indices { get; set; } = new int[0];
+        public int[] IDs { get; set; } = new int[0];
+        public double[] Value { get; set; } = new double[0];
+
+        public bool IsInvalid => Value.Any(double.IsNaN);
 
         public override string ToString() {
-            return $"[({string.Join(",", Indices)}) -> [{string.Join(",", Value)}]]";
+            return $"[({string.Join(",", IDs)}) -> [{(IsInvalid ? "NaN" : "Set")}]]";
         }
+
+        public override bool Equals(object obj) {
+            if (obj == null || this.GetType() != obj.GetType()) {
+                return false;
+            }
+
+            var other = (MapEntry)obj;
+            return Enumerable.SequenceEqual(this.Indices, other.Indices);
+        }
+
+        public override int GetHashCode() {
+            return (Indices != null) ? Indices.Aggregate(0, (acc, val) => acc ^ val) : 0;
+        }
+
+        public static bool operator ==(MapEntry left, MapEntry right) {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(MapEntry left, MapEntry right) {
+            return !(left == right);
+        }
+    }
+
+    public struct StateInfo<T> {
+        public int Id { get; set; }
+        public T Value { get; set; }
     }
 
     public static class Evelations {
@@ -382,11 +414,20 @@ namespace taskmaker_wpf.Views.Widget {
             _grid.Children.Add(_scroll);
 
             Content = _grid;
+
+            WeakReferenceMessenger.Default.Register<UiControllerSelectedMessage>(this, async (r, m) => {
+                var controller = m.Sender as UiController;
+                var view = r as MultiView;
+
+                SessionViewModel.SelectedNodeStates = view.Controllers.Select(c => c.SelectedNode.State).ToArray();
+                
+                await view.RequestMotorDialog();
+            });
         }
 
         public List<UiController> Controllers { get; set; } = new List<UiController>();
 
-        public Dictionary<NDKey, MapEntry> Entries { get; set; } = new Dictionary<NDKey, MapEntry>();
+        //public Dictionary<NDKey, MapEntry> Entries { get; set; } = new Dictionary<NDKey, MapEntry>();
 
         public NodeShape[] SelectedNodes => Controllers.Select(c => c.SelectedNode).ToArray();
 
@@ -430,32 +471,6 @@ namespace taskmaker_wpf.Views.Widget {
             //grid.Children.Add(textblock);
         }
 
-        public void OnNodeAdded(UiController ui) {
-            var axis = Controllers.IndexOf(ui) + 1;
-            var index = ui.NodeStates == null ? 0 : ui.NodeStates.Count();
-
-            var record = new TensorOperationRecord() {
-                Axis = axis,
-                Index = index,
-            };
-
-            //ExpandAtCommand?.Execute(record);
-            SessionViewModel.MapViewModel.ExpandAt(record);
-        }
-
-        public void OnNodeDeleted(UiController ui) {
-            var axis = Controllers.IndexOf(ui) + 1;
-            var index = ui.NodeStates.Count();
-
-            var record = new TensorOperationRecord() {
-                Axis = axis,
-                Index = index,
-            };
-
-            //ExpandAtCommand?.Execute(record);
-            SessionViewModel.MapViewModel.RemoveAt(record);
-        }
-
         public void Open() {
             foreach(var uiViewModel in SessionViewModel.UiViewModels) {
                 // 1. Open Ui
@@ -480,12 +495,6 @@ namespace taskmaker_wpf.Views.Widget {
                 uiController.SetBinding(UiController.RegionStatesProperty, binding);
 
                 // Register messages
-                WeakReferenceMessenger.Default.Register<UiAddedMessage>(this, (r, m) => {
-                    OnNodeAdded(m.Sender as UiController);
-                });
-                WeakReferenceMessenger.Default.Register<UiDeletedMessage>(this, (r, m) => {
-                    OnNodeDeleted(m.Sender as UiController);
-                });
 
                 // TODO: potential memory leak because of unregistering
 
@@ -497,33 +506,31 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
 
-        public async void RequestMotorDialog() {
+        public async Task RequestMotorDialog() {
             if (UiMode == UiMode.Assign && SelectedNodes.All(v => v != null)) {
                 // Send dialog message
                 var result = await WeakReferenceMessenger.Default.Send(new DialogRequestMessage());
 
                 if (result.Result == MessageBoxResult.OK) {
                     // find index of selected node according to its ID
-                    var indices = new List<int>();
+                    //var indices = new List<int>();
 
-                    foreach (var item in Controllers) {
-                        var index = item.NodeStates.ToList().IndexOf(item.SelectedNode.State);
+                    //foreach (var item in Controllers) {
+                    //    var index = item.NodeStates.ToList().IndexOf(item.SelectedNode.State);
 
-                        indices.Add(index);
-                    }
+                    //    indices.Add(index);
+                    //}
 
-                    var entry = new MapEntry {
-                        Indices = indices.ToArray(),
-                        Value = result.Value as double[],
-                    };
+                    //var entry = new MapEntry {
+                    //    IDs = SelectedNodes.Select(e => e.State.Id).ToArray(),
+                    //    Indices = indices.ToArray(),
+                    //    Value = result.Value as double[],
+                    //};
 
                     // Commit map entry
-                    SessionViewModel.MapViewModel.SetValue(entry);
-
-                    var key = new NDKey(SelectedNodes.Select(e => e.State.Id).ToArray());
-                    Entries[key] = entry;
+                    //SessionViewModel.MapViewModel.SetValue(entry);
+                    SessionViewModel.SetValue(result.Value as double[]);
                 }
-
             }
         }
     }

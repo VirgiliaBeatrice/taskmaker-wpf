@@ -207,14 +207,14 @@
                                  Height="100"
                                  ItemsSource="{Binding UiVMs}" />
                       </Expander>
-                      <Expander Header="Map" Margin="12" DataContext="{Binding SessionViewModel.MapViewModel}">
+                      <Expander Header="Map" Margin="12" DataContext="{Binding SessionViewModel}">
                         <StackPanel Orientation="Vertical" Margin="12">
                           <Label Content="Name" FontWeight="Bold"/>
-                          <Label Content="{Binding Name}" Margin="12 0 12 0"/>
+                          <Label Content="{Binding MapViewModel.Name}" Margin="12 0 12 0"/>
                           <Separator />
                           <Label Content="Shape"
                                  FontWeight="Bold" />
-                          <Label Content="{Binding Shape}"
+                          <Label Content="{Binding MapViewModel.Shape}"
                                  Margin="12 0 12 0" />
                           <Separator />
                           <w:EntryView DataContext="{Binding Entries}"/>

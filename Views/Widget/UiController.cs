@@ -561,10 +561,6 @@ namespace taskmaker_wpf.Views.Widget {
             var currentPosition = e.GetPosition(Canvas);
 
             ViewModel.AddNode(currentPosition);
-
-            Messenger.Default.Send(new UiAddedMessage() {
-                Sender = this
-            });
         }
 
         private void PerformMove(object sender, MouseEventArgs e) {
@@ -608,10 +604,6 @@ namespace taskmaker_wpf.Views.Widget {
                 if (parent != null) {
                     // Command: Remove node
                     ViewModel.DeleteNode(parent.State);
-
-                    WeakReferenceMessenger.Default.Send(new UiDeletedMessage {
-                        Sender = this
-                    });
                 }
             }
         }
@@ -638,7 +630,9 @@ namespace taskmaker_wpf.Views.Widget {
                         SelectedNode = parent;
                         parent.Select(true);
 
-                        MultiView.RequestMotorDialog();
+                        WeakReferenceMessenger.Default.Send(new UiControllerSelectedMessage() { Sender = this });
+
+                        //MultiView.RequestMotorDialog();
                     }
                 }
             }
@@ -688,14 +682,7 @@ namespace taskmaker_wpf.Views.Widget {
         }
     }
 
-    public record UiMessage { 
-        public object Sender { get; set; }
-    }
-
-    public record UiAddedMessage : UiMessage {
-    }
-
-    public record UiDeletedMessage : UiMessage {
-
+    public class UiControllerSelectedMessage {
+        public object Sender { get; init; }
     }
 }
