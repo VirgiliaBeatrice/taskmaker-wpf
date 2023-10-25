@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 using NLog;
 using System;
 using System.Collections.ObjectModel;
@@ -8,6 +10,9 @@ using taskmaker_wpf.ViewModels;
 
 namespace taskmaker_wpf.Services
 {
+    public class EvaluationSelectedSessionChangedMessage : ValueChangedMessage<SessionViewModel> {
+        public EvaluationSelectedSessionChangedMessage(SessionViewModel value) : base(value) { }
+    }
     /// <summary>
     /// Evaluation => Sessions
     /// </summary>
@@ -17,6 +22,12 @@ namespace taskmaker_wpf.Services
         private readonly EvaluationEntity _entity;
 
         public ObservableCollection<SessionViewModel> Sessions { get; private set; } = new ObservableCollection<SessionViewModel>();
+        [ObservableProperty]
+        private SessionViewModel _selectedSession;
+
+        partial void OnSelectedSessionChanged(SessionViewModel value) {
+            WeakReferenceMessenger.Default.Send(new ValueChangedMessage<SessionViewModel>(value));
+        }
 
         public EvaluationViewModel(EvaluationEntity entity) {
             _entity = entity;
@@ -40,7 +51,7 @@ namespace taskmaker_wpf.Services
         private LevelOfKnowledge _knowledge;
 
         [ObservableProperty]
-        private readonly DateTime _date;
+        private DateTime _date;
 
         [RelayCommand]
         public void Update() {

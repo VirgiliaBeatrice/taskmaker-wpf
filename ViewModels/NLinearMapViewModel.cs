@@ -75,7 +75,7 @@ namespace taskmaker_wpf.ViewModels {
         private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
         partial void OnOutputChanged(double[] value) {
-            //_logger.Debug($"Output changed: {string.Join(",", value)}");
+            _logger.Debug($"Output changed: {string.Join(",", value)}");
             WeakReferenceMessenger.Default.Send(new MapOutputMessage() {
                 Id = Id,
                 Output = value
@@ -100,7 +100,7 @@ namespace taskmaker_wpf.ViewModels {
 
             if (Shape.Skip(1).Any(e => e == 0)) return;
 
-            var indices = Enumerable.Range(1, Dimension)
+            var indices = Enumerable.Range(1, Dimension - 1)
                 .Select(i => Enumerable.Range(0, Shape[i]).ToArray())
                 .CartesianProduct()
                 .Select(e => e.ToArray())

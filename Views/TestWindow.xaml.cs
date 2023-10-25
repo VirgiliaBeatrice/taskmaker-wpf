@@ -519,15 +519,19 @@ namespace taskmaker_wpf.Views {
 
             var motorDialogViewModel = (Application.Current as App).Container.Resolve<MotorDialogViewModel>();
 
-            var dialog = new DialogController() {
-                DataContext = motorDialogViewModel,
-            };
+            var dialog = new DialogController();
+
 
             Binding binding;
-            binding = new Binding("CommitCommand") {
+            binding = new Binding("UpdateCommand") {
                 Source = motorDialogViewModel,
             };
             dialog.SetBinding(DialogController.CommitCommandProperty, binding);
+
+            binding = new Binding() {
+                Source = motorDialogViewModel,
+            };
+            dialog.SetBinding(DataContextProperty, binding);
 
             Dialog.Child = dialog;
         }

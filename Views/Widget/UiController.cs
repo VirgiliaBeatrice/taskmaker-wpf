@@ -14,27 +14,30 @@ using Point = System.Windows.Point;
 using Rectangle = System.Windows.Shapes.Rectangle;
 using Messenger = CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CodeAnalysis.VisualBasic.Syntax;
+using System.Windows.Data;
+using taskmaker_wpf.Model.SimplicialMapping;
 
 namespace taskmaker_wpf.Views.Widget {
     public class UiController : UserControl {
 
 
-        public IEnumerable<BaseRegionState> RegionStates {
-            get { return (IEnumerable<BaseRegionState>)GetValue(RegionStatesProperty); }
-            set { SetValue(RegionStatesProperty, value); }
-        }
+        //public IEnumerable<BaseRegionState> RegionStates {
+        //    get { return (IEnumerable<BaseRegionState>)GetValue(RegionStatesProperty); }
+        //    set { SetValue(RegionStatesProperty, value); }
+        //}
 
-        // Using a DependencyProperty as the backing store for RegionStates.  This enables animation, styling, binding, etc...
-        private static readonly DependencyProperty regionStatesProperty =
-            DependencyProperty.Register("RegionStates", typeof(IEnumerable<BaseRegionState>), typeof(UiController), new PropertyMetadata(Array.Empty<BaseRegionState>(), OnRegionStatesChanged
-                ));
+        //// Using a DependencyProperty as the backing store for RegionStates.  This enables animation, styling, binding, etc...
+        //private static readonly DependencyProperty regionStatesProperty =
+        //    DependencyProperty.Register("RegionStates", typeof(IEnumerable<BaseRegionState>), typeof(UiController), new PropertyMetadata(Array.Empty<BaseRegionState>(), OnRegionStatesChanged
+        //        ));
 
-        private static void OnRegionStatesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            var control = d as UiController;
+        //private static void OnRegionStatesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+        //    var control = d as UiController;
 
-            // handle DependencyPropertyChangedEventArgs
-            control.InvalidateRegion();
-        }
+        //    // handle DependencyPropertyChangedEventArgs
+        //    control.InvalidateRegion();
+        //}
 
         // Using a DependencyProperty as the backing store for AddNodeCommand.  This enables animation, styling, binding, etc...
         //public static readonly DependencyProperty AddNodeCommandProperty =
@@ -45,8 +48,8 @@ namespace taskmaker_wpf.Views.Widget {
         //    DependencyProperty.Register("DeleteNodeCommand", typeof(ICommand), typeof(UiController), new PropertyMetadata(null));
 
         // Using a DependencyProperty as the backing store for Nodes.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty NodeStatesProperty =
-            DependencyProperty.Register("NodeStates", typeof(IEnumerable<NodeState>), typeof(UiController), new PropertyMetadata(Array.Empty<NodeState>(), OnNodeStatesChanged));
+        //public static readonly DependencyProperty NodeStatesProperty =
+        //    DependencyProperty.Register("NodeStates", typeof(IEnumerable<NodeState>), typeof(UiController), new PropertyMetadata(Array.Empty<NodeState>(), OnNodeStatesChanged));
 
         // Using a DependencyProperty as the backing store for UpdateNodeCommand.  This enables animation, styling, binding, etc...
         //public static readonly DependencyProperty UpdateNodeCommandProperty =
@@ -165,6 +168,18 @@ namespace taskmaker_wpf.Views.Widget {
             _grid.Children.Add(Viewer);
 
             Content = _grid;
+
+            DataContextChanged += UiController_DataContextChanged;
+        }
+
+        private void UiController_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e) {
+            if (e.NewValue != null && e.NewValue is ControlUiViewModel newVM) {
+                newVM.PropertyChanged += ViewModel_PropertyChanged;
+            }
+
+            if (e.OldValue != null && e.OldValue is ControlUiViewModel oldVM) {
+                oldVM.PropertyChanged -= ViewModel_PropertyChanged;
+            }
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
@@ -174,31 +189,16 @@ namespace taskmaker_wpf.Views.Widget {
             else if (e.PropertyName == "RegionStates") {
                 InvalidateRegion();
             }
-            //throw new NotImplementedException();
         }
 
-        //public ICommand AddNodeCommand {
-        //    get { return (ICommand)GetValue(AddNodeCommandProperty); }
-        //    set { SetValue(AddNodeCommandProperty, value); }
-        //}
-
         public Canvas Canvas { get; set; }
-
-        //public ICommand DeleteNodeCommand {
-        //    get { return (ICommand)GetValue(DeleteNodeCommandProperty); }
-        //    set { SetValue(DeleteNodeCommandProperty, value); }
-        //}
-
         public Grid Indicator { get; set; }
-
         public MultiView MultiView { get; set; }
 
         public List<NodeShape> NodeShapes { get; set; } = new List<NodeShape>();
 
-        public IEnumerable<NodeState> NodeStates {
-            get { return (IEnumerable<NodeState>)GetValue(NodeStatesProperty); }
-            set { SetValue(NodeStatesProperty, value); }
-        }
+        public IEnumerable<NodeState> NodeStates => (DataContext as ControlUiViewModel).NodeStates;
+        public IEnumerable<BaseRegionState> RegionStates => (DataContext as ControlUiViewModel).RegionStates;
         public RegionControlUI RegionUi { get; set; }
 
         public ScaleTransform ScaleT { get; set; } = new ScaleTransform();
@@ -225,7 +225,6 @@ namespace taskmaker_wpf.Views.Widget {
 
         public List<VoronoiShape> Voronois { get; set; } = new List<VoronoiShape>();
 
-        public static DependencyProperty RegionStatesProperty => regionStatesProperty;
 
         public void ClearRegions() {
             foreach (var region in Simplices) {
@@ -274,8 +273,13 @@ namespace taskmaker_wpf.Views.Widget {
                 if (region is SimplexState s) {
                     var simplex = new SimplexShape(region.Id, region.Vertices.Select(e => e.Value).ToArray()) {
                         Visibility = Visibility.Hidden,
-                        DataContext = region,
                     };
+
+                    Binding binding;
+                    binding = new Binding() {
+                        Source = region,
+                    };
+                    simplex.SetBinding(DataContextProperty, binding);
 
                     Simplices.Add(simplex);
                     Canvas.Children.Add(simplex);
@@ -285,6 +289,12 @@ namespace taskmaker_wpf.Views.Widget {
                         Visibility = Visibility.Hidden
 
                     };
+
+                    Binding binding;
+                    binding = new Binding() {
+                        Source = region,
+                    };
+                    voronoi.SetBinding(DataContextProperty, binding);
 
                     Voronois.Add(voronoi);
                     Canvas.Children.Add(voronoi);
@@ -326,15 +336,15 @@ namespace taskmaker_wpf.Views.Widget {
             base.OnRenderSizeChanged(sizeInfo);
         }
 
-        private static void OnNodeStatesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            var control = d as UiController;
+        //private static void OnNodeStatesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+        //    var control = d as UiController;
 
-            if (e.NewValue == null)
-                control.NodeStates = Array.Empty<NodeState>();
+        //    if (e.NewValue == null)
+        //        control.NodeStates = Array.Empty<NodeState>();
 
-            // handle DependencyPropertyChangedEventArgs
-            control.InvalidateNodeShapes();
-        }
+        //    // handle DependencyPropertyChangedEventArgs
+        //    control.InvalidateNodeShapes();
+        //}
 
         private void Canvas_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
             switch (UiMode) {
@@ -648,7 +658,7 @@ namespace taskmaker_wpf.Views.Widget {
 
                 if (parent != null) {
                     // Command: Control node
-                    ViewModel.HitRegion = parent.State;
+                    ViewModel.HitRegion = parent.DataContext as SimplexState;
                     //ViewModel.ControlNode(parent.State);
                 }
             }

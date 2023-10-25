@@ -171,32 +171,33 @@ namespace taskmaker_wpf.Views.Widget {
     }
     public class MultiView : UserControl {
 
-        public SessionViewModel SessionViewModel {
-            get { return (SessionViewModel)GetValue(SessionViewModelProperty); }
-            set { SetValue(SessionViewModelProperty, value); }
-        }
+        public SessionViewModel SessionViewModel => DataContext as SessionViewModel;
+        //public SessionViewModel SessionViewModel {
+        //    get { return (SessionViewModel)GetValue(SessionViewModelProperty); }
+        //    set { SetValue(SessionViewModelProperty, value); }
+        //}
 
-        // Using a DependencyProperty as the backing store for SessionViewModel.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty SessionViewModelProperty =
-            DependencyProperty.Register("SessionViewModel", typeof(SessionViewModel), typeof(MultiView), new PropertyMetadata(null, OnSessionViewModelChanged));
+        //// Using a DependencyProperty as the backing store for SessionViewModel.  This enables animation, styling, binding, etc...
+        //public static readonly DependencyProperty SessionViewModelProperty =
+        //    DependencyProperty.Register("SessionViewModel", typeof(SessionViewModel), typeof(MultiView), new PropertyMetadata(null, OnSessionViewModelChanged));
 
-        private static void OnSessionViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            var control = d as MultiView;
+        //private static void OnSessionViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+        //    var control = d as MultiView;
 
-            if (e.NewValue != null) {
-                var vm = e.NewValue as SessionViewModel;
+        //    if (e.NewValue != null) {
+        //        var vm = e.NewValue as SessionViewModel;
 
-                vm.Uis.CollectionChanged += control.UiViewModels_CollectionChanged;
-                vm.Map.PropertyChanged += control.MapViewModel_PropertyChanged;
-            }
+        //        vm.Uis.CollectionChanged += control.UiViewModels_CollectionChanged;
+        //        vm.Map.PropertyChanged += control.MapViewModel_PropertyChanged;
+        //    }
 
-            if (e.OldValue != null) {
-                var vm = e.OldValue as SessionViewModel;
+        //    if (e.OldValue != null) {
+        //        var vm = e.OldValue as SessionViewModel;
 
-                vm.Uis.CollectionChanged -= control.UiViewModels_CollectionChanged;
-                vm.Map.PropertyChanged -= control.MapViewModel_PropertyChanged;
-            }
-        }
+        //        vm.Uis.CollectionChanged -= control.UiViewModels_CollectionChanged;
+        //        vm.Map.PropertyChanged -= control.MapViewModel_PropertyChanged;
+        //    }
+        //}
 
         private void MapViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e) {
             //throw new NotImplementedException();
@@ -240,13 +241,33 @@ namespace taskmaker_wpf.Views.Widget {
             WeakReferenceMessenger.Default.Register<UiControllerControlledMessage>(this, (r, m) => {
                 SessionViewModel.Interpolate();
             });
+
+            DataContextChanged += MultiView_DataContextChanged;
+        }
+
+        private void MultiView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e) {
+            var control = sender as MultiView;
+
+            if (e.NewValue != null) {
+                if (e.NewValue is SessionViewModel vm) {
+                    //vm.Uis.CollectionChanged += control.UiViewModels_CollectionChanged;
+                    //vm.Map.PropertyChanged += control.MapViewModel_PropertyChanged;
+                    Close();
+                    Open();
+                }
+            }
+
+            if (e.OldValue != null) {
+                if (e.OldValue is SessionViewModel vm) {
+                    //vm.Uis.CollectionChanged -= control.UiViewModels_CollectionChanged;
+                    //vm.Map.PropertyChanged -= control.MapViewModel_PropertyChanged;
+                }
+            }
         }
 
         public List<UiController> Controllers { get; set; } = new List<UiController>();
 
         public NodeShape[] SelectedNodes => Controllers.Select(c => c.SelectedNode).ToArray();
-
-        public RegionControlUIViewModel RegionViewModel => DataContext as RegionControlUIViewModel;
 
         public UiMode UiMode {
             get => uiMode;
@@ -290,24 +311,31 @@ namespace taskmaker_wpf.Views.Widget {
             foreach(var uiViewModel in SessionViewModel.Uis) {
                 // 1. Open Ui
                 var uiController = new UiController() {
-                    DataContext = uiViewModel,
+                    //DataContext = uiViewModel,
                     VerticalAlignment = VerticalAlignment.Stretch,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     Margin = new Thickness(16),
                 };
 
-                // data binding
                 Binding binding;
 
-                binding = new Binding("NodeStates") {
+                binding = new Binding(".") {
                     Source = uiViewModel,
                 };
-                uiController.SetBinding(UiController.NodeStatesProperty, binding);
+                uiController.SetBinding(UiController.DataContextProperty, binding);
 
-                binding = new Binding("RegionStates") {
-                    Source = uiViewModel,
-                };
-                uiController.SetBinding(UiController.RegionStatesProperty, binding);
+                // data binding
+                //Binding binding;
+
+                //binding = new Binding("NodeStates") {
+                //    Source = uiViewModel,
+                //};
+                //uiController.SetBinding(UiController.NodeStatesProperty, binding);
+
+                //binding = new Binding("RegionStates") {
+                //    Source = uiViewModel,
+                //};
+                //uiController.SetBinding(UiController.RegionStatesProperty, binding);
 
                 // Register messages
 

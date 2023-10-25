@@ -12,20 +12,6 @@ namespace taskmaker_wpf.Services
 {
     public class MotorService : BaseEntityManager<MotorEntity>
     {
-        private readonly SerialService serialService;
-        public MotorService(SerialService serialService) {
-            this.serialService = serialService;
-        }
-
-        public override bool Update(MotorEntity entity) {
-            serialService.Update(entity.NuiBoardId, entity.NuiMotorId, entity.Value);
-
-            return base.Update(entity);
-        }
-
-        public void ToSerial(MotorState state) {
-            //serialService.Update(state);
-            serialService.Update(state.NuiBoardId, state.NuiMotorId, state.Value);
-        }
+        public MotorService() { }
     }
 }

@@ -53,7 +53,7 @@
 
         <Grid>
 
-          <ItemsControl ItemsSource="{Binding MotorVMs}">
+          <ItemsControl ItemsSource="{Binding Motors}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <StackPanel Orientation="Horizontal" />

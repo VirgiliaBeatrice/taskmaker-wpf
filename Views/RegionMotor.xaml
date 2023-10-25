@@ -52,7 +52,7 @@
 
     <DataGrid Focusable="True"
               x:Name="dgMotors"
-              ItemsSource="{Binding MotorVMs}"
+              ItemsSource="{Binding Motors}"
               DockPanel.Dock="Top"
               AutoGenerateColumns="False">
       <DataGrid.Resources>

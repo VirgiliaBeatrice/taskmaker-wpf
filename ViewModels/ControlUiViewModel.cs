@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using NLog;
 using PCController;
 using System;
 using System.Collections.Generic;
@@ -96,6 +97,7 @@ namespace taskmaker_wpf.ViewModels {
 
 
     public partial class ControlUiViewModel : ObservableObject {
+        private readonly Logger _logger = LogManager.GetCurrentClassLogger();
         [ObservableProperty]
         private int _id;
         [ObservableProperty]
@@ -114,7 +116,19 @@ namespace taskmaker_wpf.ViewModels {
         public ControlUiViewModel(ControlUiEntity entity) {
             _entity = entity;
 
+            PropertyChanged += ControlUiViewModel_PropertyChanged;
+
             Fetch();
+        }
+
+        private void ControlUiViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
+            if (e.PropertyName == "HitRegion") {
+                _logger.Debug($"Hit changed {HitRegion}");
+            }
+            else if (e.PropertyName == "Input") {
+                _logger.Debug($"Input: {Input}");
+
+            }
         }
 
         [RelayCommand]

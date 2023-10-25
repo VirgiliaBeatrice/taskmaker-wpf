@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 using Numpy;
 using Prism.Ioc;
 using Prism.Regions;
@@ -31,12 +32,12 @@ namespace taskmaker_wpf.ViewModels {
         private readonly MapService _mapSrv;
         private static IContainerProvider Container => (App.Current as Prism.PrismApplicationBase).Container;
 
-        public ObservableCollection<EvaluationViewModel> EvaluationViewModels { get; private set; } = new ObservableCollection<EvaluationViewModel>();
+        public ObservableCollection<EvaluationViewModel> Evaluations { get; private set; } = new ObservableCollection<EvaluationViewModel>();
 
-        public ControlUiCollectionViewModel UiCollectionViewModel { get; private set; }
-        public ObservableCollection<SessionViewModel> SessionVMs { get; private set; } = new ObservableCollection<SessionViewModel>();
+        public ControlUiCollectionViewModel UiCollection { get; private set; }
+        public ObservableCollection<SessionViewModel> Sessions { get; private set; } = new ObservableCollection<SessionViewModel>();
 
-        public ObservableCollection<ControlUiViewModel> UiVMs => UiCollectionViewModel.Uis;
+        public ObservableCollection<ControlUiViewModel> Uis => UiCollection.Uis;
 
         [ObservableProperty]
         private SessionViewModel _selectedSessionViewModel;
@@ -59,7 +60,11 @@ namespace taskmaker_wpf.ViewModels {
             _motorSrv = motorService;
             _uiSrv = uIService;
 
-            UiCollectionViewModel = new ControlUiCollectionViewModel(_uiSrv);
+            UiCollection = new ControlUiCollectionViewModel(_uiSrv);
+
+            WeakReferenceMessenger.Default.Register<ValueChangedMessage<SessionViewModel>>(this, (r, m) => {
+                SelectedSessionViewModel = m.Value;
+            });
         }
 
         [RelayCommand]
@@ -67,99 +72,14 @@ namespace taskmaker_wpf.ViewModels {
             var evaEntity = _evaluationSrv.Create(new EvaluationEntity());
             var evaVM = new EvaluationViewModel(evaEntity);
 
-            EvaluationViewModels.Add(evaVM);
+            Evaluations.Add(evaVM);
         }
 
-        [RelayCommand]
-        public void CreateSession() {
-            //var sessionViewModel = new SessionViewModel(_evaluationSrv, _motorSrv, _uiSrv, _mapSrv) {
-            //    Id = _nextIndex,
-            //    Name = $"Session-{_nextIndex}",
-            //    Uis = new ObservableCollection<ControlUiViewModel>(),
-            //    MapViewModel = new NLinearMapViewModel(_mapSrv)
-            //};
-
-            //++_nextIndex;
-            //// Init UIs
-            //var entity = new ControlUiEntity();
-            //var uiVM = new ControlUiViewModel(_uiSrv);
-
-            //_uiSrv.Create(entity);
-            //uiVM.FromEntity(entity);
-
-            //sessionViewModel.Uis.Add(uiVM);
-
-            //// Init Map
-            //var mapEntity = new NLinearMapEntity(2, 6);
-            //var mapVM = sessionViewModel.MapViewModel;
-
-            //_mapSrv.Create(mapEntity);
-            //mapVM.FromEntity(mapEntity);
-
-            //SessionVMs.Add(sessionViewModel);
-
-            //Fetch();
-        }
 
         [RelayCommand]
         public void Fetch() {
-            UiCollectionViewModel.Fetch();
+            UiCollection.Fetch();
         }
-
-        //[RelayCommand]
-        //private void CreateUi() {
-        //    var entity = _uiSrv.Create(new ControlUiEntity());
-
-        //    var uiVM = Container.Resolve<ControlUiViewModel>();
-
-        //    uiVM.Id = entity.Id;
-        //    uiVM.Name = entity.Name;
-
-        //    UiVMs.Add(uiVM);
-        //}
-
-        //[RelayCommand]
-        //private void CreateMap() {
-        //    // TODO: hard coding
-        //    if (SelectedMapVM == null) {
-        //        // send message, no ui has been selected
-        //        var msg = new ShowMessageBoxMessage() {
-        //            Message = "No ui has been selected.",
-        //            Icon = MessageBoxImage.Error,
-        //            Button = MessageBoxButton.OK,
-        //            Caption = "Error"
-        //        };
-
-        //        WeakReferenceMessenger.Default.Send(msg);
-
-        //        return;
-        //    }
-
-        //    var entity = _mapSrv.Create(new NLinearMapEntity(new[] { 6, 0 }) {
-        //        Keys = new[] { SelectedUiVM.Id },
-        //    });
-
-        //    var mapVM = Container.Resolve<NLinearMapViewModel>();
-
-        //    mapVM.Id = entity.Id;
-        //    mapVM.Name = entity.Name;
-        //    mapVM.Keys = entity.Keys;
-        //    mapVM.Shape = entity.Shape;
-
-        //    MapVMs.Add(mapVM);
-        //}
-
-        //[RelayCommand]
-        //private void SetMapEntry(MapEntry entry) {
-        //    var mapState = SelectedMapVM;
-        //    var entity = _mapSrv.Read(mapState.Id);
-        //    var indices = new[] { -1 }.Concat(entry.Key).ToArray();
-
-        //    entity.SetValue(indices, entry.Value);
-
-        //    //UpdateMapState(entity, ref mapState);
-        //}
-
 
         [RelayCommand]
         private async Task RequestMotorDialog() {
@@ -177,20 +97,6 @@ namespace taskmaker_wpf.ViewModels {
 
         public void OnNavigatedTo(NavigationContext navigationContext) {
             //throw new NotImplementedException();
-        }
-
-
-        private BaseRegionState[] MapFromEntity(BaseRegionEntity[] entities) {
-            return entities.Select(entity => {
-                if (entity is SimplexRegionEntity) {
-                    return BaseRegionState.Create<SimplexRegionEntity, SimplexState>(entity as SimplexRegionEntity) as BaseRegionState;
-                }
-                else if (entity is VoronoiRegionEntity) {
-                    return BaseRegionState.Create<VoronoiRegionEntity, VoronoiState>(entity as VoronoiRegionEntity);
-                }
-                else
-                    throw new InvalidOperationException($"Unsupported entity type: {entity.GetType()}");
-            }).ToArray();
         }
     }
 
