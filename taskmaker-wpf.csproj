@@ -30,15 +30,47 @@
     <OutputPath>bin\x64\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="icons\material-design-icons\demo\**" />
+    <Compile Remove="icons\material-design-icons\font\**" />
+    <Compile Remove="icons\material-design-icons\scripts\**" />
+    <Compile Remove="icons\material-design-icons\svg\filled\**" />
+    <Compile Remove="icons\material-design-icons\svg\round\**" />
+    <Compile Remove="icons\material-design-icons\svg\sharp\**" />
+    <Compile Remove="icons\material-design-icons\svg\two-tone\**" />
+    <Compile Remove="icons\material-design-icons\_data\**" />
     <Compile Remove="Views\Elements\**" />
     <Compile Remove="Views\Widget\Container\**" />
     <Compile Remove="Views\Widget\Node\**" />
+    <EmbeddedResource Remove="icons\material-design-icons\demo\**" />
+    <EmbeddedResource Remove="icons\material-design-icons\font\**" />
+    <EmbeddedResource Remove="icons\material-design-icons\scripts\**" />
+    <EmbeddedResource Remove="icons\material-design-icons\svg\filled\**" />
+    <EmbeddedResource Remove="icons\material-design-icons\svg\round\**" />
+    <EmbeddedResource Remove="icons\material-design-icons\svg\sharp\**" />
+    <EmbeddedResource Remove="icons\material-design-icons\svg\two-tone\**" />
+    <EmbeddedResource Remove="icons\material-design-icons\_data\**" />
     <EmbeddedResource Remove="Views\Elements\**" />
     <EmbeddedResource Remove="Views\Widget\Container\**" />
     <EmbeddedResource Remove="Views\Widget\Node\**" />
+    <None Remove="icons\material-design-icons\demo\**" />
+    <None Remove="icons\material-design-icons\font\**" />
+    <None Remove="icons\material-design-icons\scripts\**" />
+    <None Remove="icons\material-design-icons\svg\filled\**" />
+    <None Remove="icons\material-design-icons\svg\round\**" />
+    <None Remove="icons\material-design-icons\svg\sharp\**" />
+    <None Remove="icons\material-design-icons\svg\two-tone\**" />
+    <None Remove="icons\material-design-icons\_data\**" />
     <None Remove="Views\Elements\**" />
     <None Remove="Views\Widget\Container\**" />
     <None Remove="Views\Widget\Node\**" />
+    <Page Remove="icons\material-design-icons\demo\**" />
+    <Page Remove="icons\material-design-icons\font\**" />
+    <Page Remove="icons\material-design-icons\scripts\**" />
+    <Page Remove="icons\material-design-icons\svg\filled\**" />
+    <Page Remove="icons\material-design-icons\svg\round\**" />
+    <Page Remove="icons\material-design-icons\svg\sharp\**" />
+    <Page Remove="icons\material-design-icons\svg\two-tone\**" />
+    <Page Remove="icons\material-design-icons\_data\**" />
     <Page Remove="Views\Elements\**" />
     <Page Remove="Views\Widget\Container\**" />
     <Page Remove="Views\Widget\Node\**" />
@@ -54,6 +86,24 @@
   <ItemGroup>
     <Resource Include="icons\arm.png" />
     <Resource Include="icons\home.png" />
+    <Resource Include="icons\material-design-icons\svg\outlined\build_circle.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icons\material-design-icons\svg\outlined\library_add.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icons\material-design-icons\svg\outlined\pause_circle.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icons\material-design-icons\svg\outlined\play_circle.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icons\material-design-icons\svg\outlined\run_circle.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icons\material-design-icons\svg\outlined\stop_circle.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="icons\panda.png" />
     <Resource Include="icons\settings.png" />
     <Resource Include="icons\triangle.png" />
@@ -110,6 +160,24 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="icons\arm.png" />
+    <None Remove="icons\material-design-icons\.gitattributes" />
+    <None Remove="icons\material-design-icons\.gitignore" />
+    <None Remove="icons\material-design-icons\.npmrc" />
+    <None Remove="icons\material-design-icons\LICENSE" />
+    <None Remove="icons\material-design-icons\package-lock.json" />
+    <None Remove="icons\material-design-icons\package.json" />
+    <None Remove="icons\material-design-icons\README.md" />
+    <None Remove="icons\material-design-icons\svg\LICENSE" />
+    <None Remove="icons\material-design-icons\svg\outlined\build_circle.svg" />
+    <None Remove="icons\material-design-icons\svg\outlined\library_add.svg" />
+    <None Remove="icons\material-design-icons\svg\outlined\pause_circle.svg" />
+    <None Remove="icons\material-design-icons\svg\outlined\play_circle.svg" />
+    <None Remove="icons\material-design-icons\svg\outlined\run_circle.svg" />
+    <None Remove="icons\material-design-icons\svg\outlined\stop_circle.svg" />
+    <None Remove="icons\material-design-icons\svg\package.json" />
+    <None Remove="icons\material-design-icons\svg\README.md" />
+    <None Remove="icons\material-design-icons\svg\svgo.config.js" />
+    <None Remove="icons\material-design-icons\_config.yml" />
     <None Remove="icons\panda.png" />
   </ItemGroup>
   <ItemGroup>

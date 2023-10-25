@@ -40,5 +40,15 @@ namespace taskmaker_wpf.Views.Widget
         private void Button_Click(object sender, RoutedEventArgs e) {
             slider.Value = 0;
         }
+
+        private void Border_TouchMove(object sender, TouchEventArgs e) {
+            var touchPt = e.GetTouchPoint(slider);
+
+            var percent = 1- (touchPt.Position.Y / slider.ActualHeight);
+            var value = slider.Minimum + percent * (slider.Maximum - slider.Minimum);
+
+            slider.Value = value;
+            e.Handled = true;
+        }
     }
 }

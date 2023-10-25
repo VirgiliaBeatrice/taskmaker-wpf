@@ -69,7 +69,7 @@ namespace taskmaker_wpf.ViewModels {
 
         [ObservableProperty]
         private double[] _output;
-
+        private readonly NLinearMapEntity _entity;
         private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
         partial void OnOutputChanged(double[] value) {
@@ -82,16 +82,47 @@ namespace taskmaker_wpf.ViewModels {
 
         public ObservableCollection<MapEntry> MapEntries { get; set; } = new ObservableCollection<MapEntry>();
 
-        private readonly MapService _mapSrv;
-        public NLinearMapEntity Entity => _mapSrv.Read(Id);
 
-        public NLinearMapViewModel(MapService mapSrv) {
-            _mapSrv = mapSrv;
+        public NLinearMapViewModel(NLinearMapEntity entity) {
+            _entity = entity;
+
+            Fetch();
+        }
+
+        [RelayCommand]
+        public void Fetch() {
+            // fetch all properties into this from entity
+            Id = _entity.Id;
+            Name = _entity.Name;
+            Shape = _entity.Shape;
+            Dimension = _entity.Dimension??-1;
+
+            MapEntries.Clear();
+
+            if (Shape.Skip(1).Any(e => e == 0)) return;
+
+            var indices = Enumerable.Range(1, Dimension)
+                .Select(i => Enumerable.Range(0, Shape[i]).ToArray())
+                .CartesianProduct()
+                .Select(e => e.ToArray())
+                .ToArray();
+
+            var values = indices.Select(e => _entity.GetValue(new[] { -1 }.Concat(e).ToArray())).ToArray();
+
+            var entries = new List<MapEntry>();
+            for (int i = 0; i < indices.Length; i++) {
+                entries.Add(new MapEntry {
+                    Indices = indices[i],
+                    Value = values[i]
+                });
+            }
+
+            MapEntries = new ObservableCollection<MapEntry>(entries);
         }
 
         [RelayCommand]
         public void ExpandAt(TensorOperationRecord record) {
-            var entity = _mapSrv.Read(Id);
+            var entity = _entity;
 
             entity.ExpandAt(record.Axis, record.Index);
 
@@ -102,7 +133,7 @@ namespace taskmaker_wpf.ViewModels {
 
         [RelayCommand]
         public void RemoveAt(TensorOperationRecord record) {
-            var entity = _mapSrv.Read(Id);
+            var entity = _entity;
 
             entity.RemoveAt(record.Axis, record.Index);
 
@@ -113,7 +144,7 @@ namespace taskmaker_wpf.ViewModels {
         // TODO: key for entry
         [RelayCommand]
         public void SetValue(MapEntry entry) {
-            var entity = _mapSrv.Read(Id);
+            var entity = _entity;
 
             entity.SetValue(new[] { -1 }.Concat(entry.Indices).ToArray(), entry.Value);
 
@@ -123,7 +154,7 @@ namespace taskmaker_wpf.ViewModels {
 
         [RelayCommand]
         public void ClearValue(MapEntry entry) {
-            var entity = _mapSrv.Read(Id);
+            var entity = _entity;
 
             entity.SetValue(
                 new[] { -1 }.Concat(entry.Indices).ToArray(), 
@@ -133,7 +164,7 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         public void GetValue(ref MapEntry entry) {
-            var entity = _mapSrv.Read(Id);
+            var entity = _entity;
 
             var value = entity.GetValue(
                 new[] { -1 }.Concat(entry.Indices).ToArray());
@@ -143,7 +174,7 @@ namespace taskmaker_wpf.ViewModels {
 
         [RelayCommand]
         public void Interpolate(double[][] lambdas) {
-            Output = Entity.MapTo(lambdas);
+            Output = _entity.MapTo(lambdas);
         }
 
         //public MapEntry[] Fetch() {
@@ -202,7 +233,7 @@ namespace taskmaker_wpf.ViewModels {
         [RelayCommand]
         public void Create(int dim) {
             var entity = _mapSrv.Create(new NLinearMapEntity(dim, 6));
-            var vm = new NLinearMapViewModel(_mapSrv);
+            var vm = new NLinearMapViewModel(entity);
 
             vm.FromEntity(entity);
 

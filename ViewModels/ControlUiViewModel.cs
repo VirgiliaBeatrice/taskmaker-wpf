@@ -61,7 +61,7 @@ namespace taskmaker_wpf.ViewModels {
         public void Fetch() {
             VMs.Clear();
             foreach(var entity in _uiSrv.GetAll()) {
-                var vm = new ControlUiViewModel(_uiSrv);
+                var vm = new ControlUiViewModel(entity);
 
                 vm.FromEntity(entity);
                 VMs.Add(vm);
@@ -72,7 +72,7 @@ namespace taskmaker_wpf.ViewModels {
         [RelayCommand]
         public void Add() {
             var entity = new ControlUiEntity();
-            var vm = new ControlUiViewModel(_uiSrv);
+            var vm = new ControlUiViewModel(entity);
 
             _uiSrv.Create(entity);
             vm.FromEntity(entity);
@@ -108,18 +108,10 @@ namespace taskmaker_wpf.ViewModels {
         [ObservableProperty]
         private BaseRegionState _hitRegion;
 
-        // TODO: unify to service
-        private readonly UIService _uiSrv;
-        private ControlUiEntity _entity;
+        private readonly ControlUiEntity _entity;
 
-        partial void OnIdChanged(int value) {
-            if (value != -1) {
-                _entity = _uiSrv.Read(value);
-            }
-        }
-
-        public ControlUiViewModel(UIService uiSrv) {
-            _uiSrv = uiSrv;
+        public ControlUiViewModel(ControlUiEntity entity) {
+            _entity = entity;
         }
 
         [RelayCommand]

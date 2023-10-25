@@ -28,7 +28,7 @@
           <ColumnDefinition Width="60" />
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0">
+        <Border Grid.Column="0" PreviewTouchMove="Border_TouchMove">
           <Slider x:Name="slider"
                   Orientation="Vertical"
                   MinHeight="400"

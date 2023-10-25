@@ -7,12 +7,45 @@
              xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels"
              xmlns:local="clr-namespace:taskmaker_wpf.Views"
              xmlns:w="clr-namespace:taskmaker_wpf.Views.Widget"
+             xmlns:e="clr-namespace:taskmaker_wpf.Entity"
+             xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              d:DataContext="{d:DesignInstance Type=viewmodels:RegionControlUIViewModel}"
              mc:Ignorable="d"
              prism:ViewModelLocator.AutoWireViewModel="True">
   <UserControl.InputBindings>
   </UserControl.InputBindings>
+
   <UserControl.Resources>
+    <ObjectDataProvider x:Key="EnumGender"
+                        MethodName="GetValues"
+                        ObjectType="{x:Type sys:Enum}">
+      <ObjectDataProvider.MethodParameters>
+        <x:Type TypeName="e:Gender" />
+      </ObjectDataProvider.MethodParameters>
+    </ObjectDataProvider>
+    <ObjectDataProvider x:Key="EnumAge"
+                        MethodName="GetValues"
+                        ObjectType="{x:Type sys:Enum}">
+      <ObjectDataProvider.MethodParameters>
+        <x:Type TypeName="e:AgeGeneration" />
+      </ObjectDataProvider.MethodParameters>
+    </ObjectDataProvider>
+    <ObjectDataProvider x:Key="EnumTrialType"
+                        MethodName="GetValues"
+                        ObjectType="{x:Type sys:Enum}">
+      <ObjectDataProvider.MethodParameters>
+        <x:Type TypeName="e:TrialType" />
+      </ObjectDataProvider.MethodParameters>
+    </ObjectDataProvider>
+    <ObjectDataProvider x:Key="EnumLevelOfKnowledge"
+                        MethodName="GetValues"
+                        ObjectType="{x:Type sys:Enum}">
+      <ObjectDataProvider.MethodParameters>
+        <x:Type TypeName="e:LevelOfKnowledge" />
+      </ObjectDataProvider.MethodParameters>
+    </ObjectDataProvider>
+
     <Style TargetType="Button"
            x:Key="roundedBtn"
            BasedOn="{StaticResource {x:Type Button}}">
@@ -78,8 +111,7 @@
           <w:MultiView x:Name="multiView"
                        Focusable="True"
                        Width="auto"
-                       SessionViewModel="{Binding SessionViewModel}"
-                       />
+                       SessionViewModel="{Binding SelectedSessionViewModel}" />
 
           <StackPanel Orientation="Vertical"
                       VerticalAlignment="Top"
@@ -197,20 +229,30 @@
                   <GroupBox Header="Session Operations">
                     <StackPanel>
                       <Button Content="+"
-                              Padding="24 0 24 0"
+                              FontSize="16"
+                              Padding="12 0 12 0"
                               Margin="12"
-                              HorizontalAlignment="Center" 
-                              Command="{Binding CreateSessionCommand}"
-                              />
-                      <Expander Header="Control UI" Margin="12">
+                              HorizontalAlignment="Center"
+                              Command="{Binding CreateSessionCommand}" />
+                      <ListBox Margin="12"
+                               ItemsSource="{Binding SessionVMs}"
+                               SelectedItem="{Binding SelectedSessionViewModel}" />
+
+
+                      <Expander Header="Control UI"
+                                Margin="12">
                         <ListBox Margin="12"
-                                 Height="100"
-                                 ItemsSource="{Binding UiVMs}" />
+                                 ItemsSource="{Binding SelectedSessionViewModel.Uis}" />
                       </Expander>
-                      <Expander Header="Map" Margin="12" DataContext="{Binding SessionViewModel}">
-                        <StackPanel Orientation="Vertical" Margin="12">
-                          <Label Content="Name" FontWeight="Bold"/>
-                          <Label Content="{Binding MapViewModel.Name}" Margin="12 0 12 0"/>
+                      <Expander Header="Map"
+                                Margin="12"
+                                DataContext="{Binding SelectedSessionViewModel}">
+                        <StackPanel Orientation="Vertical"
+                                    Margin="12">
+                          <Label Content="Name"
+                                 FontWeight="Bold" />
+                          <Label Content="{Binding MapViewModel.Name}"
+                                 Margin="12 0 12 0" />
                           <Separator />
                           <Label Content="Shape"
                                  FontWeight="Bold" />
@@ -221,15 +263,15 @@
                                  FontWeight="Bold" />
                           <Label Content="{Binding MapViewModel.Output}"
                                  Margin="12 0 12 0" />
-                          <w:EntryView DataContext="{Binding Entries}"/>
+                          <w:EntryView DataContext="{Binding Entries}" />
                         </StackPanel>
                       </Expander>
                     </StackPanel>
                   </GroupBox>
                 </TabItem>
-                
+
                 <TabItem Header="Evaluation">
-                  <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                  <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="4"
                                 Orientation="Vertical">
                       <GroupBox Header="Commands">
@@ -250,25 +292,77 @@
 
                             </Style>
                           </StackPanel.Resources>
-                          <Button Content="&#xe777;" />
-                          <Button Content="&#xe768;" />
-                          <Button Content="&#xe769;">
+                          <Button Command="{Binding CreateEvaluationCommand}">
+                            <Image Source="{svgc:SvgImage Source=/icons/material-design-icons/svg/outlined/library_add.svg, AppName=taskmaker-wpf}"
+                                   Width="12"
+                                   Height="12" />
                           </Button>
-                          <Button Content="&#xe71a;" />
+                          <Button>
+                            <Image Source="{svgc:SvgImage Source=/icons/material-design-icons/svg/outlined/play_circle.svg, AppName=taskmaker-wpf}"
+                                   Width="12"
+                                   Height="12" />
+                          </Button>
+                          <Button>
+                            <Image Source="{svgc:SvgImage Source=/icons/material-design-icons/svg/outlined/stop_circle.svg, AppName=taskmaker-wpf}"
+                                   Width="12"
+                                   Height="12" />
+                          </Button>
+                          <Button>
+                            <Image Source="{svgc:SvgImage Source=/icons/material-design-icons/svg/outlined/pause_circle.svg, AppName=taskmaker-wpf}"
+                                   Width="12"
+                                   Height="12" />
+                          </Button>
 
                         </StackPanel>
 
                       </GroupBox>
+                      <ListView ItemsSource="{Binding EvaluationViewModels}"
+                                Margin="12"
+                                SelectedItem="{Binding SelectedEvaluation}" />
+
+
                       <GroupBox Header="Info">
-                        <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Vertical"
+                                    DataContext="{Binding SelectedEvaluation}"
+                                    Margin="12">
                           <Label Content="Participant Name"
                                  FontWeight="Bold" />
-                          <TextBox Text="text"
-                                   TextAlignment="Center" />
-                          <Label Content="Trial No."
+                          <TextBox Text="{Binding Participant}" />
+                          <Label Content="Trial Type"
                                  FontWeight="Bold" />
-                          <TextBox Text="test"
-                                   TextAlignment="Center" />
+                          <ComboBox ItemsSource="{Binding Source={StaticResource EnumTrialType}}"
+                                    SelectedItem="{Binding TrialType}" />
+                          <Label Content="Age"
+                                 FontWeight="Bold" />
+                          <ComboBox ItemsSource="{Binding Source={StaticResource EnumAge}}"
+                                    SelectedItem="{Binding Age}">
+                            <ComboBox.ItemTemplate>
+                              <DataTemplate>
+                                <TextBlock Text="{Binding Path=.,Converter={e:EnumToDescriptionConverter}}" />
+                              </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                          </ComboBox>
+                          <Label Content="Gender"
+                                 FontWeight="Bold" />
+                          <ComboBox ItemsSource="{Binding Source={StaticResource EnumGender}}"
+                                    SelectedItem="{Binding Gender}" />
+                          <Label Content="Level of Knowledge"
+                                 FontWeight="Bold" />
+                          <ComboBox ItemsSource="{Binding Source={StaticResource EnumLevelOfKnowledge}}"
+                                    SelectedItem="{Binding Knowledge}" />
+                          <GroupBox Header="Structure"
+                                    Margin="0,12,0,0">
+                            <StackPanel>
+                              <Label Content="Session" />
+                              <ListView ItemsSource="{Binding Sessions}" />
+                            </StackPanel>
+                          </GroupBox>
+                          <Button Content="Commit"
+                                  VerticalAlignment="Center"
+                                  HorizontalAlignment="Center"
+                                  Padding="12,0,12,0"
+                                  Margin="0,12,0,0"
+                                  Command="{Binding UpdateCommand}" />
                         </StackPanel>
 
                       </GroupBox>

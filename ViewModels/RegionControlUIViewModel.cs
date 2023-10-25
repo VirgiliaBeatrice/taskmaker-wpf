@@ -31,12 +31,27 @@ namespace taskmaker_wpf.ViewModels {
         private readonly MapService _mapSrv;
         private static IContainerProvider Container => (App.Current as Prism.PrismApplicationBase).Container;
 
+        public ObservableCollection<EvaluationViewModel> EvaluationViewModels { get; private set; } = new ObservableCollection<EvaluationViewModel>();
+
         public ControlUiCollectionViewModel UiCollectionViewModel { get; private set; }
+        public ObservableCollection<SessionViewModel> SessionVMs { get; private set; } = new ObservableCollection<SessionViewModel>();
 
         public ObservableCollection<ControlUiViewModel> UiVMs => UiCollectionViewModel.VMs;
 
         [ObservableProperty]
-        private SessionViewModel _sessionViewModel;
+        private SessionViewModel _selectedSessionViewModel;
+        [ObservableProperty]
+        private EvaluationViewModel _selectedEvaluation;
+
+        partial void OnSelectedSessionViewModelChanged(SessionViewModel value) {
+            if (value != null)
+                WeakReferenceMessenger.Default.Send(new ShowMessageBoxMessage {
+                    Button = MessageBoxButton.OK,
+                    Caption = "Session Selected",
+                    Icon = MessageBoxImage.Information,
+                    Message = $"Session {value.Name} selected.",
+                });
+        }
 
         public RegionControlUIViewModel(EvaluationService evaluationService,MotorService motorService, UIService uIService, MapService mapService) {
             _mapSrv = mapService;
@@ -48,29 +63,42 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         [RelayCommand]
+        public void CreateEvaluation() {
+            var evaEntity = _evaluationSrv.Create(new EvaluationEntity());
+            var evaVM = new EvaluationViewModel(evaEntity);
+
+            EvaluationViewModels.Add(evaVM);
+        }
+
+        [RelayCommand]
         public void CreateSession() {
-            SessionViewModel = new SessionViewModel(_evaluationSrv, _motorSrv, _uiSrv, _mapSrv) {
-                UiViewModels = new ObservableCollection<ControlUiViewModel>(),
-                MapViewModel = new NLinearMapViewModel(_mapSrv)
-            };
+            //var sessionViewModel = new SessionViewModel(_evaluationSrv, _motorSrv, _uiSrv, _mapSrv) {
+            //    Id = _nextIndex,
+            //    Name = $"Session-{_nextIndex}",
+            //    Uis = new ObservableCollection<ControlUiViewModel>(),
+            //    MapViewModel = new NLinearMapViewModel(_mapSrv)
+            //};
 
-            // Init UIs
-            var entity = new ControlUiEntity();
-            var uiVM = new ControlUiViewModel(_uiSrv);
+            //++_nextIndex;
+            //// Init UIs
+            //var entity = new ControlUiEntity();
+            //var uiVM = new ControlUiViewModel(_uiSrv);
 
-            _uiSrv.Create(entity);
-            uiVM.FromEntity(entity);
+            //_uiSrv.Create(entity);
+            //uiVM.FromEntity(entity);
 
-            SessionViewModel.UiViewModels.Add(uiVM);
+            //sessionViewModel.Uis.Add(uiVM);
 
-            // Init Map
-            var mapEntity = new NLinearMapEntity(2, 6);
-            var mapVM = SessionViewModel.MapViewModel;
+            //// Init Map
+            //var mapEntity = new NLinearMapEntity(2, 6);
+            //var mapVM = sessionViewModel.MapViewModel;
 
-            _mapSrv.Create(mapEntity);
-            mapVM.FromEntity(mapEntity);
+            //_mapSrv.Create(mapEntity);
+            //mapVM.FromEntity(mapEntity);
 
-            Fetch();
+            //SessionVMs.Add(sessionViewModel);
+
+            //Fetch();
         }
 
         [RelayCommand]
@@ -150,6 +178,7 @@ namespace taskmaker_wpf.ViewModels {
         public void OnNavigatedTo(NavigationContext navigationContext) {
             //throw new NotImplementedException();
         }
+
 
         private BaseRegionState[] MapFromEntity(BaseRegionEntity[] entities) {
             return entities.Select(entity => {

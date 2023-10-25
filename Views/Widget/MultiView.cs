@@ -186,15 +186,15 @@ namespace taskmaker_wpf.Views.Widget {
             if (e.NewValue != null) {
                 var vm = e.NewValue as SessionViewModel;
 
-                vm.UiViewModels.CollectionChanged += control.UiViewModels_CollectionChanged;
-                vm.MapViewModel.PropertyChanged += control.MapViewModel_PropertyChanged;
+                vm.Uis.CollectionChanged += control.UiViewModels_CollectionChanged;
+                vm.Map.PropertyChanged += control.MapViewModel_PropertyChanged;
             }
 
             if (e.OldValue != null) {
                 var vm = e.OldValue as SessionViewModel;
 
-                vm.UiViewModels.CollectionChanged -= control.UiViewModels_CollectionChanged;
-                vm.MapViewModel.PropertyChanged -= control.MapViewModel_PropertyChanged;
+                vm.Uis.CollectionChanged -= control.UiViewModels_CollectionChanged;
+                vm.Map.PropertyChanged -= control.MapViewModel_PropertyChanged;
             }
         }
 
@@ -287,7 +287,7 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public void Open() {
-            foreach(var uiViewModel in SessionViewModel.UiViewModels) {
+            foreach(var uiViewModel in SessionViewModel.Uis) {
                 // 1. Open Ui
                 var uiController = new UiController() {
                     DataContext = uiViewModel,

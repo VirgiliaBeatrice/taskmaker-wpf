@@ -7,17 +7,22 @@ using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
 using taskmaker_wpf.Entity;
-using taskmaker_wpf.Services;
 using taskmaker_wpf.Views.Widget;
 
-namespace taskmaker_wpf.ViewModels {
+namespace taskmaker_wpf.ViewModels
+{
     public partial class SessionViewModel : ObservableObject {
-        public ObservableCollection<ControlUiViewModel> UiViewModels { get; init; }
-        public NLinearMapViewModel MapViewModel { get; init; }
 
+        public ObservableCollection<ControlUiViewModel> Uis { get; init; } = new ObservableCollection<ControlUiViewModel>();
 
-        public NodeState[][] UiVMNodeStates => UiViewModels.Select(e => e.NodeStates).ToArray();
+        public NodeState[][] UiVMNodeStates => Uis.Select(e => e.NodeStates).ToArray();
 
+        [ObservableProperty]
+        private NLinearMapViewModel _map;
+        [ObservableProperty]
+        private int _id;
+        [ObservableProperty]
+        private string _name;
         [ObservableProperty]
         private NodeState[] _selectedNodeStates;
         [ObservableProperty]
@@ -31,39 +36,33 @@ namespace taskmaker_wpf.ViewModels {
         [ObservableProperty]
         private BaseRegionEntity[] _regions;
 
-        private readonly EvaluationService _evaluationSrv;
-        private readonly MotorService _motorSrv;
-        private readonly UIService _uiSrv;
-        private readonly MapService _mapSrv;
+        private readonly SessionEntity _entity;
 
-        public SessionViewModel(EvaluationService evaluationSrv, MotorService motorSrv, UIService uiSrv, MapService mapSrv) {
-            _evaluationSrv = evaluationSrv;
-            _motorSrv = motorSrv;
-            _uiSrv = uiSrv;
-            _mapSrv = mapSrv;
+        public SessionViewModel(SessionEntity entity) {
+            _entity = entity;
 
             WeakReferenceMessenger.Default.Register<UiViewModelNodeAddedMessage>(this, (r, m) => {
                 var uiVM = m.ViewModel;
 
-                var axis = UiViewModels.IndexOf(uiVM);
+                var axis = Uis.IndexOf(uiVM);
                 var op = new TensorOperationRecord {
                     Axis = axis + 1,
                     Index = uiVM.NodeStates.Length - 1
                 };
 
-                MapViewModel.ExpandAt(op);
+                Map.ExpandAt(op);
             });
 
             WeakReferenceMessenger.Default.Register<UiViewModelNodeDeletedMessage>(this, (r, m) => {
                 var uiVM = m.ViewModel;
 
-                var axis = UiViewModels.IndexOf(uiVM);
+                var axis = Uis.IndexOf(uiVM);
                 var op = new TensorOperationRecord {
                     Axis = axis + 1,
                     Index = m.NodeIndex
                 };
 
-                MapViewModel.RemoveAt(op);
+                Map.RemoveAt(op);
             });
 
             WeakReferenceMessenger.Default.Register<UiViewModelNodeUpdatedMessage>(this, (r, m) => {
@@ -71,6 +70,8 @@ namespace taskmaker_wpf.ViewModels {
 
 
             });
+
+            Fetch();
         }
 
         partial void OnSelectedNodeStatesChanged(NodeState[] value) {
@@ -95,7 +96,7 @@ namespace taskmaker_wpf.ViewModels {
                 Value = values
             };
 
-            MapViewModel.SetValue(mapEntry);
+            Map.SetValue(mapEntry);
             Fetch();
             //SetEntry(mapEntry);
         }
@@ -107,13 +108,32 @@ namespace taskmaker_wpf.ViewModels {
                 Indices = SelectedNodeIndices,
             };
 
-            MapViewModel.GetValue(ref mapEntry);
+            Map.GetValue(ref mapEntry);
             Fetch();
             //SetEntry(mapEntry);
         }
 
         [RelayCommand]
         public void Fetch() {
+            // Update all properties from entity
+            Id = _entity.Id;
+            Name = _entity.Name;
+
+            Uis.Clear();
+            foreach (var entity in _entity.Uis) {
+                var uiVM = new ControlUiViewModel(entity) {
+                    NodeStates = entity.Nodes.Select(e => new NodeState(e.Id, e.Value)).ToArray()
+                };
+
+                Uis.Add(uiVM);
+            }
+
+            Map = new NLinearMapViewModel(_entity.Map);
+            Entries = Map.MapEntries.ToArray();
+
+
+
+
             //var dim = MapViewModel.Dimension;
             //if (dim == 0) return;
 
@@ -138,16 +158,15 @@ namespace taskmaker_wpf.ViewModels {
             //}
 
             //Entries = entries;
-            Entries = MapViewModel.MapEntries.ToArray();
         }
 
         [RelayCommand]
         public void Interpolate() {
             var lambdasCollection = new List<double[]>();
-            for (int i = 0; i < UiViewModels.Count; i++) {
-                var nodes = UiViewModels[i].NodeStates;
-                var input = UiViewModels[i].Input;
-                var region = UiViewModels[i].HitRegion;
+            for (int i = 0; i < Uis.Count; i++) {
+                var nodes = Uis[i].NodeStates;
+                var input = Uis[i].Input;
+                var region = Uis[i].HitRegion;
 
                 if (region == null) return;
 
@@ -157,21 +176,11 @@ namespace taskmaker_wpf.ViewModels {
                 lambdasCollection.Add(lambdas);
             }
 
-            MapViewModel.Interpolate(lambdasCollection.ToArray());
+            Map.Interpolate(lambdasCollection.ToArray());
         }
 
-        //public void SetEntry(MapEntry entry) {
-        //    var idx = Entries.FindIndex(e => e.Indices == entry.Indices);
-
-        //    if (idx != -1) {
-        //        Entries[idx] = entry;
-        //    }
-        //    else {
-        //        Entries.Add(entry);
-        //    }
-
-        //}
+        public override string ToString() {
+            return Name;
+        }
     }
-
-
 }

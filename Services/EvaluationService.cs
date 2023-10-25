@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Messaging;
+﻿using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualBasic;
 using NLog;
@@ -7,6 +6,7 @@ using NLog.Fluent;
 using Prism.Ioc;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Text;
@@ -14,38 +14,56 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using taskmaker_wpf.Entity;
-using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.Services
 {
-    public partial class EvaluationService : ObservableObject {
-        public Logger logger = LogManager.GetCurrentClassLogger();
-        public string EvaluationName { get; set; } = "Default";
-        public string ParticipantName { get; set; } = "";
-        public int Phase { get; set; } = 0;
-        
+
+
+    public class EvaluationService : BaseEntityManager<EvaluationEntity> {
+        private readonly Logger logger = LogManager.GetCurrentClassLogger();
         public StringBuilder logFile = new StringBuilder();
 
         private DispatcherTimer timer;
         private readonly MotorService _motorSrv;
         private readonly UIService _uiSrv;
+        private readonly MapService _mapSrv;
+        private readonly SessionService _sessionSrv;
 
-        [ObservableProperty]
         private TimeSpan _time;
         private DateTime _startTime;
 
-        public EvaluationService(MotorService motorSrv, UIService uiSrv) {
+        public EvaluationService(MotorService motorSrv, UIService uiSrv, MapService mapSrv, SessionService sessionSrv) {
             _motorSrv = motorSrv;
             _uiSrv = uiSrv;
+            _mapSrv = mapSrv;
+            _sessionSrv = sessionSrv;
 
             timer = new DispatcherTimer();
 
             timer.Interval = TimeSpan.FromSeconds(1);
             timer.Tick += (_, _) => {
-                Time = DateTime.Now - _startTime;
+                _time = DateTime.Now - _startTime;
             };
 
+        }
+
+        public override EvaluationEntity Create(EvaluationEntity entity) {
+            var ui = new ControlUiEntity();
+            _uiSrv.Create(ui);
+
+            var map = new NLinearMapEntity(2, 6);
+            _mapSrv.Create(map);
+
+            var session = new SessionEntity() {
+                Map = map,
+                Uis = new List<ControlUiEntity>() { ui },
+            };
+            _sessionSrv.Create(session);
+
+            entity.Sessions.Add(session);
+            
+            return base.Create(entity);
         }
 
         public void Start() {
