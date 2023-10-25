@@ -4,6 +4,7 @@ using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Timers;
+using CommunityToolkit.Mvvm.Messaging;
 using NLog;
 using PCController;
 using taskmaker_wpf.Entity;
@@ -11,7 +12,7 @@ using taskmaker_wpf.ViewModels;
 
 namespace taskmaker_wpf.Services {
     public class SerialService {
-        public Logger logger = LogManager.GetCurrentClassLogger();
+        private Logger _logger = LogManager.GetCurrentClassLogger();
         public List<string> Ports { get; set; } = new List<string> { };
         public Motors Motors { get; set; }
         public Boards Boards { get; set; }
@@ -29,7 +30,23 @@ namespace taskmaker_wpf.Services {
         private short[] _buffer;
         private Timer _timer;
 
-        public SerialService() { }
+        public SerialService() {
+
+            WeakReferenceMessenger.Default.Register<MotorValueUpdatedMessage>(this, (r, m) => {
+                var bId = m.NuiBoardId;
+                var mId = m.NuiMotorId;
+                var value = m.Value;
+                var serial = r as SerialService;
+
+                if (serial.IsConnected) {
+                    serial.Motors[bId * 4 + mId].position.Value = (int)value;
+                    serial._buffer[bId * 4 + mId] = (short)value;
+
+                    serial.MessageQueue.Enqueue(serial._buffer);
+                }
+                
+            });
+        }
 
         public string[] ListAllPorts() {
             Ports = new List<string>(SerialPort.GetPortNames());
@@ -102,14 +119,14 @@ namespace taskmaker_wpf.Services {
                     value = Max;
 
                     // Invoke clamp event
-                    logger.Info("Clamped caused by safety limit (max)");
+                    _logger.Info("Clamped caused by safety limit (max)");
 
                 }
                 else if (value < Min) {
                     value = Min;
 
                     // Invoke clamp event
-                    logger.Info("Clamped caused by safety limit (min)");
+                    _logger.Info("Clamped caused by safety limit (min)");
                 }
 
                 Motors[state.NuiBoardId * 4 + state.NuiMotorId].position.Value = (int)value;

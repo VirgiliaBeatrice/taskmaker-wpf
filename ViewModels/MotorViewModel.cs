@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -28,6 +29,12 @@ namespace taskmaker_wpf.ViewModels {
         public int NuiMotorId { get => nuiMotorId; set => nuiMotorId = value; }
     }
 
+    public class MotorValueUpdatedMessage {
+        public int NuiBoardId { get; init; }
+        public int NuiMotorId { get; init; }
+        public double Value { get; init; }
+    }
+
     public partial class MotorViewModel : ObservableObject {
         [ObservableProperty]
         private int _id;
@@ -43,9 +50,11 @@ namespace taskmaker_wpf.ViewModels {
         private double _value;
 
         partial void OnValueChanged(double value) {
-            var state = ToState();
-
-            motorService.ToSerial(state);
+            WeakReferenceMessenger.Default.Send(new MotorValueUpdatedMessage {
+                NuiBoardId = NuiBoardId,
+                NuiMotorId = NuiMotorId,
+                Value = Value
+            });
         }
 
         [ObservableProperty]
@@ -53,114 +62,84 @@ namespace taskmaker_wpf.ViewModels {
         [ObservableProperty]
         private double _min;
 
-        private readonly MotorService motorService;
+        private readonly MotorEntity _entity;
 
-        public MotorViewModel(MotorService motorService) {
-            this.motorService = motorService;
+        public MotorViewModel(MotorEntity entity) {
+            _entity = entity;
+
+            Fetch();
         }
 
         [RelayCommand]
-        public void Commit() {
-            var state = ToState();
-            var entity = motorService.Read(state.Id);
-
-            entity.Id = state.Id;
-            entity.Name = state.Name;
-            entity.NuiBoardId = state.NuiBoardId;
-            entity.NuiMotorId = state.NuiMotorId;
-            entity.Value = state.Value;
-            entity.Max = state.Max;
-            entity.Min = state.Min;
-
-            motorService.Update(entity);
+        public void Fetch() {
+            // update all properties from entity to this
+            Id = _entity.Id;
+            Name = _entity.Name;
+            NuiBoardId = _entity.NuiBoardId;
+            NuiMotorId = _entity.NuiMotorId;
+            Value = _entity.Value;
+            Max = _entity.Max;
+            Min = _entity.Min;
         }
 
-        public MotorState ToState() {
-            return new MotorState {
-                Id = Id,
-                Name = Name,
-                NuiBoardId = NuiBoardId,
-                NuiMotorId = NuiMotorId,
-                Value = Value,
-                Max = Max,
-                Min = Min,
-            };
+        [RelayCommand]
+        public void Update() {
+            _entity.Id = Id;
+            _entity.Name = Name;
+            _entity.NuiBoardId = NuiBoardId;
+            _entity.NuiMotorId = NuiMotorId;
+            _entity.Value = Value;
+            _entity.Max = Max;
+            _entity.Min = Min;
+
+            Fetch();
         }
     }
 
 
     public partial class MotorCollectionViewModel : ObservableObject {
-        public ObservableCollection<MotorViewModel> MotorVMs { get; private set; } = new();
+        public ObservableCollection<MotorViewModel> Motors { get; private set; } = new();
 
-        protected readonly MotorService motorService;
+        protected readonly MotorService _motorSrv;
 
         public MotorCollectionViewModel(MotorService motorService) {
-            this.motorService = motorService;
+            _motorSrv = motorService;
 
-            if (DesignerProperties.GetIsInDesignMode(new DependencyObject())) {
-                MotorVMs = new ObservableCollection<MotorViewModel>
-                {
-                    new MotorViewModel(motorService),
-                    new MotorViewModel(motorService),
-                    new MotorViewModel(motorService),
-                    new MotorViewModel(motorService),
-                    new MotorViewModel(motorService),
-                    new MotorViewModel(motorService),
-                };
-            }
-            else {
-                // Your runtime initialization
-                Fetch();
-            }
+            Fetch();
         }
 
-        protected void Fetch() {
-            motorService.GetAll().ToList().ForEach(entity => {
-                var motorVM = new MotorViewModel(motorService) {
-                    Id = entity.Id,
-                    Name = entity.Name,
-                    NuiBoardId = entity.NuiBoardId,
-                    NuiMotorId = entity.NuiMotorId,
-                    Value = entity.Value,
-                    Max = entity.Max,
-                    Min = entity.Min
-                };
+        [RelayCommand]
+        public void Fetch() {
+            Motors.Clear();
 
-                MotorVMs.Add(motorVM);
+            _motorSrv.GetAll().ToList().ForEach(entity => {
+                var motorVM = new MotorViewModel(entity);
+
+                Motors.Add(motorVM);
             });
         }
 
         [RelayCommand]
         public void Add() {
-            var entity = motorService.Create(new MotorEntity() { Name = "New Motor" });
-
-            var motorVM = new MotorViewModel(motorService) {
-                Id = entity.Id,
-                Name = entity.Name,
-                NuiBoardId = entity.NuiBoardId,
-                NuiMotorId = entity.NuiMotorId,
-                Value = entity.Value,
-                Max = entity.Max,
-                Min = entity.Min
-            };
-
-            MotorVMs.Add(motorVM);
+            var entity = _motorSrv.Create(new MotorEntity() { Name = "New Motor" });
+            var motorVM = new MotorViewModel(entity);
+            Motors.Add(motorVM);
         }
 
         [RelayCommand]
         public void Delete(MotorState state) {
-            motorService.Delete(state.Id);
+            _motorSrv.Delete(state.Id);
 
-            var motorVM = MotorVMs.FirstOrDefault(vm => vm.Id == state.Id);
+            var motorVM = Motors.FirstOrDefault(vm => vm.Id == state.Id);
 
             if (motorVM != null)
-                MotorVMs.Remove(motorVM);
+                Motors.Remove(motorVM);
         }
 
         [RelayCommand]
-        public void Commit() {
-            foreach (var motorVM in MotorVMs) {
-                motorVM.Commit();
+        public void Update() {
+            foreach (var motorVM in Motors) {
+                motorVM.Update();
             }
         }
     }
