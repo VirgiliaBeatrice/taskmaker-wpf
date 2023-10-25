@@ -82,6 +82,11 @@
     <Compile Update="PCController\MultiMediaTimer.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Update="Resources\Strings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="icons\arm.png" />
@@ -152,6 +157,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.0" />
+    <PackageReference Include="WPFLocalizeExtension" Version="3.10.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="ViewModels\MainPage\MainPageViewModel.cs" />
@@ -179,6 +185,12 @@
     <None Remove="icons\material-design-icons\svg\svgo.config.js" />
     <None Remove="icons\material-design-icons\_config.yml" />
     <None Remove="icons\panda.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\Strings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Update="nlog.config">
