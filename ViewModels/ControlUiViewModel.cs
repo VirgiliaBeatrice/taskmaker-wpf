@@ -50,8 +50,9 @@ namespace taskmaker_wpf.ViewModels {
 
     public partial class ControlUiCollectionViewModel : ObservableObject {
         private readonly UIService _uiSrv;
+        private readonly ControlUiEntity _entity;
 
-        public ObservableCollection<ControlUiViewModel> VMs { get; private set; } = new();
+        public ObservableCollection<ControlUiViewModel> Uis { get; private set; } = new();
 
         public ControlUiCollectionViewModel(UIService uiSrv) {
             _uiSrv = uiSrv;
@@ -59,12 +60,12 @@ namespace taskmaker_wpf.ViewModels {
 
         [RelayCommand]
         public void Fetch() {
-            VMs.Clear();
+            Uis.Clear();
             foreach(var entity in _uiSrv.GetAll()) {
                 var vm = new ControlUiViewModel(entity);
 
                 vm.FromEntity(entity);
-                VMs.Add(vm);
+                Uis.Add(vm);
             }
         }
 
@@ -76,21 +77,21 @@ namespace taskmaker_wpf.ViewModels {
 
             _uiSrv.Create(entity);
             vm.FromEntity(entity);
-            VMs.Add(vm);
+            Uis.Add(vm);
         }
     }
 
     public class UiViewModelNodeAddedMessage {
-        public ControlUiViewModel ViewModel { get; init; }
+        public ControlUiViewModel Ui { get; init; }
     }
 
     public class UiViewModelNodeDeletedMessage {
-        public ControlUiViewModel ViewModel { get; init; }
+        public ControlUiViewModel Ui { get; init; }
         public int NodeIndex { get; init; }
     }
 
     public class UiViewModelNodeUpdatedMessage {
-        public ControlUiViewModel ViewModel { get; init; }
+        public ControlUiViewModel Ui { get; init; }
     }
 
 
@@ -104,7 +105,7 @@ namespace taskmaker_wpf.ViewModels {
         [ObservableProperty]
         private NodeState[] _nodeStates = Array.Empty<NodeState>();
         [ObservableProperty]
-        private Point _input = new Point();
+        private Point _input = new();
         [ObservableProperty]
         private BaseRegionState _hitRegion;
 
@@ -112,7 +113,23 @@ namespace taskmaker_wpf.ViewModels {
 
         public ControlUiViewModel(ControlUiEntity entity) {
             _entity = entity;
+
+            Fetch();
         }
+
+        [RelayCommand]
+        public void Fetch() {
+            // update all properties from entity to this
+            Id = _entity.Id;
+            Name = _entity.Name;
+            NodeStates = _entity.Nodes.Select(node => new NodeState(node.Id, node.Value)).ToArray();
+
+            if (NodeStates.Length >= 3) {
+                _entity.Build();
+                RegionStates = MapFromRegionEntities();
+            }
+        }
+
 
         [RelayCommand]
         public void AddNode(Point position) {
@@ -126,7 +143,7 @@ namespace taskmaker_wpf.ViewModels {
                 RegionStates = MapFromRegionEntities();
             }
 
-            WeakReferenceMessenger.Default.Send(new UiViewModelNodeAddedMessage() { ViewModel = this });
+            WeakReferenceMessenger.Default.Send(new UiViewModelNodeAddedMessage() { Ui = this });
         }
 
         [RelayCommand]
@@ -155,7 +172,7 @@ namespace taskmaker_wpf.ViewModels {
                 RegionStates = MapFromRegionEntities();
             }
 
-            WeakReferenceMessenger.Default.Send(new UiViewModelNodeDeletedMessage() { ViewModel = this, NodeIndex = index });
+            WeakReferenceMessenger.Default.Send(new UiViewModelNodeDeletedMessage() { Ui = this, NodeIndex = index });
         }
 
         private BaseRegionState[] MapFromRegionEntities() {

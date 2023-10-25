@@ -8,6 +8,9 @@ using taskmaker_wpf.ViewModels;
 
 namespace taskmaker_wpf.Services
 {
+    /// <summary>
+    /// Evaluation => Sessions
+    /// </summary>
     public partial class EvaluationViewModel : ObservableObject {
         private readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -37,7 +40,7 @@ namespace taskmaker_wpf.Services
         private LevelOfKnowledge _knowledge;
 
         [ObservableProperty]
-        private DateTime _date;
+        private readonly DateTime _date;
 
         [RelayCommand]
         public void Update() {
@@ -49,12 +52,12 @@ namespace taskmaker_wpf.Services
             _entity.Age = Age;
             _entity.Gender = Gender;
             _entity.Knowledge = Knowledge;
-            //_entity.Date = Date;
         }
 
         [RelayCommand]
         public void Fetch() {
             // Update all properties from entity
+            // Update basic properties
             Id = _entity.Id;
             Name = _entity.Name;
             Participant = _entity.Participant;
@@ -64,40 +67,13 @@ namespace taskmaker_wpf.Services
             Knowledge = _entity.Knowledge;
             Date = _entity.Date;
 
+            // Update Sessions
             Sessions.Clear();
             foreach (var entity in _entity.Sessions) {
                 Sessions.Add(new SessionViewModel(entity));
             }
         }
 
-        //[RelayCommand]
-        //public void CreateSession() {
-        //    var sessionEntity = new SessionEntity();
-
-
-        //    var sessionViewModel = new SessionViewModel(sessionEntity) {
-        //        Uis = new ObservableCollection<ControlUiViewModel>(),
-        //        MapViewModel = new NLinearMapViewModel(_mapSrv)
-        //    };
-
-        //    // Init UIs
-        //    var entity = new ControlUiEntity();
-        //    var uiVM = new ControlUiViewModel(_uiSrv);
-
-        //    _uiSrv.Create(entity);
-        //    uiVM.FromEntity(entity);
-
-        //    sessionViewModel.Uis.Add(uiVM);
-
-        //    // Init Map
-        //    var mapEntity = new NLinearMapEntity(2, 6);
-        //    var mapVM = sessionViewModel.MapViewModel;
-
-        //    _mapSrv.Create(mapEntity);
-        //    mapVM.FromEntity(mapEntity);
-
-        //    SessionVMs.Add(sessionViewModel);
-        //}
         public override string ToString() {
             return Name;
         }

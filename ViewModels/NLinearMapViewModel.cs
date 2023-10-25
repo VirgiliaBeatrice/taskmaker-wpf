@@ -66,21 +66,22 @@ namespace taskmaker_wpf.ViewModels {
         private int[] _shape;
         [ObservableProperty]
         private int _dimension;
-
+        [ObservableProperty]
+        private MapEntry[] _mapEntries;
         [ObservableProperty]
         private double[] _output;
+
         private readonly NLinearMapEntity _entity;
         private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
         partial void OnOutputChanged(double[] value) {
-            _logger.Debug($"Output changed: {string.Join(",", value)}");
+            //_logger.Debug($"Output changed: {string.Join(",", value)}");
             WeakReferenceMessenger.Default.Send(new MapOutputMessage() {
                 Id = Id,
                 Output = value
             });
         }
 
-        public ObservableCollection<MapEntry> MapEntries { get; set; } = new ObservableCollection<MapEntry>();
 
 
         public NLinearMapViewModel(NLinearMapEntity entity) {
@@ -96,8 +97,6 @@ namespace taskmaker_wpf.ViewModels {
             Name = _entity.Name;
             Shape = _entity.Shape;
             Dimension = _entity.Dimension??-1;
-
-            MapEntries.Clear();
 
             if (Shape.Skip(1).Any(e => e == 0)) return;
 
@@ -117,57 +116,44 @@ namespace taskmaker_wpf.ViewModels {
                 });
             }
 
-            MapEntries = new ObservableCollection<MapEntry>(entries);
+            MapEntries = entries.ToArray();
         }
 
         [RelayCommand]
         public void ExpandAt(TensorOperationRecord record) {
-            var entity = _entity;
+            _entity.ExpandAt(record.Axis, record.Index);
 
-            entity.ExpandAt(record.Axis, record.Index);
-
-            Shape = entity.Shape;
-
-            //Fetch();
+            Fetch();
         }
 
         [RelayCommand]
         public void RemoveAt(TensorOperationRecord record) {
-            var entity = _entity;
+            _entity.RemoveAt(record.Axis, record.Index);
 
-            entity.RemoveAt(record.Axis, record.Index);
-
-            Shape = entity.Shape;
+            Fetch();
         }
 
 
         // TODO: key for entry
         [RelayCommand]
         public void SetValue(MapEntry entry) {
-            var entity = _entity;
+            _entity.SetValue((new[] { -1 }).Concat(entry.Indices).ToArray(), entry.Value);
 
-            entity.SetValue(new[] { -1 }.Concat(entry.Indices).ToArray(), entry.Value);
-
-            MapEntries.Remove(entry);
-            MapEntries.Add(entry);
+            Fetch();
         }
 
         [RelayCommand]
         public void ClearValue(MapEntry entry) {
-            var entity = _entity;
-
-            entity.SetValue(
-                new[] { -1 }.Concat(entry.Indices).ToArray(), 
+            _entity.SetValue(
+                (new[] { -1 }).Concat(entry.Indices).ToArray(),
                 Enumerable.Repeat(double.NaN, 6).ToArray());
-            
-            MapEntries.Remove(entry);
+
+            Fetch();
         }
 
         public void GetValue(ref MapEntry entry) {
-            var entity = _entity;
-
-            var value = entity.GetValue(
-                new[] { -1 }.Concat(entry.Indices).ToArray());
+            var value = _entity.GetValue(
+                (new[] { -1 }).Concat(entry.Indices).ToArray());
 
             entry.Value = value;
         }
@@ -177,35 +163,6 @@ namespace taskmaker_wpf.ViewModels {
             Output = _entity.MapTo(lambdas);
         }
 
-        //public MapEntry[] Fetch() {
-        //    var entity = _mapSrv.Read(Id);
-
-
-        //    var indices = Enumerable.Range(1, Dimension)
-        //        .Select(i => Enumerable.Range(0, Shape[i]).ToArray())
-        //        .CartesianProduct()
-        //        .Select(e => e.ToArray())
-        //        .ToArray();
-
-        //    var values = indices.Select(e => entity.GetValue(new[] { -1 }.Concat(e).ToArray())).ToArray();
-
-        //    var entries = new List<MapEntry>();
-        //    for (int i = 0; i < indices.Length; i++) {
-        //        entries.Add(new MapEntry {
-        //            Indices = indices[i],
-        //            Value = values[i]
-        //        });
-        //    }
-
-        //    return entries.ToArray();
-        //}
-
-        public NLinearMapEntity ToEntity() {
-            return new NLinearMapEntity(Shape) {
-                Id = Id,
-                Name = Name,
-            };
-        }
 
         public void FromEntity(NLinearMapEntity entity) {
             Id = entity.Id;
@@ -222,12 +179,11 @@ namespace taskmaker_wpf.ViewModels {
     public partial class NLinearMapCollectionViewModel : ObservableObject {
         private readonly MapService _mapSrv;
 
-
         public NLinearMapCollectionViewModel(MapService mapSrv) {
             _mapSrv = mapSrv;
         }
 
-        public ObservableCollection<NLinearMapViewModel> MapViewModels { get; set; } = new();
+        public ObservableCollection<NLinearMapViewModel> Maps { get; set; } = new();
 
 
         [RelayCommand]
@@ -235,15 +191,13 @@ namespace taskmaker_wpf.ViewModels {
             var entity = _mapSrv.Create(new NLinearMapEntity(dim, 6));
             var vm = new NLinearMapViewModel(entity);
 
-            vm.FromEntity(entity);
-
-            MapViewModels.Add(vm);
+            Maps.Add(vm);
         }
 
         [RelayCommand]
         public void Delete(NLinearMapViewModel vm) {
             _mapSrv.Delete(vm.Id);
-            MapViewModels.Remove(vm);
+            Maps.Remove(vm);
         }
     }
 

@@ -36,7 +36,7 @@ namespace taskmaker_wpf.ViewModels {
         public ControlUiCollectionViewModel UiCollectionViewModel { get; private set; }
         public ObservableCollection<SessionViewModel> SessionVMs { get; private set; } = new ObservableCollection<SessionViewModel>();
 
-        public ObservableCollection<ControlUiViewModel> UiVMs => UiCollectionViewModel.VMs;
+        public ObservableCollection<ControlUiViewModel> UiVMs => UiCollectionViewModel.Uis;
 
         [ObservableProperty]
         private SessionViewModel _selectedSessionViewModel;
