@@ -11,6 +11,63 @@ using taskmaker_wpf.Entity;
 using taskmaker_wpf.ViewModels;
 
 namespace taskmaker_wpf.Services {
+    public class CircularQueue<T> {
+        private T[] queue;
+        private int head = -1; // position of the first item
+        private int tail = -1; // position of the last item
+        private int count = 0;
+
+        public int Capacity { get; }
+        public bool IsEmpty => count == 0;
+        public bool IsFull => count == Capacity;
+
+        public CircularQueue(int capacity) {
+            Capacity = capacity;
+            queue = new T[capacity];
+        }
+
+        public void Enqueue(T item) {
+            if (IsFull) {
+                Dequeue();  // remove oldest to make space
+            }
+
+            if (IsEmpty) {
+                head = 0;
+            }
+
+            tail = (tail + 1) % Capacity;
+            queue[tail] = item;
+            count++;
+        }
+
+        public T Dequeue() {
+            if (IsEmpty) {
+                throw new InvalidOperationException("Queue is empty");
+            }
+
+            T item = queue[head];
+            queue[head] = default;  // Clear the slot (optional)
+            head = (head + 1) % Capacity;
+            count--;
+
+            if (IsEmpty) {
+                head = -1;
+                tail = -1;
+            }
+
+            return item;
+        }
+
+        public T Peek() {
+            if (IsEmpty) {
+                throw new InvalidOperationException("Queue is empty");
+            }
+
+            return queue[head];
+        }
+    }
+
+
     public class SerialService {
         private Logger _logger = LogManager.GetCurrentClassLogger();
         public List<string> Ports { get; set; } = new List<string> { };
@@ -20,7 +77,7 @@ namespace taskmaker_wpf.Services {
         public int Max { get; set; } = 8000;
         public int Min { get; set; } = -8000;
 
-        public Queue<short[]> MessageQueue { get; set; } = new Queue<short[]>(1000);
+        public CircularQueue<short[]> MessageQueue { get; set; } = new CircularQueue<short[]>(200);
         public bool IsConnected => _serial != null;
         private SerialPort _serial;
 
@@ -94,58 +151,16 @@ namespace taskmaker_wpf.Services {
         }
 
         private void _timer_Elapsed(object sender, ElapsedEventArgs e) {
-            if (MessageQueue.Count != 0) {
+            if (!MessageQueue.IsEmpty) {
                 var data = MessageQueue.Dequeue();
 
                 SendToNuibot(data);
             }
         }
 
-        public Motor GetMotorInstance(int board, int motor) {
-            return Motors[board * _nBoard + motor];
-        }
-
-        public void Update(int boardId, int motorId, double value) {
-            if (IsConnected)
-                Motors[boardId * 4 + motorId].position.Value = (int)value;
-        }
-        
-        public void Update(MotorState state) {
-            if (IsConnected) {
-
-                var value = state.Value;
-
-                if (value > Max) {
-                    value = Max;
-
-                    // Invoke clamp event
-                    _logger.Info("Clamped caused by safety limit (max)");
-
-                }
-                else if (value < Min) {
-                    value = Min;
-
-                    // Invoke clamp event
-                    _logger.Info("Clamped caused by safety limit (min)");
-                }
-
-                Motors[state.NuiBoardId * 4 + state.NuiMotorId].position.Value = (int)value;
-                _buffer[state.NuiBoardId * 4 + state.NuiMotorId] = (short)value;
-
-                MessageQueue.Enqueue(_buffer);
-            }
-        }
-
         public void SendToNuibot(short[] data) {
             if (!IsConnected) return;
 
-            //short[] targets = new short[Boards.NMotor];
-
-            //for (int i = 0; i < Motors.Count; ++i) {
-            //    targets[i] = (short)Motors[i].position.Value;
-            //}
-
-            //Boards.SendPosDirect(targets);
             Boards.SendPosDirect(data);
         }
     }
