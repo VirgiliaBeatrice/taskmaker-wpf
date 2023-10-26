@@ -4,14 +4,16 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:taskmaker_wpf.Views"
+             xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels"
+             d:DataContext="{d:DesignInstance Type=viewmodels:QuestionViewModel}"
              mc:Ignorable="d"
              d:DesignWidth="800">
   <StackPanel Margin="20">
-    <TextBlock Text="How severe is your pain?"
+    <TextBlock Text="{Binding Question}"
                Margin="12"
                FontSize="16"/>
 
-    <TextBlock Text="Detailed description"
+    <TextBlock Text="{Binding Description}"
                Margin="12"
                Height="100" />
 
@@ -26,7 +28,8 @@
             Ticks="0, 2.5, 5, 7.5, 10"
             Height="30"
             Margin="16"
-            Width="712" />
+            Width="712" 
+            Value="{Binding Score}"/>
 
     <Grid HorizontalAlignment="Center"
           Width="712" Margin="16">
@@ -37,24 +40,24 @@
         <ColumnDefinition />
         <ColumnDefinition />
       </Grid.ColumnDefinitions>
-      <TextBlock Text="No Pain"
+      <TextBlock Text="{Binding Options[0]}"
                  HorizontalAlignment="Left"
                  Grid.Column="0" />
-      <TextBlock Text="Worst Possible Pain"
+      <TextBlock Text="{Binding Options[1]}"
                  Grid.Column="1"
                  HorizontalAlignment="Left"
                  Grid.ColumnSpan="2" />
 
-      <TextBlock Text="No Pain"
+      <TextBlock Text="{Binding Options[2]}"
                  Grid.Column="2"
                  HorizontalAlignment="Center"
                  TextAlignment="Center" />
-      <TextBlock Text="Worst Possible Pain"
+      <TextBlock Text="{Binding Options[3]}"
                  Grid.Column="3"
                  HorizontalAlignment="Center"
                  />
 
-      <TextBlock Text="No Pain"
+      <TextBlock Text="{Binding Options[4]}"
                  Grid.Column="4"
                  HorizontalAlignment="Right"
                   />

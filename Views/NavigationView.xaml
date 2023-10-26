@@ -66,6 +66,11 @@
         <Image Source="/icons/panda.png"
                RenderOptions.BitmapScalingMode="HighQuality" />
       </Button>
+      <Button Command="{Binding NavigateCommand}"
+              CommandParameter="SurveyPage">
+        <Image Source="/icons/arm.png"
+               RenderOptions.BitmapScalingMode="HighQuality" />
+      </Button>
     </StackPanel>
   </Border>
 </UserControl>

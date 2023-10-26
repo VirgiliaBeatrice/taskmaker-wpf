@@ -20,7 +20,7 @@ namespace taskmaker_wpf.Services {
         public int Max { get; set; } = 8000;
         public int Min { get; set; } = -8000;
 
-        public Queue<short[]> MessageQueue { get; set; } = new Queue<short[]>();
+        public Queue<short[]> MessageQueue { get; set; } = new Queue<short[]>(1000);
         public bool IsConnected => _serial != null;
         private SerialPort _serial;
 

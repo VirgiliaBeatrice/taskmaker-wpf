@@ -87,6 +87,7 @@ namespace taskmaker_wpf {
 
             containerRegistry.Register<ControlUiViewModel>();
             containerRegistry.Register<NLinearMapViewModel>();
+            containerRegistry.Register<SurveyPageViewModel>();
 
             // Register IUseCase
             //containerRegistry.RegisterSingleton<IUseCase, MotorUseCase>("1");
@@ -108,6 +109,7 @@ namespace taskmaker_wpf {
             containerRegistry.RegisterForNavigation<RegionControlUI>();
             containerRegistry.RegisterForNavigation<RegionSlider>();
             containerRegistry.RegisterForNavigation<RegionControlUIViewModel>();
+            containerRegistry.RegisterForNavigation<SurveyPage>();
 
             //containerRegistry.RegisterSingleton<RegionMotorViewModel>();
         }

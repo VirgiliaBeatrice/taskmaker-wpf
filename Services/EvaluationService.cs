@@ -17,9 +17,7 @@ using taskmaker_wpf.Entity;
 using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Views;
 
-namespace taskmaker_wpf.Services
-{
-
+namespace taskmaker_wpf.Services {
 
     public class EvaluationService : BaseEntityManager<EvaluationEntity> {
         private readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -29,12 +27,13 @@ namespace taskmaker_wpf.Services
         private readonly MotorService _motorSrv;
         private readonly UIService _uiSrv;
         private readonly MapService _mapSrv;
+        private readonly SurveyService _surveyService;
         private readonly SessionService _sessionSrv;
 
         private TimeSpan _time;
         private DateTime _startTime;
 
-        public EvaluationService(MotorService motorSrv, UIService uiSrv, MapService mapSrv, SessionService sessionSrv) {
+        public EvaluationService(MotorService motorSrv, UIService uiSrv, MapService mapSrv, SessionService sessionSrv, SurveyService surveyService) {
             _motorSrv = motorSrv;
             _uiSrv = uiSrv;
             _mapSrv = mapSrv;
@@ -52,14 +51,14 @@ namespace taskmaker_wpf.Services
 
                 var idx = 0;
 
-                foreach(var item in entities) {
+                foreach (var item in entities) {
                     BaseEntity.SaveData(item.Value, filename);
                 }
             });
 
             WeakReferenceMessenger.Default.Register<LoadMessage>(this, (r, m) => {
                 var filename = m.Path;
-                
+
             });
 
             WeakReferenceMessenger.Default.Register<MapOutputMessage>(this, (r, m) => {
@@ -76,7 +75,7 @@ namespace taskmaker_wpf.Services
                     });
                 }
             });
-
+            _surveyService = surveyService;
         }
 
         public override EvaluationEntity Create(EvaluationEntity entity) {
@@ -149,10 +148,11 @@ namespace taskmaker_wpf.Services
             for (int i = 0; i < motors.Count(); i++) {
                 var motor = motors[i];
                 motor.Max = 10000;
-                motor.Min = -10000;
+                motor.Min = 0;
 
                 _motorSrv.Update(motor);
             }
+
         }
     }
 }

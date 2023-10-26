@@ -9,6 +9,8 @@ using taskmaker_wpf.Entity;
 using taskmaker_wpf.Services;
 
 namespace taskmaker_wpf.ViewModels {
+
+
     public struct MotorState {
         private int id;
         private string name;
@@ -49,8 +51,9 @@ namespace taskmaker_wpf.ViewModels {
         [ObservableProperty]
         private double _value;
 
-        partial void OnValueChanged(double value) {
+        partial void OnValueChanged(double oldValue, double newValue) {
             // TODO: Should be in a entity
+            //if (Math.Abs(newValue - oldValue) )
             WeakReferenceMessenger.Default.Send(new MotorValueUpdatedMessage {
                 NuiBoardId = NuiBoardId,
                 NuiMotorId = NuiMotorId,

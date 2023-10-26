@@ -48,24 +48,15 @@ namespace taskmaker_wpf.ViewModels {
                 else if (navigatePath.Contains("RegionSlider")) {
                     var parameters = new NavigationParameters();
 
-
-                    if (navigatePath == "RegionSliderPanda") {
-                        parameters.Add("sub", "Panda");
-                        
-                        _regionManager.RequestNavigate(
+                    _regionManager.RequestNavigate(
                             "ContentRegion", 
                             nameof(Views.RegionSlider),
                             parameters
                             );
-                    }
-                    else {
-                        parameters.Add("sub", "Arm");
-                        _regionManager.RequestNavigate(
-                            "ContentRegion",
-                            nameof(Views.RegionSlider),
-                            parameters
-                            );
-                    }
+                }
+                else if (navigatePath.Contains("SurveyPage")) {
+                    _regionManager.RequestNavigate("ContentRegion", nameof(Views.SurveyPage));
+
                 }
                 else {
                     _regionManager.RequestNavigate("ContentRegion", navigatePath);

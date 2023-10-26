@@ -28,7 +28,7 @@
           <ColumnDefinition Width="60" />
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" PreviewTouchMove="Border_TouchMove">
+        <Border Grid.Column="0" PreviewTouchMove="Border_TouchMove" Background="DimGray">
           <Slider x:Name="slider"
                   Orientation="Vertical"
                   MinHeight="400"
@@ -38,6 +38,7 @@
                   HorizontalAlignment="Center" />
         </Border>
         <StackPanel Grid.Column="1"
+                    Margin="12,0,0,0"
                     VerticalAlignment="Center">
           <Button Content="▲"
                   FontSize="8"

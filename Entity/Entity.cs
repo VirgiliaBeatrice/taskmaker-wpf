@@ -20,6 +20,7 @@ using NLog;
 using System.IO;
 
 namespace taskmaker_wpf.Entity {
+
     public record EvaluationEvent {
         public DateTime Timestamp { get; init; }
         public string Tag { get; init; }
