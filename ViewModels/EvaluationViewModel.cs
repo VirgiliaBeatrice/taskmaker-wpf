@@ -22,12 +22,9 @@ namespace taskmaker_wpf.Services
         private readonly EvaluationEntity _entity;
 
         public ObservableCollection<SessionViewModel> Sessions { get; private set; } = new ObservableCollection<SessionViewModel>();
+
         [ObservableProperty]
         private SessionViewModel _selectedSession;
-
-        partial void OnSelectedSessionChanged(SessionViewModel value) {
-            WeakReferenceMessenger.Default.Send(new ValueChangedMessage<SessionViewModel>(value));
-        }
 
         public EvaluationViewModel(EvaluationEntity entity) {
             _entity = entity;

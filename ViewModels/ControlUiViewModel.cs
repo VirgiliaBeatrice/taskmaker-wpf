@@ -123,10 +123,10 @@ namespace taskmaker_wpf.ViewModels {
 
         private void ControlUiViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
             if (e.PropertyName == "HitRegion") {
-                _logger.Debug($"Hit changed {HitRegion}");
+                _logger.Debug($"Hit changed {HitRegion}: {sender.GetHashCode()}");
             }
             else if (e.PropertyName == "Input") {
-                _logger.Debug($"Input: {Input}");
+                _logger.Debug($"Input: {Input}: {sender.GetHashCode()}");
 
             }
         }

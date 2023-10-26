@@ -170,44 +170,6 @@ namespace taskmaker_wpf.Views.Widget {
         }
     }
     public class MultiView : UserControl {
-
-        public SessionViewModel SessionViewModel => DataContext as SessionViewModel;
-        //public SessionViewModel SessionViewModel {
-        //    get { return (SessionViewModel)GetValue(SessionViewModelProperty); }
-        //    set { SetValue(SessionViewModelProperty, value); }
-        //}
-
-        //// Using a DependencyProperty as the backing store for SessionViewModel.  This enables animation, styling, binding, etc...
-        //public static readonly DependencyProperty SessionViewModelProperty =
-        //    DependencyProperty.Register("SessionViewModel", typeof(SessionViewModel), typeof(MultiView), new PropertyMetadata(null, OnSessionViewModelChanged));
-
-        //private static void OnSessionViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-        //    var control = d as MultiView;
-
-        //    if (e.NewValue != null) {
-        //        var vm = e.NewValue as SessionViewModel;
-
-        //        vm.Uis.CollectionChanged += control.UiViewModels_CollectionChanged;
-        //        vm.Map.PropertyChanged += control.MapViewModel_PropertyChanged;
-        //    }
-
-        //    if (e.OldValue != null) {
-        //        var vm = e.OldValue as SessionViewModel;
-
-        //        vm.Uis.CollectionChanged -= control.UiViewModels_CollectionChanged;
-        //        vm.Map.PropertyChanged -= control.MapViewModel_PropertyChanged;
-        //    }
-        //}
-
-        private void MapViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e) {
-            //throw new NotImplementedException();
-        }
-
-        private void UiViewModels_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
-            Close();
-            Open();
-        }
-
         private readonly Grid _grid;
 
         private ScrollViewer _scroll;
@@ -234,12 +196,12 @@ namespace taskmaker_wpf.Views.Widget {
                 var controller = m.Sender as UiController;
                 var view = r as MultiView;
 
-                SessionViewModel.SelectedNodeStates = view.Controllers.Select(c => c.SelectedNode.State).ToArray();
+                (DataContext as SessionViewModel).SelectedNodeStates = view.Controllers.Select(c => c.SelectedNode.State).ToArray();
                 
                 await view.RequestMotorDialog();
             });
             WeakReferenceMessenger.Default.Register<UiControllerControlledMessage>(this, (r, m) => {
-                SessionViewModel.Interpolate();
+                (DataContext as SessionViewModel).Interpolate();
             });
 
             DataContextChanged += MultiView_DataContextChanged;
@@ -252,16 +214,36 @@ namespace taskmaker_wpf.Views.Widget {
                 if (e.NewValue is SessionViewModel vm) {
                     //vm.Uis.CollectionChanged += control.UiViewModels_CollectionChanged;
                     //vm.Map.PropertyChanged += control.MapViewModel_PropertyChanged;
-                    Close();
-                    Open();
+                    vm.PropertyChanged += Vm_PropertyChanged;
+
+                    control.Close();
+                    control.Open();
+
                 }
             }
 
             if (e.OldValue != null) {
                 if (e.OldValue is SessionViewModel vm) {
                     //vm.Uis.CollectionChanged -= control.UiViewModels_CollectionChanged;
+                    vm.PropertyChanged -= Vm_PropertyChanged;
                     //vm.Map.PropertyChanged -= control.MapViewModel_PropertyChanged;
                 }
+            }
+        }
+
+        private void Vm_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+            if (e.PropertyName == nameof(SessionViewModel.Mode)) {
+                var vm = sender as SessionViewModel;
+
+                uiMode = vm.Mode;
+
+                foreach(var item in Controllers) {
+                    item.UiMode = UiMode;
+                }
+            }
+            else if (e.PropertyName == nameof(SessionViewModel.Uis)) {
+                Close();
+                Open();
             }
         }
 
@@ -269,18 +251,8 @@ namespace taskmaker_wpf.Views.Widget {
 
         public NodeShape[] SelectedNodes => Controllers.Select(c => c.SelectedNode).ToArray();
 
-        public UiMode UiMode {
-            get => uiMode;
-            set {
-                uiMode = value;
+        public UiMode UiMode { get => uiMode; set => uiMode = value; }
 
-                foreach (var controller in Controllers) {
-                    controller.UiMode = uiMode;
-                }
-            }
-        }
-
-        public ControlUiViewModel UiViewModel { get; set; }
         public void Close() {
             _scroll.Content = null;
             Controllers.Clear();
@@ -308,7 +280,7 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public void Open() {
-            foreach(var uiViewModel in SessionViewModel.Uis) {
+            foreach(var uiViewModel in (DataContext as SessionViewModel).Uis) {
                 // 1. Open Ui
                 var uiController = new UiController() {
                     //DataContext = uiViewModel,
@@ -319,7 +291,7 @@ namespace taskmaker_wpf.Views.Widget {
 
                 Binding binding;
 
-                binding = new Binding(".") {
+                binding = new Binding() {
                     Source = uiViewModel,
                 };
                 uiController.SetBinding(UiController.DataContextProperty, binding);
@@ -356,7 +328,7 @@ namespace taskmaker_wpf.Views.Widget {
 
                 if (result.Result == MessageBoxResult.OK) {
                     // Commit map entry
-                    SessionViewModel.SetValue(result.Value as double[]);
+                    (DataContext as SessionViewModel).SetValue(result.Value as double[]);
                 }
             }
         }

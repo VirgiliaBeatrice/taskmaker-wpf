@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -26,10 +27,14 @@ namespace taskmaker_wpf.ViewModels
         private Point[] _inputCollection;
         [ObservableProperty]
         private NLinearMapViewModel _map;
-        public ObservableCollection<ControlUiViewModel> Uis { get; init; } = new();
+        [ObservableProperty]
+        private ControlUiViewModel[] _uis;
+        [ObservableProperty]
+        private UiMode _mode = UiMode.Default;
+
         public NodeState[][] NodeCollections => Uis.Select(e => e.NodeStates).ToArray();
 
-
+        private readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private readonly SessionEntity _entity;
 
         public SessionViewModel(SessionEntity entity) {
@@ -38,7 +43,7 @@ namespace taskmaker_wpf.ViewModels
             WeakReferenceMessenger.Default.Register<UiViewModelNodeAddedMessage>(this, (r, m) => {
                 var uiVM = m.Ui;
 
-                var axis = Uis.IndexOf(uiVM);
+                var axis = Array.IndexOf(Uis, uiVM);
                 var op = new TensorOperationRecord {
                     Axis = axis + 1,
                     Index = uiVM.NodeStates.Length - 1
@@ -50,7 +55,7 @@ namespace taskmaker_wpf.ViewModels
             WeakReferenceMessenger.Default.Register<UiViewModelNodeDeletedMessage>(this, (r, m) => {
                 var uiVM = m.Ui;
 
-                var axis = Uis.IndexOf(uiVM);
+                var axis = Array.IndexOf(Uis, uiVM);
                 var op = new TensorOperationRecord {
                     Axis = axis + 1,
                     Index = m.NodeIndex
@@ -65,7 +70,9 @@ namespace taskmaker_wpf.ViewModels
 
             });
 
-            Fetch();
+            FetchThis();
+            FetchUis();
+            FetchMap();
         }
 
         partial void OnSelectedNodeStatesChanged(NodeState[] value) {
@@ -83,7 +90,8 @@ namespace taskmaker_wpf.ViewModels
             };
 
             Map.SetValue(mapEntry);
-            Fetch();
+            //Fetch();
+            FetchMap();
         }
 
         [RelayCommand]
@@ -94,34 +102,41 @@ namespace taskmaker_wpf.ViewModels
             };
 
             Map.GetValue(ref mapEntry);
-            Fetch();
+            //Fetch();
+            FetchMap();
         }
 
         [RelayCommand]
-        public void Fetch() {
+        public void FetchThis() {
             // Update all properties from entity
             // Update basic properties
             Id = _entity.Id;
             Name = _entity.Name;
+        }
 
+        private void FetchMap() {
+            Map = new NLinearMapViewModel(_entity.Map);
+        }
+
+        private void FetchUis() {
             // Update Uis
-            Uis.Clear();
+            var uis = new List<ControlUiViewModel>();
             foreach (var entity in _entity.Uis) {
                 var uiVM = new ControlUiViewModel(entity) {
                     NodeStates = entity.Nodes.Select(e => new NodeState(e.Id, e.Value)).ToArray()
                 };
 
-                Uis.Add(uiVM);
+                uis.Add(uiVM);
             }
 
-            // Update Map
-            Map = new NLinearMapViewModel(_entity.Map);
+            Uis = uis.ToArray();
         }
 
         [RelayCommand]
         public void Interpolate() {
             var lambdasCollection = new List<double[]>();
-            for (int i = 0; i < Uis.Count; i++) {
+            for (int i = 0; i < Uis.Length; i++) {
+                _logger.Info($"{Uis[i].GetHashCode()}");
                 var nodes = Uis[i].NodeStates;
                 var input = Uis[i].Input;
                 var region = Uis[i].HitRegion;

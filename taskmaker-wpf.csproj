@@ -38,6 +38,7 @@
     <Compile Remove="icons\material-design-icons\svg\sharp\**" />
     <Compile Remove="icons\material-design-icons\svg\two-tone\**" />
     <Compile Remove="icons\material-design-icons\_data\**" />
+    <Compile Remove="Resources\**" />
     <Compile Remove="Views\Elements\**" />
     <Compile Remove="Views\Widget\Container\**" />
     <Compile Remove="Views\Widget\Node\**" />
@@ -49,6 +50,7 @@
     <EmbeddedResource Remove="icons\material-design-icons\svg\sharp\**" />
     <EmbeddedResource Remove="icons\material-design-icons\svg\two-tone\**" />
     <EmbeddedResource Remove="icons\material-design-icons\_data\**" />
+    <EmbeddedResource Remove="Resources\**" />
     <EmbeddedResource Remove="Views\Elements\**" />
     <EmbeddedResource Remove="Views\Widget\Container\**" />
     <EmbeddedResource Remove="Views\Widget\Node\**" />
@@ -60,6 +62,7 @@
     <None Remove="icons\material-design-icons\svg\sharp\**" />
     <None Remove="icons\material-design-icons\svg\two-tone\**" />
     <None Remove="icons\material-design-icons\_data\**" />
+    <None Remove="Resources\**" />
     <None Remove="Views\Elements\**" />
     <None Remove="Views\Widget\Container\**" />
     <None Remove="Views\Widget\Node\**" />
@@ -71,6 +74,7 @@
     <Page Remove="icons\material-design-icons\svg\sharp\**" />
     <Page Remove="icons\material-design-icons\svg\two-tone\**" />
     <Page Remove="icons\material-design-icons\_data\**" />
+    <Page Remove="Resources\**" />
     <Page Remove="Views\Elements\**" />
     <Page Remove="Views\Widget\Container\**" />
     <Page Remove="Views\Widget\Node\**" />
@@ -185,8 +189,5 @@
     <None Update="nlog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\" />
   </ItemGroup>
 </Project>

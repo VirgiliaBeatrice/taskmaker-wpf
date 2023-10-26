@@ -34,25 +34,23 @@ namespace taskmaker_wpf.ViewModels {
 
         public ObservableCollection<EvaluationViewModel> Evaluations { get; private set; } = new ObservableCollection<EvaluationViewModel>();
 
-        public ControlUiCollectionViewModel UiCollection { get; private set; }
-        public ObservableCollection<SessionViewModel> Sessions { get; private set; } = new ObservableCollection<SessionViewModel>();
+        //public ControlUiCollectionViewModel UiCollection { get; private set; }
 
-        public ObservableCollection<ControlUiViewModel> Uis => UiCollection.Uis;
+        //public ObservableCollection<ControlUiViewModel> Uis => UiCollection.Uis;
 
-        [ObservableProperty]
-        private SessionViewModel _selectedSessionViewModel;
         [ObservableProperty]
         private EvaluationViewModel _selectedEvaluation;
 
-        partial void OnSelectedSessionViewModelChanged(SessionViewModel value) {
-            if (value != null)
-                WeakReferenceMessenger.Default.Send(new ShowMessageBoxMessage {
-                    Button = MessageBoxButton.OK,
-                    Caption = "Session Selected",
-                    Icon = MessageBoxImage.Information,
-                    Message = $"Session {value.Name} selected.",
-                });
-        }
+
+        //partial void OnSelectedSessionChanged(SessionViewModel value) {
+        //    if (value != null)
+        //        WeakReferenceMessenger.Default.Send(new ShowMessageBoxMessage {
+        //            Button = MessageBoxButton.OK,
+        //            Caption = "Session Selected",
+        //            Icon = MessageBoxImage.Information,
+        //            Message = $"Session {value.Name} selected.",
+        //        });
+        //}
 
         public RegionControlUIViewModel(EvaluationService evaluationService,MotorService motorService, UIService uIService, MapService mapService) {
             _mapSrv = mapService;
@@ -60,11 +58,11 @@ namespace taskmaker_wpf.ViewModels {
             _motorSrv = motorService;
             _uiSrv = uIService;
 
-            UiCollection = new ControlUiCollectionViewModel(_uiSrv);
+            //UiCollection = new ControlUiCollectionViewModel(_uiSrv);
 
-            WeakReferenceMessenger.Default.Register<ValueChangedMessage<SessionViewModel>>(this, (r, m) => {
-                SelectedSessionViewModel = m.Value;
-            });
+            //WeakReferenceMessenger.Default.Register<ValueChangedMessage<SessionViewModel>>(this, (r, m) => {
+            //    SelectedSession = m.Value;
+            //});
         }
 
         [RelayCommand]
@@ -78,7 +76,7 @@ namespace taskmaker_wpf.ViewModels {
 
         [RelayCommand]
         public void Fetch() {
-            UiCollection.Fetch();
+            //UiCollection.Fetch();
         }
 
         [RelayCommand]

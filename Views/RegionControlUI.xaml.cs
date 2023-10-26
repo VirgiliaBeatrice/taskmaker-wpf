@@ -39,10 +39,6 @@ namespace taskmaker_wpf.Views {
     /// Interaction logic for RegionControlUI.xaml
     /// </summary>
     public partial class RegionControlUI : UserControl {
-        public UiMode UiMode => multiView.UiMode;
-
-        //public string UiStatus
-
         private string _uiStatusText;
 
         public string UiStatusText {
@@ -54,11 +50,6 @@ namespace taskmaker_wpf.Views {
         }
 
         public InfoPanel InfoPanel => infoPanel;
-
-        private ControlUiViewModel _selectedUiState;
-
-
-        public List<ControlUiViewModel> Uis { get; set; } = new List<ControlUiViewModel>();
         private ILogger logger => LogManager.GetCurrentClassLogger();
 
         public RegionControlUI() {
@@ -67,6 +58,24 @@ namespace taskmaker_wpf.Views {
 
             PreviewKeyUp += RegionControlUI_PreviewKeyUp;
 
+            DataContextChanged += RegionControlUI_DataContextChanged;
+        }
+
+        private void RegionControlUI_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e) {
+            if (e.NewValue != null && e.NewValue is RegionControlUIViewModel vm) {
+                vm.PropertyChanged += Vm_PropertyChanged;
+            }
+
+            if (e.OldValue != null && e.OldValue is RegionControlUIViewModel oldVM) {
+                oldVM.PropertyChanged -= Vm_PropertyChanged;
+            }
+        }
+
+        private void Vm_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
+            //if (e.PropertyName == nameof(RegionControlUIViewModel.Mode)) {
+            //    UiStatusText = multiView.UiMode.ToString();
+            //    ChangeMode(multiView.UiMode);
+            //}
         }
 
         private void RegionControlUI_PreviewKeyUp(object sender, KeyEventArgs e) {
@@ -96,33 +105,12 @@ namespace taskmaker_wpf.Views {
                 WeakReferenceMessenger.Default.Send(msg);
             }
             else {
-                multiView.UiMode = mode;
+                var vm = DataContext as RegionControlUIViewModel;
 
-                switch (mode) {
-                    case UiMode.Default:
-                        break;
-                    case UiMode.Add:
-                        break;
-                    case UiMode.Remove:
-                        break;
-                    case UiMode.Move:
-                        break;
-                    case UiMode.Assign:
-                        break;
-                    case UiMode.Build:
-                        break;
-                    case UiMode.Control:
-                        break;
-                    case UiMode.Drag:
-                        break;
-                    case UiMode.Pan:
-                        break;
-                    case UiMode.Zoom:
-                        break;
-                    case UiMode.Reset:
-                        break;
-                    default:
-                        break;
+                if (vm.SelectedEvaluation != null) {
+                    if (vm.SelectedEvaluation.SelectedSession != null) {
+                        vm.SelectedEvaluation.SelectedSession.Mode = mode;
+                    }
                 }
             }
         }
@@ -130,47 +118,30 @@ namespace taskmaker_wpf.Views {
         private void ToolBar_Click(object sender, RoutedEventArgs e) {
             var btn = sender as Button;
 
-
             // TODO: add all modes.
             switch (btn.Name) {
                 case "tbBtnSelect":
                     ChangeMode(UiMode.Default);
-                    snackbar.Icon = Icons.Select;
-                    snackbar.SupportingText = "Select";
                     break;
                 case "tbBtnControl":
                     ChangeMode(UiMode.Control);
-                    snackbar.Icon = Icons.Control;
-                    snackbar.SupportingText = "Select";
                     break;
                 case "tbBtnAdd":
                     ChangeMode(UiMode.Add);
-                    snackbar.Icon = Icons.Add;
-                    snackbar.SupportingText = "Add";
                     break;
                 case "tbBtnRm":
                     ChangeMode(UiMode.Remove);
-                    snackbar.Icon = Icons.Remove;
-                    snackbar.SupportingText = "Remove";
                     break;
                 case "tbBtnPan":
                     ChangeMode(UiMode.Pan);
-                    snackbar.Icon = Icons.Pan;
-                    snackbar.SupportingText = "Pan";
                     break;
                 case "tbBtnZoom":
                     ChangeMode(UiMode.Zoom);
-                    snackbar.Icon = Icons.Zoom;
-                    snackbar.SupportingText = "Zoom";
                     break;
                 case "tbBtnMove":
-                    snackbar.Icon = Icons.Move;
-                    snackbar.SupportingText = "Move";
                     ChangeMode(UiMode.Move);
                     break;
                 case "tbBtnAssign":
-                    snackbar.Icon = Icons.Assign;
-                    snackbar.SupportingText = "Assign";
                     ChangeMode(UiMode.Assign);
                     break;
                 case "tbBtnReset":
@@ -188,7 +159,46 @@ namespace taskmaker_wpf.Views {
                 default:
                     break;
             }
+        }
 
+        private void ChangeSnackbar(UiMode mode) {
+            switch (mode) {
+                case UiMode.Default:
+                    snackbar.Icon = Icons.Select;
+                    snackbar.SupportingText = "Select";
+                    break;
+                case UiMode.Control:
+                    snackbar.Icon = Icons.Control;
+                    snackbar.SupportingText = "Select";
+                    break;
+                case UiMode.Add:
+                    snackbar.Icon = Icons.Add;
+                    snackbar.SupportingText = "Add";
+                    break;
+                case UiMode.Remove:
+                    snackbar.Icon = Icons.Remove;
+                    snackbar.SupportingText = "Remove";
+                    break;
+                case UiMode.Pan:
+                    snackbar.Icon = Icons.Pan;
+                    snackbar.SupportingText = "Pan";
+                    break;
+                case UiMode.Zoom:
+                    snackbar.Icon = Icons.Zoom;
+                    snackbar.SupportingText = "Zoom";
+                    break;
+                case UiMode.Move:
+                    snackbar.Icon = Icons.Move;
+                    snackbar.SupportingText = "Move";
+                    break;
+                case UiMode.Assign:
+                    snackbar.Icon = Icons.Assign;
+                    snackbar.SupportingText = "Assign";
+                    break;
+                default:
+                    break;
+            }
+            
             snackbar.Visibility = Visibility.Visible;
         }
 

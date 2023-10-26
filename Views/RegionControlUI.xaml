@@ -114,8 +114,9 @@
               VerticalAlignment="Stretch">
           <w:MultiView x:Name="multiView"
                        Focusable="True"
-                       Width="auto"
-                       DataContext="{Binding SelectedSessionViewModel}" />
+                       Width="auto" 
+                       DataContext="{Binding SelectedEvaluation.SelectedSession}"
+                       />
 
           <StackPanel Orientation="Vertical"
                       VerticalAlignment="Top"
@@ -332,7 +333,7 @@
 
                 </TabItem>
 
-                <TabItem Header="Session">
+                <TabItem Header="Session" DataContext="{Binding SelectedEvaluation}">
                   <GroupBox Header="Session Operations">
                     <StackPanel>
                       <Button FontSize="16"
@@ -345,17 +346,17 @@
                       </Button>
                       <ListBox Margin="12"
                                ItemsSource="{Binding Sessions}"
-                               SelectedItem="{Binding SelectedSessionViewModel}" />
+                               SelectedItem="{Binding SelectedSession}" />
 
 
                       <Expander Header="Control UI"
                                 Margin="12">
                         <ListBox Margin="12"
-                                 ItemsSource="{Binding SelectedSessionViewModel.Uis}" />
+                                 ItemsSource="{Binding SelectedSession.Uis}" />
                       </Expander>
                       <Expander Header="Map"
                                 Margin="12"
-                                DataContext="{Binding SelectedSessionViewModel}">
+                                DataContext="{Binding SelectedSession}">
                         <StackPanel Orientation="Vertical"
                                     Margin="12">
                           <Label Content="Name"
@@ -399,7 +400,6 @@
                                    MinHeight="20"
                                    Margin="8"
                                    SelectionMode="Single"
-                                   ItemsSource="{Binding Uis}"
                                    MouseDoubleClick="lbUiStates_MouseDoubleClick">
                           </ListBox>
                         </StackPanel>

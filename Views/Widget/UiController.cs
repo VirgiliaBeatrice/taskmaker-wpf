@@ -20,41 +20,6 @@ using taskmaker_wpf.Model.SimplicialMapping;
 
 namespace taskmaker_wpf.Views.Widget {
     public class UiController : UserControl {
-
-
-        //public IEnumerable<BaseRegionState> RegionStates {
-        //    get { return (IEnumerable<BaseRegionState>)GetValue(RegionStatesProperty); }
-        //    set { SetValue(RegionStatesProperty, value); }
-        //}
-
-        //// Using a DependencyProperty as the backing store for RegionStates.  This enables animation, styling, binding, etc...
-        //private static readonly DependencyProperty regionStatesProperty =
-        //    DependencyProperty.Register("RegionStates", typeof(IEnumerable<BaseRegionState>), typeof(UiController), new PropertyMetadata(Array.Empty<BaseRegionState>(), OnRegionStatesChanged
-        //        ));
-
-        //private static void OnRegionStatesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-        //    var control = d as UiController;
-
-        //    // handle DependencyPropertyChangedEventArgs
-        //    control.InvalidateRegion();
-        //}
-
-        // Using a DependencyProperty as the backing store for AddNodeCommand.  This enables animation, styling, binding, etc...
-        //public static readonly DependencyProperty AddNodeCommandProperty =
-        //    DependencyProperty.Register("AddNodeCommand", typeof(ICommand), typeof(UiController), new PropertyMetadata(null));
-
-        //// Using a DependencyProperty as the backing store for DeleteNodeCommand.  This enables animation, styling, binding, etc...
-        //public static readonly DependencyProperty DeleteNodeCommandProperty =
-        //    DependencyProperty.Register("DeleteNodeCommand", typeof(ICommand), typeof(UiController), new PropertyMetadata(null));
-
-        // Using a DependencyProperty as the backing store for Nodes.  This enables animation, styling, binding, etc...
-        //public static readonly DependencyProperty NodeStatesProperty =
-        //    DependencyProperty.Register("NodeStates", typeof(IEnumerable<NodeState>), typeof(UiController), new PropertyMetadata(Array.Empty<NodeState>(), OnNodeStatesChanged));
-
-        // Using a DependencyProperty as the backing store for UpdateNodeCommand.  This enables animation, styling, binding, etc...
-        //public static readonly DependencyProperty UpdateNodeCommandProperty =
-        //    DependencyProperty.Register("UpdateNodeCommand", typeof(ICommand), typeof(UiController), new PropertyMetadata(null));
-
         public ControlUiViewModel ViewModel => DataContext as ControlUiViewModel;
         public TranslateTransform CenteringT = new();
 
@@ -175,6 +140,7 @@ namespace taskmaker_wpf.Views.Widget {
         private void UiController_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e) {
             if (e.NewValue != null && e.NewValue is ControlUiViewModel newVM) {
                 newVM.PropertyChanged += ViewModel_PropertyChanged;
+                newVM.Fetch();
             }
 
             if (e.OldValue != null && e.OldValue is ControlUiViewModel oldVM) {
