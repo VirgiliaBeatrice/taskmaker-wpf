@@ -6,61 +6,71 @@
              xmlns:local="clr-namespace:taskmaker_wpf.Views"
              xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels"
              d:DataContext="{d:DesignInstance Type=viewmodels:QuestionViewModel}"
-             mc:Ignorable="d"
-             d:DesignWidth="800">
-  <StackPanel Margin="20">
-    <TextBlock Text="{Binding Question}"
-               Margin="12"
-               FontSize="16"/>
+             mc:Ignorable="d">
 
-    <TextBlock Text="{Binding Description}"
-               Margin="12"
-               Height="100" />
+  <Border CornerRadius="16" Background="LightGray">
 
-    <Slider x:Name="PainSlider"
-            Minimum="0"
-            Maximum="10"
-            TickFrequency="0.1"
-            IsSnapToTickEnabled="True"
-            AutoToolTipPrecision="2"
-            AutoToolTipPlacement="BottomRight"
-            TickPlacement="BottomRight"
-            Ticks="0, 2.5, 5, 7.5, 10"
-            Height="30"
-            Margin="16"
-            Width="712" 
-            Value="{Binding Score}"/>
+    <StackPanel Margin="12"
+                MinWidth="500">
+      <TextBlock d:Text="Question"
+                 Text="{Binding Question}"
+                 Margin="12,0,12,0"
+                 FontSize="16"
+                 HorizontalAlignment="Stretch" />
 
-    <Grid HorizontalAlignment="Center"
-          Width="712" Margin="16">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition />
-        <ColumnDefinition />
-        <ColumnDefinition />
-        <ColumnDefinition />
-        <ColumnDefinition />
-      </Grid.ColumnDefinitions>
-      <TextBlock Text="{Binding Options[0]}"
-                 HorizontalAlignment="Left"
-                 Grid.Column="0" />
-      <TextBlock Text="{Binding Options[1]}"
-                 Grid.Column="1"
-                 HorizontalAlignment="Left"
-                 Grid.ColumnSpan="2" />
+      <TextBlock d:Text="Description"
+                 Text="{Binding Description}"
+                 Margin="24"
+                 HorizontalAlignment="Stretch" />
 
-      <TextBlock Text="{Binding Options[2]}"
-                 Grid.Column="2"
-                 HorizontalAlignment="Center"
-                 TextAlignment="Center" />
-      <TextBlock Text="{Binding Options[3]}"
-                 Grid.Column="3"
-                 HorizontalAlignment="Center"
-                 />
 
-      <TextBlock Text="{Binding Options[4]}"
-                 Grid.Column="4"
-                 HorizontalAlignment="Right"
-                  />
-    </Grid>
-  </StackPanel>
+      <Slider x:Name="scoreSlider"
+              Minimum="0"
+              Maximum="10"
+              TickFrequency="0.1"
+              AutoToolTipPrecision="2"
+              AutoToolTipPlacement="BottomRight"
+              TickPlacement="BottomRight"
+              Ticks="0, 2.5, 5, 7.5, 10"
+              Height="30"
+              Margin="72,12,72,12"
+              Value="{Binding Score}" />
+
+
+
+      <Grid HorizontalAlignment="Stretch"
+            Margin="12,12,12,12">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition />
+          <ColumnDefinition />
+          <ColumnDefinition />
+          <ColumnDefinition />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <TextBlock d:Text="Not good at all"
+                   Text="{Binding Options[0]}"
+                   HorizontalAlignment="Center"
+                   Grid.Column="0" />
+        <TextBlock Text="{Binding Options[1]}"
+                   d:Text="Not good"
+                   Grid.Column="1"
+                   HorizontalAlignment="Center" />
+
+        <TextBlock Text="{Binding Options[2]}"
+                   Grid.Column="2"
+                   d:Text="Neutual"
+                   HorizontalAlignment="Center"
+                   TextAlignment="Center" />
+        <TextBlock Text="{Binding Options[3]}"
+                   d:Text="Good"
+                   Grid.Column="3"
+                   HorizontalAlignment="Center" />
+
+        <TextBlock Text="{Binding Options[4]}"
+                   d:Text="Good Perfectly"
+                   Grid.Column="4"
+                   HorizontalAlignment="Center" />
+      </Grid>
+    </StackPanel>
+  </Border>
 </UserControl>

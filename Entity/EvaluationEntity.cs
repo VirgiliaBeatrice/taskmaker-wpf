@@ -87,6 +87,7 @@ namespace taskmaker_wpf.Entity
         private LevelOfKnowledge _knowledge = LevelOfKnowledge.None;
         private DateTime _date;
         private List<SessionEntity> _sessions = new List<SessionEntity>();
+        private List<IEvent> _events = new List<IEvent>();
 
         public string Participant { get => _participant; set => _participant = value; }
         public TrialType TrialType { get => _trialType; set => _trialType = value; }
@@ -95,10 +96,14 @@ namespace taskmaker_wpf.Entity
         public LevelOfKnowledge Knowledge { get => _knowledge; set => _knowledge = value; }
         public DateTime Date { get => _date; init => _date = value; }
         public List<SessionEntity> Sessions { get => _sessions; set => _sessions = value; }
+        public List<IEvent> Events { get => _events; set => _events = value; }
 
-        public EvaluationEntity()
-        {
-            Date = DateTime.Now;
+        public EvaluationEntity() {
+            Date = DateTime.UtcNow;
+        }
+
+        public void Tag(IEvent @event) {
+            Events.Add(@event);
         }
     }
 }

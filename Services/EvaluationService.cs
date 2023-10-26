@@ -19,6 +19,20 @@ using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.Services {
 
+    public interface IEvent {
+        Guid EventId { get; }
+        DateTime Timestamp { get; }
+        string Tags { get; }
+        string Message { get; }
+    }
+
+    public record EvaluationStartedEvent : IEvent {
+        public Guid EventId => Guid.NewGuid();
+        public DateTime Timestamp => DateTime.UtcNow;
+        public string Tags => "Evaluation.Started";
+        public string Message { get; init; }
+    }
+
     public class EvaluationService : BaseEntityManager<EvaluationEntity> {
         private readonly Logger logger = LogManager.GetCurrentClassLogger();
         public StringBuilder logFile = new StringBuilder();
@@ -112,21 +126,7 @@ namespace taskmaker_wpf.Services {
             timer.Stop();
         }
 
-        public void Log() {
-            // configure a new logger file handler for this class
-            // log to file
-            // log to console
-
-            logger.Info("Event");
-            logFile.AppendLine();
-        }
-
-        public void SaveToFile() {
-            // save this to xml file
-
-        }
-
-        public void Initialize() {
+        public void InitializeMotors() {
             // Create List<MotorEntity> with 6 motors
             var motors = Enumerable.Range(0, 6)
                                    .Select(_ => _motorSrv.Create(new MotorEntity()))
@@ -153,6 +153,80 @@ namespace taskmaker_wpf.Services {
                 _motorSrv.Update(motor);
             }
 
+        }
+
+        public void InitializeSurvey() {
+            var questions = new QuestionEntity[] {
+
+            new QuestionEntity {
+                Question = "How confident are you in designing the controller for the given task?",
+                Description = "",
+                Score = 5.0d,
+                Options = new[] {
+                        "Not confident at all",
+                        "Not confident",
+                        "Neutral",
+                        "Confident",
+                        "Very confident"
+                    }
+            },
+                new QuestionEntity {
+                    Question = "How confident are you in using the UI to control the robot to complete the task?",
+                    Description = "",
+                    Score = 5.0d,
+                    Options = new[] {
+                        "Not confident at all",
+                        "Not confident",
+                        "Neutral",
+                        "Confident",
+                        "Very confident"
+                    }
+                },
+                new QuestionEntity {
+                    Question = "Did the robot's behavior match your expectations when you used the controller?",
+                    Description = "",
+                    Score = 5.0d,
+                    Options = new[] {
+                        "Did not match at all",
+                        "Did not match",
+                        "Neutral",
+                        "Matched",
+                        "Matched perfectly"
+                    }
+                },
+                new QuestionEntity {
+                    Question = "How did you plan to design the controller?",
+                    Description = "Open-ended",
+                },
+                new QuestionEntity {
+                    Question = "How would you rate your initial experience learning to use the system?",
+                    Description = "",
+                    Score = 5.0d,
+                    Options = new[] {
+                        "Very difficult",
+                        "Difficult",
+                        "Neutral",
+                        "Easy",
+                        "Very easy",
+                    }
+                },
+                new QuestionEntity {
+                    Question = "How would you rate the balance between performance and effort?",
+                    Description = "Considering the entire evaluation, including both the learning process and the effort to design the controllers for the tasks.",
+                    Score = 5.0d,
+                    Options = new[] {
+                        "Very difficult",
+                        "Difficult",
+                        "Neutral",
+                        "Easy",
+                        "Very easy",
+                    }
+                },
+            };
+
+            foreach(var item in questions) {
+                _surveyService.Create(item);
+            }
         }
     }
 }

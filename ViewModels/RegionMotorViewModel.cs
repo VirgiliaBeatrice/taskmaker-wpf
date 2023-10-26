@@ -36,7 +36,7 @@ namespace taskmaker_wpf.ViewModels {
 
         [RelayCommand]
         public async Task Initialize() {
-            evaluationService.Initialize();
+            evaluationService.InitializeMotors();
 
             var result = await WeakReferenceMessenger.Default.Send(new ShowMessageBoxMessage {
                 Message = "Initialized all motors for experiments!",

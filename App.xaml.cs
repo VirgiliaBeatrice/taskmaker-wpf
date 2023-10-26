@@ -64,7 +64,7 @@ namespace taskmaker_wpf {
             containerRegistry.RegisterSingleton<SerialService>();
             containerRegistry.RegisterSingleton<EvaluationService>();
             containerRegistry.RegisterSingleton<MotorService>();
-            //containerRegistry.RegisterSingleton<SystemService>();
+            containerRegistry.RegisterSingleton<SurveyService>();
 
             // Register model agent
             containerRegistry.RegisterSingleton<MapperConfiguration>(

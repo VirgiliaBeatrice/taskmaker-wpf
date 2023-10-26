@@ -34,7 +34,7 @@ namespace taskmaker_wpf.Views {
     /// </summary>
     public partial class TestWindow : Window, IRecipient<ShowMessageBoxMessage>, IRecipient<DialogRequestMessage>{
         private readonly MotorService _motorSrv;
-        private IEventAggregator _eventAggregator;
+        private readonly EvaluationService _evaluationService;
         private static readonly FieldInfo _menuDropAlignmentField;
         public TaskCompletionSource<DialogResult> DialogTCS;
 
@@ -60,15 +60,14 @@ namespace taskmaker_wpf.Views {
             }
         }
 
-        public TestWindow(IEventAggregator @event, MotorService motorSrv) {
+        public TestWindow(MotorService motorSrv, EvaluationService evaluationService) {
             _motorSrv = motorSrv;
-            _eventAggregator = @event;
+            _evaluationService = evaluationService;
             InitializeComponent();
 
             // Register ShowMessageBox message
             Messenger.Default.Register<ShowMessageBoxMessage>(this);
             Messenger.Default.Register<DialogRequestMessage>(this);
-            //Messenger.Default.Register<DisplayDialogMessage>(this);
         }
 
         private void Window_PreviewKeyUp(object sender, KeyEventArgs e) {
@@ -146,8 +145,28 @@ namespace taskmaker_wpf.Views {
                 case Key.D0:
                     break;
                 case Key.D1:
+                    _evaluationService.InitializeMotors();
+                    // show messagebox
+                    var msgD1 = new ShowMessageBoxMessage {
+                        Message = "Motors have initialized.",
+                        Caption = "Evaluation Init",
+                        Button = MessageBoxButton.OK,
+                        Icon = MessageBoxImage.Information,
+                    };
+
+                    MessageBox.Show(msgD1.Message, msgD1.Caption, msgD1.Button, msgD1.Icon);
                     break;
                 case Key.D2:
+                    _evaluationService.InitializeSurvey();
+                    // show messagebox
+                    var msgD2 = new ShowMessageBoxMessage {
+                        Message = "Survey has initialized.",
+                        Caption = "Evaluation Init",
+                        Button = MessageBoxButton.OK,
+                        Icon = MessageBoxImage.Information,
+                    };
+
+                    MessageBox.Show(msgD2.Message, msgD2.Caption, msgD2.Button, msgD2.Icon);
                     break;
                 case Key.D3:
                     break;
