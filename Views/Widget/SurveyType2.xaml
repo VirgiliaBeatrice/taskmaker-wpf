@@ -21,8 +21,10 @@
                Margin="24"
                HorizontalAlignment="Stretch" />
     <TextBox d:Text="Free to fill"
+             Padding="12"
              Margin="24"
              HorizontalAlignment="Stretch"
+             
              MinLines="4"
              Text="{Binding Description}"
              />
