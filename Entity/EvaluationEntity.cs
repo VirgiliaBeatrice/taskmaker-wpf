@@ -66,7 +66,10 @@ namespace taskmaker_wpf.Entity
 
     public enum TrialType {
         Tutorial,
-        Task,
+        Task1D,
+        Task1T,
+        Task2D,
+        Task2T,
         None
     }
 

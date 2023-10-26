@@ -20,21 +20,6 @@ using NLog;
 using System.IO;
 
 namespace taskmaker_wpf.Entity {
-
-    public record EvaluationEvent {
-        public DateTime Timestamp { get; init; }
-        public string Tag { get; init; }
-        public string Description { get; init; }
-
-        public static EvaluationEvent Tick(string tag, string desc) {
-            return new EvaluationEvent {
-                Timestamp = DateTime.Now,
-                Tag = tag,
-                Description = desc
-            };
-        }
-    }
-
     public interface IEntity {
         int Id { get; set; }
         string Name { get; set; }
