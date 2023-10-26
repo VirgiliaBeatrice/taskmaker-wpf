@@ -13,7 +13,6 @@ using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Views;
 //using CMessageBox = taskmaker_wpf.Views.MessageBox;
 using AutoMapper;
-using taskmaker_wpf.Data;
 using taskmaker_wpf.Entity;
 using Prism.Events;
 using Microsoft.Extensions.Logging;
@@ -35,34 +34,6 @@ namespace taskmaker_wpf {
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
             var config = new MapperConfiguration(
             cfg => {
-                cfg.CreateMap<NLinearMapEntity, NLinearMapDTO>()
-                    .ReverseMap();
-
-                cfg.CreateMap<NodeEntity, NodeDTO>(MemberList.Destination)
-                    .ReverseMap();
-
-                cfg.CreateMap<BaseRegionEntity, RegionDTO>()
-                    .IncludeAllDerived()
-                    .ReverseMap();
-
-                cfg.CreateMap<SimplexRegionEntity, SimplexRegionDTO>()
-                    .ForMember(d => d.Vertices, o => o.MapFrom(s => s.Vertices))
-                    .IncludeBase<BaseRegionEntity, RegionDTO>()
-                    .ReverseMap();
-
-                cfg.CreateMap<VoronoiRegionEntity, VoronoiRegionDTO>()
-                    .ForMember(d => d.Vertices, o => o.MapFrom(s => s.Vertices))
-                    .IncludeBase<BaseRegionEntity, RegionDTO>()
-                    .ReverseMap();
-
-                cfg.CreateMap<ControlUiEntity, ControlUiDTO>()
-                    .ForMember(d => d.Nodes, o => o.MapFrom(s => s.Nodes))
-                    .ForMember(d => d.Regions, o => o.MapFrom(s => s.Regions))
-                    .ReverseMap();
-
-                cfg.CreateMap<MotorEntity, MotorDTO>()
-                    .ReverseMap();
-
                 cfg.CreateMap<MotorEntity, MotorState>()
                     .ForMember(d => d.Value, o => o.Ignore())
                     .ReverseMap();
@@ -112,7 +83,6 @@ namespace taskmaker_wpf {
             //containerRegistry.RegisterSingleton<IRepository, MotorRepository>("1");
             //containerRegistry.Register<IRepository, ControlUiRepository>("2");
             //containerRegistry.Register<IRepository, NLinearMapRepository>("3");
-            containerRegistry.RegisterSingleton<IRepository, ProjectRepository>();
             containerRegistry.Register<DialogController>();
 
             containerRegistry.Register<ControlUiViewModel>();
@@ -138,8 +108,6 @@ namespace taskmaker_wpf {
             containerRegistry.RegisterForNavigation<RegionControlUI>();
             containerRegistry.RegisterForNavigation<RegionSlider>();
             containerRegistry.RegisterForNavigation<RegionControlUIViewModel>();
-
-            ViewModelLocationProvider.Register<RegionSlider>(Container.Resolve<RegionMotorViewModel>);
 
             //containerRegistry.RegisterSingleton<RegionMotorViewModel>();
         }

@@ -50,6 +50,7 @@ namespace taskmaker_wpf.ViewModels {
         private double _value;
 
         partial void OnValueChanged(double value) {
+            // TODO: Should be in a entity
             WeakReferenceMessenger.Default.Send(new MotorValueUpdatedMessage {
                 NuiBoardId = NuiBoardId,
                 NuiMotorId = NuiMotorId,

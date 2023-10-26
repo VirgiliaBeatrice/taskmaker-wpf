@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
-using taskmaker_wpf.Data;
 using taskmaker_wpf.Qhull;
 using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Model.Data;
@@ -18,6 +17,7 @@ using System.Windows.Media;
 using taskmaker_wpf.Views.Widget;
 using System.Security.Policy;
 using NLog;
+using System.IO;
 
 namespace taskmaker_wpf.Entity {
     public record EvaluationEvent {
@@ -61,6 +61,7 @@ namespace taskmaker_wpf.Entity {
         }
     }
 
+    [Serializable]
     public class BaseEntity : IEntity {
         private int id = -1;
 
@@ -77,15 +78,36 @@ namespace taskmaker_wpf.Entity {
         public override string ToString() {
             return Name;
         }
+
+        public static void SaveData<T>(T entity, string filename) {
+            XmlSerializer serializer = new XmlSerializer(typeof(T));
+            using TextWriter writer = new StreamWriter(filename);
+            serializer.Serialize(writer, entity);
+        }
+
+        public static T LoadData<T>(string filename) {
+            XmlSerializer deserializer = new XmlSerializer(typeof(T));
+            using TextReader reader = new StreamReader(filename);
+            T entity = (T)deserializer.Deserialize(reader);
+
+            return entity;
+        }
+
     }
 
+    [Serializable]
     public class NLinearMapEntity : BaseEntity {
         private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
-        public HashSet<MapEntry> MapEntries { get; set; } = new HashSet<MapEntry>();
+        public List<MapEntry> MapEntries { get; set; } = new List<MapEntry>();
+
+        [XmlIgnore]
         public NDarray Tensor { get; set; }
+        [XmlIgnore]
         public int[] Shape => Tensor?.shape.Dimensions;
+        [XmlIgnore]
         public int? Dimension => Tensor?.ndim;
 
+        public NLinearMapEntity() { }
 
         public NLinearMapEntity(int dimension, int dimOfAxis0) {
             var shape = Enumerable.Repeat(0, dimension).ToArray();
@@ -271,6 +293,8 @@ namespace taskmaker_wpf.Entity {
 
     }
 
+
+    [Serializable]
     public class NodeEntity : BaseEntity {
         public Point Value { get; set; }
 
@@ -294,6 +318,7 @@ namespace taskmaker_wpf.Entity {
         }
     }
 
+    [Serializable]
     public class SimplexRegionEntity : BaseRegionEntity {
         public NodeEntity[] Nodes { get; set; }
         public override NodeState[] Vertices => Nodes.Select(x => new NodeState { Id = x.Id, Value = x.Value }).ToArray();
@@ -339,6 +364,7 @@ namespace taskmaker_wpf.Entity {
 
     }
 
+    [Serializable]
     [XmlInclude(typeof(RectVoronoiRegionEntity))]
     [XmlInclude(typeof(SectoralVoronoiRegionEntity))]
     public class VoronoiRegionEntity : BaseRegionEntity {
@@ -393,6 +419,7 @@ namespace taskmaker_wpf.Entity {
         }
     }
 
+    [Serializable]
     public class SectoralVoronoiRegionEntity : VoronoiRegionEntity {
         public override double[] GetLambdas(Point pt, NodeEntity[] collection) {
             if (Governors[0].Id == Governors[1].Id) {
@@ -515,7 +542,7 @@ namespace taskmaker_wpf.Entity {
         }
     }
 
-
+    [Serializable]
     public class RectVoronoiRegionEntity : VoronoiRegionEntity {
         public RectVoronoiRegionEntity() { }
 
@@ -565,12 +592,14 @@ namespace taskmaker_wpf.Entity {
 
     }
 
+    [Serializable]
 
     public class ControlUiEntity : BaseEntity {
         private List<NodeEntity> nodes = new List<NodeEntity>();
         private List<BaseRegionEntity> regions = new List<BaseRegionEntity>();
         private int nextIdx = 1;
 
+        [XmlIgnore]
         public List<BaseRegionEntity> Regions { get => regions; set => regions = value; }
         public List<NodeEntity> Nodes {
             get => nodes; 
@@ -686,6 +715,7 @@ namespace taskmaker_wpf.Entity {
         }
     }
 
+    [Serializable]
     public class MotorEntity : BaseEntity {
         public double Value { get; set; }
         public double Min { get; set; } = -10000d;

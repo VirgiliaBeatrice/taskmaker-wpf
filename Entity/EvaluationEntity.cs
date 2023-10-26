@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Data;
 using System.Windows.Markup;
+using System.Xml.Serialization;
 using taskmaker_wpf.Services;
 
 namespace taskmaker_wpf.Entity
@@ -73,6 +76,8 @@ namespace taskmaker_wpf.Entity
         Advanced,
         None
     }
+    
+    [Serializable]
     public class EvaluationEntity : BaseEntity
     {
         private string _participant = "Participant";

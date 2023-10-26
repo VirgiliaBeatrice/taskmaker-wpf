@@ -451,6 +451,9 @@ namespace taskmaker_wpf.Views {
                 if (result == true) {
                     // Save document
                     string filename = dlg.FileName;
+                    WeakReferenceMessenger.Default.Send(new SaveMessage {
+                        Path = filename
+                    });
                 }
 
                 //_eventAggregator.GetEvent<SystemSaveEvent>().Publish();
@@ -472,7 +475,9 @@ namespace taskmaker_wpf.Views {
                 if (result == true) {
                     // Open document
                     string filename = dialog.FileName;
-                    _eventAggregator.GetEvent<SystemLoadedEvent>().Publish();
+                    WeakReferenceMessenger.Default.Send(new LoadMessage {
+                        Path = filename
+                    });
                 }
 
                 e.Handled = true;
@@ -550,11 +555,11 @@ namespace taskmaker_wpf.Views {
         }
     }
 
-    public class SystemSaveEvent : PubSubEvent {
-
+    public class SaveMessage { 
+        public string Path { get; set; }
     }
-
-    public class SystemLoadedEvent : PubSubEvent {
+    public class LoadMessage {
+        public string Path { get; set; }
 
     }
 

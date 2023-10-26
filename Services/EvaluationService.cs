@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using taskmaker_wpf.Entity;
+using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Views;
 
 namespace taskmaker_wpf.Services
@@ -45,6 +46,36 @@ namespace taskmaker_wpf.Services
             timer.Tick += (_, _) => {
                 _time = DateTime.Now - _startTime;
             };
+
+            WeakReferenceMessenger.Default.Register<SaveMessage>(this, (r, m) => {
+                var filename = m.Path;
+
+                var idx = 0;
+
+                foreach(var item in entities) {
+                    BaseEntity.SaveData(item.Value, filename);
+                }
+            });
+
+            WeakReferenceMessenger.Default.Register<LoadMessage>(this, (r, m) => {
+                var filename = m.Path;
+                
+            });
+
+            WeakReferenceMessenger.Default.Register<MapOutputMessage>(this, (r, m) => {
+                var values = m.Output;
+                var motors = _motorSrv.GetAll();
+                for (int i = 0; i < values.Length; i++) {
+
+                    motors[i].Value = values[i];
+
+                    WeakReferenceMessenger.Default.Send(new MotorValueUpdatedMessage {
+                        NuiBoardId = motors[i].NuiBoardId,
+                        NuiMotorId = motors[i].NuiMotorId,
+                        Value = motors[i].Value
+                    });
+                }
+            });
 
         }
 
@@ -89,6 +120,11 @@ namespace taskmaker_wpf.Services
 
             logger.Info("Event");
             logFile.AppendLine();
+        }
+
+        public void SaveToFile() {
+            // save this to xml file
+
         }
 
         public void Initialize() {

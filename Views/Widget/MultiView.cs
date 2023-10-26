@@ -54,6 +54,7 @@ namespace taskmaker_wpf.Views.Widget {
         Reset,
     }
 
+    [Serializable]
     public struct MapEntry {
         public MapEntry() { }
 

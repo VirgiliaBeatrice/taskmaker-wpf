@@ -138,6 +138,7 @@ namespace taskmaker_wpf.ViewModels {
         [RelayCommand]
         public void SetValue(MapEntry entry) {
             _entity.SetValue((new[] { -1 }).Concat(entry.Indices).ToArray(), entry.Value);
+            _entity.MapEntries.Add(entry);
 
             Fetch();
         }
@@ -147,6 +148,7 @@ namespace taskmaker_wpf.ViewModels {
             _entity.SetValue(
                 (new[] { -1 }).Concat(entry.Indices).ToArray(),
                 Enumerable.Repeat(double.NaN, 6).ToArray());
+            _entity.MapEntries.Remove(_entity.MapEntries.First(e => e == entry));
 
             Fetch();
         }
