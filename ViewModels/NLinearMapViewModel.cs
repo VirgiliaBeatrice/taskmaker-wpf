@@ -146,6 +146,10 @@ namespace taskmaker_wpf.ViewModels {
             Fetch();
         }
 
+        public void ClearValue(int[] indices) {
+            SetValue(indices, Enumerable.Repeat(double.NaN, 6).ToArray());
+        }
+
         [RelayCommand]
         public void ClearValue(MapEntry entry) {
             _entity.SetValue(

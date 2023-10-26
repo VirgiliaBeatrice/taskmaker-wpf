@@ -107,6 +107,8 @@ namespace taskmaker_wpf.Views {
             else {
                 var vm = DataContext as RegionControlUIViewModel;
 
+                ChangeSnackbar(mode);
+
                 if (vm.SelectedEvaluation != null) {
                     if (vm.SelectedEvaluation.SelectedSession != null) {
                         vm.SelectedEvaluation.SelectedSession.Mode = mode;

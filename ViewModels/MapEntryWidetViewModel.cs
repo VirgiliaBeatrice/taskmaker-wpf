@@ -51,6 +51,15 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         [RelayCommand]
+        public void Clear() {
+            var indices = _session.SelectedNodeIndices;
+
+            _session.Map.ClearValue(indices);
+
+            Update();
+        }
+
+        [RelayCommand]
         public void Close() {
             _session.ShowWidget = false;
         }

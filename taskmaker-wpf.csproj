@@ -90,6 +90,11 @@
     <Compile Update="PCController\MultiMediaTimer.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="icons\arm.png" />
@@ -101,6 +106,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="icons\material-design-icons\svg\outlined\build_circle.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icons\material-design-icons\svg\outlined\delete.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icons\material-design-icons\svg\outlined\delete_forever.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="icons\material-design-icons\svg\outlined\done.svg">
@@ -192,6 +203,7 @@
     <None Remove="icons\material-design-icons\svg\outlined\arrow_back.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\arrow_forward.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\build_circle.svg" />
+    <None Remove="icons\material-design-icons\svg\outlined\delete.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\done.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\library_add.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\pause_circle.svg" />
@@ -204,6 +216,12 @@
     <None Remove="icons\material-design-icons\svg\svgo.config.js" />
     <None Remove="icons\material-design-icons\_config.yml" />
     <None Remove="icons\panda.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Update="nlog.config">
