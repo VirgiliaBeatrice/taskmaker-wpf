@@ -30,6 +30,7 @@
     <OutputPath>bin\x64\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Data\**" />
     <Compile Remove="icons\material-design-icons\demo\**" />
     <Compile Remove="icons\material-design-icons\font\**" />
     <Compile Remove="icons\material-design-icons\scripts\**" />
@@ -42,6 +43,7 @@
     <Compile Remove="Views\Elements\**" />
     <Compile Remove="Views\Widget\Container\**" />
     <Compile Remove="Views\Widget\Node\**" />
+    <EmbeddedResource Remove="Data\**" />
     <EmbeddedResource Remove="icons\material-design-icons\demo\**" />
     <EmbeddedResource Remove="icons\material-design-icons\font\**" />
     <EmbeddedResource Remove="icons\material-design-icons\scripts\**" />
@@ -54,6 +56,7 @@
     <EmbeddedResource Remove="Views\Elements\**" />
     <EmbeddedResource Remove="Views\Widget\Container\**" />
     <EmbeddedResource Remove="Views\Widget\Node\**" />
+    <None Remove="Data\**" />
     <None Remove="icons\material-design-icons\demo\**" />
     <None Remove="icons\material-design-icons\font\**" />
     <None Remove="icons\material-design-icons\scripts\**" />
@@ -66,6 +69,7 @@
     <None Remove="Views\Elements\**" />
     <None Remove="Views\Widget\Container\**" />
     <None Remove="Views\Widget\Node\**" />
+    <Page Remove="Data\**" />
     <Page Remove="icons\material-design-icons\demo\**" />
     <Page Remove="icons\material-design-icons\font\**" />
     <Page Remove="icons\material-design-icons\scripts\**" />
@@ -90,7 +94,16 @@
   <ItemGroup>
     <Resource Include="icons\arm.png" />
     <Resource Include="icons\home.png" />
+    <Resource Include="icons\material-design-icons\svg\outlined\arrow_back.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icons\material-design-icons\svg\outlined\arrow_forward.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="icons\material-design-icons\svg\outlined\build_circle.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icons\material-design-icons\svg\outlined\done.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="icons\material-design-icons\svg\outlined\library_add.svg">
@@ -106,6 +119,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="icons\material-design-icons\svg\outlined\stop_circle.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icons\material-design-icons\svg\outlined\tune.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="icons\panda.png" />
@@ -173,12 +189,16 @@
     <None Remove="icons\material-design-icons\package.json" />
     <None Remove="icons\material-design-icons\README.md" />
     <None Remove="icons\material-design-icons\svg\LICENSE" />
+    <None Remove="icons\material-design-icons\svg\outlined\arrow_back.svg" />
+    <None Remove="icons\material-design-icons\svg\outlined\arrow_forward.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\build_circle.svg" />
+    <None Remove="icons\material-design-icons\svg\outlined\done.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\library_add.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\pause_circle.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\play_circle.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\run_circle.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\stop_circle.svg" />
+    <None Remove="icons\material-design-icons\svg\outlined\tune.svg" />
     <None Remove="icons\material-design-icons\svg\package.json" />
     <None Remove="icons\material-design-icons\svg\README.md" />
     <None Remove="icons\material-design-icons\svg\svgo.config.js" />
@@ -189,8 +209,5 @@
     <None Update="nlog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Data\" />
   </ItemGroup>
 </Project>

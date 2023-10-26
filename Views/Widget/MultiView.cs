@@ -64,6 +64,8 @@ namespace taskmaker_wpf.Views.Widget {
 
         public bool IsInvalid => Value.Any(double.IsNaN);
 
+        public string FormattedIdsString => $"({string.Join(",", IDs)})";
+
         public override string ToString() {
             return $"[({string.Join(",", IDs)}) -> [{(IsInvalid ? "NaN" : "Set")}]]";
         }
@@ -193,13 +195,18 @@ namespace taskmaker_wpf.Views.Widget {
 
             Content = _grid;
 
-            WeakReferenceMessenger.Default.Register<UiControllerSelectedMessage>(this, async (r, m) => {
+            WeakReferenceMessenger.Default.Register<UiControllerSelectedMessage>(this, (r, m) => {
                 var controller = m.Sender as UiController;
                 var view = r as MultiView;
 
                 (DataContext as SessionViewModel).SelectedNodeStates = view.Controllers.Select(c => c.SelectedNode.State).ToArray();
-                
-                await view.RequestMotorDialog();
+
+                var vm = DataContext as SessionViewModel;
+
+
+                vm.ShowWidget = true;
+                // new mechanism
+                //await view.RequestMotorDialog();
             });
             WeakReferenceMessenger.Default.Register<UiControllerControlledMessage>(this, (r, m) => {
                 (DataContext as SessionViewModel).Interpolate();
@@ -220,6 +227,13 @@ namespace taskmaker_wpf.Views.Widget {
                     control.Close();
                     control.Open();
 
+                    // data binding
+                    Binding binding;
+                    binding = new Binding("MapEntryWidget") {
+                        Source = vm,
+                    };
+
+                    Widget.SetBinding(DataContextProperty, binding);
                 }
             }
 
@@ -233,9 +247,9 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         private void Vm_PropertyChanged(object sender, PropertyChangedEventArgs e) {
-            if (e.PropertyName == nameof(SessionViewModel.Mode)) {
-                var vm = sender as SessionViewModel;
+            var vm = (sender as SessionViewModel);
 
+            if (e.PropertyName == nameof(SessionViewModel.Mode)) {
                 uiMode = vm.Mode;
 
                 foreach(var item in Controllers) {
@@ -246,9 +260,18 @@ namespace taskmaker_wpf.Views.Widget {
                 Close();
                 Open();
             }
+            else if (e.PropertyName == nameof(SessionViewModel.ShowWidget)) {
+                if (vm.ShowWidget) {
+                    OpenWidget();
+                }
+                else {
+                    CloseWidget();
+                }
+            }
         }
 
         public List<UiController> Controllers { get; set; } = new List<UiController>();
+        public MapEntryWidget Widget { get; set; }
 
         public NodeShape[] SelectedNodes => Controllers.Select(c => c.SelectedNode).ToArray();
 
@@ -275,8 +298,16 @@ namespace taskmaker_wpf.Views.Widget {
             //    HorizontalAlignment = HorizontalAlignment.Right,
             //};
 
+            Widget = new MapEntryWidget() {
+                Visibility = Visibility.Hidden
+            };
+
             // single
             grid.Children.Add(Controllers[0]);
+            grid.Children.Add(Widget);
+
+            Panel.SetZIndex(Widget, 10);
+
             //grid.Children.Add(textblock);
         }
 
@@ -321,9 +352,37 @@ namespace taskmaker_wpf.Views.Widget {
             Layout();
         }
 
+        private void ShowWidget(bool v) {
+            if (v) {
+                Widget.Visibility = Visibility.Visible;
+            }
+            else {
+                Widget.Visibility = Visibility.Hidden;
+            }
+        }
+
+        public void OpenWidget() {
+            if (UiMode == UiMode.Assign && SelectedNodes.All(v => v != null)) {
+                ShowWidget(true);
+            }
+        }
+
+        public void CloseWidget() {
+            ShowWidget(false);
+        }
+
 
         public async Task RequestMotorDialog() {
             if (UiMode == UiMode.Assign && SelectedNodes.All(v => v != null)) {
+                //var vm = DataContext as SessionViewModel;
+                //var ids = vm.SelectedNodeIds;
+                //var indices = vm.SelectedNodeIndices;
+                //var value = vm.Map.GetValue(indices);
+                //var outputValue = vm.Map.Output;
+
+                //Widget.DataContext = new MapEntryWidetViewModel(ids, value, outputValue);
+                //ShowWidget(true);
+
                 // Send dialog message
                 var result = await WeakReferenceMessenger.Default.Send(new DialogRequestMessage());
 

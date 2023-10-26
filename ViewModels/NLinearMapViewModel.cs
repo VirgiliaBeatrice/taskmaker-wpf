@@ -75,7 +75,7 @@ namespace taskmaker_wpf.ViewModels {
         private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
         partial void OnOutputChanged(double[] value) {
-            _logger.Debug($"Output changed: {string.Join(",", value)}");
+            //_logger.Debug($"Output changed: {string.Join(",", value)}");
             WeakReferenceMessenger.Default.Send(new MapOutputMessage() {
                 Id = Id,
                 Output = value
@@ -133,6 +133,9 @@ namespace taskmaker_wpf.ViewModels {
             Fetch();
         }
 
+        public void SetValue(int[] indices, double[] value) {
+            _entity.SetValue((new[] { -1 }).Concat(indices).ToArray(), value);
+        }
 
         // TODO: key for entry
         [RelayCommand]
@@ -158,6 +161,13 @@ namespace taskmaker_wpf.ViewModels {
                 (new[] { -1 }).Concat(entry.Indices).ToArray());
 
             entry.Value = value;
+        }
+
+        public double[] GetValue(int[] indices) {
+            var value = _entity.GetValue(
+                (new[] { -1 }).Concat(indices).ToArray());
+
+            return value;
         }
 
         [RelayCommand]

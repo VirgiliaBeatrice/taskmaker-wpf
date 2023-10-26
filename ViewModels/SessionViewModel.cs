@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
+using System.IO.Ports;
 using System.Linq;
 using taskmaker_wpf.Entity;
 using taskmaker_wpf.Views.Widget;
@@ -30,7 +31,17 @@ namespace taskmaker_wpf.ViewModels
         [ObservableProperty]
         private ControlUiViewModel[] _uis;
         [ObservableProperty]
+        private MapEntryWidetViewModel _mapEntryWidget;
+        [ObservableProperty]
         private UiMode _mode = UiMode.Default;
+        [ObservableProperty]
+        private bool _showWidget = false;
+
+        partial void OnShowWidgetChanged(bool value) {
+            if (value)
+                FetchWidget();
+        }
+
 
         public NodeState[][] NodeCollections => Uis.Select(e => e.NodeStates).ToArray();
 
@@ -73,6 +84,16 @@ namespace taskmaker_wpf.ViewModels
             FetchThis();
             FetchUis();
             FetchMap();
+            FetchWidget();
+        }
+
+        private void FetchWidget() {
+            MapEntryWidget = new MapEntryWidetViewModel(this);
+
+            if (SelectedNodeStates != null) {
+                MapEntryWidget.Update();
+            }
+
         }
 
         partial void OnSelectedNodeStatesChanged(NodeState[] value) {

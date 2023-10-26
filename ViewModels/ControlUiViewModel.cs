@@ -11,9 +11,9 @@ using System.Windows;
 using taskmaker_wpf.Entity;
 using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Services;
-using taskmaker_wpf.Views.Widget;
 
 namespace taskmaker_wpf.ViewModels {
+
     public struct NodeState {
         private int _id;
         private Point _value = new Point();
