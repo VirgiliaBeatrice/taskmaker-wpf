@@ -158,6 +158,7 @@ namespace taskmaker_wpf.ViewModels {
             }
 
             WeakReferenceMessenger.Default.Send(new UiViewModelNodeAddedMessage() { Ui = this });
+            EventDispatcher.Record(new CreationAddEvent());
         }
 
         [RelayCommand]
@@ -170,6 +171,8 @@ namespace taskmaker_wpf.ViewModels {
                 _entity.Build();
                 RegionStates = MapFromRegionEntities();
             }
+
+            EventDispatcher.Record(new CreationMoveEvent());
         }
 
 
@@ -187,6 +190,7 @@ namespace taskmaker_wpf.ViewModels {
             }
 
             WeakReferenceMessenger.Default.Send(new UiViewModelNodeDeletedMessage() { Ui = this, NodeIndex = index });
+            EventDispatcher.Record(new CreationDeleteEvent());
         }
 
         private BaseRegionState[] MapFromRegionEntities() {

@@ -58,7 +58,16 @@ namespace taskmaker_wpf.Views {
 
             PreviewKeyUp += RegionControlUI_PreviewKeyUp;
 
-            DataContextChanged += RegionControlUI_DataContextChanged;
+            var vm = DataContext as RegionControlUIViewModel;
+
+            vm.PropertyChanged += Vm_PropertyChanged;
+
+            ChangeColor(evaluationSign, false);
+            ChangeColor(practiceSign, false);
+            ChangeColor(creationSign, false);
+            ChangeColor(performSign, false);
+
+            //DataContextChanged += RegionControlUI_DataContextChanged;
         }
 
         private void RegionControlUI_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e) {
@@ -72,10 +81,33 @@ namespace taskmaker_wpf.Views {
         }
 
         private void Vm_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
+            var vm = sender as RegionControlUIViewModel;
+
+            if (e.PropertyName == nameof(RegionControlUIViewModel.IsEvaluationStarted)) {
+                ChangeColor(evaluationSign, vm.IsEvaluationStarted);
+            }
+            else if (e.PropertyName == nameof(RegionControlUIViewModel.IsPracticeStarted)) {
+                ChangeColor(practiceSign, vm.IsPracticeStarted);
+            }
+            else if (e.PropertyName == nameof(RegionControlUIViewModel.IsCreationStarted)) {
+                ChangeColor(creationSign, vm.IsCreationStarted);
+            }
+            else if (e.PropertyName == nameof(RegionControlUIViewModel.IsPerformStarted)) {
+                ChangeColor(performSign, vm.IsPerformStarted);
+            }
             //if (e.PropertyName == nameof(RegionControlUIViewModel.Mode)) {
             //    UiStatusText = multiView.UiMode.ToString();
             //    ChangeMode(multiView.UiMode);
             //}
+        }
+
+        private void ChangeColor(Ellipse shape, bool v) {
+            if (v) {
+                shape.Fill = new SolidColorBrush(Colors.Green);
+            }
+            else {
+                shape.Fill = new SolidColorBrush(Colors.Red);
+            }
         }
 
         private void RegionControlUI_PreviewKeyUp(object sender, KeyEventArgs e) {

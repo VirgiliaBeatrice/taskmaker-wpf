@@ -9,6 +9,7 @@ using System.Drawing;
 using System.IO.Ports;
 using System.Linq;
 using taskmaker_wpf.Entity;
+using taskmaker_wpf.Services;
 using taskmaker_wpf.Views.Widget;
 
 namespace taskmaker_wpf.ViewModels
@@ -40,6 +41,12 @@ namespace taskmaker_wpf.ViewModels
         partial void OnShowWidgetChanged(bool value) {
             if (value)
                 FetchWidget();
+        }
+
+        partial void OnModeChanged(UiMode value) {
+            if (value == UiMode.Control) {
+                EventDispatcher.Record(new CreationTryControlEvent());
+            }
         }
 
 

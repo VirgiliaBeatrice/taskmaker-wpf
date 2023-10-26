@@ -114,9 +114,8 @@
               VerticalAlignment="Stretch">
           <w:MultiView x:Name="multiView"
                        Focusable="True"
-                       Width="auto" 
-                       DataContext="{Binding SelectedEvaluation.SelectedSession}"
-                       />
+                       Width="auto"
+                       DataContext="{Binding SelectedEvaluation.SelectedSession}" />
 
           <StackPanel Orientation="Vertical"
                       VerticalAlignment="Top"
@@ -257,28 +256,61 @@
                                    Width="12"
                                    Height="12" />
                           </Button>
-                          <Button>
-                            <Image Source="{svgc:SvgImage Source=/icons/material-design-icons/svg/outlined/play_circle.svg, AppName=taskmaker-wpf}"
-                                   Width="12"
-                                   Height="12" />
-                          </Button>
-                          <Button>
-                            <Image Source="{svgc:SvgImage Source=/icons/material-design-icons/svg/outlined/stop_circle.svg, AppName=taskmaker-wpf}"
-                                   Width="12"
-                                   Height="12" />
-                          </Button>
-                          <Button>
-                            <Image Source="{svgc:SvgImage Source=/icons/material-design-icons/svg/outlined/pause_circle.svg, AppName=taskmaker-wpf}"
-                                   Width="12"
-                                   Height="12" />
-                          </Button>
+
+                          <StackPanel Orientation="Vertical">
+                            <Button Command="{Binding EvaluationCommand}">
+                              <Image Source="{svgc:SvgImage Source=/icons/material-design-icons/svg/outlined/science.svg, AppName=taskmaker-wpf}"
+                                     Width="12"
+                                     Height="12" />
+                            </Button>
+                            <Ellipse x:Name="evaluationSign"
+                                     Width="10"
+                                     Height="10"
+                                     d:Fill="Red" />
+                          </StackPanel>
+
+                          <StackPanel Orientation="Vertical">
+                            <Button Command="{Binding CreationCommand}">
+                              <Image Source="{svgc:SvgImage Source=/icons/material-design-icons/svg/outlined/design_services.svg, AppName=taskmaker-wpf}"
+                                     Width="12"
+                                     Height="12" />
+                            </Button>
+                            <Ellipse x:Name="creationSign"
+                                     Width="10"
+                                     Height="10"
+                                     d:Fill="Red" />
+                          </StackPanel>
+
+                          <StackPanel Orientation="Vertical">
+                            <Button Command="{Binding PracticeCommand}">
+                              <Image Source="{svgc:SvgImage Source=/icons/material-design-icons/svg/outlined/model_training.svg, AppName=taskmaker-wpf}"
+                                     Width="12"
+                                     Height="12" />
+                            </Button>
+                            <Ellipse x:Name="practiceSign"
+                                     Width="10"
+                                     Height="10"
+                                     d:Fill="Red" />
+                          </StackPanel>
+
+                          <StackPanel Orientation="Vertical">
+                            <Button Command="{Binding PerformCommand}">
+                              <Image Source="{svgc:SvgImage Source=/icons/material-design-icons/svg/outlined/draw.svg, AppName=taskmaker-wpf}"
+                                     Width="12"
+                                     Height="12" />
+                            </Button>
+                            <Ellipse x:Name="performSign"
+                                     Width="10"
+                                     Height="10"
+                                     d:Fill="Red" />
+                          </StackPanel>
 
                         </StackPanel>
 
                       </GroupBox>
                       <ListBox ItemsSource="{Binding Evaluations}"
-                                Margin="12"
-                                SelectedItem="{Binding SelectedEvaluation}" />
+                               Margin="12"
+                               SelectedItem="{Binding SelectedEvaluation}" />
 
 
                       <GroupBox Header="Info">
@@ -314,7 +346,8 @@
                                     Margin="0,12,0,0">
                             <StackPanel>
                               <Label Content="Session" />
-                              <ListBox ItemsSource="{Binding Sessions}" SelectedItem="{Binding SelectedSession}"/>
+                              <ListBox ItemsSource="{Binding Sessions}"
+                                       SelectedItem="{Binding SelectedSession}" />
                             </StackPanel>
                           </GroupBox>
                           <Button Content="Commit"
@@ -333,7 +366,8 @@
 
                 </TabItem>
 
-                <TabItem Header="Session" DataContext="{Binding SelectedEvaluation}">
+                <TabItem Header="Session"
+                         DataContext="{Binding SelectedEvaluation}">
                   <GroupBox Header="Session Operations">
                     <StackPanel>
                       <Button FontSize="16"
@@ -379,7 +413,7 @@
                     </StackPanel>
                   </GroupBox>
                 </TabItem>
-                
+
                 <TabItem Header="ControlUi">
                   <ScrollViewer VerticalScrollBarVisibility="Hidden">
                     <StackPanel Margin="10"

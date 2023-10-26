@@ -40,7 +40,14 @@ namespace taskmaker_wpf.ViewModels {
 
         [ObservableProperty]
         private EvaluationViewModel _selectedEvaluation;
-
+        [ObservableProperty]
+        private bool _isEvaluationStarted = false;
+        [ObservableProperty]
+        private bool _isPracticeStarted = false;
+        [ObservableProperty]
+        private bool _isCreationStarted = false;
+        [ObservableProperty]
+        private bool _isPerformStarted = false;
 
         //partial void OnSelectedSessionChanged(SessionViewModel value) {
         //    if (value != null)
@@ -78,6 +85,46 @@ namespace taskmaker_wpf.ViewModels {
         public void Fetch() {
             //UiCollection.Fetch();
         }
+
+        [RelayCommand]
+        public void Evaluation() {
+            if (IsEvaluationStarted)
+                EventDispatcher.Record(new EvaluationStoppedEvent());
+            else
+                EventDispatcher.Record(new EvaluationStartedEvent());
+
+            IsEvaluationStarted = !IsEvaluationStarted;
+        }
+
+        [RelayCommand]
+        public void Practice() {
+            if (IsPracticeStarted)
+                EventDispatcher.Record(new PracticeStoppedEvent());
+            else
+                EventDispatcher.Record(new PracticeStartedEvent());
+
+            IsPracticeStarted = !IsPracticeStarted;
+        }
+
+        [RelayCommand]
+        public void Creation() {
+            if (IsCreationStarted)
+                EventDispatcher.Record(new CreationStoppedEvent());
+            else
+                EventDispatcher.Record(new CreationStartedEvent());
+            IsCreationStarted = !IsCreationStarted;
+        }
+
+        [RelayCommand]
+        public void Perform() {
+            if (IsPerformStarted)
+                EventDispatcher.Record(new PerformStoppedEvent());
+            else
+                EventDispatcher.Record(new PerformStartedEvent());
+
+            IsPerformStarted = !IsPerformStarted;
+        }
+
 
         [RelayCommand]
         private async Task RequestMotorDialog() {

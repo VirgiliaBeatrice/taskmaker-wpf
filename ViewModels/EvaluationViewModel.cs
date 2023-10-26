@@ -25,6 +25,7 @@ namespace taskmaker_wpf.Services {
         [ObservableProperty]
         private SessionViewModel _selectedSession;
 
+
         public EvaluationViewModel(EvaluationEntity entity) {
             _entity = entity;
 
@@ -80,6 +81,8 @@ namespace taskmaker_wpf.Services {
                 Sessions.Add(new SessionViewModel(entity));
             }
         }
+
+
 
         public override string ToString() {
             return Name;

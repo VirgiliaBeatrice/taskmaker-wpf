@@ -135,6 +135,7 @@ namespace taskmaker_wpf.ViewModels {
 
         public void SetValue(int[] indices, double[] value) {
             _entity.SetValue((new[] { -1 }).Concat(indices).ToArray(), value);
+            EventDispatcher.Record(new CreationAssignEvent());
         }
 
         // TODO: key for entry

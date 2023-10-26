@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualBasic;
 using NLog;
@@ -16,22 +17,10 @@ using System.Windows.Threading;
 using taskmaker_wpf.Entity;
 using taskmaker_wpf.ViewModels;
 using taskmaker_wpf.Views;
+using WPFLocalizeExtension.Engine;
 
 namespace taskmaker_wpf.Services {
 
-    public interface IEvent {
-        Guid EventId { get; }
-        DateTime Timestamp { get; }
-        string Tags { get; }
-        string Message { get; }
-    }
-
-    public record EvaluationStartedEvent : IEvent {
-        public Guid EventId => Guid.NewGuid();
-        public DateTime Timestamp => DateTime.UtcNow;
-        public string Tags => "Evaluation.Started";
-        public string Message { get; init; }
-    }
 
     public class EvaluationService : BaseEntityManager<EvaluationEntity> {
         private readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -111,10 +100,10 @@ namespace taskmaker_wpf.Services {
         }
 
         public void Start() {
-            if (!timer.IsEnabled) {
-                _startTime = DateTime.Now;
-                timer.Start();
-            }
+            //if (!timer.IsEnabled) {
+            //    _startTime = DateTime.Now;
+            //    timer.Start();
+            //}
         }
 
         public void Pause() {

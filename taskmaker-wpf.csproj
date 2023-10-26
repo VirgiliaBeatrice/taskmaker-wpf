@@ -114,10 +114,19 @@
     <Resource Include="icons\material-design-icons\svg\outlined\delete_forever.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="icons\material-design-icons\svg\outlined\design_services.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="icons\material-design-icons\svg\outlined\done.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="icons\material-design-icons\svg\outlined\draw.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="icons\material-design-icons\svg\outlined\library_add.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icons\material-design-icons\svg\outlined\model_training.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="icons\material-design-icons\svg\outlined\pause_circle.svg">
@@ -127,6 +136,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="icons\material-design-icons\svg\outlined\run_circle.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icons\material-design-icons\svg\outlined\science.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="icons\material-design-icons\svg\outlined\stop_circle.svg">
@@ -204,11 +216,15 @@
     <None Remove="icons\material-design-icons\svg\outlined\arrow_forward.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\build_circle.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\delete.svg" />
+    <None Remove="icons\material-design-icons\svg\outlined\design_services.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\done.svg" />
+    <None Remove="icons\material-design-icons\svg\outlined\draw.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\library_add.svg" />
+    <None Remove="icons\material-design-icons\svg\outlined\model_training.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\pause_circle.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\play_circle.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\run_circle.svg" />
+    <None Remove="icons\material-design-icons\svg\outlined\science.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\stop_circle.svg" />
     <None Remove="icons\material-design-icons\svg\outlined\tune.svg" />
     <None Remove="icons\material-design-icons\svg\package.json" />
