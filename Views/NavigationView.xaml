@@ -63,11 +63,6 @@
       </Button>
       <Button Command="{Binding NavigateCommand}"
               CommandParameter="RegionSlider">
-        <Image Source="/icons/arm.png"
-               RenderOptions.BitmapScalingMode="HighQuality" />
-      </Button>
-      <Button Command="{Binding NavigateCommand}"
-              CommandParameter="RegionSliderPanda">
         <Image Source="/icons/panda.png"
                RenderOptions.BitmapScalingMode="HighQuality" />
       </Button>

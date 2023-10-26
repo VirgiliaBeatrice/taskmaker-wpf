@@ -5,9 +5,43 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:taskmaker_wpf.Views"
              xmlns:w="clr-namespace:taskmaker_wpf.Views.Widget"
+             xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels"
+             d:DataContext="{d:DesignInstance Type=viewmodels:RegionSliderViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="800"
              >
-    <Grid>
-    </Grid>
+  <Border Margin="24"
+          CornerRadius="16"
+          Background="White"
+          Opacity="0.8">
+    <DockPanel LastChildFill="True">
+      <TextBlock DockPanel.Dock="Top"
+                 Text="Motor Controller"
+                 FontSize="48"
+                 FontWeight="Bold"
+                 VerticalAlignment="Center"
+                 HorizontalAlignment="Center"
+                 Margin="0 0 0 24" />
+      <Viewbox Margin="0 0 0 24"
+               DockPanel.Dock="Top">
+
+        <Grid>
+
+          <ItemsControl ItemsSource="{Binding Motors}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <w:SliderController />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+
+          </ItemsControl>
+        </Grid>
+      </Viewbox>
+    </DockPanel>
+  </Border>
 </UserControl>
