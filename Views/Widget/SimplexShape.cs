@@ -57,11 +57,12 @@ namespace taskmaker_wpf.Views.Widget {
                 pathFig.Segments.Add(new LineSegment { Point = points[2] });
                 pathFig.Segments.Add(new LineSegment { Point = points[0] });
 
-                var fill = ColorManager.GetTintedColor(ColorManager.Palette[0], 2);
+                //var fill = ColorManager.GetTintedColor(ColorManager.Palette[0], 2);
+                var fill = M3ColorManager.GetColor("secondary");
 
                 var path = new Path {
                     Fill = new SolidColorBrush(fill),
-                    Stroke = new SolidColorBrush(Colors.DarkGray),
+                    Stroke = new SolidColorBrush(M3ColorManager.GetColor("outline")),
                     Stretch = Stretch.None,
                     StrokeThickness = 1.0,
                     Data = pathGeo
@@ -83,7 +84,7 @@ namespace taskmaker_wpf.Views.Widget {
                 pathFig.Segments.Add(new LineSegment { Point = points[0] });
 
                 var path = new Path {
-                    Stroke = new SolidColorBrush(Colors.DarkGray),
+                    Stroke = new SolidColorBrush(M3ColorManager.GetColor("outline")),
                     Stretch = Stretch.None,
                     StrokeThickness = 2.0,
                     Data = pathGeo

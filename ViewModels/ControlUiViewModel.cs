@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using NLog;
 using PCController;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -13,25 +14,52 @@ using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Services;
 
 namespace taskmaker_wpf.ViewModels {
+    public class NodeUpdatedMessage {
+        public NodeViewModel Sender { get; init; }
+    }
 
-    public struct NodeState {
+    // TODO: use node as data binding
+    public partial class NodeViewModel : ObservableObject {
+        [ObservableProperty]
         private int _id;
-        private Point _value = new Point();
+        [ObservableProperty]
+        private Point _value;
 
-        public int Id { get => _id; set => _id = value; }
-        public Point Value { get => _value; set => _value = value; }
+        partial void OnValueChanged(Point value) {
+            EventDispatcher.Record(new CreationMoveEvent());
 
-        public NodeState(int id, Point value) {
-            Id = id;
-            Value = value;
+            WeakReferenceMessenger.Default.Send(new NodeUpdatedMessage() { Sender = this });
         }
+
+        private readonly NodeEntity _entity;
+
+        public NodeViewModel(NodeEntity entity) {
+            _entity = entity;
+
+            //FetchThis();
+
+            _id = _entity.Id;
+            _value = _entity.Value;
+        }
+
+        [RelayCommand]
+        public void FetchThis() {
+            Id = _entity.Id;
+            Value = _entity.Value;
+        }
+
+
+        //public NodeViewModel(int id, Point value) {
+        //    Id = id;
+        //    Value = value;
+        //}
 
         public override bool Equals(object obj) {
             if (obj == null || this.GetType() != obj.GetType()) {
                 return false;
             }
 
-            var other = (NodeState)obj;
+            var other = (NodeViewModel)obj;
             return this.Id == other.Id;
         }
 
@@ -39,11 +67,11 @@ namespace taskmaker_wpf.ViewModels {
             return Id.GetHashCode();
         }
 
-        public static bool operator ==(NodeState left, NodeState right) {
+        public static bool operator ==(NodeViewModel left, NodeViewModel right) {
             return left.Equals(right);
         }
 
-        public static bool operator !=(NodeState left, NodeState right) {
+        public static bool operator !=(NodeViewModel left, NodeViewModel right) {
             return !(left == right);
         }
     }
@@ -65,7 +93,6 @@ namespace taskmaker_wpf.ViewModels {
             foreach(var entity in _uiSrv.GetAll()) {
                 var vm = new ControlUiViewModel(entity);
 
-                vm.FromEntity(entity);
                 Uis.Add(vm);
             }
         }
@@ -77,7 +104,6 @@ namespace taskmaker_wpf.ViewModels {
             var vm = new ControlUiViewModel(entity);
 
             _uiSrv.Create(entity);
-            vm.FromEntity(entity);
             Uis.Add(vm);
         }
     }
@@ -105,12 +131,11 @@ namespace taskmaker_wpf.ViewModels {
         [ObservableProperty]
         private BaseRegionState[] _regionStates = Array.Empty<BaseRegionState>();
         [ObservableProperty]
-        private NodeState[] _nodeStates = Array.Empty<NodeState>();
-        [ObservableProperty]
         private Point _input = new();
         [ObservableProperty]
         private BaseRegionState _hitRegion;
 
+        public ObservableCollection<NodeViewModel> NodeStates { get; set; } = new ObservableCollection<NodeViewModel>();
         private readonly ControlUiEntity _entity;
 
         public ControlUiViewModel(ControlUiEntity entity) {
@@ -118,15 +143,19 @@ namespace taskmaker_wpf.ViewModels {
 
             PropertyChanged += ControlUiViewModel_PropertyChanged;
 
+            WeakReferenceMessenger.Default.Register<NodeUpdatedMessage>(this, (r, m) => {
+                FetchRegions();
+            });
+
             Fetch();
         }
 
         private void ControlUiViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
             if (e.PropertyName == "HitRegion") {
-                _logger.Debug($"Hit changed {HitRegion}: {sender.GetHashCode()}");
+                //_logger.Debug($"Hit changed {HitRegion}: {sender.GetHashCode()}");
             }
             else if (e.PropertyName == "Input") {
-                _logger.Debug($"Input: {Input}: {sender.GetHashCode()}");
+                //_logger.Debug($"Input: {Input}: {sender.GetHashCode()}");
 
             }
         }
@@ -136,12 +165,13 @@ namespace taskmaker_wpf.ViewModels {
             // update all properties from entity to this
             Id = _entity.Id;
             Name = _entity.Name;
-            NodeStates = _entity.Nodes.Select(node => new NodeState(node.Id, node.Value)).ToArray();
 
-            if (NodeStates.Length >= 3) {
-                _entity.Build();
-                RegionStates = MapFromRegionEntities();
+            NodeStates.Clear();
+            foreach(var item in _entity.Nodes.Select(e => new NodeViewModel(e))) {
+                NodeStates.Add(item);
             }
+
+            FetchRegions();
         }
 
 
@@ -150,71 +180,58 @@ namespace taskmaker_wpf.ViewModels {
             var nodeEntity = _entity.Create();
             nodeEntity.Value = position;
 
-            NodeStates = _entity.Nodes.Select(node => new NodeState(node.Id, node.Value)).ToArray();
+            NodeStates.Add(new NodeViewModel(nodeEntity));
 
-            if (NodeStates.Length >= 3) {
-                _entity.Build();
-                RegionStates = MapFromRegionEntities();
-            }
+            FetchRegions();
 
             WeakReferenceMessenger.Default.Send(new UiViewModelNodeAddedMessage() { Ui = this });
             EventDispatcher.Record(new CreationAddEvent());
         }
 
-        [RelayCommand]
-        public void UpdateNode(NodeState nodeState) {
-            _entity.Update(new NodeEntity() { Id = nodeState.Id, Value = nodeState.Value });
-
-            NodeStates = _entity.Nodes.Select(node => new NodeState(node.Id, node.Value)).ToArray();
-
-            if (NodeStates.Length >= 3) {
+        public void FetchRegions() {
+            if (NodeStates.Count >= 3) {
                 _entity.Build();
-                RegionStates = MapFromRegionEntities();
+                RegionStates = BuildRegions();
             }
-
-            EventDispatcher.Record(new CreationMoveEvent());
         }
 
-
         [RelayCommand]
-        public void DeleteNode(NodeState nodeState) {
-            var index = Array.FindIndex(NodeStates, node => node.Id == nodeState.Id);
+        public void DeleteNode(NodeViewModel nodeState) {
+            var index = Array.FindIndex(NodeStates.ToArray(), node => node.Id == nodeState.Id);
 
             _entity.Delete(nodeState.Id);
 
-            NodeStates = _entity.Nodes.Select(node => new NodeState(node.Id, node.Value)).ToArray();
+            NodeStates.Remove(nodeState);
 
-            if (NodeStates.Length >= 3) {
-                _entity.Build();
-                RegionStates = MapFromRegionEntities();
-            }
+            FetchRegions();
 
             WeakReferenceMessenger.Default.Send(new UiViewModelNodeDeletedMessage() { Ui = this, NodeIndex = index });
             EventDispatcher.Record(new CreationDeleteEvent());
         }
 
-        private BaseRegionState[] MapFromRegionEntities() {
-            // create RegionStates from _entity.Regions
-            var regions = new List<BaseRegionState>();
+        public BaseRegionState[] BuildRegions() {
+            var regionStates = new List<BaseRegionState>();
 
-            foreach (var entity in _entity.Regions) {
-                if (entity is SimplexRegionEntity) {
-                    regions.Add(BaseRegionState.Create<SimplexRegionEntity, SimplexState>(entity as SimplexRegionEntity));
+            foreach(var region in _entity.Regions) {
+                if (region is SimplexRegionEntity s) {
+                    regionStates.Add(new SimplexState {
+                        Id = s.Id,
+                        Name = s.Name,
+                        Vertices = s.Vertices.Select(v => NodeStates.First(n => n.Id == v.Id)).ToArray(),
+                    });
                 }
-                else if (entity is VoronoiRegionEntity) {
-                    regions.Add(BaseRegionState.Create<VoronoiRegionEntity, VoronoiState>(entity as VoronoiRegionEntity));
+                else if (region is VoronoiRegionEntity vo) {
+                    regionStates.Add(new VoronoiState {
+                        Id = vo.Id,
+                        Name = vo.Name,
+                        Vertices = vo.Vertices.Select(vec => NodeStates.First(n => n.Id == vec.Id)).ToArray(),
+                    });
                 }
                 else
-                    throw new InvalidOperationException($"Unsupported entity type: {entity.GetType()}");
+                    throw new InvalidOperationException($"Unsupported entity type: {region.GetType()}");
             }
 
-            return regions.ToArray();
-        }
-
-        public void FromEntity(ControlUiEntity entity) {
-            Id = entity.Id;
-            Name = entity.Name;
-            NodeStates = entity.Nodes.Select(node => new NodeState(node.Id, node.Value)).ToArray();
+            return regionStates.ToArray();
         }
 
         public override string ToString() {

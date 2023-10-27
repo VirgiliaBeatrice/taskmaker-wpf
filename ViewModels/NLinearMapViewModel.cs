@@ -70,15 +70,23 @@ namespace taskmaker_wpf.ViewModels {
         private MapEntry[] _mapEntries;
         [ObservableProperty]
         private double[] _output;
+        [ObservableProperty]
+        private string _formattedOutput = "()";
 
         private readonly NLinearMapEntity _entity;
         private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
         partial void OnOutputChanged(double[] value) {
             //_logger.Debug($"Output changed: {string.Join(",", value)}");
-            WeakReferenceMessenger.Default.Send(new MapOutputMessage() {
-                Id = Id,
-                Output = value
+            //WeakReferenceMessenger.Default.Send(new MapOutputMessage() {
+            //    Id = Id,
+            //    Output = value
+            //});
+            FormattedOutput = "(" + string.Join(",", value) + ")";
+
+            WeakReferenceMessenger.Default.Send(new MapInterpolatedMessage {
+                Sender = this,
+                Value = Output
             });
         }
 
@@ -178,6 +186,8 @@ namespace taskmaker_wpf.ViewModels {
         [RelayCommand]
         public void Interpolate(double[][] lambdas) {
             Output = _entity.MapTo(lambdas);
+
+            
         }
 
 
@@ -192,6 +202,12 @@ namespace taskmaker_wpf.ViewModels {
             return Name;
         }
     }
+
+    public class MapInterpolatedMessage {
+        public NLinearMapViewModel Sender { get; init; }
+        public double[] Value { get; init; }
+    }
+
 
     public partial class NLinearMapCollectionViewModel : ObservableObject {
         private readonly MapService _mapSrv;

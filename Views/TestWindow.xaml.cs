@@ -145,28 +145,10 @@ namespace taskmaker_wpf.Views {
                 case Key.D0:
                     break;
                 case Key.D1:
-                    _evaluationService.InitializeMotors();
-                    // show messagebox
-                    var msgD1 = new ShowMessageBoxMessage {
-                        Message = "Motors have initialized.",
-                        Caption = "Evaluation Init",
-                        Button = MessageBoxButton.OK,
-                        Icon = MessageBoxImage.Information,
-                    };
 
-                    MessageBox.Show(msgD1.Message, msgD1.Caption, msgD1.Button, msgD1.Icon);
                     break;
                 case Key.D2:
-                    _evaluationService.InitializeSurvey();
-                    // show messagebox
-                    var msgD2 = new ShowMessageBoxMessage {
-                        Message = "Survey has initialized.",
-                        Caption = "Evaluation Init",
-                        Button = MessageBoxButton.OK,
-                        Icon = MessageBoxImage.Information,
-                    };
 
-                    MessageBox.Show(msgD2.Message, msgD2.Caption, msgD2.Button, msgD2.Icon);
                     break;
                 case Key.D3:
                     break;
@@ -297,8 +279,28 @@ namespace taskmaker_wpf.Views {
                 case Key.F7:
                     break;
                 case Key.F8:
+                    _evaluationService.InitializeMotors();
+                    // show messagebox
+                    var msgD1 = new ShowMessageBoxMessage {
+                        Message = "Motors have initialized.",
+                        Caption = "Evaluation Init",
+                        Button = MessageBoxButton.OK,
+                        Icon = MessageBoxImage.Information,
+                    };
+
+                    MessageBox.Show(msgD1.Message, msgD1.Caption, msgD1.Button, msgD1.Icon);
                     break;
                 case Key.F9:
+                    _evaluationService.InitializeSurvey();
+                    // show messagebox
+                    var msgD2 = new ShowMessageBoxMessage {
+                        Message = "Survey has initialized.",
+                        Caption = "Evaluation Init",
+                        Button = MessageBoxButton.OK,
+                        Icon = MessageBoxImage.Information,
+                    };
+
+                    MessageBox.Show(msgD2.Message, msgD2.Caption, msgD2.Button, msgD2.Icon);
                     break;
                 case Key.F10:
                     break;

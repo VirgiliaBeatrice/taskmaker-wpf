@@ -20,7 +20,7 @@ namespace taskmaker_wpf.ViewModels
         [ObservableProperty]
         private string _name;
         [ObservableProperty]
-        private NodeState[] _selectedNodeStates;
+        private NodeViewModel[] _selectedNodeStates;
         [ObservableProperty]
         private int[] _selectedNodeIndices;
         [ObservableProperty]
@@ -50,7 +50,7 @@ namespace taskmaker_wpf.ViewModels
         }
 
 
-        public NodeState[][] NodeCollections => Uis.Select(e => e.NodeStates).ToArray();
+        public NodeViewModel[][] NodeCollections => Uis.Select(e => e.NodeStates.ToArray()).ToArray();
 
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private readonly SessionEntity _entity;
@@ -64,7 +64,7 @@ namespace taskmaker_wpf.ViewModels
                 var axis = Array.IndexOf(Uis, uiVM);
                 var op = new TensorOperationRecord {
                     Axis = axis + 1,
-                    Index = uiVM.NodeStates.Length - 1
+                    Index = uiVM.NodeStates.Count - 1
                 };
 
                 Map.ExpandAt(op);
@@ -103,7 +103,7 @@ namespace taskmaker_wpf.ViewModels
 
         }
 
-        partial void OnSelectedNodeStatesChanged(NodeState[] value) {
+        partial void OnSelectedNodeStatesChanged(NodeViewModel[] value) {
             SelectedNodeIds = SelectedNodeStates.Select(e => e.Id).ToArray();
             SelectedNodeIndices = SelectedNodeStates.Select(e => Array.FindIndex(NodeCollections[Array.IndexOf(SelectedNodeStates, e)], n => n.Id == e.Id)).ToArray();
         }
@@ -150,10 +150,7 @@ namespace taskmaker_wpf.ViewModels
             // Update Uis
             var uis = new List<ControlUiViewModel>();
             foreach (var entity in _entity.Uis) {
-                var uiVM = new ControlUiViewModel(entity) {
-                    NodeStates = entity.Nodes.Select(e => new NodeState(e.Id, e.Value)).ToArray()
-                };
-
+                var uiVM = new ControlUiViewModel(entity);
                 uis.Add(uiVM);
             }
 
@@ -164,15 +161,15 @@ namespace taskmaker_wpf.ViewModels
         public void Interpolate() {
             var lambdasCollection = new List<double[]>();
             for (int i = 0; i < Uis.Length; i++) {
-                _logger.Info($"{Uis[i].GetHashCode()}");
+                //_logger.Info($"{Uis[i].GetHashCode()}");
                 var nodes = Uis[i].NodeStates;
                 var input = Uis[i].Input;
                 var region = Uis[i].HitRegion;
 
                 if (region == null) return;
 
-                var indices = region.Vertices.Select(e => Array.FindIndex(nodes, n => n.Id == e.Id)).ToArray();
-                var lambdas = BaseRegionState.GetLambdas(region.Vertices.Select(e => e.Value).ToArray(), input, indices, nodes.Length);
+                var indices = region.Vertices.Select(e => Array.FindIndex(nodes.ToArray(), n => n.Id == e.Id)).ToArray();
+                var lambdas = BaseRegionState.GetLambdas(region.Vertices.Select(e => e.Value).ToArray(), input, indices, nodes.Count);
 
                 lambdasCollection.Add(lambdas);
             }

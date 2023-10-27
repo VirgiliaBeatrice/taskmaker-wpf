@@ -39,6 +39,7 @@
           </DataTemplate>
         </ItemsControl.ItemTemplate>  
       </ItemsControl>
+      <!--
       <TextBlock Text="Interpolated Values"
                  FontWeight="Bold"
                  Margin="12" />
@@ -55,6 +56,7 @@
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
+      -->
 
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
         <Button HorizontalAlignment="Center"

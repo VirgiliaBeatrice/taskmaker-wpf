@@ -153,28 +153,12 @@ namespace taskmaker_wpf.ViewModels {
     public class BaseRegionState : IRegionState {
         public int Id { get; set; }
         public string Name { get; set; }
-        public NodeState[] Vertices { get; set; } = new NodeState[0];
+        public NodeViewModel[] Vertices { get; set; } = new NodeViewModel[0];
 
         public override string ToString() {
             return Name;
         }
 
-        public static TOut Create<TIn, TOut>(TIn entity)
-            where TIn : BaseRegionEntity, new()
-            where TOut : BaseRegionState, new() {
-            // Checking if the given entity is of type SimplexRegionEntity
-            if (entity is SimplexRegionEntity simplexEntity) {
-                return SimplexState.Create(simplexEntity) as TOut;
-            }
-            // Add more type checks as necessary for other region entity types.
-            // Example:
-            else if (entity is VoronoiRegionEntity) {
-                return VoronoiState.Create(entity as VoronoiRegionEntity) as TOut;
-            }
-            else
-            // Handle the case where the entity type doesn't match any known state creation logic.
-                throw new InvalidOperationException($"No corresponding state type found for entity type {typeof(TIn)}");
-        }
 
         public static double[] GetLambdas(Point[] pts, Point pt, int[] indices, int length) {
             var lambdas = Bary.GetLambdas(pts, pt);
@@ -189,24 +173,11 @@ namespace taskmaker_wpf.ViewModels {
     }
 
     public class SimplexState : BaseRegionState {
-        public static SimplexState Create(SimplexRegionEntity entity) {
-            return new SimplexState() {
-                Id = entity.Id,
-                Name = entity.Name,
-                Vertices = entity.Vertices
-            };
-        }
+
     }
 
     public class VoronoiState : BaseRegionState {
-        // add a create method for VoronoiState
-        public static VoronoiState Create(VoronoiRegionEntity entity) {
-            return new VoronoiState() {
-                Id = entity.Id,
-                Name = entity.Name,
-                Vertices = entity.Vertices
-            };
-        }
+
     }
 
 }

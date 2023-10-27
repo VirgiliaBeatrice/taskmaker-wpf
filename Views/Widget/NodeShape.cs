@@ -31,14 +31,11 @@ namespace taskmaker_wpf.Views.Widget {
 
         public UiController Ui { get; set; }
 
-        public NodeState State => new NodeState() {
-            Id = NodeId,
-            Value = Position,
-        };
+        public NodeViewModel State => DataContext as NodeViewModel;
 
-        public NodeShape(int nodeId) {
-            NodeId = nodeId;
-            PrimaryColor = ColorManager.GetTintedColor(ColorManager.Palette[0], 2);
+        public NodeShape() {
+            //PrimaryColor = ColorManager.GetTintedColor(ColorManager.Palette[0], 2);
+            PrimaryColor = M3ColorManager.GetColor("primary");
 
             Container = new Grid();
             var shape = new Ellipse {
@@ -99,7 +96,7 @@ namespace taskmaker_wpf.Views.Widget {
 
         public bool IsSelected { get; set; } = false;
 
-        public int NodeId { get; set; }
+        public int NodeId => (State == null) ? -1 : State.Id;
 
         public void SetPosition() {
             double halfWidth = 40 / 2;

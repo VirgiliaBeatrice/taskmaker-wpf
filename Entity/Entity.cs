@@ -93,6 +93,8 @@ namespace taskmaker_wpf.Entity {
         [XmlIgnore]
         public int? Dimension => Tensor?.ndim;
 
+        public double[] Tensor1dArray => Tensor.GetData<double>().ToArray();
+
         public NLinearMapEntity() { }
 
         public NLinearMapEntity(int dimension, int dimOfAxis0) {
@@ -289,7 +291,7 @@ namespace taskmaker_wpf.Entity {
     [XmlInclude(typeof(SimplexRegionEntity))]
     [XmlInclude(typeof(VoronoiRegionEntity))]
     public abstract class BaseRegionEntity : BaseEntity {
-        public abstract NodeState[] Vertices { get; }
+        public abstract NodeEntity[] Vertices { get; }
         public abstract double[] GetLambdas(Point pt, NodeEntity[] collection);
 
         public static double[] GetLambdas(Point[] pts, Point pt, int[] indices, int length) {
@@ -307,7 +309,7 @@ namespace taskmaker_wpf.Entity {
     [Serializable]
     public class SimplexRegionEntity : BaseRegionEntity {
         public NodeEntity[] Nodes { get; set; }
-        public override NodeState[] Vertices => Nodes.Select(x => new NodeState { Id = x.Id, Value = x.Value }).ToArray();
+        public override NodeEntity[] Vertices => Nodes;
 
         public SimplexRegionEntity() { }
 
@@ -355,8 +357,8 @@ namespace taskmaker_wpf.Entity {
     [XmlInclude(typeof(SectoralVoronoiRegionEntity))]
     public class VoronoiRegionEntity : BaseRegionEntity {
         public double Factor { get; set; } = 200.0;
-        public override NodeState[] Vertices => _vertices;
-        protected NodeState[] _vertices;
+        public override NodeEntity[] Vertices => _vertices;
+        protected NodeEntity[] _vertices;
         public SimplexRegionEntity[] Governors { get; set; }
 
         public VoronoiRegionEntity() { }
@@ -456,54 +458,15 @@ namespace taskmaker_wpf.Entity {
             var ray0 = it + np.dot(theta0, stdDir0) * Factor;
             var ray1 = it + np.dot(theta1, stdDir1) * Factor;
 
-            _vertices = (new NDarray[] { ray0, it, ray1 })
+            var vertices = (new NDarray[] { ray0, it, ray1 })
                 .Select(e => e.astype(np.int32).GetData<int>())
-                .Select(e => new Point(e[0], e[1]))
-                .Select(e => new NodeState { Value = e })
-                .ToArray();
+                .Select(e => new Point(e[0], e[1])).ToArray();
+
+            // TODO: bug
+            for (int i = 0; i < vertices.Length; i++) {
+                Vertices[i].Value = vertices[i];
+            }
         }
-
-        //// Should be in View's logic
-        //private void InitializeGeometry() {
-        //    var path = new GraphicsPath();
-
-        //    var radius = (Vertices[1] - Vertices[0]).Length;
-        //    var o = Vertices[1];
-        //    var p0 = Vertices[0];
-        //    var p1 = Vertices[2];
-
-        //    var p0o = (p0 - o);
-        //    var p1o = (p1 - o);
-        //    var dotProd = (p0o.X * p1o.X) + (p0o.Y * p1o.Y);
-        //    var alpha = Math.Abs(Math.Acos(dotProd / (p0o.Length * p1o.Length)));
-
-        //    var midLen = (float)Math.Tan(alpha / 2.0f) * Math.Abs(p0o.Length);
-
-        //    var op0 = o - p0;
-
-        //    op0.Normalize();
-        //    //var op0 = Point.Normalize(o - p0);
-        //    var transform = System.Windows.Media.Matrix.Identity;
-        //    transform.Rotate(Math.PI * 90.0 / 180.0);
-        //    var midP0 = transform.Transform(op0);
-        //    //var midP0 = SKMatrix.CreateRotation((float)(Math.PI * 90.0 / 180.0)).MapVector(op0);
-        //    midP0 *= midLen;
-
-        //    var mid = p0 + midP0;
-
-        //    var pathGeo = new PathGeometry();
-        //    var pathFig = new PathFigure {
-        //        StartPoint = o,
-        //    };
-
-        //    pathGeo.Figures.Add(pathFig);
-
-        //    pathFig.Segments.Add(new LineSegment { Point = p1 });
-        //    pathFig.Segments.Add(new ArcSegment { Point = p0, Size = new Size(radius, radius), SweepDirection = SweepDirection.Counterclockwise });
-        //    pathFig.Segments.Add(new LineSegment { Point = o });
-
-        //    Geometry = pathGeo;
-        //}
 
         private double[] GetFactors(Point pt) {
             var a = np.array(Vertices[0].Value.X, Vertices[0].Value.Y);
@@ -562,12 +525,18 @@ namespace taskmaker_wpf.Entity {
                 return np.array(new double[] { e00, e01, e10, e11 }).reshape(2, 2);
             }
 
-            _vertices = new Point[] {
+            var vertices = new Point[] {
                 new Point(a.astype(np.int32).GetData<int>()[0], a.astype(np.int32).GetData<int>()[1]),
                 new Point(b.astype(np.int32).GetData<int>()[0], b.astype(np.int32).GetData<int>()[1]),
                 new Point(bP.astype(np.int32).GetData<int>()[0], bP.astype(np.int32).GetData<int>()[1]),
                 new Point(aP.astype(np.int32).GetData<int>()[0], aP.astype(np.int32).GetData<int>()[1]),
-            }.Select(e => new NodeState { Value = e }).ToArray();
+            }
+            .ToArray();
+
+            // TODO: bug
+            for (int i = 0; i < vertices.Length; i++) {
+                Vertices[i].Value = vertices[i];
+            }
 
             //return new NDarray[] { a, b, bP, aP };
         }
@@ -648,10 +617,13 @@ namespace taskmaker_wpf.Entity {
                 Regions = regions.ToList();
             }
             else if (nodes.Length == 3) {
+                // build simplices
                 var simplex = new SimplexRegionEntity(nodes);
 
                 regions.Add(simplex);
 
+                // build voronois
+                /**
                 var extremes = QhullCSharp.RunConvex(input)
                     .Select(idx => nodes.ElementAt(idx))
                     .Reverse()
@@ -661,7 +633,7 @@ namespace taskmaker_wpf.Entity {
                 foreach (var item in voronois) {
                     regions.Add(item);
                 }
-
+                **/
 
                 int idx0 = 0;
                 foreach (var item in regions) {
@@ -672,6 +644,7 @@ namespace taskmaker_wpf.Entity {
                 Regions = regions.ToList();
             }
             else {
+                // build simplices
                 var simplices = QhullCSharp.RunDelaunay(input)
                     .Select(indices => new SimplexRegionEntity(indices.Select(idx => nodes.ElementAt(idx)).ToArray()))
                     .ToArray();
@@ -680,15 +653,16 @@ namespace taskmaker_wpf.Entity {
                     regions.Add(item);
                 }
 
-                var extremes = QhullCSharp.RunConvex(input)
-                    .Select(idx => nodes.ElementAt(idx))
-                    .Reverse()
-                    .ToArray();
-                var voronois = VoronoiRegionEntity.Build(extremes, simplices);
+                // build voronois
+                //var extremes = QhullCSharp.RunConvex(input)
+                //    .Select(idx => nodes.ElementAt(idx))
+                //    .Reverse()
+                //    .ToArray();
+                //var voronois = VoronoiRegionEntity.Build(extremes, simplices);
 
-                foreach (var item in voronois) {
-                    regions.Add(item);
-                }
+                //foreach (var item in voronois) {
+                //    regions.Add(item);
+                //}
 
                 int idx0 = 0;
                 foreach (var item in regions) {

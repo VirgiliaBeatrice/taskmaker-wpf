@@ -45,7 +45,6 @@ namespace taskmaker_wpf.Views {
             get { return _uiStatusText; }
             set { _uiStatusText = value;
 
-                uiStatus.Text = _uiStatusText;
             }
         }
 

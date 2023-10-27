@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Media;
 
 namespace taskmaker_wpf.Views.Widget {
@@ -76,5 +77,56 @@ namespace taskmaker_wpf.Views.Widget {
                 A = 255
             };
         }
+    }
+
+    public static class M3ColorManager {
+        // Sample baseline colors
+        static private readonly Dictionary<string, string> _baselineColors = new Dictionary<string, string>
+        {
+            {"primary", "#6750A4"},
+            {"primaryVariant", "#3700B3"},
+            {"secondary", "#625B71"},
+            {"secondaryVariant", "#018786"},
+            {"error", "#B3261E"},
+
+            {"primaryContainer", "#EADDFF" },
+            {"secondaryContainer", "#E8DEF8" },
+            {"errorContainer", "#F9DEDC" },
+
+            {"onPrimaryContainer", "#21005D" },
+            {"onSecondaryContainer", "#1D192B" },
+            {"onErrorContainer", "#410E0B" },
+
+            {"surface", "#FEF7FF"},
+            {"surfaceDim", "#DED8E1"},
+            {"surfaceBright", "#FEF7FF"},
+            {"surfaceContainer", "#FFFFFF"},
+
+            {"onPrimary", "#FFFFFF"},
+            {"onSecondary", "#FFFFFF"},
+            {"onError", "#FFFFFF"},
+
+            {"onSurface", "#1D1B20"},
+
+            {"outline", "#79747E" },
+    };
+
+        //static public string GetColor(string colorName) {
+        //    if (_baselineColors.TryGetValue(colorName, out string colorValue)) {
+        //        return colorValue;
+        //    }
+
+        //    throw new ArgumentException($"Color '{colorName}' is not defined in the baseline color system.");
+        //}
+
+        static public Color GetColor(string colorName) {
+            if (_baselineColors.TryGetValue(colorName, out string colorValue)) {
+                return (Color)ColorConverter.ConvertFromString(colorValue);
+            }
+
+            throw new ArgumentException($"Color '{colorName}' is not defined in the baseline color system.");
+        }
+
+        // Additional methods can be added to manipulate or extend the color system.
     }
 }

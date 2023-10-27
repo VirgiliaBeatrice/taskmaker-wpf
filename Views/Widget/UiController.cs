@@ -92,6 +92,7 @@ namespace taskmaker_wpf.Views.Widget {
                 Width = 50,
                 Height = 50,
                 Stroke = Brushes.Gray,
+                Visibility = Visibility.Hidden,
                 StrokeThickness = 1,
             };
 
@@ -99,10 +100,12 @@ namespace taskmaker_wpf.Views.Widget {
                 Width = 100,
                 Height = 200,
                 Fill = Brushes.AliceBlue,
+                Visibility = Visibility.Hidden,
                 Opacity = 0.5
             };
             billboard = new TextBlock {
-                Text = "Y+"
+                Text = "Y+",
+                Visibility = Visibility.Hidden
             };
 
             var axisX = new Arrow {
@@ -140,6 +143,14 @@ namespace taskmaker_wpf.Views.Widget {
         private void UiController_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e) {
             if (e.NewValue != null && e.NewValue is ControlUiViewModel newVM) {
                 newVM.PropertyChanged += ViewModel_PropertyChanged;
+
+                newVM.NodeStates.CollectionChanged += (s, e) => {
+                    if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+                        InvalidateNodeShapes();
+                    else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
+                        InvalidateNodeShapes();
+                };
+
                 newVM.Fetch();
             }
 
@@ -149,12 +160,19 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
-            if (e.PropertyName == "NodeStates") {
-                InvalidateNodeShapes();
-            }
-            else if (e.PropertyName == "RegionStates") {
+            if (e.PropertyName == "RegionStates") {
                 InvalidateRegion();
             }
+            //else if (e.PropertyName == nameof(ControlUiViewModel.NodeStates)) {
+            //    var vm = sender as ControlUiViewModel;
+
+            //    vm.NodeStates.CollectionChanged += (s, e) => {
+            //        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+            //            InvalidateNodeShapes();
+            //        else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
+            //            InvalidateNodeShapes();
+            //    };
+            //}
         }
 
         public Canvas Canvas { get; set; }
@@ -163,7 +181,7 @@ namespace taskmaker_wpf.Views.Widget {
 
         public List<NodeShape> NodeShapes { get; set; } = new List<NodeShape>();
 
-        public IEnumerable<NodeState> NodeStates => (DataContext as ControlUiViewModel).NodeStates;
+        public IEnumerable<NodeViewModel> NodeVMS => (DataContext as ControlUiViewModel).NodeStates;
         public IEnumerable<BaseRegionState> RegionStates => (DataContext as ControlUiViewModel).RegionStates;
         public RegionControlUI RegionUi { get; set; }
 
@@ -218,10 +236,16 @@ namespace taskmaker_wpf.Views.Widget {
             NodeShapes.Clear();
 
             // Add nodes
-            foreach (var nodeState in NodeStates) {
-                var nodeShape = new NodeShape(nodeState.Id) {
-                    Position = nodeState.Value,
+            foreach (var node in NodeVMS) {
+                var nodeShape = new NodeShape() {
+                    Position = node.Value,
                 };
+
+                Binding binding;
+                binding = new Binding() {
+                    Source = node,
+                };
+                nodeShape.SetBinding(DataContextProperty, binding);
 
                 Canvas.SetZIndex(nodeShape, 20);
 
@@ -512,7 +536,8 @@ namespace taskmaker_wpf.Views.Widget {
 
                 // Command: Update node
                 _moveTarget.Position = position;
-                ViewModel.UpdateNode(_moveTarget.State);
+                _moveTarget.State.Value = position;
+                //ViewModel.UpdateNode(_moveTarget.State);
 
                 _moveTarget = null;
             }

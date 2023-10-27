@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.DirectoryServices.Protocols;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -50,13 +51,20 @@ namespace taskmaker_wpf.Services {
             };
 
             WeakReferenceMessenger.Default.Register<SaveMessage>(this, (r, m) => {
-                var filename = m.Path;
+                var full = m.Path;
+                var dir = Path.GetDirectoryName(full);
+                var filename = Path.GetFileNameWithoutExtension(full);
 
-                var idx = 0;
-
+                string file;
                 foreach (var item in entities) {
-                    BaseEntity.SaveData(item.Value, filename);
+                    file = Path.Join(dir, filename + "." + item.Value.Name + ".xml");
+
+                    BaseEntity.SaveData(item.Value, file);
                 }
+
+                file = Path.Join(dir, filename + ".csv");
+
+                EventDispatcher.Save(file);
             });
 
             WeakReferenceMessenger.Default.Register<LoadMessage>(this, (r, m) => {
@@ -64,8 +72,8 @@ namespace taskmaker_wpf.Services {
 
             });
 
-            WeakReferenceMessenger.Default.Register<MapOutputMessage>(this, (r, m) => {
-                var values = m.Output;
+            WeakReferenceMessenger.Default.Register<MapInterpolatedMessage>(this, (r, m) => {
+                var values = m.Value;
                 var motors = _motorSrv.GetAll();
                 for (int i = 0; i < values.Length; i++) {
 
@@ -215,6 +223,13 @@ namespace taskmaker_wpf.Services {
 
             foreach(var item in questions) {
                 _surveyService.Create(item);
+            }
+
+            var survey = _surveyService.GetAll();
+            var evaluation = GetAll()[0];
+
+            foreach(var q in survey) {
+                evaluation.Survey.Add(q);
             }
         }
     }

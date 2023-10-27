@@ -100,7 +100,7 @@
     </Style>
   </UserControl.Resources>
 
-  <Border x:Name="MultiViewContainer">
+  <Border x:Name="MultiViewContainer" MinWidth="800">
 
     <Grid>
       <Grid.RowDefinitions>
@@ -144,12 +144,6 @@
                     Name="tbBtnControl"
                     Click="ToolBar_Click"
                     ToolTip="Control" />
-            <Button Content="&#xec61;"
-                    Foreground="Green"
-                    Click="ToolBar_Click"
-                    VerticalContentAlignment="Center"
-                    HorizontalContentAlignment="Center"
-                    ToolTip="Build" />
             <Separator />
             <Button Content="&#xecc8;"
                     Name="tbBtnAdd"
@@ -465,24 +459,8 @@
                   HorizontalAlignment="Stretch"
                   Background="LightGray"
                   Grid.Row="1">
-        <TextBlock x:Name="timer"
-                   Margin="8 0 4 0"
-                   Width="200"
-                   Text="Time" />
-        <TextBlock x:Name="uiStatus"
-                   Margin="4 0 4 0"
-                   MinWidth="250" />
-        <TextBlock x:Name="keymapInfo"
-                   Margin="4 0 4 0"
-                   MinWidth="250"
-                   Text="KeymapInfo" />
-        <TextBlock x:Name="statusMsg"
-                   Margin="4 0 4 0"
-                   MinWidth="250"
-                   Text="StatusMsg" />
-        <TextBlock x:Name="systemInfo"
-                   Margin="4 0 4 0"
-                   Text="Debug" />
+        <TextBlock Text="{Binding SelectedEvaluation.SelectedSession.Map.FormattedOutput}"
+                   Margin="4 0 4 0" />
       </StackPanel>
     </Grid>
   </Border>
