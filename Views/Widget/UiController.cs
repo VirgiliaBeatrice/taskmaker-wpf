@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using taskmaker_wpf.ViewModels;
 using Point = System.Windows.Point;
@@ -35,12 +36,12 @@ namespace taskmaker_wpf.Views.Widget {
         public TranslateTransform CenteringT = new();
         public ScaleTransform FlipYT = new(1, -1);
         public Canvas Canvas { get; set; }
-        public List<NodeShape> NodeShapes { get; set; } = new List<NodeShape>();
+        public List<NodeShape> NodeShapes { get; set; } = new();
         public IEnumerable<NodeViewModel> NodeVMS => UiViewModel?.NodeStates;
         public IEnumerable<BaseRegionState> RegionStates => UiViewModel?.RegionStates;
-        public ScaleTransform ScaleT { get; set; } = new ScaleTransform();
+        public ScaleTransform ScaleT { get; set; } = new();
         public NodeShape SelectedNode { get; set; }
-        public List<SimplexShape> SimpliceShapes { get; set; } = new List<SimplexShape>();
+        public List<SimplexShape> SimpliceShapes { get; set; } = new();
         public UiMode UiMode {
             get => uiMode;
             set {
@@ -51,7 +52,7 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         public ControlUiViewModel UiViewModel => DataContext as ControlUiViewModel;
-        public List<VoronoiShape> VoronoiShapes { get; set; } = new List<VoronoiShape>();
+        public List<VoronoiShape> VoronoiShapes { get; set; } = new();
 
         public UiController() {
             //IsManipulationEnabled = true;
@@ -63,7 +64,7 @@ namespace taskmaker_wpf.Views.Widget {
                 IsManipulationEnabled = true,
                 CornerRadius = new CornerRadius(16),
                 Background = new SolidColorBrush(Colors.Transparent),
-                BorderBrush = new SolidColorBrush(M3ColorManager.GetColor("surface")),
+                //BorderBrush = new SolidColorBrush(M3ColorManager.GetColor("surface")),
             };
 
             // add a circle sign at origin
@@ -130,6 +131,7 @@ namespace taskmaker_wpf.Views.Widget {
 
         }
 
+        // https://www.andrewhoefling.com/Blog/Post/wpf-multitouch-gestures-translation-scale-and-rotate
         private void UiController_ManipulationDelta(object sender, ManipulationDeltaEventArgs e) {
             Point center = new Point(
                 RenderSize.Width / 2.0,
@@ -142,6 +144,11 @@ namespace taskmaker_wpf.Views.Widget {
             // focus on the scale gesture
             ScaleT.ScaleX *= e.DeltaManipulation.Scale.X;
             ScaleT.ScaleY *= e.DeltaManipulation.Scale.Y;
+
+            // rotation code
+            //rotation.CenterX = center.X;
+            //rotation.CenterY = center.Y;
+            //rotation.Angle += e.DeltaManipulation.Rotation;
 
             // translation code
             CenteringT.X += e.DeltaManipulation.Translation.X * FlipYT.ScaleX;

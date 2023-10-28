@@ -13,6 +13,7 @@ using Point = System.Windows.Point;
 
 namespace taskmaker_wpf.Views.Widget {
     public class NodeShape : ContentControl {
+        public int Size { get; set; } = 64;
         public UIElement Container { get; set; }
         public Ellipse StateLayer { get; set; }
         public SvgViewbox CheckIcon { get; set; }
@@ -39,16 +40,16 @@ namespace taskmaker_wpf.Views.Widget {
 
             Container = new Grid();
             var shape = new Ellipse {
-                Width = 40,
-                Height = 40,
+                Width = Size,
+                Height = Size,
                 Fill = new SolidColorBrush(PrimaryColor),
                 Stroke = new SolidColorBrush(Colors.DarkGray),
                 StrokeThickness = 1,
             };
 
             StateLayer = new Ellipse {
-                Width = 40,
-                Height = 40,
+                Width = Size,
+                Height = Size,
                 Fill = new SolidColorBrush(Colors.Black),
                 Visibility = Visibility.Hidden,
                 Opacity = 0.08
@@ -99,8 +100,8 @@ namespace taskmaker_wpf.Views.Widget {
         public int NodeId => (State == null) ? -1 : State.Id;
 
         public void SetPosition() {
-            double halfWidth = 40 / 2;
-            double halfHeight = 40 / 2;
+            double halfWidth = Size / 2;
+            double halfHeight = Size / 2;
 
             Canvas.SetLeft(this, Position.X - halfWidth);
             Canvas.SetTop(this, Position.Y + halfHeight);
