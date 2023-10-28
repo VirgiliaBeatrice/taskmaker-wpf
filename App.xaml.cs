@@ -32,46 +32,13 @@ namespace taskmaker_wpf {
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
-            var config = new MapperConfiguration(
-            cfg => {
-                cfg.CreateMap<MotorEntity, MotorState>()
-                    .ForMember(d => d.Value, o => o.Ignore())
-                    .ReverseMap();
-                //.ForMember(d => d.Value, o => o.MapFrom(s => new double[] { s.Value }));
-                //cfg.CreateMap<MotorEntity, MotorTargetState>()
-                //    .ForMember(d => d.IsSelected, o => o.Ignore())
-                //    .ReverseMap();
-
-                cfg.CreateMap<NLinearMapEntity, NLinearMapViewModel>()
-                    .ReverseMap();
-                cfg.CreateMap<MotorEntity, MotorState>()
-                    .ReverseMap();
-                cfg.CreateMap<ControlUiEntity, ControlUiViewModel>();
-                
-                cfg.CreateMap<NodeEntity, NodeViewModel>();
-
-                cfg.CreateMap<BaseRegionEntity, BaseRegionState>();
-                cfg.CreateMap<SimplexRegionEntity, SimplexState>()
-                    .IncludeBase<BaseRegionEntity, BaseRegionState>()
-                    .ForMember(d => d.Vertices, o => o.MapFrom(s => s.Vertices));
-                cfg.CreateMap<VoronoiRegionEntity, VoronoiState>()
-                    .IncludeBase<BaseRegionEntity, BaseRegionState>()
-                    .ForMember(d => d.Vertices, o => o.MapFrom(s => s.Vertices));
-            });
-
-
             // Register services
             containerRegistry.RegisterSingleton<SerialService>();
             containerRegistry.RegisterSingleton<EvaluationService>();
             containerRegistry.RegisterSingleton<MotorService>();
             containerRegistry.RegisterSingleton<SurveyService>();
+            containerRegistry.RegisterSingleton<UIService>();
 
-            // Register model agent
-            containerRegistry.RegisterSingleton<MapperConfiguration>(
-                () => {
-                    //config.AssertConfigurationIsValid();
-                    return config;
-            });
 
             // Register IDataSource
             //containerRegistry.RegisterSingleton<IDataSource>(() => {

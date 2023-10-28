@@ -12,25 +12,25 @@ using taskmaker_wpf.Services;
 namespace taskmaker_wpf.ViewModels {
 
 
-    public struct MotorState {
-        private int id;
-        private string name;
+    //public struct MotorState {
+    //    private int id;
+    //    private string name;
 
-        private double value;
+    //    private double value;
 
-        private double max;
-        private double min;
-        private int nuiBoardId;
-        private int nuiMotorId;
+    //    private double max;
+    //    private double min;
+    //    private int nuiBoardId;
+    //    private int nuiMotorId;
 
-        public int Id { get => id; set => id = value; }
-        public string Name { get => name; set => name = value; }
-        public double Value { get => value; set => this.value = value; }
-        public double Max { get => max; set => max = value; }
-        public double Min { get => min; set => min = value; }
-        public int NuiBoardId { get => nuiBoardId; set => nuiBoardId = value; }
-        public int NuiMotorId { get => nuiMotorId; set => nuiMotorId = value; }
-    }
+    //    public int Id { get => id; set => id = value; }
+    //    public string Name { get => name; set => name = value; }
+    //    public double Value { get => value; set => this.value = value; }
+    //    public double Max { get => max; set => max = value; }
+    //    public double Min { get => min; set => min = value; }
+    //    public int NuiBoardId { get => nuiBoardId; set => nuiBoardId = value; }
+    //    public int NuiMotorId { get => nuiMotorId; set => nuiMotorId = value; }
+    //}
 
     public class MotorValueUpdatedMessage {
         public int NuiBoardId { get; init; }
@@ -137,10 +137,10 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         [RelayCommand]
-        public void Delete(MotorState state) {
-            _motorSrv.Delete(state.Id);
+        public void Delete(int id) {
+            _motorSrv.Delete(id);
 
-            var motorVM = Motors.FirstOrDefault(vm => vm.Id == state.Id);
+            var motorVM = Motors.FirstOrDefault(vm => vm.Id == id);
 
             if (motorVM != null)
                 Motors.Remove(motorVM);

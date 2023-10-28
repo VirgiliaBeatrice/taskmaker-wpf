@@ -533,15 +533,15 @@ namespace taskmaker_wpf.Views {
             Scrim.Visibility = Visibility.Visible;
             Dialog.Visibility = Visibility.Visible;
 
-            var motors = _motorSrv.GetAll().Select(e => new MotorState {
-                Id = e.Id,
-                NuiBoardId = e.NuiBoardId,
-                NuiMotorId = e.NuiMotorId,
-                Name = e.Name,
-                Max = e.Max,
-                Min = e.Min,
-                Value = e.Value,
-            }).ToArray();
+            //var motors = _motorSrv.GetAll().Select(e => new MotorState {
+            //    Id = e.Id,
+            //    NuiBoardId = e.NuiBoardId,
+            //    NuiMotorId = e.NuiMotorId,
+            //    Name = e.Name,
+            //    Max = e.Max,
+            //    Min = e.Min,
+            //    Value = e.Value,
+            //}).ToArray();
 
             var motorDialogViewModel = (Application.Current as App).Container.Resolve<MotorDialogViewModel>();
 

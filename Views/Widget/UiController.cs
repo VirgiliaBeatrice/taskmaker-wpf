@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Transactions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -53,12 +54,15 @@ namespace taskmaker_wpf.Views.Widget {
         public List<VoronoiShape> VoronoiShapes { get; set; } = new List<VoronoiShape>();
 
         public UiController() {
+            //IsManipulationEnabled = true;
             // UserControl
             Background = new SolidColorBrush(Colors.Transparent);
 
             // Grid container
             _container = new Border() {
+                IsManipulationEnabled = true,
                 CornerRadius = new CornerRadius(16),
+                Background = new SolidColorBrush(Colors.Transparent),
                 BorderBrush = new SolidColorBrush(M3ColorManager.GetColor("surface")),
             };
 
@@ -119,9 +123,37 @@ namespace taskmaker_wpf.Views.Widget {
             MouseMove += UiController_MouseMove;
 
             DataContextChanged += UiController_DataContextChanged;
+
+            //_container.IsManipulationEnabled = true;
+            ManipulationStarting += UiController_ManipulationStarting;
+            ManipulationDelta += UiController_ManipulationDelta;
+
         }
 
+        private void UiController_ManipulationDelta(object sender, ManipulationDeltaEventArgs e) {
+            Point center = new Point(
+                RenderSize.Width / 2.0,
+                RenderSize.Height / 2.0);
 
+            ScaleT.CenterX = center.X;
+            ScaleT.CenterY = center.Y;
+
+            // DeltaManipulation stores the delta data for us so it allows us to
+            // focus on the scale gesture
+            ScaleT.ScaleX *= e.DeltaManipulation.Scale.X;
+            ScaleT.ScaleY *= e.DeltaManipulation.Scale.Y;
+
+            // translation code
+            CenteringT.X += e.DeltaManipulation.Translation.X * FlipYT.ScaleX;
+            CenteringT.Y += e.DeltaManipulation.Translation.Y * FlipYT.ScaleY;
+
+            e.Handled = true;
+        }
+
+        private void UiController_ManipulationStarting(object sender, ManipulationStartingEventArgs e) {
+            e.ManipulationContainer = _container;
+            e.Handled = true;
+        }
 
         private void UiController_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
             switch (UiMode) {
@@ -253,6 +285,7 @@ namespace taskmaker_wpf.Views.Widget {
         private void ChangeUiMode(UiMode mode) {
             // default actions
             EnableNodeHitTest(true);
+            EnableManipulation(true);
             ShowPointer(false);
             ShowRegions(true);
 
@@ -260,21 +293,26 @@ namespace taskmaker_wpf.Views.Widget {
                 case UiMode.Default:
                     break;
                 case UiMode.Add:
+                    EnableManipulation(false);
                     ShowPointer(true);
                     ShowRegions(false);
                     break;
                 case UiMode.Remove:
+                    EnableManipulation(false);
                     ShowRegions(false);
                     break;
                 case UiMode.Move:
+                    EnableManipulation(false);
                     ShowRegions(false);
                     break;
                 case UiMode.Assign:
+                    EnableManipulation(false);
                     ShowRegions(false);
                     break;
                 case UiMode.Build:
                     break;
                 case UiMode.Control:
+                    EnableManipulation(false);
                     EnableNodeHitTest(false);
                     break;
                 case UiMode.Drag:
@@ -292,6 +330,16 @@ namespace taskmaker_wpf.Views.Widget {
                     break;
                 default:
                     break;
+            }
+        }
+
+        private void EnableManipulation(bool v) {
+            if (v) {
+                _container.IsManipulationEnabled = true;
+            }
+            else {
+                _container.IsManipulationEnabled = false;
+
             }
         }
 
