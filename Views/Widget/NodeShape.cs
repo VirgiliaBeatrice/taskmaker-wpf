@@ -90,7 +90,7 @@ namespace taskmaker_wpf.Views.Widget {
             sb.AppendLine($"Position:");
             sb.AppendLine($"  {Position}");
 
-            Ui.RegionUi.infoPanel.Info = sb.ToString();
+            //Ui.RegionUi.infoPanel.Info = sb.ToString();
             //Ui.RegionUi.infoPanel.Visibility = Visibility.Visible;
         }
 

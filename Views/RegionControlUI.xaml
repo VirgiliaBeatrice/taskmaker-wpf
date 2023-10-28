@@ -16,7 +16,9 @@
              lex:ResxLocalizationProvider.DefaultDictionary="Resources"
              d:DataContext="{d:DesignInstance Type=viewmodels:RegionControlUIViewModel}"
              mc:Ignorable="d"
-             prism:ViewModelLocator.AutoWireViewModel="True">
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             MouseLeftButtonDown="UserControl_MouseLeftButtonDown"
+             >
   <UserControl.InputBindings>
   </UserControl.InputBindings>
 

@@ -17,9 +17,15 @@ namespace taskmaker_wpf.Services {
         private int tail = -1; // position of the last item
         private int count = 0;
 
-        public int Capacity { get; }
+        public int Capacity { get; init; } = 200;
         public bool IsEmpty => count == 0;
-        public bool IsFull => count == Capacity;
+        public bool IsFull {
+            get {
+                if (count != 0)
+                    return count == Capacity;
+                else
+                    return false;
+            }}
 
         public CircularQueue(int capacity) {
             Capacity = capacity;
@@ -42,7 +48,7 @@ namespace taskmaker_wpf.Services {
 
         public T Dequeue() {
             if (IsEmpty) {
-                throw new InvalidOperationException("Queue is empty");
+                throw new InvalidOperationException();
             }
 
             T item = queue[head];
@@ -77,7 +83,7 @@ namespace taskmaker_wpf.Services {
         public int Max { get; set; } = 8000;
         public int Min { get; set; } = -8000;
 
-        public CircularQueue<short[]> MessageQueue { get; set; } = new CircularQueue<short[]>(200);
+        public CircularQueue<short[]> MessageQueue { get; set; } = new CircularQueue<short[]>(2000);
         public bool IsConnected => _serial != null;
         private SerialPort _serial;
 

@@ -256,5 +256,9 @@ namespace taskmaker_wpf.Views {
         private void tabMapLbMapStates_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
 
         }
+
+        private void UserControl_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+            logger.Debug("Click happens in here.");
+        }
     }
 }

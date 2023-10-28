@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.Messaging;
+using NLog;
 using Numpy;
 using SharpVectors.Converters;
 using SharpVectors.Runtime;
@@ -56,18 +57,23 @@ namespace taskmaker_wpf.Views.Widget {
 
     [Serializable]
     public struct MapEntry {
-        public MapEntry() { }
+        public string FormattedIdsString => $"({string.Join(",", IDs)})";
+
+        public int[] IDs { get; set; } = new int[0];
 
         public int[] Indices { get; set; } = new int[0];
-        public int[] IDs { get; set; } = new int[0];
-        public double[] Value { get; set; } = new double[0];
 
         public bool IsInvalid => Value.Any(double.IsNaN);
 
-        public string FormattedIdsString => $"({string.Join(",", IDs)})";
+        public double[] Value { get; set; } = new double[0];
 
-        public override string ToString() {
-            return $"[({string.Join(",", IDs)}) -> [{(IsInvalid ? "NaN" : "Set")}]]";
+        public MapEntry() { }
+        public static bool operator !=(MapEntry left, MapEntry right) {
+            return !(left == right);
+        }
+
+        public static bool operator ==(MapEntry left, MapEntry right) {
+            return left.Equals(right);
         }
 
         public override bool Equals(object obj) {
@@ -83,12 +89,8 @@ namespace taskmaker_wpf.Views.Widget {
             return (Indices != null) ? Indices.Aggregate(0, (acc, val) => acc ^ val) : 0;
         }
 
-        public static bool operator ==(MapEntry left, MapEntry right) {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(MapEntry left, MapEntry right) {
-            return !(left == right);
+        public override string ToString() {
+            return $"[({string.Join(",", IDs)}) -> [{(IsInvalid ? "NaN" : "Set")}]]";
         }
     }
 
@@ -173,46 +175,75 @@ namespace taskmaker_wpf.Views.Widget {
         }
     }
     public class MultiView : UserControl {
-        private readonly Grid _grid;
-
-        private ScrollViewer _scroll;
+        private Grid _grid;
+        private Border _scrim;
 
         private UiMode uiMode;
 
+        public List<UiController> Controllers { get; set; } = new List<UiController>();
+
+        public NodeShape[] SelectedNodes => Controllers.Select(c => c.SelectedNode).ToArray();
+
+        public UiMode UiMode { get => uiMode; set => uiMode = value; }
+
+        public MapEntryWidget Widget { get; init; }
+        public SessionViewModel SessionViewModel => DataContext as SessionViewModel;
+
         public MultiView() : base() {
+            // UserControl
+            Background = new SolidColorBrush(Colors.Transparent);
+
+            // Grid Container
             _grid = new Grid() {
                 Name = "Multiview_Grid",
             };
-
-            _scroll = new ScrollViewer() {
-                Focusable = false,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
-            };
-
-            _grid.Children.Add(_scroll);
-
             Content = _grid;
 
-            WeakReferenceMessenger.Default.Register<UiControllerSelectedMessage>(this, (r, m) => {
+            Widget = new MapEntryWidget() {
+                Visibility = Visibility.Collapsed
+            };
+            Panel.SetZIndex(Widget, 10);
+            
+            _scrim = new Border {
+                CornerRadius = new CornerRadius(16),
+                Background = new SolidColorBrush(Colors.Black),
+                Opacity = 0.32,
+                Visibility = Visibility.Collapsed
+            };
+            Panel.SetZIndex(_scrim, 5);
+
+            _grid.Children.Add(Widget);
+            _grid.Children.Add(_scrim);
+
+            // Register messages from children
+            WeakReferenceMessenger.Default.Register<UiSelectedNodeChangedMessage>(this, (r, m) => {
                 var controller = m.Sender as UiController;
                 var view = r as MultiView;
-
-                (DataContext as SessionViewModel).SelectedNodeStates = view.Controllers.Select(c => c.SelectedNode.State).ToArray();
-
                 var vm = DataContext as SessionViewModel;
 
-
-                vm.ShowWidget = true;
-                // new mechanism
-                //await view.RequestMotorDialog();
+                if (m.Node == null)
+                    vm.ShowWidget = false;
+                else {
+                    vm.SelectedNodeStates = view.Controllers.Select(c => c.SelectedNode.State).ToArray();
+                    vm.ShowWidget = true;
+                }
             });
+
             WeakReferenceMessenger.Default.Register<UiControllerControlledMessage>(this, (r, m) => {
                 (DataContext as SessionViewModel).Interpolate();
             });
 
             DataContextChanged += MultiView_DataContextChanged;
+            //MouseLeftButtonDown += MultiView_MouseLeftButtonDown;
+        }
+
+        private void BindProperties() {
+            Binding binding;
+            binding = new Binding("MapEntryWidget") {
+                Source = DataContext,
+            };
+
+            Widget.SetBinding(DataContextProperty, binding);
         }
 
         private void MultiView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e) {
@@ -220,29 +251,48 @@ namespace taskmaker_wpf.Views.Widget {
 
             if (e.NewValue != null) {
                 if (e.NewValue is SessionViewModel vm) {
-                    //vm.Uis.CollectionChanged += control.UiViewModels_CollectionChanged;
-                    //vm.Map.PropertyChanged += control.MapViewModel_PropertyChanged;
                     vm.PropertyChanged += Vm_PropertyChanged;
 
                     control.Close();
                     control.Open();
 
                     // data binding
-                    Binding binding;
-                    binding = new Binding("MapEntryWidget") {
-                        Source = vm,
-                    };
-
-                    Widget.SetBinding(DataContextProperty, binding);
+                    BindProperties();
                 }
             }
 
             if (e.OldValue != null) {
                 if (e.OldValue is SessionViewModel vm) {
-                    //vm.Uis.CollectionChanged -= control.UiViewModels_CollectionChanged;
                     vm.PropertyChanged -= Vm_PropertyChanged;
-                    //vm.Map.PropertyChanged -= control.MapViewModel_PropertyChanged;
                 }
+            }
+        }
+
+        private void MultiView_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+            var logger = LogManager.GetCurrentClassLogger();
+
+            //logger.Debug("Click in here");
+            var clickElement = e.OriginalSource as FrameworkElement;
+
+            while(clickElement != null) {
+                if (clickElement is MapEntryWidget) {
+                    return;
+                }
+
+                clickElement = VisualTreeHelper.GetParent(clickElement) as FrameworkElement;
+            }
+
+            CloseWidget();
+
+        }
+        private void ShowWidget(bool v) {
+            if (v) {
+                Widget.Visibility = Visibility.Visible;
+                _scrim.Visibility = Visibility.Visible;
+            }
+            else {
+                Widget.Visibility = Visibility.Collapsed;
+                _scrim.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -269,46 +319,18 @@ namespace taskmaker_wpf.Views.Widget {
                 }
             }
         }
-
-        public List<UiController> Controllers { get; set; } = new List<UiController>();
-        public MapEntryWidget Widget { get; set; }
-
-        public NodeShape[] SelectedNodes => Controllers.Select(c => c.SelectedNode).ToArray();
-
-        public UiMode UiMode { get => uiMode; set => uiMode = value; }
-
         public void Close() {
-            _scroll.Content = null;
             Controllers.Clear();
         }
 
+        public void CloseWidget() {
+            ShowWidget(false);
+        }
+
         public void Layout() {
-            var grid = new Grid() {
-                Name = "Multiview_SubGrid",
-                Visibility = Visibility.Visible
-            };
-
-            _scroll.Content = grid;
-
-            //var textblock = new TextBlock {
-            //    Text = state.Name,
-            //    FontSize = 48,
-            //    Foreground = Brushes.DimGray,
-            //    VerticalAlignment = VerticalAlignment.Bottom,
-            //    HorizontalAlignment = HorizontalAlignment.Right,
-            //};
-
-            Widget = new MapEntryWidget() {
-                Visibility = Visibility.Hidden
-            };
-
             // single
-            grid.Children.Add(Controllers[0]);
-            grid.Children.Add(Widget);
-
-            Panel.SetZIndex(Widget, 10);
-
-            //grid.Children.Add(textblock);
+            Panel.SetZIndex(Controllers[0], 5);
+            _grid.Children.Add(Controllers[0]);
         }
 
         public void Open() {
@@ -326,69 +348,31 @@ namespace taskmaker_wpf.Views.Widget {
                 binding = new Binding() {
                     Source = uiViewModel,
                 };
-                uiController.SetBinding(UiController.DataContextProperty, binding);
+                uiController.SetBinding(DataContextProperty, binding);
 
                 // data binding
-                //Binding binding;
-
-                //binding = new Binding("NodeStates") {
-                //    Source = uiViewModel,
-                //};
-                //uiController.SetBinding(UiController.NodeStatesProperty, binding);
-
-                //binding = new Binding("RegionStates") {
-                //    Source = uiViewModel,
-                //};
-                //uiController.SetBinding(UiController.RegionStatesProperty, binding);
 
                 // Register messages
 
                 // TODO: potential memory leak because of unregistering
-
                 Controllers.Add(uiController);
-
             }
 
             Layout();
         }
-
-        private void ShowWidget(bool v) {
-            if (v) {
-                Widget.Visibility = Visibility.Visible;
-            }
-            else {
-                Widget.Visibility = Visibility.Hidden;
-            }
-        }
-
         public void OpenWidget() {
             if (UiMode == UiMode.Assign && SelectedNodes.All(v => v != null)) {
                 ShowWidget(true);
             }
         }
-
-        public void CloseWidget() {
-            ShowWidget(false);
-        }
-
-
         public async Task RequestMotorDialog() {
             if (UiMode == UiMode.Assign && SelectedNodes.All(v => v != null)) {
-                //var vm = DataContext as SessionViewModel;
-                //var ids = vm.SelectedNodeIds;
-                //var indices = vm.SelectedNodeIndices;
-                //var value = vm.Map.GetValue(indices);
-                //var outputValue = vm.Map.Output;
-
-                //Widget.DataContext = new MapEntryWidetViewModel(ids, value, outputValue);
-                //ShowWidget(true);
-
                 // Send dialog message
                 var result = await WeakReferenceMessenger.Default.Send(new DialogRequestMessage());
 
                 if (result.Result == MessageBoxResult.OK) {
                     // Commit map entry
-                    (DataContext as SessionViewModel).SetValue(result.Value as double[]);
+                    SessionViewModel?.SetValue(result.Value as double[]);
                 }
             }
         }
