@@ -13,6 +13,7 @@ namespace taskmaker_wpf.Views {
     /// </summary>
     public partial class RegionSlider : UserControl, INavigationAware {
         public RegionSlider() {
+            Focusable = true;
             InitializeComponent();
             Background = new SolidColorBrush(Colors.Transparent);
 
@@ -26,11 +27,10 @@ namespace taskmaker_wpf.Views {
             //});
             KeyDown += Region_KeyDown;
             KeyUp += Region_KeyUp;
-            Loaded += (_,_) => {
+            MouseDoubleClick += (_, _) => {
                 Focus();
             };
         }
-
 
         public bool IsNavigationTarget(NavigationContext navigationContext) {
             return true;
@@ -57,7 +57,7 @@ namespace taskmaker_wpf.Views {
             else if (e.Key == Key.F5) {
                 var vm = DataContext as RegionSliderViewModel;
 
-                vm.Fetch();
+                vm.FetchThis();
             }
         }
 

@@ -4,6 +4,7 @@ using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Timers;
+using System.Windows;
 using CommunityToolkit.Mvvm.Messaging;
 using NLog;
 using PCController;
@@ -101,13 +102,17 @@ namespace taskmaker_wpf.Services {
                 var value = m.Value;
                 var serial = r as SerialService;
 
-                if (serial.IsConnected) {
+                if (serial.IsConnected && !double.IsNaN(value)) {
                     serial.Motors[bId * 4 + mId].position.Value = (int)value;
                     serial._buffer[bId * 4 + mId] = (short)value;
 
+                    _logger.Debug("Board: {0}, Motor: {1}, Value: {2}", bId, mId, value);
                     serial.MessageQueue.Enqueue(serial._buffer);
                 }
                 
+                if (double.IsNaN(value)) {
+                    _logger.Debug("Found NaN, skip.");
+                }
             });
         }
 

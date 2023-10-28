@@ -55,7 +55,7 @@ namespace taskmaker_wpf.Entity {
             get => id;
             set {
                 id = value;
-                Name = $"{GetType().Name}-{id}";
+                Name = $"{GetType().Name.Replace("Entity", "")}-{id}";
             }
         }
         public string Name { get; set; }
@@ -682,5 +682,6 @@ namespace taskmaker_wpf.Entity {
         public double Max { get; set; } = 10000d;
         public int NuiBoardId { get; set; } = -1;
         public int NuiMotorId { get; set; } = -1;
+        public Brush Color { get; set; } = new SolidColorBrush(M3ColorManager.GetColor("secondary"));
     }
 }

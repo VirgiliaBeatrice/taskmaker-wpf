@@ -103,4 +103,17 @@ namespace taskmaker_wpf.Views.Widget
             return value;
         }
     }
+
+    public class MaterialSlider : Slider {
+
+
+        public Brush PrimaryColor {
+            get { return (Brush)GetValue(PrimaryColorProperty); }
+            set { SetValue(PrimaryColorProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for MyPropertyPrimaryColor.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty PrimaryColorProperty =
+            DependencyProperty.Register("PrimaryColorProperty", typeof(Brush), typeof(MaterialSlider), new PropertyMetadata(Brushes.DimGray));
+    }
 }

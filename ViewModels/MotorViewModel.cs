@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media;
 using taskmaker_wpf.Entity;
 using taskmaker_wpf.Services;
 
@@ -51,6 +52,7 @@ namespace taskmaker_wpf.ViewModels {
         [ObservableProperty]
         private double _value;
 
+
         partial void OnValueChanged(double oldValue, double newValue) {
             // TODO: Should be in a entity
             //if (Math.Abs(newValue - oldValue) )
@@ -61,6 +63,8 @@ namespace taskmaker_wpf.ViewModels {
             });
         }
 
+        [ObservableProperty]
+        private Brush _color;
         [ObservableProperty]
         private double _max;
         [ObservableProperty]
@@ -84,6 +88,7 @@ namespace taskmaker_wpf.ViewModels {
             Value = _entity.Value;
             Max = _entity.Max;
             Min = _entity.Min;
+            Color = _entity.Color;
         }
 
         [RelayCommand]
@@ -95,6 +100,7 @@ namespace taskmaker_wpf.ViewModels {
             _entity.Value = Value;
             _entity.Max = Max;
             _entity.Min = Min;
+            _entity.Color = Color;
 
             Fetch();
         }
@@ -113,7 +119,7 @@ namespace taskmaker_wpf.ViewModels {
         }
 
         [RelayCommand]
-        public void Fetch() {
+        public virtual void Fetch() {
             Motors.Clear();
 
             _motorSrv.GetAll().ToList().ForEach(entity => {

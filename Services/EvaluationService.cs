@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Threading;
 using taskmaker_wpf.Entity;
 using taskmaker_wpf.ViewModels;
@@ -36,6 +37,8 @@ namespace taskmaker_wpf.Services {
 
         private TimeSpan _time;
         private DateTime _startTime;
+
+        private bool _isInitialized = false;
 
         public EvaluationService(MotorService motorSrv, UIService uiSrv, MapService mapSrv, SessionService sessionSrv, SurveyService surveyService) {
             _motorSrv = motorSrv;
@@ -124,6 +127,18 @@ namespace taskmaker_wpf.Services {
         }
 
         public void InitializeMotors() {
+            if (_isInitialized) {
+                WeakReferenceMessenger.Default.Send(new ShowMessageBoxMessage {
+                    Message = "Motors already initialized",
+                    Caption = MessageBoxImage.Information.ToString(),
+                    Button = MessageBoxButton.OK,
+                    Icon = MessageBoxImage.Information
+                });
+
+                return;
+            }
+
+
             // Create List<MotorEntity> with 6 motors
             var motors = Enumerable.Range(0, 6)
                                    .Select(_ => _motorSrv.Create(new MotorEntity()))
@@ -131,16 +146,27 @@ namespace taskmaker_wpf.Services {
 
             motors[0].NuiBoardId = 0;
             motors[0].NuiMotorId = 0;
+            motors[0].Color = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f06292"));
+           
             motors[1].NuiBoardId = 0;
             motors[1].NuiMotorId = 1;
+            motors[1].Color = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#42a5f5"));
+            
             motors[2].NuiBoardId = 0;
             motors[2].NuiMotorId = 2;
+            motors[2].Color = new SolidColorBrush( (Color)ColorConverter.ConvertFromString("#ffee58"));
+            
             motors[3].NuiBoardId = 1;
             motors[3].NuiMotorId = 0;
+            motors[3].Color = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f06292"));
+
             motors[4].NuiBoardId = 1;
             motors[4].NuiMotorId = 1;
+            motors[4].Color = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#42a5f5"));
+
             motors[5].NuiBoardId = 1;
             motors[5].NuiMotorId = 2;
+            motors[5].Color = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffee58"));
 
             for (int i = 0; i < motors.Count(); i++) {
                 var motor = motors[i];
@@ -150,6 +176,7 @@ namespace taskmaker_wpf.Services {
                 _motorSrv.Update(motor);
             }
 
+            _isInitialized = true;
         }
 
         public void InitializeSurvey() {
