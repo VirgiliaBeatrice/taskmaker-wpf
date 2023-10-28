@@ -146,7 +146,7 @@ namespace taskmaker_wpf.Services {
 
             motors[0].NuiBoardId = 0;
             motors[0].NuiMotorId = 0;
-            motors[0].Color = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f06292"));
+            motors[0].Color = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffee58"));
            
             motors[1].NuiBoardId = 0;
             motors[1].NuiMotorId = 1;
@@ -154,15 +154,15 @@ namespace taskmaker_wpf.Services {
             
             motors[2].NuiBoardId = 0;
             motors[2].NuiMotorId = 2;
-            motors[2].Color = new SolidColorBrush( (Color)ColorConverter.ConvertFromString("#ffee58"));
+            motors[2].Color = new SolidColorBrush( (Color)ColorConverter.ConvertFromString("#f06292"));
             
             motors[3].NuiBoardId = 1;
             motors[3].NuiMotorId = 0;
-            motors[3].Color = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f06292"));
+            motors[3].Color = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#42a5f5"));
 
             motors[4].NuiBoardId = 1;
             motors[4].NuiMotorId = 1;
-            motors[4].Color = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#42a5f5"));
+            motors[4].Color = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f06292"));
 
             motors[5].NuiBoardId = 1;
             motors[5].NuiMotorId = 2;

@@ -88,5 +88,8 @@ namespace taskmaker_wpf.Services {
             return Name;
         }
 
+
+        // TODO: 1. motor controller not response
+        // TODO: 2. order of simplices
     }
 }

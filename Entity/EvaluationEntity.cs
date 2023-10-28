@@ -68,8 +68,6 @@ namespace taskmaker_wpf.Entity
         Tutorial,
         Task1D,
         Task1T,
-        Task2D,
-        Task2T,
         None
     }
 
