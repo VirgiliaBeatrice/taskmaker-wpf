@@ -15,7 +15,7 @@
         d:Height="450"
         d:Width="800"
         WindowState="Maximized"
-        PreviewKeyUp="Window_PreviewKeyUp"
+        KeyUp="Window_KeyUp"
         Background="WhiteSmoke">
   <Window.Resources>
     <ResourceDictionary>

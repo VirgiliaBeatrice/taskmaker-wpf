@@ -23,6 +23,8 @@ namespace taskmaker_wpf.Views.Widget
         public MapEntryWidget()
         {
             InitializeComponent();
+
+            Effect = Evelations.Lv3;
         }
     }
 }

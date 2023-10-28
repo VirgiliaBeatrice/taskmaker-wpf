@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:taskmaker_wpf.Views"
              xmlns:w="clr-namespace:taskmaker_wpf.Views.Widget"
              xmlns:viewmodels="clr-namespace:taskmaker_wpf.ViewModels"
+             xmlns:dd="urn:gong-wpf-dragdrop"
              d:DataContext="{d:DesignInstance Type=viewmodels:RegionSliderViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="800"
@@ -27,7 +28,11 @@
 
         <Grid>
 
-          <ItemsControl ItemsSource="{Binding Motors}">
+          <ItemsControl ItemsSource="{Binding Motors}"
+                        x:Name="DragableControl"
+                        dd:DragDrop.IsDragSource="True"
+                        dd:DragDrop.IsDropTarget="True"
+                        >
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <StackPanel Orientation="Horizontal" />
@@ -35,7 +40,7 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
               <DataTemplate>
-                <w:SliderController />
+                <w:SliderController Margin="4"/>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
 

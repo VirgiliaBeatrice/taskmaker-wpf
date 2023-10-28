@@ -70,7 +70,7 @@ namespace taskmaker_wpf.Views {
             Messenger.Default.Register<DialogRequestMessage>(this);
         }
 
-        private void Window_PreviewKeyUp(object sender, KeyEventArgs e) {
+        private void Window_KeyUp(object sender, KeyEventArgs e) {
             var vm = DataContext as TestWindowViewModel;
 
             switch (e.Key) {

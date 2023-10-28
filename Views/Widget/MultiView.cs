@@ -200,7 +200,8 @@ namespace taskmaker_wpf.Views.Widget {
             Content = _grid;
 
             Widget = new MapEntryWidget() {
-                Visibility = Visibility.Collapsed
+                Visibility = Visibility.Collapsed,
+                VerticalAlignment = VerticalAlignment.Center,
             };
             Panel.SetZIndex(Widget, 10);
             
