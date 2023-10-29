@@ -12,6 +12,7 @@ using System.Windows;
 using taskmaker_wpf.Entity;
 using taskmaker_wpf.Model.Data;
 using taskmaker_wpf.Services;
+using taskmaker_wpf.Views.Widget;
 
 namespace taskmaker_wpf.ViewModels {
     public class NodeUpdatedMessage {
@@ -47,12 +48,6 @@ namespace taskmaker_wpf.ViewModels {
             Id = _entity.Id;
             Value = _entity.Value;
         }
-
-
-        //public NodeViewModel(int id, Point value) {
-        //    Id = id;
-        //    Value = value;
-        //}
 
         public override bool Equals(object obj) {
             if (obj == null || this.GetType() != obj.GetType()) {
@@ -134,6 +129,17 @@ namespace taskmaker_wpf.ViewModels {
         private Point _input = new();
         [ObservableProperty]
         private BaseRegionState _hitRegion;
+        [ObservableProperty]
+        private UiMode _mode = UiMode.Default;
+
+        partial void OnModeChanged(UiMode oldValue, UiMode newValue) {
+            if (oldValue != UiMode.Default && newValue == UiMode.Default) {
+                _logger.Debug("Back to default mode.");
+                _logger.Debug("Try to rebuild.");
+
+                Fetch();
+            }
+        }
 
         public ObservableCollection<NodeViewModel> NodeStates { get; set; } = new ObservableCollection<NodeViewModel>();
         private readonly ControlUiEntity _entity;
@@ -186,6 +192,11 @@ namespace taskmaker_wpf.ViewModels {
 
             WeakReferenceMessenger.Default.Send(new UiViewModelNodeAddedMessage() { Ui = this });
             EventDispatcher.Record(new CreationAddEvent());
+        }
+
+        [RelayCommand]
+        public void Rebuild() {
+            Fetch();
         }
 
         public void FetchRegions() {

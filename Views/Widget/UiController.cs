@@ -656,8 +656,13 @@ namespace taskmaker_wpf.Views.Widget {
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
+            var vm = sender as ControlUiViewModel;
+
             if (e.PropertyName == "RegionStates") {
                 InvalidateRegion();
+            }
+            else if (e.PropertyName == nameof(ControlUiViewModel.Mode)) {
+                UiMode = vm.Mode;
             }
         }
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo) {

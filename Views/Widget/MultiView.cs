@@ -301,7 +301,7 @@ namespace taskmaker_wpf.Views.Widget {
             var vm = (sender as SessionViewModel);
 
             if (e.PropertyName == nameof(SessionViewModel.Mode)) {
-                uiMode = vm.Mode;
+                UiMode = vm.Mode;
 
                 foreach(var item in Controllers) {
                     item.UiMode = UiMode;

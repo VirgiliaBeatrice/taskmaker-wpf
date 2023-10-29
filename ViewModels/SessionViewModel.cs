@@ -44,6 +44,10 @@ namespace taskmaker_wpf.ViewModels
         }
 
         partial void OnModeChanged(UiMode value) {
+            foreach (var item in Uis) {
+                item.Mode = value;
+            }
+
             if (value == UiMode.Control) {
                 EventDispatcher.Record(new CreationTryControlEvent());
             }
