@@ -126,6 +126,10 @@ namespace taskmaker_wpf.Services {
             timer.Stop();
         }
 
+        static public SolidColorBrush Pink => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f06292"));
+        static public SolidColorBrush Yellow => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffee58"));
+        static public SolidColorBrush Blue => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#42a5f5"));
+
         public void InitializeMotors() {
             if (_isInitialized) {
                 WeakReferenceMessenger.Default.Send(new ShowMessageBoxMessage {
@@ -146,27 +150,27 @@ namespace taskmaker_wpf.Services {
 
             motors[0].NuiBoardId = 0;
             motors[0].NuiMotorId = 0;
-            motors[0].Color = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffee58"));
+            motors[0].Color = Yellow;
            
             motors[1].NuiBoardId = 0;
             motors[1].NuiMotorId = 1;
-            motors[1].Color = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#42a5f5"));
+            motors[1].Color = Blue;
             
             motors[2].NuiBoardId = 0;
             motors[2].NuiMotorId = 2;
-            motors[2].Color = new SolidColorBrush( (Color)ColorConverter.ConvertFromString("#f06292"));
+            motors[2].Color = Pink;
             
             motors[3].NuiBoardId = 1;
             motors[3].NuiMotorId = 0;
-            motors[3].Color = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#42a5f5"));
+            motors[3].Color = Blue;
 
             motors[4].NuiBoardId = 1;
             motors[4].NuiMotorId = 1;
-            motors[4].Color = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f06292"));
+            motors[4].Color = Pink;
 
             motors[5].NuiBoardId = 1;
             motors[5].NuiMotorId = 2;
-            motors[5].Color = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffee58"));
+            motors[5].Color = Yellow;
 
             for (int i = 0; i < motors.Count(); i++) {
                 var motor = motors[i];
