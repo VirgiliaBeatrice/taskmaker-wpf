@@ -204,6 +204,9 @@ namespace taskmaker_wpf.ViewModels {
                 _entity.Build();
                 RegionStates = BuildRegions();
             }
+            else {
+                RegionStates = Array.Empty<BaseRegionState>();
+            }
         }
 
         [RelayCommand]

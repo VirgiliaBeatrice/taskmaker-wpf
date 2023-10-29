@@ -11,6 +11,7 @@ using System.Linq;
 using taskmaker_wpf.Entity;
 using taskmaker_wpf.Services;
 using taskmaker_wpf.Views.Widget;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace taskmaker_wpf.ViewModels
 {
@@ -51,6 +52,9 @@ namespace taskmaker_wpf.ViewModels
             if (value == UiMode.Control) {
                 EventDispatcher.Record(new CreationTryControlEvent());
             }
+
+            EventDispatcher.Record(new UiModeChangedEvent() { Details = $"{value}" });
+            
         }
 
 

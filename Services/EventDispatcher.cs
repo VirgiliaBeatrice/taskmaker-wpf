@@ -116,4 +116,11 @@ namespace taskmaker_wpf.Services {
         public string Tags => "Evaluation.Creation.Operations.TryControl";
     }
 
+
+    public record UiModeChangedEvent : IEvent {
+        public Guid EventId => Guid.NewGuid();
+        public DateTime Timestamp => DateTime.UtcNow;
+        public string Details { get; init; } = "";
+        public string Tags => "Ui.ModeChanged." + Details;
+    }
 }
