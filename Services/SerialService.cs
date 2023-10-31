@@ -165,6 +165,13 @@ namespace taskmaker_wpf.Services {
             if (!MessageQueue.IsEmpty) {
                 var data = MessageQueue.Dequeue();
 
+                if (data == null) {
+                    // warn
+                    _logger.Warn("Data is null");
+
+                    return;
+                }
+
                 SendToNuibot(data);
             }
         }

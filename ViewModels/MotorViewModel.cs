@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -55,13 +56,16 @@ namespace taskmaker_wpf.ViewModels {
 
         partial void OnValueChanged(double oldValue, double newValue) {
             // TODO: Should be in a entity
-            //if (Math.Abs(newValue - oldValue) )
-            WeakReferenceMessenger.Default.Send(new MotorValueUpdatedMessage {
+            if (Math.Abs(newValue - oldValue) >= 1) {
+                _entity.Value = newValue;
+
+                WeakReferenceMessenger.Default.Send(new MotorValueUpdatedMessage {
                 NuiBoardId = NuiBoardId,
                 NuiMotorId = NuiMotorId,
                 Value = Value
             });
         }
+    }
 
         [ObservableProperty]
         private Brush _color;

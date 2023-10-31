@@ -27,8 +27,9 @@ namespace taskmaker_wpf.ViewModels {
         private Point _value;
 
         partial void OnValueChanged(Point value) {
-            EventDispatcher.Record(new CreationMoveEvent());
+            _entity.Value = value;
 
+            EventDispatcher.Record(new CreationMoveEvent());
             WeakReferenceMessenger.Default.Send(new NodeUpdatedMessage() { Sender = this });
         }
 
