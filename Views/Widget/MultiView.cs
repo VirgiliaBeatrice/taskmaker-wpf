@@ -226,6 +226,9 @@ namespace taskmaker_wpf.Views.Widget {
                     vm.ShowWidget = false;
                 else {
                     vm.SelectedNodeStates = view.Controllers.Select(c => c.SelectedNode.State).ToArray();
+                    // TODO: if value ofelected node is not NaN, then show widget and update motor values
+                        
+                    vm.Map.GetValue(vm.SelectedNodeIndices);
                     vm.ShowWidget = true;
                 }
             });
