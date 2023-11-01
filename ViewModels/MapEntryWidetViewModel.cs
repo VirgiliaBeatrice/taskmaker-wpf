@@ -23,10 +23,10 @@ namespace taskmaker_wpf.ViewModels {
         public MapEntryWidetViewModel(SessionViewModel session) {
             _session = session;
 
-            Update();
+            Fetch();
         }
 
-        public void Update() {
+        public void Fetch() {
             if (_session.SelectedNodeStates != null) {
                 var ids = _session.SelectedNodeIds;
                 var indices = _session.SelectedNodeIndices;
@@ -36,6 +36,12 @@ namespace taskmaker_wpf.ViewModels {
                 FormattedIds = string.Join(",", ids);
                 Value = value; 
                 OutputValue = output;
+
+                // motor output
+                WeakReferenceMessenger.Default.Send(new SendToMotorMessage {
+                    Sender = this,
+                    Value = value
+                });
             }
         }
 
@@ -56,12 +62,17 @@ namespace taskmaker_wpf.ViewModels {
 
             _session.Map.ClearValue(indices);
 
-            Update();
+            Fetch();
         }
 
         [RelayCommand]
         public void Close() {
             _session.ShowWidget = false;
         }
+    }
+
+    public class SendToMotorMessage {
+        public object Sender { get; init; }
+        public double[] Value { get; init; }
     }
 }

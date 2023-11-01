@@ -106,7 +106,7 @@ namespace taskmaker_wpf.ViewModels
             MapEntryWidget = new MapEntryWidetViewModel(this);
 
             if (SelectedNodeStates != null) {
-                MapEntryWidget.Update();
+                MapEntryWidget.Fetch();
             }
 
         }

@@ -543,7 +543,7 @@ namespace taskmaker_wpf.Views {
             //    Value = e.Value,
             //}).ToArray();
 
-            var motorDialogViewModel = (Application.Current as App).Container.Resolve<MotorDialogViewModel>();
+            var motorDialogViewModel = new MotorDialogViewModel(_motorSrv);
 
             var dialog = new DialogController();
 

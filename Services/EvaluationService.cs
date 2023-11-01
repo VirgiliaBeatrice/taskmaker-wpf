@@ -89,6 +89,24 @@ namespace taskmaker_wpf.Services {
                     });
                 }
             });
+
+            WeakReferenceMessenger.Default.Register<SendToMotorMessage>(this, (r, m) => {
+                var values = m.Value;
+                var motors = _motorSrv.GetAll();
+                for (int i = 0; i < values.Length; i++) {
+
+                    motors[i].Value = values[i];
+
+                    WeakReferenceMessenger.Default.Send(new MotorValueUpdatedMessage {
+                        NuiBoardId = motors[i].NuiBoardId,
+                        NuiMotorId = motors[i].NuiMotorId,
+                        Value = motors[i].Value
+                    });
+
+                    logger.Info($"Motor {motors[i].NuiBoardId}-{motors[i].NuiMotorId} set to {motors[i].Value}");
+                }
+            });
+
             _surveyService = surveyService;
         }
 

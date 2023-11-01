@@ -10,8 +10,8 @@ using taskmaker_wpf.Services;
 namespace taskmaker_wpf.ViewModels
 {
     public class MotorDialogViewModel : MotorCollectionViewModel {
-        public MotorDialogViewModel(MotorService motorService) : base(motorService) { }
-
+        public MotorDialogViewModel(MotorService motorService) : base(motorService) {
         
+        }
     }
 }
